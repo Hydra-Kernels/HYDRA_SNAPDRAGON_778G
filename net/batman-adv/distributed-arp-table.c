@@ -670,9 +670,15 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
  * Return: true if the packet is sent to at least one candidate, false
  * otherwise.
  */
+<<<<<<< HEAD
 static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
 				    struct sk_buff *skb, __be32 ip,
 				    unsigned short vid, int packet_subtype)
+=======
+static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+				 struct sk_buff *skb, __be32 ip,
+				 unsigned short vid, int packet_subtype)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int i;
 	bool ret = false;
@@ -1267,8 +1273,13 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
 		ret = true;
 	} else {
 		/* Send the request to the DHT */
+<<<<<<< HEAD
 		ret = batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
 					      BATADV_P_DAT_DHT_GET);
+=======
+		ret = batadv_dat_send_data(bat_priv, skb, ip_dst, vid,
+					   BATADV_P_DAT_DHT_GET);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 out:
 	if (dat_entry)
@@ -1382,10 +1393,15 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
 	/* Send the ARP reply to the candidates for both the IP addresses that
 	 * the node obtained from the ARP reply
 	 */
+<<<<<<< HEAD
 	batadv_dat_forward_data(bat_priv, skb, ip_src, vid,
 				BATADV_P_DAT_DHT_PUT);
 	batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
 				BATADV_P_DAT_DHT_PUT);
+=======
+	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);
+	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

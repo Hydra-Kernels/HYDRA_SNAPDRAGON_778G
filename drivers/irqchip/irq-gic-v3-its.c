@@ -107,12 +107,16 @@ struct its_node {
 	u64			flags;
 	unsigned long		list_nr;
 	u32			ite_size;
+<<<<<<< HEAD
 	u32			device_ids;
 	int			numa_node;
 	unsigned int		msi_domain_flags;
 	u32			pre_its_base; /* for Socionext Synquacer */
 	bool			is_v4;
 	int			vlpi_redist_offset;
+=======
+	int			numa_node;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #define ITS_ITT_ALIGN		SZ_256
@@ -1133,9 +1137,12 @@ static void its_unmask_irq(struct irq_data *d)
 	if (irqd_is_forwarded_to_vcpu(d))
 		its_vlpi_set_doorbell(d, true);
 
+<<<<<<< HEAD
 	lpi_update_config(d, 0, LPI_PROP_ENABLED);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int its_set_affinity(struct irq_data *d, const struct cpumask *mask_val,
 			    bool force)
 {
@@ -1145,10 +1152,13 @@ static int its_set_affinity(struct irq_data *d, const struct cpumask *mask_val,
 	struct its_collection *target_col;
 	u32 id = its_get_event_id(d);
 
+<<<<<<< HEAD
 	/* A forwarded interrupt should use irq_set_vcpu_affinity */
 	if (irqd_is_forwarded_to_vcpu(d))
 		return -EINVAL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
        /* lpi cannot be routed to a redistributor that is on a foreign node */
 	if (its_dev->its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
 		if (its_dev->its->numa_node >= 0) {
@@ -1465,7 +1475,12 @@ static struct irq_chip its_irq_chip = {
  * The consequence of the above is that allocation is cost is low, but
  * freeing is expensive. We assumes that freeing rarely occurs.
  */
+<<<<<<< HEAD
 #define ITS_MAX_LPI_NRBITS	16 /* 64K LPIs */
+=======
+#define IRQS_PER_CHUNK_SHIFT	5
+#define IRQS_PER_CHUNK		(1UL << IRQS_PER_CHUNK_SHIFT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static DEFINE_MUTEX(lpi_range_lock);
 static LIST_HEAD(lpi_range_list);
@@ -2196,6 +2211,16 @@ static void its_cpu_init_lpis(void)
 	if (gic_rdists->has_vlpis) {
 		void __iomem *vlpi_base = gic_data_rdist_vlpi_base();
 
+		/* avoid cross node collections and its mapping */
+		if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+			struct device_node *cpu_node;
+
+			cpu_node = of_get_cpu_node(cpu, NULL);
+			if (its->numa_node != NUMA_NO_NODE &&
+				its->numa_node != of_node_to_nid(cpu_node))
+				continue;
+		}
+
 		/*
 		 * It's possible for CPU to receive VLPIs before it is
 		 * sheduled as a vPE, especially for the first CPU, and the
@@ -2414,10 +2439,17 @@ static struct its_device *its_create_device(struct its_node *its, u32 dev_id,
 
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	/*
+<<<<<<< HEAD
 	 * Even if the device wants a single LPI, the ITT must be
 	 * sized as a power of two (and you need at least one bit...).
 	 */
 	nr_ites = max(2, nvecs);
+=======
+	 * We allocate at least one chunk worth of LPIs bet device,
+	 * and thus that many ITEs. The device may require less though.
+	 */
+	nr_ites = max(IRQS_PER_CHUNK, roundup_pow_of_two(nvecs));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sz = nr_ites * its->ite_size;
 	sz = max(sz, ITS_ITT_ALIGN) + ITS_ITT_ALIGN - 1;
 	itt = kzalloc_node(sz, GFP_KERNEL, its->numa_node);
@@ -2617,13 +2649,17 @@ static int its_irq_domain_activate(struct irq_domain *domain,
 	struct its_device *its_dev = irq_data_get_irq_chip_data(d);
 	u32 event = its_get_event_id(d);
 	const struct cpumask *cpu_mask = cpu_online_mask;
+<<<<<<< HEAD
 	int cpu;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* get the cpu_mask of local node */
 	if (its_dev->its->numa_node >= 0)
 		cpu_mask = cpumask_of_node(its_dev->its->numa_node);
 
 	/* Bind the LPI to the first possible CPU */
+<<<<<<< HEAD
 	cpu = cpumask_first_and(cpu_mask, cpu_online_mask);
 	if (cpu >= nr_cpu_ids) {
 		if (its_dev->its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144)
@@ -2634,6 +2670,9 @@ static int its_irq_domain_activate(struct irq_domain *domain,
 
 	its_dev->event_map.col_map[event] = cpu;
 	irq_data_update_effective_affinity(d, cpumask_of(cpu));
+=======
+	its_dev->event_map.col_map[event] = cpumask_first(cpu_mask);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Map the GIC IRQ and event to the device */
 	its_send_mapti(its_dev, d->hwirq, event);
@@ -3300,6 +3339,13 @@ static bool __maybe_unused its_enable_quirk_hip07_161600802(void *data)
 	return true;
 }
 
+static void __maybe_unused its_enable_quirk_cavium_23144(void *data)
+{
+	struct its_node *its = data;
+
+	its->flags |= ITS_FLAGS_WORKAROUND_CAVIUM_23144;
+}
+
 static const struct gic_quirk its_quirks[] = {
 #ifdef CONFIG_CAVIUM_ERRATUM_22375
 	{
@@ -3317,6 +3363,7 @@ static const struct gic_quirk its_quirks[] = {
 		.init	= its_enable_quirk_cavium_23144,
 	},
 #endif
+<<<<<<< HEAD
 #ifdef CONFIG_QCOM_QDF2400_ERRATUM_0065
 	{
 		.desc	= "ITS: QDF2400 erratum 0065",
@@ -3346,6 +3393,8 @@ static const struct gic_quirk its_quirks[] = {
 		.init	= its_enable_quirk_hip07_161600802,
 	},
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{
 	}
 };
@@ -3605,6 +3654,7 @@ static int __init its_probe_one(struct resource *res,
 	INIT_LIST_HEAD(&its->its_device_list);
 	typer = gic_read_typer(its_base + GITS_TYPER);
 	its->base = its_base;
+<<<<<<< HEAD
 	its->phys_base = res->start;
 	its->ite_size = GITS_TYPER_ITT_ENTRY_SIZE(typer);
 	its->device_ids = GITS_TYPER_DEVBITS(typer);
@@ -3614,6 +3664,11 @@ static int __init its_probe_one(struct resource *res,
 			err = its_compute_its_list_map(res, its_base);
 			if (err < 0)
 				goto out_free_its;
+=======
+	its->phys_base = res.start;
+	its->ite_size = ((readl_relaxed(its_base + GITS_TYPER) >> 4) & 0xf) + 1;
+	its->numa_node = of_node_to_nid(node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			its->list_nr = err;
 

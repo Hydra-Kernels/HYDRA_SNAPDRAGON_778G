@@ -933,7 +933,11 @@ void xhci_free_virt_device(struct xhci_hcd *xhci, int slot_id)
  * that tt_info, then free the child first. Recursive.
  * We can't rely on udev at this point to find child-parent relationships.
  */
+<<<<<<< HEAD
 static void xhci_free_virt_devices_depth_first(struct xhci_hcd *xhci, int slot_id)
+=======
+void xhci_free_virt_devices_depth_first(struct xhci_hcd *xhci, int slot_id)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct xhci_virt_device *vdev;
 	struct list_head *tt_list_head;
@@ -965,7 +969,10 @@ static void xhci_free_virt_devices_depth_first(struct xhci_hcd *xhci, int slot_i
 	}
 out:
 	/* we are now at a leaf device */
+<<<<<<< HEAD
 	xhci_debugfs_remove_slot(xhci, slot_id);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xhci_free_virt_device(xhci, slot_id);
 }
 
@@ -1022,13 +1029,21 @@ int xhci_alloc_virt_device(struct xhci_hcd *xhci, int slot_id,
 		 &xhci->dcbaa->dev_context_ptrs[slot_id],
 		 le64_to_cpu(xhci->dcbaa->dev_context_ptrs[slot_id]));
 
+<<<<<<< HEAD
 	trace_xhci_alloc_virt_device(dev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xhci->devs[slot_id] = dev;
 
 	return 1;
 fail:
+<<<<<<< HEAD
 
+=======
+	if (dev->eps[0].ring)
+		xhci_ring_free(xhci, dev->eps[0].ring);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dev->in_ctx)
 		xhci_free_container_ctx(xhci, dev->in_ctx);
 	if (dev->out_ctx)
@@ -1112,9 +1127,12 @@ int xhci_setup_addressable_virt_dev(struct xhci_hcd *xhci, struct usb_device *ud
 	slot_ctx->dev_info |= cpu_to_le32(LAST_CTX(1) | udev->route);
 	switch (udev->speed) {
 	case USB_SPEED_SUPER_PLUS:
+<<<<<<< HEAD
 		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_SSP);
 		max_packets = MAX_PACKET(512);
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case USB_SPEED_SUPER:
 		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_SS);
 		max_packets = MAX_PACKET(512);
@@ -1401,12 +1419,16 @@ static u32 xhci_get_max_esit_payload(struct usb_device *udev,
 			usb_endpoint_xfer_bulk(&ep->desc))
 		return 0;
 
+<<<<<<< HEAD
 	/* SuperSpeedPlus Isoc ep sending over 48k per esit */
 	if ((udev->speed >= USB_SPEED_SUPER_PLUS) &&
 	    USB_SS_SSP_ISOC_COMP(ep->ss_ep_comp.bmAttributes))
 		return le32_to_cpu(ep->ssp_isoc_ep_comp.dwBytesPerInterval);
 	/* SuperSpeed or SuperSpeedPlus Isoc ep with less than 48k per esit */
 	else if (udev->speed >= USB_SPEED_SUPER)
+=======
+	if (udev->speed >= USB_SPEED_SUPER)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return le16_to_cpu(ep->ss_ep_comp.wBytesPerInterval);
 
 	max_packet = usb_endpoint_maxp(&ep->desc);
@@ -1474,10 +1496,29 @@ int xhci_endpoint_init(struct xhci_hcd *xhci,
 
 	/* Allow 3 retries for everything but isoc, set CErr = 3 */
 	if (!usb_endpoint_xfer_isoc(&ep->desc))
+<<<<<<< HEAD
 		err_count = 3;
 	/* HS bulk max packet should be 512, FS bulk supports 8, 16, 32 or 64 */
 	if (usb_endpoint_xfer_bulk(&ep->desc)) {
 		if (udev->speed == USB_SPEED_HIGH)
+=======
+		ep_ctx->ep_info2 |= cpu_to_le32(ERROR_COUNT(3));
+	else
+		ep_ctx->ep_info2 |= cpu_to_le32(ERROR_COUNT(0));
+
+	/* Set the max packet size and max burst */
+	max_packet = GET_MAX_PACKET(usb_endpoint_maxp(&ep->desc));
+	max_burst = 0;
+	switch (udev->speed) {
+	case USB_SPEED_SUPER_PLUS:
+	case USB_SPEED_SUPER:
+		/* dig out max burst from ep companion desc */
+		max_burst = ep->ss_ep_comp.bMaxBurst;
+		break;
+	case USB_SPEED_HIGH:
+		/* Some devices get this wrong */
+		if (usb_endpoint_xfer_bulk(&ep->desc))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			max_packet = 512;
 		if (udev->speed == USB_SPEED_FULL) {
 			max_packet = rounddown_pow_of_two(max_packet);
@@ -1678,8 +1719,13 @@ static int scratchpad_alloc(struct xhci_hcd *xhci, gfp_t flags)
 	xhci->dcbaa->dev_context_ptrs[0] = cpu_to_le64(xhci->scratchpad->sp_dma);
 	for (i = 0; i < num_sp; i++) {
 		dma_addr_t dma;
+<<<<<<< HEAD
 		void *buf = dma_alloc_coherent(dev, xhci->page_size, &dma,
 					       flags);
+=======
+		void *buf = dma_zalloc_coherent(dev, xhci->page_size, &dma,
+				flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!buf)
 			goto fail_sp4;
 
@@ -1804,11 +1850,15 @@ int xhci_alloc_erst(struct xhci_hcd *xhci,
 	struct xhci_segment *seg;
 	struct xhci_erst_entry *entry;
 
+<<<<<<< HEAD
 	size = sizeof(struct xhci_erst_entry) * evt_ring->num_segs;
 	erst->entries = dma_alloc_coherent(xhci_to_hcd(xhci)->self.sysdev,
 					   size, &erst->erst_dma_addr, flags);
 	if (!erst->entries)
 		return -ENOMEM;
+=======
+	cancel_delayed_work_sync(&xhci->cmd_timer);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	erst->num_entries = evt_ring->num_segs;
 
@@ -2071,6 +2121,12 @@ no_bw:
 	xhci->rh_bw = NULL;
 	xhci->ext_caps = NULL;
 	xhci->port_caps = NULL;
+
+	xhci->usb2_ports = NULL;
+	xhci->usb3_ports = NULL;
+	xhci->port_array = NULL;
+	xhci->rh_bw = NULL;
+	xhci->ext_caps = NULL;
 
 	xhci->page_size = 0;
 	xhci->page_shift = 0;
@@ -2787,6 +2843,62 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 	if (xhci_check_trb_in_td_math(xhci) < 0)
 		goto fail;
 
+<<<<<<< HEAD
+=======
+	xhci->erst.entries = dma_alloc_coherent(dev,
+			sizeof(struct xhci_erst_entry) * ERST_NUM_SEGS, &dma,
+			flags);
+	if (!xhci->erst.entries)
+		goto fail;
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"// Allocated event ring segment table at 0x%llx",
+			(unsigned long long)dma);
+
+	memset(xhci->erst.entries, 0, sizeof(struct xhci_erst_entry)*ERST_NUM_SEGS);
+	xhci->erst.num_entries = ERST_NUM_SEGS;
+	xhci->erst.erst_dma_addr = dma;
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"Set ERST to 0; private num segs = %i, virt addr = %p, dma addr = 0x%llx",
+			xhci->erst.num_entries,
+			xhci->erst.entries,
+			(unsigned long long)xhci->erst.erst_dma_addr);
+
+	/* set ring base address and size for each segment table entry */
+	for (val = 0, seg = xhci->event_ring->first_seg; val < ERST_NUM_SEGS; val++) {
+		struct xhci_erst_entry *entry = &xhci->erst.entries[val];
+		entry->seg_addr = cpu_to_le64(seg->dma);
+		entry->seg_size = cpu_to_le32(TRBS_PER_SEGMENT);
+		entry->rsvd = 0;
+		seg = seg->next;
+	}
+
+	/* set ERST count with the number of entries in the segment table */
+	val = readl(&xhci->ir_set->erst_size);
+	val &= ERST_SIZE_MASK;
+	val |= ERST_NUM_SEGS;
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"// Write ERST size = %i to ir_set 0 (some bits preserved)",
+			val);
+	writel(val, &xhci->ir_set->erst_size);
+
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"// Set ERST entries to point to event ring.");
+	/* set the segment table base address */
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"// Set ERST base address for ir_set 0 = 0x%llx",
+			(unsigned long long)xhci->erst.erst_dma_addr);
+	val_64 = xhci_read_64(xhci, &xhci->ir_set->erst_base);
+	val_64 &= ERST_PTR_MASK;
+	val_64 |= (xhci->erst.erst_dma_addr & (u64) ~ERST_PTR_MASK);
+	xhci_write_64(xhci, val_64, &xhci->ir_set->erst_base);
+
+	/* Set the event ring dequeue address */
+	xhci_set_hc_event_deq(xhci);
+	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+			"Wrote ERST address to ir_set 0.");
+	xhci_print_ir_set(xhci, 0);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * XXX: Might need to set the Interrupter Moderation Register to
 	 * something other than the default (~1ms minimum between interrupts).

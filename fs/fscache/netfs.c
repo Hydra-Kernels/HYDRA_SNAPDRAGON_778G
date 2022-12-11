@@ -30,7 +30,23 @@ int __fscache_register_netfs(struct fscache_netfs *netfs)
 		return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	candidate->flags = 1 << FSCACHE_COOKIE_ENABLED;
+=======
+	/* initialise the primary index cookie */
+	atomic_set(&cookie->usage, 1);
+	atomic_set(&cookie->n_children, 0);
+	atomic_set(&cookie->n_active, 1);
+
+	cookie->def		= &fscache_fsdef_netfs_def;
+	cookie->parent		= &fscache_fsdef_index;
+	cookie->netfs_data	= netfs;
+	cookie->flags		= 1 << FSCACHE_COOKIE_ENABLED;
+
+	spin_lock_init(&cookie->lock);
+	spin_lock_init(&cookie->stores_lock);
+	INIT_HLIST_HEAD(&cookie->backing_objects);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* check the netfs type is not already present */
 	cookie = fscache_hash_cookie(candidate);

@@ -306,7 +306,30 @@ static int pedit_skb_hdr_offset(struct sk_buff *skb,
 static int tcf_pedit_act(struct sk_buff *skb, const struct tc_action *a,
 			 struct tcf_result *res)
 {
+<<<<<<< HEAD
 	struct tcf_pedit *p = to_pedit(a);
+=======
+	struct tcf_pedit *p = a->priv;
+	struct tc_pedit_key *keys = p->tcfp_keys;
+	kfree(keys);
+}
+
+static bool offset_valid(struct sk_buff *skb, int offset)
+{
+	if (offset > 0 && offset > skb->len)
+		return false;
+
+	if  (offset < 0 && -offset > skb_headroom(skb))
+		return false;
+
+	return true;
+}
+
+static int tcf_pedit(struct sk_buff *skb, const struct tc_action *a,
+		     struct tcf_result *res)
+{
+	struct tcf_pedit *p = a->priv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int i;
 
 	if (skb_unclone(skb, GFP_ATOMIC))
@@ -347,6 +370,7 @@ static int tcf_pedit_act(struct sk_buff *skb, const struct tc_action *a,
 			if (tkey->offmask) {
 				u8 *d, _d;
 
+<<<<<<< HEAD
 				if (!offset_valid(skb, hoffset + tkey->at)) {
 					pr_info("tc action pedit 'at' offset %d out of bounds\n",
 						hoffset + tkey->at);
@@ -354,13 +378,33 @@ static int tcf_pedit_act(struct sk_buff *skb, const struct tc_action *a,
 				}
 				d = skb_header_pointer(skb, hoffset + tkey->at,
 						       sizeof(_d), &_d);
+=======
+				if (!offset_valid(skb, off + tkey->at)) {
+					pr_info("tc filter pedit 'at' offset %d out of bounds\n",
+						off + tkey->at);
+					goto bad;
+				}
+				d = skb_header_pointer(skb, off + tkey->at, 1,
+						       &_d);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				if (!d)
 					goto bad;
 				offset += (*d & tkey->offmask) >> tkey->shift;
 			}
 
 			if (offset % 4) {
+<<<<<<< HEAD
 				pr_info("tc action pedit offset must be on 32 bit boundaries\n");
+=======
+				pr_info("tc filter pedit"
+					" offset must be on 32 bit boundaries\n");
+				goto bad;
+			}
+
+			if (!offset_valid(skb, off + offset)) {
+				pr_info("tc filter pedit offset %d out of bounds\n",
+					offset);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				goto bad;
 			}
 

@@ -124,7 +124,11 @@ struct zswap_pool {
 	struct kref kref;
 	struct list_head list;
 	struct work_struct work;
+<<<<<<< HEAD
 	struct hlist_node node;
+=======
+	struct notifier_block notifier;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	char tfm_name[CRYPTO_MAX_ALG_NAME];
 };
 
@@ -189,9 +193,12 @@ static bool zswap_init_started;
 /* fatal error during init */
 static bool zswap_init_failed;
 
+<<<<<<< HEAD
 /* init completed, but couldn't create the initial pool */
 static bool zswap_has_pool;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*********************************
 * helpers and fwd declarations
 **********************************/
@@ -519,10 +526,13 @@ static struct zswap_pool *zswap_pool_create(char *type, char *compressor)
 			return NULL;
 	}
 
+<<<<<<< HEAD
 	pool = kzalloc(sizeof(*pool), GFP_KERNEL);
 	if (!pool)
 		return NULL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* unique name for each pool specifically required by zsmalloc */
 	snprintf(name, 38, "zswap%x", atomic_inc_return(&zswap_pools_count));
 
@@ -777,10 +787,13 @@ static int zswap_enabled_param_set(const char *val,
 		pr_err("can't enable, initialization failed\n");
 		return -ENODEV;
 	}
+<<<<<<< HEAD
 	if (!zswap_has_pool && zswap_init_started) {
 		pr_err("can't enable, no pool configured\n");
 		return -ENODEV;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return param_set_bool(val, kp);
 }

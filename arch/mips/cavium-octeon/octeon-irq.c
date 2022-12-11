@@ -2274,8 +2274,13 @@ static int __init octeon_irq_init_cib(struct device_node *ciu_node,
 
 	parent_irq = irq_of_parse_and_map(ciu_node, 0);
 	if (!parent_irq) {
+<<<<<<< HEAD
 		pr_err("ERROR: Couldn't acquire parent_irq for %pOFn\n",
 			ciu_node);
+=======
+		pr_err("ERROR: Couldn't acquire parent_irq for %s\n",
+			ciu_node->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 
@@ -2286,7 +2291,11 @@ static int __init octeon_irq_init_cib(struct device_node *ciu_node,
 
 	addr = of_get_address(ciu_node, 0, NULL, NULL);
 	if (!addr) {
+<<<<<<< HEAD
 		pr_err("ERROR: Couldn't acquire reg(0) %pOFn\n", ciu_node);
+=======
+		pr_err("ERROR: Couldn't acquire reg(0) %s\n", ciu_node->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 	host_data->raw_reg = (u64)phys_to_virt(
@@ -2294,7 +2303,11 @@ static int __init octeon_irq_init_cib(struct device_node *ciu_node,
 
 	addr = of_get_address(ciu_node, 1, NULL, NULL);
 	if (!addr) {
+<<<<<<< HEAD
 		pr_err("ERROR: Couldn't acquire reg(1) %pOFn\n", ciu_node);
+=======
+		pr_err("ERROR: Couldn't acquire reg(1) %s\n", ciu_node->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 	host_data->en_reg = (u64)phys_to_virt(
@@ -2302,8 +2315,13 @@ static int __init octeon_irq_init_cib(struct device_node *ciu_node,
 
 	r = of_property_read_u32(ciu_node, "cavium,max-bits", &val);
 	if (r) {
+<<<<<<< HEAD
 		pr_err("ERROR: Couldn't read cavium,max-bits from %pOFn\n",
 			ciu_node);
+=======
+		pr_err("ERROR: Couldn't read cavium,max-bits from %s\n",
+			ciu_node->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return r;
 	}
 	host_data->max_bits = val;

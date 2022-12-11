@@ -107,14 +107,22 @@ out_free:
 	return size;
 }
 
+<<<<<<< HEAD
 static inline unsigned int efivarfs_getflags(struct inode *inode)
 {
+=======
+static int
+efivarfs_ioc_getxflags(struct file *file, void __user *arg)
+{
+	struct inode *inode = file->f_mapping->host;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int i_flags;
 	unsigned int flags = 0;
 
 	i_flags = inode->i_flags;
 	if (i_flags & S_IMMUTABLE)
 		flags |= FS_IMMUTABLE_FL;
+<<<<<<< HEAD
 	return flags;
 }
 
@@ -123,6 +131,8 @@ efivarfs_ioc_getxflags(struct file *file, void __user *arg)
 {
 	struct inode *inode = file->f_mapping->host;
 	unsigned int flags = efivarfs_getflags(inode);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (copy_to_user(arg, &flags, sizeof(flags)))
 		return -EFAULT;
@@ -135,7 +145,10 @@ efivarfs_ioc_setxflags(struct file *file, void __user *arg)
 	struct inode *inode = file->f_mapping->host;
 	unsigned int flags;
 	unsigned int i_flags = 0;
+<<<<<<< HEAD
 	unsigned int oldflags = efivarfs_getflags(inode);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int error;
 
 	if (!inode_owner_or_capable(inode))
@@ -147,6 +160,12 @@ efivarfs_ioc_setxflags(struct file *file, void __user *arg)
 	if (flags & ~FS_IMMUTABLE_FL)
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
+=======
+	if (!capable(CAP_LINUX_IMMUTABLE))
+		return -EPERM;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (flags & FS_IMMUTABLE_FL)
 		i_flags |= S_IMMUTABLE;
 
@@ -155,6 +174,7 @@ efivarfs_ioc_setxflags(struct file *file, void __user *arg)
 	if (error)
 		return error;
 
+<<<<<<< HEAD
 	inode_lock(inode);
 
 	error = vfs_ioc_setflags_prepare(inode, oldflags, flags);
@@ -169,6 +189,18 @@ out:
 }
 
 static long
+=======
+	mutex_lock(&inode->i_mutex);
+	inode_set_flags(inode, i_flags, S_IMMUTABLE);
+	mutex_unlock(&inode->i_mutex);
+
+	mnt_drop_write_file(file);
+
+	return 0;
+}
+
+long
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 efivarfs_file_ioctl(struct file *file, unsigned int cmd, unsigned long p)
 {
 	void __user *arg = (void __user *)p;

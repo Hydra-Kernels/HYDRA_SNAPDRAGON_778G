@@ -630,10 +630,16 @@ static const struct device_type qeth_l2_devtype = {
 	.groups = qeth_l2_attr_groups,
 };
 
+static const struct device_type qeth_l2_devtype = {
+	.name = "qeth_layer2",
+	.groups = qeth_l2_attr_groups,
+};
+
 static int qeth_l2_probe_device(struct ccwgroup_device *gdev)
 {
 	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
 	int rc;
+<<<<<<< HEAD
 
 	qeth_l2_vnicc_set_defaults(card);
 	mutex_init(&card->sbp_lock);
@@ -644,6 +650,15 @@ static int qeth_l2_probe_device(struct ccwgroup_device *gdev)
 			return rc;
 	}
 
+=======
+
+	if (gdev->dev.type == &qeth_generic_devtype) {
+		rc = qeth_l2_create_device_attributes(&gdev->dev);
+		if (rc)
+			return rc;
+	}
+	INIT_LIST_HEAD(&card->vid_list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	hash_init(card->mac_htable);
 	INIT_WORK(&card->rx_mode_work, qeth_l2_rx_mode_work);
 	return 0;
@@ -664,6 +679,13 @@ static void qeth_l2_remove_device(struct ccwgroup_device *cgdev)
 	cancel_work_sync(&card->close_dev_work);
 	if (qeth_netdev_is_registered(card->dev))
 		unregister_netdev(card->dev);
+<<<<<<< HEAD
+=======
+		free_netdev(card->dev);
+		card->dev = NULL;
+	}
+	return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void qeth_l2_set_rx_mode(struct net_device *dev)
@@ -702,16 +724,31 @@ static const struct net_device_ops qeth_osn_netdev_ops = {
 
 static int qeth_l2_setup_netdev(struct qeth_card *card, bool carrier_ok)
 {
+<<<<<<< HEAD
 	int rc;
 
 	if (IS_OSN(card)) {
 		card->dev->netdev_ops = &qeth_osn_netdev_ops;
 		card->dev->flags |= IFF_NOARP;
 		goto add_napi;
+=======
+	switch (card->info.type) {
+	case QETH_CARD_TYPE_IQD:
+		card->dev = alloc_netdev(0, "hsi%d", NET_NAME_UNKNOWN,
+					 ether_setup);
+		break;
+	case QETH_CARD_TYPE_OSN:
+		card->dev = alloc_netdev(0, "osn%d", NET_NAME_UNKNOWN,
+					 ether_setup);
+		break;
+	default:
+		card->dev = alloc_etherdev(0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	card->dev->needed_headroom = sizeof(struct qeth_hdr);
 	card->dev->netdev_ops = &qeth_l2_netdev_ops;
+<<<<<<< HEAD
 	card->dev->priv_flags |= IFF_UNICAST_FLT;
 
 	if (IS_OSM(card)) {
@@ -763,6 +800,26 @@ add_napi:
 	if (rc)
 		card->dev->netdev_ops = NULL;
 	return rc;
+=======
+	if (card->info.type == QETH_CARD_TYPE_OSN) {
+		card->dev->ethtool_ops = &qeth_l2_osn_ops;
+		card->dev->flags |= IFF_NOARP;
+	} else {
+		card->dev->ethtool_ops = &qeth_l2_ethtool_ops;
+	}
+	card->dev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+	if (card->info.type == QETH_CARD_TYPE_OSD && !card->info.guestlan) {
+		card->dev->hw_features = NETIF_F_IP_CSUM | NETIF_F_RXCSUM;
+		/* Turn on RX offloading per default */
+		card->dev->features |= NETIF_F_RXCSUM;
+	}
+	card->info.broadcast_capable = 1;
+	qeth_l2_request_initial_mac(card);
+	SET_NETDEV_DEV(card->dev, &card->gdev->dev);
+	netif_napi_add(card->dev, &card->napi, qeth_l2_poll, QETH_NAPI_WEIGHT);
+	netif_carrier_off(card->dev);
+	return register_netdev(card->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int qeth_l2_start_ipassists(struct qeth_card *card)
@@ -833,9 +890,15 @@ static int qeth_l2_set_online(struct ccwgroup_device *gdev)
 	/* softsetup */
 	QETH_CARD_TEXT(card, 2, "softsetp");
 
+<<<<<<< HEAD
 	if (IS_OSD(card) || IS_OSX(card)) {
 		rc = qeth_l2_start_ipassists(card);
 		if (rc)
+=======
+	if ((card->info.type == QETH_CARD_TYPE_OSD) ||
+	    (card->info.type == QETH_CARD_TYPE_OSX)) {
+		if (qeth_l2_start_ipassists(card))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out_remove;
 	}
 
@@ -992,7 +1055,13 @@ static int qeth_l2_control_event(struct qeth_card *card,
 
 struct qeth_discipline qeth_l2_discipline = {
 	.devtype = &qeth_l2_devtype,
+<<<<<<< HEAD
 	.process_rx_buffer = qeth_l2_process_inbound_buffer,
+=======
+	.start_poll = qeth_qdio_start_poll,
+	.input_handler = (qdio_handler_t *) qeth_qdio_input_handler,
+	.output_handler = (qdio_handler_t *) qeth_qdio_output_handler,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.recover = qeth_l2_recover,
 	.setup = qeth_l2_probe_device,
 	.remove = qeth_l2_remove_device,

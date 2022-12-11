@@ -2047,12 +2047,21 @@ static void mb86a20s_release(struct dvb_frontend *fe)
 	kfree(state);
 }
 
+<<<<<<< HEAD
 static enum dvbfe_algo mb86a20s_get_frontend_algo(struct dvb_frontend *fe)
 {
 	return DVBFE_ALGO_HW;
 }
 
 static const struct dvb_frontend_ops mb86a20s_ops;
+=======
+static int mb86a20s_get_frontend_algo(struct dvb_frontend *fe)
+{
+        return DVBFE_ALGO_HW;
+}
+
+static struct dvb_frontend_ops mb86a20s_ops;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct dvb_frontend *mb86a20s_attach(const struct mb86a20s_config *config,
 				    struct i2c_adapter *i2c)

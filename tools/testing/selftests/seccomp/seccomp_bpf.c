@@ -1951,7 +1951,47 @@ TEST_F(TRACE_syscall, syscall_faked)
 	EXPECT_SYSCALL_RETURN(45000, syscall(__NR_gettid));
 }
 
+<<<<<<< HEAD
 TEST_F(TRACE_syscall, skip_after_RET_TRACE)
+=======
+#ifndef __NR_seccomp
+# if defined(__i386__)
+#  define __NR_seccomp 354
+# elif defined(__x86_64__)
+#  define __NR_seccomp 317
+# elif defined(__arm__)
+#  define __NR_seccomp 383
+# elif defined(__aarch64__)
+#  define __NR_seccomp 277
+# elif defined(__powerpc__)
+#  define __NR_seccomp 358
+# elif defined(__s390__)
+#  define __NR_seccomp 348
+# else
+#  warning "seccomp syscall number unknown for this architecture"
+#  define __NR_seccomp 0xffff
+# endif
+#endif
+
+#ifndef SECCOMP_SET_MODE_STRICT
+#define SECCOMP_SET_MODE_STRICT 0
+#endif
+
+#ifndef SECCOMP_SET_MODE_FILTER
+#define SECCOMP_SET_MODE_FILTER 1
+#endif
+
+#ifndef SECCOMP_FILTER_FLAG_TSYNC
+#define SECCOMP_FILTER_FLAG_TSYNC (1UL << 0)
+#endif
+
+#ifndef SECCOMP_FILTER_FLAG_SPEC_ALLOW
+#define SECCOMP_FILTER_FLAG_SPEC_ALLOW (1UL << 2)
+#endif
+
+#ifndef seccomp
+int seccomp(unsigned int op, unsigned int flags, void *args)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct sock_filter filter[] = {
 		BPF_STMT(BPF_LD|BPF_W|BPF_ABS,
@@ -1979,6 +2019,7 @@ TEST_F(TRACE_syscall, skip_after_RET_TRACE)
 
 	/* Tracer will redirect getpid to getppid, and we should see EPERM. */
 	errno = 0;
+<<<<<<< HEAD
 	EXPECT_EQ(-1, syscall(__NR_getpid));
 	EXPECT_EQ(EPERM, errno);
 }
@@ -2074,6 +2115,9 @@ TEST_F_SIGNAL(TRACE_syscall, kill_after_ptrace, SIGSYS)
 
 	/* Tracer will redirect getpid to getppid, and we should die. */
 	EXPECT_NE(self->mypid, syscall(__NR_getpid));
+=======
+	return syscall(__NR_seccomp, op, flags, args);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 TEST(seccomp_syscall)
@@ -2174,6 +2218,7 @@ TEST(seccomp_syscall_mode_lock)
 TEST(detect_seccomp_filter_flags)
 {
 	unsigned int flags[] = { SECCOMP_FILTER_FLAG_TSYNC,
+<<<<<<< HEAD
 				 SECCOMP_FILTER_FLAG_LOG,
 				 SECCOMP_FILTER_FLAG_SPEC_ALLOW,
 				 SECCOMP_FILTER_FLAG_NEW_LISTENER };
@@ -2185,6 +2230,14 @@ TEST(detect_seccomp_filter_flags)
 	long ret;
 
 	/* Test detection of individual known-good filter flags */
+=======
+				 SECCOMP_FILTER_FLAG_SPEC_ALLOW };
+	unsigned int flag, all_flags;
+	int i;
+	long ret;
+
+	/* Test detection of known-good filter flags */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for (i = 0, all_flags = 0; i < ARRAY_SIZE(flags); i++) {
 		int bits = 0;
 
@@ -2211,6 +2264,7 @@ TEST(detect_seccomp_filter_flags)
 		all_flags |= flag;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Test detection of all known-good filter flags combined. But
 	 * for the exclusive flags we need to mask them out and try them
@@ -2234,6 +2288,18 @@ TEST(detect_seccomp_filter_flags)
 	/* Test detection of an unknown filter flags, without exclusives. */
 	flag = -1;
 	flag &= ~exclusive_mask;
+=======
+	/* Test detection of all known-good filter flags */
+	ret = seccomp(SECCOMP_SET_MODE_FILTER, all_flags, NULL);
+	EXPECT_EQ(-1, ret);
+	EXPECT_EQ(EFAULT, errno) {
+		TH_LOG("Failed to detect that all known-good filter flags (0x%X) are supported!",
+		       all_flags);
+	}
+
+	/* Test detection of an unknown filter flag */
+	flag = -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = seccomp(SECCOMP_SET_MODE_FILTER, flag, NULL);
 	EXPECT_EQ(-1, ret);
 	EXPECT_EQ(EINVAL, errno) {

@@ -1517,8 +1517,12 @@ struct sk_buff *inet_gro_receive(struct list_head *head, struct sk_buff *skb)
 	skb_gro_pull(skb, sizeof(*iph));
 	skb_set_transport_header(skb, skb_gro_offset(skb));
 
+<<<<<<< HEAD
 	pp = indirect_call_gro_receive(tcp4_gro_receive, udp4_gro_receive,
 				       ops->callbacks.gro_receive, head, skb);
+=======
+	pp = call_gro_receive(ops->callbacks.gro_receive, head, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_unlock:
 	rcu_read_unlock();
@@ -1568,6 +1572,19 @@ __be32 inet_current_timestamp(void)
 	return htonl(msecs);
 }
 EXPORT_SYMBOL(inet_current_timestamp);
+
+static struct sk_buff **ipip_gro_receive(struct sk_buff **head,
+					 struct sk_buff *skb)
+{
+	if (NAPI_GRO_CB(skb)->encap_mark) {
+		NAPI_GRO_CB(skb)->flush = 1;
+		return NULL;
+	}
+
+	NAPI_GRO_CB(skb)->encap_mark = 1;
+
+	return inet_gro_receive(head, skb);
+}
 
 int inet_recv_error(struct sock *sk, struct msghdr *msg, int len, int *addr_len)
 {
@@ -1622,6 +1639,13 @@ static int ipip_gro_complete(struct sk_buff *skb, int nhoff)
 {
 	skb->encapsulation = 1;
 	skb_shinfo(skb)->gso_type |= SKB_GSO_IPXIP4;
+	return inet_gro_complete(skb, nhoff);
+}
+
+static int ipip_gro_complete(struct sk_buff *skb, int nhoff)
+{
+	skb->encapsulation = 1;
+	skb_shinfo(skb)->gso_type |= SKB_GSO_IPIP;
 	return inet_gro_complete(skb, nhoff);
 }
 
@@ -1875,7 +1899,11 @@ static struct packet_offload ip_packet_offload __read_mostly = {
 
 static const struct net_offload ipip_offload = {
 	.callbacks = {
+<<<<<<< HEAD
 		.gso_segment	= ipip_gso_segment,
+=======
+		.gso_segment	= inet_gso_segment,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.gro_receive	= ipip_gro_receive,
 		.gro_complete	= ipip_gro_complete,
 	},

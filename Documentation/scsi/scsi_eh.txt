@@ -249,6 +249,10 @@ scmd->allowed.
 
  3. scmd recovered
     ACTION: scsi_eh_finish_cmd() is invoked to EH-finish scmd
+<<<<<<< HEAD
+=======
+	- clear scmd->eh_eflags
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	- scsi_setup_cmd_retry()
 	- move from local eh_work_q to local eh_done_q
     LOCKING: none

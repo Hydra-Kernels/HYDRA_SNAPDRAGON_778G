@@ -158,7 +158,11 @@ enum cpuid_regs_idx {
 extern struct cpuinfo_x86	boot_cpu_data;
 extern struct cpuinfo_x86	new_cpu_data;
 
+<<<<<<< HEAD
 extern struct x86_hw_tss	doublefault_tss;
+=======
+extern struct tss_struct	doublefault_tss;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
@@ -176,9 +180,15 @@ extern const struct seq_operations cpuinfo_op;
 
 extern void cpu_detect(struct cpuinfo_x86 *c);
 
+<<<<<<< HEAD
 static inline unsigned long long l1tf_pfn_limit(void)
 {
 	return BIT_ULL(boot_cpu_data.x86_cache_bits - 1 - PAGE_SHIFT);
+=======
+static inline unsigned long l1tf_pfn_limit(void)
+{
+	return BIT(boot_cpu_data.x86_phys_bits - 1 - PAGE_SHIFT) - 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 extern void early_cpu_init(void);
@@ -371,12 +381,16 @@ DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
 #define __KERNEL_TSS_LIMIT	\
 	(IO_BITMAP_OFFSET + IO_BITMAP_BYTES + sizeof(unsigned long) - 1)
 
+<<<<<<< HEAD
 /* Per CPU interrupt stacks */
 struct irq_stack {
 	char		stack[IRQ_STACK_SIZE];
 } __aligned(IRQ_STACK_SIZE);
 
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
+=======
+DECLARE_PER_CPU_SHARED_ALIGNED_USER_MAPPED(struct tss_struct, cpu_tss);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_X86_32
 DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
@@ -652,6 +666,12 @@ static inline unsigned int cpuid_edx(unsigned int op)
  */
 static inline void sync_core(void)
 {
+<<<<<<< HEAD
+=======
+	int tmp;
+
+#ifdef CONFIG_X86_32
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * There are quite a few ways to do this.  IRET-to-self is nice
 	 * because it works on every CPU, at any CPL (so it's compatible

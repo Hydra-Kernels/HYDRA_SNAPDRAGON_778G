@@ -14,6 +14,7 @@
 #define BITOFF_CAL(size, off)	(off * BITS_PER_BYTE)
 #endif
 
+<<<<<<< HEAD
 #define XCHG_GEN(type, sfx, cl)				\
 static inline u32 __xchg_##type##sfx(volatile void *p, u32 val)	\
 {								\
@@ -38,6 +39,18 @@ static inline u32 __xchg_##type##sfx(volatile void *p, u32 val)	\
 								\
 	return prev >> bitoff;					\
 }
+=======
+	__asm__ __volatile__(
+	PPC_ATOMIC_ENTRY_BARRIER
+"1:	lwarx	%0,0,%2 \n"
+	PPC405_ERR77(0,%2)
+"	stwcx.	%3,0,%2 \n\
+	bne-	1b"
+	PPC_ATOMIC_EXIT_BARRIER
+	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
+	: "r" (p), "r" (val)
+	: "cc", "memory");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define CMPXCHG_GEN(type, sfx, br, br2, cl)			\
 static inline							\
@@ -108,11 +121,21 @@ __xchg_u32_relaxed(u32 *p, unsigned long val)
 	unsigned long prev;
 
 	__asm__ __volatile__(
+<<<<<<< HEAD
 "1:	lwarx	%0,0,%2\n"
 	PPC405_ERR77(0, %2)
 "	stwcx.	%3,0,%2\n"
 "	bne-	1b"
 	: "=&r" (prev), "+m" (*p)
+=======
+	PPC_ATOMIC_ENTRY_BARRIER
+"1:	ldarx	%0,0,%2 \n"
+	PPC405_ERR77(0,%2)
+"	stdcx.	%3,0,%2 \n\
+	bne-	1b"
+	PPC_ATOMIC_EXIT_BARRIER
+	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	: "r" (p), "r" (val)
 	: "cc");
 

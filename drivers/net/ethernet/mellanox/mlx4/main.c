@@ -936,10 +936,18 @@ static int mlx4_slave_cap(struct mlx4_dev *dev)
 		goto free_mem;
 	}
 
+<<<<<<< HEAD
 	dev->caps.hca_core_clock = hca_param->hca_core_clock;
 
 	dev->caps.max_qp_dest_rdma = 1 << hca_param->log_rd_per_qp;
 	err = mlx4_dev_cap(dev, dev_cap);
+=======
+	dev->caps.hca_core_clock = hca_param.hca_core_clock;
+
+	memset(&dev_cap, 0, sizeof(dev_cap));
+	dev->caps.max_qp_dest_rdma = 1 << hca_param.log_rd_per_qp;
+	err = mlx4_dev_cap(dev, &dev_cap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err) {
 		mlx4_err(dev, "QUERY_DEV_CAP command failed, aborting\n");
 		goto free_mem;
@@ -4131,8 +4139,11 @@ static void mlx4_remove_one(struct pci_dev *pdev)
 	struct devlink *devlink = priv_to_devlink(priv);
 	int active_vfs = 0;
 
+<<<<<<< HEAD
 	devlink_reload_disable(devlink);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (mlx4_is_slave(dev))
 		persist->interface_state |= MLX4_INTERFACE_STATE_NOWAIT;
 

@@ -1845,6 +1845,42 @@ static int check_slave_present(struct hda_codec *codec,
 	return 1;
 }
 
+<<<<<<< HEAD
+=======
+/* guess the value corresponding to 0dB */
+static int get_kctl_0dB_offset(struct hda_codec *codec,
+			       struct snd_kcontrol *kctl, int *step_to_check)
+{
+	int _tlv[4];
+	const int *tlv = NULL;
+	int val = -1;
+
+	if (kctl->vd[0].access & SNDRV_CTL_ELEM_ACCESS_TLV_CALLBACK) {
+		/* FIXME: set_fs() hack for obtaining user-space TLV data */
+		mm_segment_t fs = get_fs();
+		set_fs(get_ds());
+		if (!kctl->tlv.c(kctl, 0, sizeof(_tlv), _tlv))
+			tlv = _tlv;
+		set_fs(fs);
+	} else if (kctl->vd[0].access & SNDRV_CTL_ELEM_ACCESS_TLV_READ)
+		tlv = kctl->tlv.p;
+	if (tlv && tlv[0] == SNDRV_CTL_TLVT_DB_SCALE) {
+		int step = tlv[3];
+		step &= ~TLV_DB_SCALE_MUTE;
+		if (!step)
+			return -1;
+		if (*step_to_check && *step_to_check != step) {
+			codec_err(codec, "Mismatching dB step for vmaster slave (%d!=%d)\n",
+				   *step_to_check, step);
+			return -1;
+		}
+		*step_to_check = step;
+		val = -tlv[2] / step;
+	}
+	return val;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* call kctl->put with the given value(s) */
 static int put_kctl_with_value(struct snd_kcontrol *kctl, int val)
 {

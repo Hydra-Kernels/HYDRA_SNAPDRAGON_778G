@@ -740,6 +740,13 @@ static bool proc_sys_link_fill_cache(struct file *file,
 				    struct ctl_table *table)
 {
 	bool ret = true;
+<<<<<<< HEAD
+=======
+
+	head = sysctl_head_grab(head);
+	if (IS_ERR(head))
+		return false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	head = sysctl_head_grab(head);
 	if (IS_ERR(head))

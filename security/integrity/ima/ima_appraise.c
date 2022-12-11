@@ -324,7 +324,11 @@ int ima_appraise_measurement(enum ima_hooks func,
 			     int xattr_len, const struct modsig *modsig)
 {
 	static const char op[] = "appraise_data";
+<<<<<<< HEAD
 	const char *cause = "unknown";
+=======
+	char *cause = "unknown";
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct dentry *dentry = file_dentry(file);
 	struct inode *inode = d_backing_inode(dentry);
 	enum integrity_status status = INTEGRITY_UNKNOWN;
@@ -343,7 +347,11 @@ int ima_appraise_measurement(enum ima_hooks func,
 		cause = iint->flags & IMA_DIGSIG_REQUIRED ?
 				"IMA-signature-required" : "missing-hash";
 		status = INTEGRITY_NOLABEL;
+<<<<<<< HEAD
 		if (file->f_mode & FMODE_CREATED)
+=======
+		if (opened & FILE_CREATED)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			iint->flags |= IMA_NEW_FILE;
 		if ((iint->flags & IMA_NEW_FILE) &&
 		    (!(iint->flags & IMA_DIGSIG_REQUIRED) ||
@@ -437,11 +445,18 @@ void ima_update_xattr(struct integrity_iint_cache *iint, struct file *file)
 	if (test_bit(IMA_DIGSIG, &iint->atomic_flags))
 		return;
 
+<<<<<<< HEAD
 	if ((iint->ima_file_status != INTEGRITY_PASS) &&
 	    !(iint->flags & IMA_HASH))
 		return;
 
 	rc = ima_collect_measurement(iint, file, NULL, 0, ima_hash_algo, NULL);
+=======
+	if (iint->ima_file_status != INTEGRITY_PASS)
+		return;
+
+	rc = ima_collect_measurement(iint, file, NULL, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (rc < 0)
 		return;
 
@@ -526,7 +541,11 @@ int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
 		if (!xattr_value_len || (xvalue->type >= IMA_XATTR_LAST))
 			return -EINVAL;
 		ima_reset_appraise_flags(d_backing_inode(dentry),
+<<<<<<< HEAD
 			xvalue->type == EVM_IMA_XATTR_DIGSIG);
+=======
+			 (xvalue->type == EVM_IMA_XATTR_DIGSIG) ? 1 : 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		result = 0;
 	}
 	return result;

@@ -33,8 +33,115 @@
 #include <drm/drm_syncobj.h>
 #include "amdgpu.h"
 #include "amdgpu_trace.h"
+<<<<<<< HEAD
 #include "amdgpu_gmc.h"
 #include "amdgpu_gem.h"
+=======
+
+#define AMDGPU_CS_MAX_PRIORITY		32u
+#define AMDGPU_CS_NUM_BUCKETS		(AMDGPU_CS_MAX_PRIORITY + 1)
+
+/* This is based on the bucket sort with O(n) time complexity.
+ * An item with priority "i" is added to bucket[i]. The lists are then
+ * concatenated in descending order.
+ */
+struct amdgpu_cs_buckets {
+	struct list_head bucket[AMDGPU_CS_NUM_BUCKETS];
+};
+
+static void amdgpu_cs_buckets_init(struct amdgpu_cs_buckets *b)
+{
+	unsigned i;
+
+	for (i = 0; i < AMDGPU_CS_NUM_BUCKETS; i++)
+		INIT_LIST_HEAD(&b->bucket[i]);
+}
+
+static void amdgpu_cs_buckets_add(struct amdgpu_cs_buckets *b,
+				  struct list_head *item, unsigned priority)
+{
+	/* Since buffers which appear sooner in the relocation list are
+	 * likely to be used more often than buffers which appear later
+	 * in the list, the sort mustn't change the ordering of buffers
+	 * with the same priority, i.e. it must be stable.
+	 */
+	list_add_tail(item, &b->bucket[min(priority, AMDGPU_CS_MAX_PRIORITY)]);
+}
+
+static void amdgpu_cs_buckets_get_list(struct amdgpu_cs_buckets *b,
+				       struct list_head *out_list)
+{
+	unsigned i;
+
+	/* Connect the sorted buckets in the output list. */
+	for (i = 0; i < AMDGPU_CS_NUM_BUCKETS; i++) {
+		list_splice(&b->bucket[i], out_list);
+	}
+}
+
+int amdgpu_cs_get_ring(struct amdgpu_device *adev, u32 ip_type,
+		       u32 ip_instance, u32 ring,
+		       struct amdgpu_ring **out_ring)
+{
+	/* Right now all IPs have only one instance - multiple rings. */
+	if (ip_instance != 0) {
+		DRM_ERROR("invalid ip instance: %d\n", ip_instance);
+		return -EINVAL;
+	}
+
+	switch (ip_type) {
+	default:
+		DRM_ERROR("unknown ip type: %d\n", ip_type);
+		return -EINVAL;
+	case AMDGPU_HW_IP_GFX:
+		if (ring < adev->gfx.num_gfx_rings) {
+			*out_ring = &adev->gfx.gfx_ring[ring];
+		} else {
+			DRM_ERROR("only %d gfx rings are supported now\n",
+				  adev->gfx.num_gfx_rings);
+			return -EINVAL;
+		}
+		break;
+	case AMDGPU_HW_IP_COMPUTE:
+		if (ring < adev->gfx.num_compute_rings) {
+			*out_ring = &adev->gfx.compute_ring[ring];
+		} else {
+			DRM_ERROR("only %d compute rings are supported now\n",
+				  adev->gfx.num_compute_rings);
+			return -EINVAL;
+		}
+		break;
+	case AMDGPU_HW_IP_DMA:
+		if (ring < adev->sdma.num_instances) {
+			*out_ring = &adev->sdma.instance[ring].ring;
+		} else {
+			DRM_ERROR("only %d SDMA rings are supported\n",
+				  adev->sdma.num_instances);
+			return -EINVAL;
+		}
+		break;
+	case AMDGPU_HW_IP_UVD:
+		*out_ring = &adev->uvd.ring;
+		break;
+	case AMDGPU_HW_IP_VCE:
+		if (ring < 2){
+			*out_ring = &adev->vce.ring[ring];
+		} else {
+			DRM_ERROR("only two VCE rings are supported\n");
+			return -EINVAL;
+		}
+		break;
+	}
+
+	if (!(*out_ring && (*out_ring)->adev)) {
+		DRM_ERROR("Ring %d is not initialized on IP %d\n",
+			  ring, ip_type);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int amdgpu_cs_user_fence_chunk(struct amdgpu_cs_parser *p,
 				      struct drm_amdgpu_cs_chunk_fence *data,

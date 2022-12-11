@@ -103,6 +103,7 @@ int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 	iph->tot_len = htons(skb->len);
 	ip_send_check(iph);
 
+<<<<<<< HEAD
 	/* if egress device is enslaved to an L3 master device pass the
 	 * skb to its handler for processing
 	 */
@@ -110,6 +111,8 @@ int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 	if (unlikely(!skb))
 		return 0;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb->protocol = htons(ETH_P_IP);
 
 	return nf_hook(NFPROTO_IPV4, NF_INET_LOCAL_OUT,
@@ -554,6 +557,12 @@ static void ip_copy_metadata(struct sk_buff *to, struct sk_buff *from)
 	to->mark = from->mark;
 
 	skb_copy_hash(to, from);
+<<<<<<< HEAD
+=======
+
+	/* Copy the flags to each fragment. */
+	IPCB(to)->flags = IPCB(from)->flags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_NET_SCHED
 	to->tc_index = from->tc_index;
@@ -1012,6 +1021,7 @@ static int __ip_append_data(struct sock *sk,
 	    (!exthdrlen || (rt->dst.dev->features & NETIF_F_HW_ESP_TX_CSUM)))
 		csummode = CHECKSUM_PARTIAL;
 
+<<<<<<< HEAD
 	if (flags & MSG_ZEROCOPY && length && sock_flag(sk, SOCK_ZEROCOPY)) {
 		uarg = sock_zerocopy_realloc(sk, length, skb_zcopy(skb));
 		if (!uarg)
@@ -1024,6 +1034,21 @@ static int __ip_append_data(struct sock *sk,
 			uarg->zerocopy = 0;
 			skb_zcopy_set(skb, uarg, &extra_uref);
 		}
+=======
+	cork->length += length;
+	if ((skb && skb_is_gso(skb)) ||
+	    (((length + (skb ? skb->len : fragheaderlen)) > mtu) &&
+	    (skb_queue_len(queue) <= 1) &&
+	    (sk->sk_protocol == IPPROTO_UDP) &&
+	    (rt->dst.dev->features & NETIF_F_UFO) && !rt->dst.header_len &&
+	    (sk->sk_type == SOCK_DGRAM) && !sk->sk_no_check_tx)) {
+		err = ip_ufo_append_data(sk, queue, getfrag, from, length,
+					 hh_len, fragheaderlen, transhdrlen,
+					 maxfraglen, flags);
+		if (err)
+			goto error;
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	cork->length += length;
@@ -1372,6 +1397,19 @@ ssize_t	ip_append_page(struct sock *sk, struct flowi4 *fl4, struct page *page,
 	if (!skb)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if ((size + skb->len > mtu) &&
+	    (skb_queue_len(&sk->sk_write_queue) == 1) &&
+	    (sk->sk_protocol == IPPROTO_UDP) &&
+	    (rt->dst.dev->features & NETIF_F_UFO)) {
+		if (skb->ip_summed != CHECKSUM_PARTIAL)
+			return -EOPNOTSUPP;
+
+		skb_shinfo(skb)->gso_size = mtu - fragheaderlen;
+		skb_shinfo(skb)->gso_type = SKB_GSO_UDP;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cork->length += size;
 
 	while (size > 0) {

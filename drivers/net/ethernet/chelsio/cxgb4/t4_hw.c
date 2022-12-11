@@ -7173,10 +7173,17 @@ int t4_fw_upgrade(struct adapter *adap, unsigned int mbox,
 	if (!t4_fw_matches_chip(adap, fw_hdr))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	/* Disable CXGB4_FW_OK flag so that mbox commands with CXGB4_FW_OK flag
 	 * set wont be sent when we are flashing FW.
 	 */
 	adap->flags &= ~CXGB4_FW_OK;
+=======
+	/* Disable FW_OK flag so that mbox commands with FW_OK flag set
+	 * wont be sent when we are flashing FW.
+	 */
+	adap->flags &= ~FW_OK;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = t4_fw_halt(adap, mbox, force);
 	if (ret < 0 && !force)
@@ -7185,6 +7192,7 @@ int t4_fw_upgrade(struct adapter *adap, unsigned int mbox,
 	ret = t4_load_fw(adap, fw_data, size);
 	if (ret < 0)
 		goto out;
+<<<<<<< HEAD
 
 	/*
 	 * If there was a Firmware Configuration File stored in FLASH,
@@ -7196,6 +7204,8 @@ int t4_fw_upgrade(struct adapter *adap, unsigned int mbox,
 	 * Firmware if that's desired.
 	 */
 	(void)t4_load_cfg(adap, NULL, 0);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Older versions of the firmware don't understand the new
@@ -7215,6 +7225,7 @@ int t4_fw_upgrade(struct adapter *adap, unsigned int mbox,
 	 */
 	(void)t4_init_devlog_params(adap);
 out:
+<<<<<<< HEAD
 	adap->flags |= CXGB4_FW_OK;
 	return ret;
 }
@@ -7270,6 +7281,10 @@ int t4_fl_pkt_align(struct adapter *adap)
 		fl_align = max(ingpadboundary, ingpackboundary);
 	}
 	return fl_align;
+=======
+	adap->flags |= FW_OK;
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

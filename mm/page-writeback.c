@@ -2620,16 +2620,27 @@ void __cancel_dirty_page(struct page *page)
 	if (mapping_cap_account_dirty(mapping)) {
 		struct inode *inode = mapping->host;
 		struct bdi_writeback *wb;
+<<<<<<< HEAD
 		struct wb_lock_cookie cookie = {};
 
 		lock_page_memcg(page);
+=======
+		struct mem_cgroup *memcg;
+		struct wb_lock_cookie cookie = {};
+
+		memcg = mem_cgroup_begin_page_stat(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wb = unlocked_inode_to_wb_begin(inode, &cookie);
 
 		if (TestClearPageDirty(page))
 			account_page_cleaned(page, mapping, wb);
 
 		unlocked_inode_to_wb_end(inode, &cookie);
+<<<<<<< HEAD
 		unlock_page_memcg(page);
+=======
+		mem_cgroup_end_page_stat(memcg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		ClearPageDirty(page);
 	}
@@ -2660,6 +2671,10 @@ int clear_page_dirty_for_io(struct page *page)
 	if (mapping && mapping_cap_account_dirty(mapping)) {
 		struct inode *inode = mapping->host;
 		struct bdi_writeback *wb;
+<<<<<<< HEAD
+=======
+		struct mem_cgroup *memcg;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct wb_lock_cookie cookie = {};
 
 		/*
@@ -2697,6 +2712,10 @@ int clear_page_dirty_for_io(struct page *page)
 		 * always locked coming in here, so we get the desired
 		 * exclusion.
 		 */
+<<<<<<< HEAD
+=======
+		memcg = mem_cgroup_begin_page_stat(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wb = unlocked_inode_to_wb_begin(inode, &cookie);
 		if (TestClearPageDirty(page)) {
 			dec_lruvec_page_state(page, NR_FILE_DIRTY);
@@ -2705,6 +2724,10 @@ int clear_page_dirty_for_io(struct page *page)
 			ret = 1;
 		}
 		unlocked_inode_to_wb_end(inode, &cookie);
+<<<<<<< HEAD
+=======
+		mem_cgroup_end_page_stat(memcg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return ret;
 	}
 	return TestClearPageDirty(page);

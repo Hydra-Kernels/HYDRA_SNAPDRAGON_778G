@@ -351,7 +351,81 @@ void fixup_irqs(void)
 	struct irq_data *data;
 	struct irq_chip *chip;
 
+<<<<<<< HEAD
 	irq_migrate_all_off_this_cpu();
+=======
+	for_each_irq_desc(irq, desc) {
+		int break_affinity = 0;
+		int set_affinity = 1;
+		const struct cpumask *affinity;
+
+		if (!desc)
+			continue;
+		if (irq == 2)
+			continue;
+
+		/* interrupt's are disabled at this point */
+		raw_spin_lock(&desc->lock);
+
+		data = irq_desc_get_irq_data(desc);
+		affinity = irq_data_get_affinity_mask(data);
+		if (!irq_has_action(irq) || irqd_is_per_cpu(data) ||
+		    cpumask_subset(affinity, cpu_online_mask)) {
+			raw_spin_unlock(&desc->lock);
+			continue;
+		}
+
+		/*
+		 * Complete the irq move. This cpu is going down and for
+		 * non intr-remapping case, we can't wait till this interrupt
+		 * arrives at this cpu before completing the irq move.
+		 */
+		irq_force_complete_move(desc);
+
+		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
+			break_affinity = 1;
+			affinity = cpu_online_mask;
+		}
+
+		chip = irq_data_get_irq_chip(data);
+		/*
+		 * The interrupt descriptor might have been cleaned up
+		 * already, but it is not yet removed from the radix tree
+		 */
+		if (!chip) {
+			raw_spin_unlock(&desc->lock);
+			continue;
+		}
+
+		if (!irqd_can_move_in_process_context(data) && chip->irq_mask)
+			chip->irq_mask(data);
+
+		if (chip->irq_set_affinity) {
+			ret = chip->irq_set_affinity(data, affinity, true);
+			if (ret == -ENOSPC)
+				pr_crit("IRQ %d set affinity failed because there are no available vectors.  The device assigned to this IRQ is unstable.\n", irq);
+		} else {
+			if (!(warned++))
+				set_affinity = 0;
+		}
+
+		/*
+		 * We unmask if the irq was not marked masked by the
+		 * core code. That respects the lazy irq disable
+		 * behaviour.
+		 */
+		if (!irqd_can_move_in_process_context(data) &&
+		    !irqd_irq_masked(data) && chip->irq_unmask)
+			chip->irq_unmask(data);
+
+		raw_spin_unlock(&desc->lock);
+
+		if (break_affinity && set_affinity)
+			pr_notice("Broke affinity for irq %i\n", irq);
+		else if (!set_affinity)
+			pr_notice("Cannot set affinity for irq %i\n", irq);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We can remove mdelay() and then send spuriuous interrupts to

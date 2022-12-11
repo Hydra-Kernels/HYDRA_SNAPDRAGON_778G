@@ -6,6 +6,11 @@
 #include <linux/module.h>
 #include <linux/libgcc.h>
 
+<<<<<<< HEAD:lib/lshrdi3.c
+=======
+#include "libgcc.h"
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/mips/lib/lshrdi3.c
 long long notrace __lshrdi3(long long u, word_type b)
 {
 	DWunion uu, w;

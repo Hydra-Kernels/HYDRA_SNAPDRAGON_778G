@@ -422,6 +422,13 @@ void __init parisc_setup_cache_timing(void)
 		threshold /= num_online_cpus();
 		goto set_tlb_threshold;
 	}
+<<<<<<< HEAD
+=======
+
+	alltime = mfctl(16);
+	flush_tlb_all();
+	alltime = mfctl(16) - alltime;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	size = 0;
 	start = (unsigned long) _text;
@@ -440,12 +447,19 @@ void __init parisc_setup_cache_timing(void)
 	printk(KERN_INFO "Whole TLB flush %lu cycles, Range flush %lu bytes %lu cycles\n",
 		alltime, size, rangetime);
 
+<<<<<<< HEAD
 	threshold = PAGE_ALIGN((num_online_cpus() * size * alltime) / rangetime);
 	printk(KERN_INFO "Calculated TLB flush threshold %lu KiB\n",
 		threshold/1024);
 
 set_tlb_threshold:
 	if (threshold > parisc_tlb_flush_threshold)
+=======
+	threshold = PAGE_ALIGN(num_online_cpus() * size * alltime / rangetime);
+
+set_tlb_threshold:
+	if (threshold)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		parisc_tlb_flush_threshold = threshold;
 	printk(KERN_INFO "TLB flush threshold set to %lu KiB\n",
 		parisc_tlb_flush_threshold/1024);

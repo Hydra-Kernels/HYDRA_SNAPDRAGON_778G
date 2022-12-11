@@ -26,8 +26,13 @@ SECTIONS
 #undef __VVAR_KERNEL_LDS
 #undef EMIT_VVAR
 
+<<<<<<< HEAD
 	pvclock_page = vvar_start + PAGE_SIZE;
 	hvclock_page = vvar_start + 2 * PAGE_SIZE;
+=======
+	hpet_page = vvar_start + PAGE_SIZE;
+	pvclock_page = vvar_start + 2 * PAGE_SIZE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	. = SIZEOF_HEADERS;
 

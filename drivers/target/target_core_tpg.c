@@ -163,7 +163,11 @@ target_set_nacl_queue_depth(struct se_portal_group *tpg,
 
 	if (!acl->queue_depth) {
 		pr_warn("Queue depth for %s Initiator Node: %s is 0,"
+<<<<<<< HEAD
 			"defaulting to 1.\n", tpg->se_tpg_tfo->fabric_name,
+=======
+			"defaulting to 1.\n", tpg->se_tpg_tfo->get_fabric_name(),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			acl->initiatorname);
 		acl->queue_depth = 1;
 	}
@@ -351,11 +355,40 @@ void core_tpg_del_initiator_node_acl(struct se_node_acl *acl)
 	mutex_lock(&tpg->acl_node_mutex);
 	if (acl->dynamic_node_acl)
 		acl->dynamic_node_acl = 0;
+<<<<<<< HEAD
 	list_del_init(&acl->acl_list);
+=======
+	}
+	list_del_init(&acl->acl_list);
+	tpg->num_node_acls--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&tpg->acl_node_mutex);
 
 	target_shutdown_sessions(acl);
 
+<<<<<<< HEAD
+=======
+	list_for_each_entry_safe(sess, sess_tmp, &acl->acl_sess_list,
+				sess_acl_list) {
+		if (sess->sess_tearing_down != 0)
+			continue;
+
+		if (!target_get_session(sess))
+			continue;
+		list_move(&sess->sess_acl_list, &sess_list);
+	}
+	spin_unlock_irqrestore(&acl->nacl_sess_lock, flags);
+
+	list_for_each_entry_safe(sess, sess_tmp, &sess_list, sess_acl_list) {
+		list_del(&sess->sess_acl_list);
+
+		rc = tpg->se_tpg_tfo->shutdown_session(sess);
+		target_put_session(sess);
+		if (!rc)
+			continue;
+		target_put_session(sess);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	target_put_nacl(acl);
 	/*
 	 * Wait for last target_put_nacl() to complete in target_complete_nacl()
@@ -382,7 +415,15 @@ int core_tpg_set_initiator_node_queue_depth(
 	struct se_node_acl *acl,
 	u32 queue_depth)
 {
+<<<<<<< HEAD
 	struct se_portal_group *tpg = acl->se_tpg;
+=======
+	LIST_HEAD(sess_list);
+	struct se_portal_group *tpg = acl->se_tpg;
+	struct se_session *sess, *sess_tmp;
+	unsigned long flags;
+	int rc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Allow the setting of se_node_acl queue_depth to be idempotent,
@@ -397,6 +438,7 @@ int core_tpg_set_initiator_node_queue_depth(
 	 * target_set_nacl_queue_depth() to set the new queue depth.
 	 */
 	target_set_nacl_queue_depth(tpg, acl, queue_depth);
+<<<<<<< HEAD
 
 	/*
 	 * Shutdown all pending sessions to force session reinstatement.
@@ -406,6 +448,37 @@ int core_tpg_set_initiator_node_queue_depth(
 	pr_debug("Successfully changed queue depth to: %d for Initiator"
 		" Node: %s on %s Target Portal Group: %u\n", acl->queue_depth,
 		acl->initiatorname, tpg->se_tpg_tfo->fabric_name,
+=======
+
+	spin_lock_irqsave(&acl->nacl_sess_lock, flags);
+	list_for_each_entry_safe(sess, sess_tmp, &acl->acl_sess_list,
+				 sess_acl_list) {
+		if (sess->sess_tearing_down != 0)
+			continue;
+		if (!target_get_session(sess))
+			continue;
+		spin_unlock_irqrestore(&acl->nacl_sess_lock, flags);
+
+		/*
+		 * Finally call tpg->se_tpg_tfo->close_session() to force session
+		 * reinstatement to occur if there is an active session for the
+		 * $FABRIC_MOD Initiator Node in question.
+		 */
+		rc = tpg->se_tpg_tfo->shutdown_session(sess);
+		target_put_session(sess);
+		if (!rc) {
+			spin_lock_irqsave(&acl->nacl_sess_lock, flags);
+			continue;
+		}
+		target_put_session(sess);
+		spin_lock_irqsave(&acl->nacl_sess_lock, flags);
+	}
+	spin_unlock_irqrestore(&acl->nacl_sess_lock, flags);
+
+	pr_debug("Successfully changed queue depth to: %d for Initiator"
+		" Node: %s on %s Target Portal Group: %u\n", acl->queue_depth,
+		acl->initiatorname, tpg->se_tpg_tfo->get_fabric_name(),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		tpg->se_tpg_tfo->tpg_get_tag(tpg));
 
 	return 0;
@@ -536,6 +609,10 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
 	 */
 	list_for_each_entry_safe(nacl, nacl_tmp, &node_list, acl_list) {
 		list_del_init(&nacl->acl_list);
+<<<<<<< HEAD
+=======
+		se_tpg->num_node_acls--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		core_tpg_wait_for_nacl_pr_ref(nacl);
 		core_free_device_list_for_node(nacl, se_tpg);
@@ -564,6 +641,10 @@ struct se_lun *core_tpg_alloc_lun(
 	}
 	lun->unpacked_lun = unpacked_lun;
 	atomic_set(&lun->lun_acl_count, 0);
+<<<<<<< HEAD
+=======
+	init_completion(&lun->lun_ref_comp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	init_completion(&lun->lun_shutdown_comp);
 	INIT_LIST_HEAD(&lun->lun_deve_list);
 	INIT_LIST_HEAD(&lun->lun_dev_link);

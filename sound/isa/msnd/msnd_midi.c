@@ -104,7 +104,11 @@ void snd_msndmidi_input_read(void *mpuv)
 {
 	unsigned long flags;
 	struct snd_msndmidi *mpu = mpuv;
+<<<<<<< HEAD
 	void __iomem *pwMIDQData = mpu->dev->mappedbase + MIDQ_DATA_BUFF;
+=======
+	void *pwMIDQData = mpu->dev->mappedbase + MIDQ_DATA_BUFF;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 head, tail, size;
 
 	spin_lock_irqsave(&mpu->input_lock, flags);

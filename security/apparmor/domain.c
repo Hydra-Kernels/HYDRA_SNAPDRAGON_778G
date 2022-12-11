@@ -1176,8 +1176,14 @@ int aa_change_hat(const char *hats[], int count, u64 token, int flags)
 
 	/* released below */
 	cred = get_current_cred();
+<<<<<<< HEAD
 	label = aa_get_newest_cred_label(cred);
 	previous = aa_get_newest_label(ctx->previous);
+=======
+	cxt = cred_cxt(cred);
+	profile = aa_get_newest_profile(aa_cred_profile(cred));
+	previous_profile = aa_get_newest_profile(cxt->previous);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Detect no new privs being set, and store the label it
@@ -1255,9 +1261,16 @@ int aa_change_hat(const char *hats[], int count, u64 token, int flags)
 	} /* else ignore @flags && restores when there is no saved profile */
 
 out:
+<<<<<<< HEAD
 	aa_put_label(new);
 	aa_put_label(previous);
 	aa_put_label(label);
+=======
+	aa_put_profile(hat);
+	kfree(name);
+	aa_put_profile(profile);
+	aa_put_profile(previous_profile);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	put_cred(cred);
 
 	return error;

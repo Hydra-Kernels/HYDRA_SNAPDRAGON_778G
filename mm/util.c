@@ -90,8 +90,11 @@ EXPORT_SYMBOL(kstrdup_const);
  * @gfp: the GFP mask used in the kmalloc() call when allocating memory
  *
  * Note: Use kmemdup_nul() instead if the size is known exactly.
+<<<<<<< HEAD
  *
  * Return: newly allocated copy of @s or %NULL in case of error
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 char *kstrndup(const char *s, size_t max, gfp_t gfp)
 {
@@ -136,9 +139,12 @@ EXPORT_SYMBOL(kmemdup);
  * @s: The data to stringify
  * @len: The size of the data
  * @gfp: the GFP mask used in the kmalloc() call when allocating memory
+<<<<<<< HEAD
  *
  * Return: newly allocated copy of @s with NUL-termination or %NULL in
  * case of error
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 {
@@ -293,13 +299,18 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 }
 
 /* Check if the vma is being used as a stack by this task */
+<<<<<<< HEAD
 int vma_is_stack_for_current(struct vm_area_struct *vma)
+=======
+int vma_is_stack_for_task(struct vm_area_struct *vma, struct task_struct *t)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct task_struct * __maybe_unused t = current;
 
 	return (vma->vm_start <= KSTK_ESP(t) && vma->vm_end >= KSTK_ESP(t));
 }
 
+<<<<<<< HEAD
 #ifndef STACK_RND_MASK
 #define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))     /* 8MB of VA */
 #endif
@@ -400,6 +411,10 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 }
 #elif defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+=======
+#if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
+void arch_pick_mmap_layout(struct mm_struct *mm)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	mm->mmap_base = TASK_UNMAPPED_BASE;
 	mm->get_unmapped_area = arch_get_unmapped_area;
@@ -869,19 +884,31 @@ int get_cmdline(struct task_struct *task, char *buffer, int buflen)
 	if (!mm->arg_end)
 		goto out_mm;	/* Shh! No looking before we're done */
 
+<<<<<<< HEAD
 	spin_lock(&mm->arg_lock);
+=======
+	down_read(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	arg_start = mm->arg_start;
 	arg_end = mm->arg_end;
 	env_start = mm->env_start;
 	env_end = mm->env_end;
+<<<<<<< HEAD
 	spin_unlock(&mm->arg_lock);
+=======
+	up_read(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	len = arg_end - arg_start;
 
 	if (len > buflen)
 		len = buflen;
 
+<<<<<<< HEAD
 	res = access_process_vm(task, arg_start, buffer, len, FOLL_FORCE);
+=======
+	res = access_process_vm(task, arg_start, buffer, len, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * If the nul at the end of args has been overwritten, then
@@ -896,8 +923,12 @@ int get_cmdline(struct task_struct *task, char *buffer, int buflen)
 			if (len > buflen - res)
 				len = buflen - res;
 			res += access_process_vm(task, env_start,
+<<<<<<< HEAD
 						 buffer+res, len,
 						 FOLL_FORCE);
+=======
+						 buffer+res, len, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			res = strnlen(buffer, res);
 		}
 	}

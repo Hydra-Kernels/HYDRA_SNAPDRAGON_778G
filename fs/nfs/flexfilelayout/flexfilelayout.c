@@ -1561,7 +1561,12 @@ static int ff_layout_commit_done_cb(struct rpc_task *task,
 		return -EAGAIN;
 	}
 
+<<<<<<< HEAD
 	ff_layout_set_layoutcommit(data->inode, data->lseg, data->lwb);
+=======
+	if (ff_layout_need_layoutcommit(data->lseg))
+		pnfs_set_layoutcommit(data->inode, data->lseg, data->lwb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -2133,6 +2138,13 @@ ff_layout_encode_layoutreturn(struct xdr_stream *xdr,
 	*start = cpu_to_be32(tmp_buf.len);
 	xdr_write_pages(xdr, ff_args->pages, 0, tmp_buf.len);
 
+<<<<<<< HEAD
+=======
+	ff_layout_encode_ioerr(flo, xdr, args);
+	ff_layout_encode_iostats(flo, xdr, args);
+
+	*start = cpu_to_be32((xdr->p - start - 1) * 4);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dprintk("%s: Return\n", __func__);
 }
 

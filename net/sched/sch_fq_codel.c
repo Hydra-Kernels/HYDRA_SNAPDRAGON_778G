@@ -186,7 +186,11 @@ static int fq_codel_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 			    struct sk_buff **to_free)
 {
 	struct fq_codel_sched_data *q = qdisc_priv(sch);
+<<<<<<< HEAD
 	unsigned int idx, prev_backlog, prev_qlen;
+=======
+	unsigned int idx, prev_backlog;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct fq_codel_flow *flow;
 	int uninitialized_var(ret);
 	unsigned int pkt_len;
@@ -219,6 +223,7 @@ static int fq_codel_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 		return NET_XMIT_SUCCESS;
 
 	prev_backlog = sch->qstats.backlog;
+<<<<<<< HEAD
 	prev_qlen = sch->q.qlen;
 
 	/* save this packet length as it might be dropped by fq_codel_drop() */
@@ -246,6 +251,17 @@ static int fq_codel_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 		return NET_XMIT_CN;
 	}
 	qdisc_tree_reduce_backlog(sch, prev_qlen, prev_backlog);
+=======
+	q->drop_overlimit++;
+	/* Return Congestion Notification only if we dropped a packet
+	 * from this flow.
+	 */
+	if (fq_codel_drop(sch) == idx)
+		return NET_XMIT_CN;
+
+	/* As we dropped a packet, better let upper stack know this */
+	qdisc_tree_reduce_backlog(sch, 1, prev_backlog - sch->qstats.backlog);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return NET_XMIT_SUCCESS;
 }
 
@@ -285,6 +301,11 @@ static struct sk_buff *fq_codel_dequeue(struct Qdisc *sch)
 	struct sk_buff *skb;
 	struct fq_codel_flow *flow;
 	struct list_head *head;
+<<<<<<< HEAD
+=======
+	u32 prev_drop_count, prev_ecn_mark;
+	unsigned int prev_backlog;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 begin:
 	head = &q->new_flows;
@@ -301,9 +322,21 @@ begin:
 		goto begin;
 	}
 
+<<<<<<< HEAD
 	skb = codel_dequeue(sch, &sch->qstats.backlog, &q->cparams,
 			    &flow->cvars, &q->cstats, qdisc_pkt_len,
 			    codel_get_enqueue_time, drop_func, dequeue_func);
+=======
+	prev_drop_count = q->cstats.drop_count;
+	prev_ecn_mark = q->cstats.ecn_mark;
+	prev_backlog = sch->qstats.backlog;
+
+	skb = codel_dequeue(sch, &q->cparams, &flow->cvars, &q->cstats,
+			    dequeue);
+
+	flow->dropped += q->cstats.drop_count - prev_drop_count;
+	flow->dropped += q->cstats.ecn_mark - prev_ecn_mark;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!skb) {
 		/* force a pass through old_flows to prevent starvation */
@@ -427,7 +460,11 @@ static int fq_codel_change(struct Qdisc *sch, struct nlattr *opt,
 		struct sk_buff *skb = fq_codel_dequeue(sch);
 
 		q->cstats.drop_len += qdisc_pkt_len(skb);
+<<<<<<< HEAD
 		rtnl_kfree_skbs(skb, skb);
+=======
+		kfree_skb(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		q->cstats.drop_count++;
 	}
 	qdisc_tree_reduce_backlog(sch, q->cstats.drop_count, q->cstats.drop_len);

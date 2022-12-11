@@ -249,7 +249,11 @@ int amd_cache_northbridges(void)
 	while ((misc = next_northbridge(misc, misc_ids)) != NULL)
 		misc_count++;
 
+<<<<<<< HEAD
 	if (!misc_count)
+=======
+	if (!i)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENODEV;
 
 	root = NULL;

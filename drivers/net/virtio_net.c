@@ -51,7 +51,22 @@ module_param(napi_tx, bool, 0644);
  * at once, the weight is chosen so that the EWMA will be insensitive to short-
  * term, transient changes in packet size.
  */
+<<<<<<< HEAD
 DECLARE_EWMA(pkt_len, 0, 64)
+=======
+DECLARE_EWMA(pkt_len, 1, 64)
+
+/* With mergeable buffers we align buffer address and use the low bits to
+ * encode its true size. Buffer size is up to 1 page so we need to align to
+ * square root of page size to ensure we reserve enough bits to encode the true
+ * size.
+ */
+#define MERGEABLE_BUFFER_MIN_ALIGN_SHIFT ((PAGE_SHIFT + 1) / 2)
+
+/* Minimum alignment for mergeable packet buffers. */
+#define MERGEABLE_BUFFER_ALIGN max(L1_CACHE_BYTES, \
+				   1 << MERGEABLE_BUFFER_MIN_ALIGN_SHIFT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define VIRTNET_DRIVER_VERSION "1.0.0"
 
@@ -1140,12 +1155,28 @@ static int add_recvbuf_small(struct virtnet_info *vi, struct receive_queue *rq,
 	if (unlikely(!skb_page_frag_refill(len, alloc_frag, gfp)))
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	buf = (char *)page_address(alloc_frag->page) + alloc_frag->offset;
 	get_page(alloc_frag->page);
 	alloc_frag->offset += len;
 	sg_init_one(rq->sg, buf + VIRTNET_RX_PAD + xdp_headroom,
 		    vi->hdr_len + GOOD_PACKET_LEN);
 	err = virtqueue_add_inbuf_ctx(rq->vq, rq->sg, 1, buf, ctx, gfp);
+=======
+	skb_put(skb, GOOD_PACKET_LEN);
+
+	hdr = skb_vnet_hdr(skb);
+	sg_init_table(rq->sg, 2);
+	sg_set_buf(rq->sg, hdr, vi->hdr_len);
+
+	err = skb_to_sgvec(skb, rq->sg + 1, 0, skb->len);
+	if (unlikely(err < 0)) {
+		dev_kfree_skb(skb);
+		return err;
+	}
+
+	err = virtqueue_add_inbuf(rq->vq, rq->sg, 2, skb, gfp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err < 0)
 		put_page(virt_to_head_page(buf));
 	return err;
@@ -2676,11 +2707,21 @@ static const struct net_device_ops virtnet_netdev = {
 	.ndo_get_stats64     = virtnet_stats,
 	.ndo_vlan_rx_add_vid = virtnet_vlan_rx_add_vid,
 	.ndo_vlan_rx_kill_vid = virtnet_vlan_rx_kill_vid,
+<<<<<<< HEAD
 	.ndo_bpf		= virtnet_xdp,
 	.ndo_xdp_xmit		= virtnet_xdp_xmit,
 	.ndo_features_check	= passthru_features_check,
 	.ndo_get_phys_port_name	= virtnet_get_phys_port_name,
 	.ndo_set_features	= virtnet_set_features,
+=======
+#ifdef CONFIG_NET_POLL_CONTROLLER
+	.ndo_poll_controller = virtnet_netpoll,
+#endif
+#ifdef CONFIG_NET_RX_BUSY_POLL
+	.ndo_busy_poll		= virtnet_busy_poll,
+#endif
+	.ndo_features_check	= passthru_features_check,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static void virtnet_config_changed_work(struct work_struct *work)

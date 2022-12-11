@@ -906,10 +906,51 @@ skl_dram_get_channels_info(struct drm_i915_private *dev_priv)
 	else
 		dram_info->ranks = max(ch0.ranks, ch1.ranks);
 
+<<<<<<< HEAD
 	if (dram_info->ranks == 0) {
 		DRM_INFO("couldn't get memory rank information\n");
 		return -EINVAL;
 	}
+=======
+			if (id == INTEL_PCH_IBX_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_IBX;
+				DRM_DEBUG_KMS("Found Ibex Peak PCH\n");
+				WARN_ON(!IS_GEN5(dev));
+			} else if (id == INTEL_PCH_CPT_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_CPT;
+				DRM_DEBUG_KMS("Found CougarPoint PCH\n");
+				WARN_ON(!(IS_GEN6(dev) || IS_IVYBRIDGE(dev)));
+			} else if (id == INTEL_PCH_PPT_DEVICE_ID_TYPE) {
+				/* PantherPoint is CPT compatible */
+				dev_priv->pch_type = PCH_CPT;
+				DRM_DEBUG_KMS("Found PantherPoint PCH\n");
+				WARN_ON(!(IS_GEN6(dev) || IS_IVYBRIDGE(dev)));
+			} else if (id == INTEL_PCH_LPT_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_LPT;
+				DRM_DEBUG_KMS("Found LynxPoint PCH\n");
+				WARN_ON(!IS_HASWELL(dev) && !IS_BROADWELL(dev));
+				WARN_ON(IS_HSW_ULT(dev) || IS_BDW_ULT(dev));
+			} else if (id == INTEL_PCH_LPT_LP_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_LPT;
+				DRM_DEBUG_KMS("Found LynxPoint LP PCH\n");
+				WARN_ON(!IS_HASWELL(dev) && !IS_BROADWELL(dev));
+				WARN_ON(!IS_HSW_ULT(dev) && !IS_BDW_ULT(dev));
+			} else if (id == INTEL_PCH_SPT_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_SPT;
+				DRM_DEBUG_KMS("Found SunrisePoint PCH\n");
+				WARN_ON(!IS_SKYLAKE(dev));
+			} else if (id == INTEL_PCH_SPT_LP_DEVICE_ID_TYPE) {
+				dev_priv->pch_type = PCH_SPT;
+				DRM_DEBUG_KMS("Found SunrisePoint LP PCH\n");
+				WARN_ON(!IS_SKYLAKE(dev));
+			} else if ((id == INTEL_PCH_P2X_DEVICE_ID_TYPE) ||
+				   ((id == INTEL_PCH_QEMU_DEVICE_ID_TYPE) &&
+				    pch->subsystem_vendor == 0x1af4 &&
+				    pch->subsystem_device == 0x1100)) {
+				dev_priv->pch_type = intel_virt_detect_pch(dev);
+			} else
+				continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dram_info->is_16gb_dimm = ch0.is_16gb_dimm || ch1.is_16gb_dimm;
 

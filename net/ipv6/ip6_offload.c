@@ -76,7 +76,10 @@ static struct sk_buff *ipv6_gso_segment(struct sk_buff *skb,
 	const struct net_offload *ops;
 	int proto;
 	struct frag_hdr *fptr;
+<<<<<<< HEAD
 	unsigned int payload_len;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u8 *prevhdr;
 	int offset = 0;
 	bool encap, udpfrag;
@@ -277,8 +280,12 @@ not_same_flow:
 
 	skb_gro_postpull_rcsum(skb, iph, nlen);
 
+<<<<<<< HEAD
 	pp = indirect_call_gro_receive_l4(tcp6_gro_receive, udp6_gro_receive,
 					 ops->callbacks.gro_receive, head, skb);
+=======
+	pp = call_gro_receive(ops->callbacks.gro_receive, head, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_unlock:
 	rcu_read_unlock();
@@ -289,11 +296,17 @@ out:
 	return pp;
 }
 
+<<<<<<< HEAD
 static struct sk_buff *sit_ip6ip6_gro_receive(struct list_head *head,
 					      struct sk_buff *skb)
 {
 	/* Common GRO receive for SIT and IP6IP6 */
 
+=======
+static struct sk_buff **sit_gro_receive(struct sk_buff **head,
+					struct sk_buff *skb)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (NAPI_GRO_CB(skb)->encap_mark) {
 		NAPI_GRO_CB(skb)->flush = 1;
 		return NULL;
@@ -304,6 +317,7 @@ static struct sk_buff *sit_ip6ip6_gro_receive(struct list_head *head,
 	return ipv6_gro_receive(head, skb);
 }
 
+<<<<<<< HEAD
 static struct sk_buff *ip4ip6_gro_receive(struct list_head *head,
 					  struct sk_buff *skb)
 {
@@ -322,6 +336,9 @@ static struct sk_buff *ip4ip6_gro_receive(struct list_head *head,
 INDIRECT_CALLABLE_DECLARE(int tcp6_gro_complete(struct sk_buff *, int));
 INDIRECT_CALLABLE_DECLARE(int udp6_gro_complete(struct sk_buff *, int));
 INDIRECT_CALLABLE_SCOPE int ipv6_gro_complete(struct sk_buff *skb, int nhoff)
+=======
+static int ipv6_gro_complete(struct sk_buff *skb, int nhoff)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	const struct net_offload *ops;
 	struct ipv6hdr *iph = (struct ipv6hdr *)(skb->data + nhoff);
@@ -408,8 +425,13 @@ static struct sk_buff *ip6ip6_gso_segment(struct sk_buff *skb,
 
 static const struct net_offload sit_offload = {
 	.callbacks = {
+<<<<<<< HEAD
 		.gso_segment	= sit_gso_segment,
 		.gro_receive    = sit_ip6ip6_gro_receive,
+=======
+		.gso_segment	= ipv6_gso_segment,
+		.gro_receive    = sit_gro_receive,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.gro_complete   = sit_gro_complete,
 	},
 };

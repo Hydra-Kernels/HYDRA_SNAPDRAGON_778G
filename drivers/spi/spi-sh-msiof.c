@@ -268,10 +268,23 @@ static void sh_msiof_spi_set_clk_regs(struct sh_msiof_spi_priv *p,
 	u32 brps, scr;
 	unsigned int div_pow = p->min_div_pow;
 
+<<<<<<< HEAD
 	if (!spi_hz || !parent_rate) {
 		WARN(1, "Invalid clock rate parameters %lu and %u\n",
 		     parent_rate, spi_hz);
 		return;
+=======
+	if (!WARN_ON(!spi_hz || !parent_rate))
+		div = DIV_ROUND_UP(parent_rate, spi_hz);
+
+	for (k = 0; k < ARRAY_SIZE(sh_msiof_spi_div_table); k++) {
+		brps = DIV_ROUND_UP(div, sh_msiof_spi_div_table[k].div);
+		/* SCR_BRDV_DIV_1 is valid only if BRPS is x 1/1 or x 1/2 */
+		if (sh_msiof_spi_div_table[k].div == 1 && brps > 2)
+			continue;
+		if (brps <= 32) /* max of brdv is 32 */
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	div = DIV_ROUND_UP(parent_rate, spi_hz);
@@ -943,6 +956,11 @@ static int sh_msiof_transfer_one(struct spi_controller *ctlr,
 		if (bits <= 8) {
 			copy32 = copy_bswap32;
 		} else if (bits <= 16) {
+<<<<<<< HEAD
+=======
+			if (l & 3)
+				break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			copy32 = copy_wswap32;
 		} else {
 			copy32 = copy_plain32;

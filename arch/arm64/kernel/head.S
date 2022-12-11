@@ -630,11 +630,27 @@ install_el2_stub:
 	ubfx	x1, x1, #ID_AA64PFR0_SVE_SHIFT, #4
 	cbz	x1, 7f
 
+<<<<<<< HEAD
 	bic	x0, x0, #CPTR_EL2_TZ		// Also disable SVE traps
 	msr	cptr_el2, x0			// Disable copro. traps to EL2
 	isb
 	mov	x1, #ZCR_ELx_LEN_MASK		// SVE: Enable full vector
 	msr_s	SYS_ZCR_EL2, x1			// length for EL1.
+=======
+	/* EL2 debug */
+	mrs	x0, id_aa64dfr0_el1		// Check ID_AA64DFR0_EL1 PMUVer
+	sbfx	x0, x0, #8, #4
+	cmp	x0, #1
+	b.lt	4f				// Skip if no PMU present
+	mrs	x0, pmcr_el0			// Disable debug access traps
+	ubfx	x0, x0, #11, #5			// to EL2 and allow access to
+4:
+	csel	x0, xzr, x0, lt			// all PMU counters from EL1
+	msr	mdcr_el2, x0			// (if they exist)
+
+	/* Stage-2 translation */
+	msr	vttbr_el2, xzr
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Hypervisor stub */
 7:	adr_l	x0, __hyp_stub_vectors

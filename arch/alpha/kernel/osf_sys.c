@@ -1184,12 +1184,40 @@ SYSCALL_DEFINE4(osf_wait4, pid_t, pid, int __user *, ustatus, int, options,
 		return err;
 	if (put_tv_to_tv32(&ur->ru_utime, &r.ru_utime))
 		return -EFAULT;
+<<<<<<< HEAD
 	if (put_tv_to_tv32(&ur->ru_stime, &r.ru_stime))
 		return -EFAULT;
 	if (copy_to_user(&ur->ru_maxrss, &r.ru_maxrss,
 	      sizeof(struct rusage32) - offsetof(struct rusage32, ru_maxrss)))
 		return -EFAULT;
 	return err;
+=======
+
+	err = put_user(status, ustatus);
+	if (ret < 0)
+		return err ? err : ret;
+
+	err |= __put_user(r.ru_utime.tv_sec, &ur->ru_utime.tv_sec);
+	err |= __put_user(r.ru_utime.tv_usec, &ur->ru_utime.tv_usec);
+	err |= __put_user(r.ru_stime.tv_sec, &ur->ru_stime.tv_sec);
+	err |= __put_user(r.ru_stime.tv_usec, &ur->ru_stime.tv_usec);
+	err |= __put_user(r.ru_maxrss, &ur->ru_maxrss);
+	err |= __put_user(r.ru_ixrss, &ur->ru_ixrss);
+	err |= __put_user(r.ru_idrss, &ur->ru_idrss);
+	err |= __put_user(r.ru_isrss, &ur->ru_isrss);
+	err |= __put_user(r.ru_minflt, &ur->ru_minflt);
+	err |= __put_user(r.ru_majflt, &ur->ru_majflt);
+	err |= __put_user(r.ru_nswap, &ur->ru_nswap);
+	err |= __put_user(r.ru_inblock, &ur->ru_inblock);
+	err |= __put_user(r.ru_oublock, &ur->ru_oublock);
+	err |= __put_user(r.ru_msgsnd, &ur->ru_msgsnd);
+	err |= __put_user(r.ru_msgrcv, &ur->ru_msgrcv);
+	err |= __put_user(r.ru_nsignals, &ur->ru_nsignals);
+	err |= __put_user(r.ru_nvcsw, &ur->ru_nvcsw);
+	err |= __put_user(r.ru_nivcsw, &ur->ru_nivcsw);
+
+	return err ? err : ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

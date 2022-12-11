@@ -2222,10 +2222,18 @@ static int dvb_register(struct cx23885_tsport *port)
 		}
 		port->i2c_client_tuner = client_tuner;
 		break;
+<<<<<<< HEAD
 	case CX23885_BOARD_HAUPPAUGE_STARBURST2:
 	case CX23885_BOARD_HAUPPAUGE_HVR5525:
 		i2c_bus = &dev->i2c_bus[0];
 		i2c_bus2 = &dev->i2c_bus[1];
+
+		switch (port->nr) {
+=======
+	case CX23885_BOARD_HAUPPAUGE_HVR5525: {
+		struct m88rs6000t_config m88rs6000t_config;
+		struct a8293_platform_data a8293_pdata = {};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		switch (port->nr) {
 
@@ -2536,6 +2544,7 @@ static int dvb_register(struct cx23885_tsport *port)
 			break;
 		}
 		break;
+	}
 	default:
 		pr_info("%s: The frontend of your DVB/ATSC card  isn't supported yet\n",
 			dev->name);

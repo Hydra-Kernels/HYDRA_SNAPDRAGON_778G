@@ -2574,6 +2574,15 @@ mptctl_hp_targetinfo(MPT_ADAPTER *ioc, unsigned long arg)
 		return -EFAULT;
 	}
 
+<<<<<<< HEAD
+=======
+	if (((iocnum = mpt_verify_adapter(karg.hdr.iocnum, &ioc)) < 0) ||
+		(ioc == NULL)) {
+		printk(KERN_DEBUG MYNAM "%s::mptctl_hp_targetinfo() @%d - ioc%d not found!\n",
+				__FILE__, __LINE__, iocnum);
+		return -ENODEV;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (karg.hdr.id >= MPT_MAX_FC_DEVICES)
 		return -EINVAL;
 	dctlprintk(ioc, printk(MYIOC_s_DEBUG_FMT "mptctl_hp_targetinfo called.\n",

@@ -180,7 +180,10 @@ int ttm_base_object_init(struct ttm_object_file *tfile,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD:drivers/gpu/drm/vmwgfx/ttm_object.c
 	base->handle = ret;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/ttm/ttm_object.c
 	ret = ttm_ref_object_add(tfile, base, TTM_REF_USAGE, NULL, false);
 	if (unlikely(ret != 0))
 		goto out_err1;
@@ -663,7 +666,11 @@ int ttm_prime_fd_to_handle(struct ttm_object_file *tfile,
 
 	prime = (struct ttm_prime_object *) dma_buf->priv;
 	base = &prime->base;
+<<<<<<< HEAD:drivers/gpu/drm/vmwgfx/ttm_object.c
 	*handle = base->handle;
+=======
+	*handle = base->hash.key;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/ttm/ttm_object.c
 	ret = ttm_ref_object_add(tfile, base, TTM_REF_USAGE, NULL, false);
 
 	dma_buf_put(dma_buf);

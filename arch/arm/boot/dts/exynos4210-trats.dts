@@ -284,7 +284,11 @@
 
 		reg = <0x66>;
 		interrupt-parent = <&gpx0>;
+<<<<<<< HEAD
 		interrupts = <7 IRQ_TYPE_NONE>;
+=======
+		interrupts = <7 0>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		max8997,pmic-buck1-uses-gpio-dvs;
 		max8997,pmic-buck2-uses-gpio-dvs;

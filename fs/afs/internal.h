@@ -483,7 +483,43 @@ struct afs_vldb_entry {
 };
 
 /*
+<<<<<<< HEAD
  * Record of fileserver with which we're actively communicating.
+=======
+ * volume -> vnode hash table entry
+ */
+struct afs_cache_vhash {
+	afs_voltype_t		vtype;		/* which volume variation */
+	uint8_t			hash_bucket;	/* which hash bucket this represents */
+} __attribute__((packed));
+
+/*
+ * AFS volume location record
+ */
+struct afs_vlocation {
+	atomic_t		usage;
+	time64_t		time_of_death;	/* time at which put reduced usage to 0 */
+	struct list_head	link;		/* link in cell volume location list */
+	struct list_head	grave;		/* link in master graveyard list */
+	struct list_head	update;		/* link in master update list */
+	struct afs_cell		*cell;		/* cell to which volume belongs */
+#ifdef CONFIG_AFS_FSCACHE
+	struct fscache_cookie	*cache;		/* caching cookie */
+#endif
+	struct afs_cache_vlocation vldb;	/* volume information DB record */
+	struct afs_volume	*vols[3];	/* volume access record pointer (index by type) */
+	wait_queue_head_t	waitq;		/* status change waitqueue */
+	time64_t		update_at;	/* time at which record should be updated */
+	spinlock_t		lock;		/* access lock */
+	afs_vlocation_state_t	state;		/* volume location state */
+	unsigned short		upd_rej_cnt;	/* ENOMEDIUM count during update */
+	unsigned short		upd_busy_cnt;	/* EBUSY count during update */
+	bool			valid;		/* T if valid */
+};
+
+/*
+ * AFS fileserver record
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 struct afs_server {
 	struct rcu_head		rcu;
@@ -513,9 +549,19 @@ struct afs_server {
 #define AFS_SERVER_FL_NO_RM2	10		/* Fileserver doesn't support YFS.RemoveFile2 */
 #define AFS_SERVER_FL_HAVE_EPOCH 11		/* ->epoch is valid */
 	atomic_t		usage;
+<<<<<<< HEAD
 	u32			addr_version;	/* Address list version */
 	u32			cm_epoch;	/* Server RxRPC epoch */
 	unsigned int		debug_id;	/* Debugging ID for traces */
+=======
+	time64_t		time_of_death;	/* time at which put reduced usage to 0 */
+	struct in_addr		addr;		/* server address */
+	struct afs_cell		*cell;		/* cell in which server resides */
+	struct list_head	link;		/* link in cell's server list */
+	struct list_head	grave;		/* link in master graveyard list */
+	struct rb_node		master_rb;	/* link in master by-addr tree */
+	struct rw_semaphore	sem;		/* access lock */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* file service access */
 	rwlock_t		fs_lock;	/* access lock */
@@ -680,6 +726,7 @@ struct afs_vnode {
 	afs_lock_type_t		lock_type : 8;
 
 	/* outstanding callback notification on this file */
+<<<<<<< HEAD
 	struct afs_cb_interest __rcu *cb_interest; /* Server on which this resides */
 	unsigned int		cb_s_break;	/* Mass break counter on ->server */
 	unsigned int		cb_v_break;	/* Mass break counter on ->volume */
@@ -687,6 +734,17 @@ struct afs_vnode {
 	seqlock_t		cb_lock;	/* Lock for ->cb_interest, ->status, ->cb_*break */
 
 	time64_t		cb_expires_at;	/* time at which callback expires */
+=======
+	struct rb_node		server_rb;	/* link in server->fs_vnodes */
+	struct rb_node		cb_promise;	/* link in server->cb_promises */
+	struct work_struct	cb_broken_work;	/* work to be done on callback break */
+	time64_t		cb_expires;	/* time at which callback expires */
+	time64_t		cb_expires_at;	/* time used to order cb_promise */
+	unsigned		cb_version;	/* callback version */
+	unsigned		cb_expiry;	/* callback expiry time */
+	afs_callback_type_t	cb_type;	/* type of callback */
+	bool			cb_promised;	/* true if promise still holds */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static inline struct fscache_cookie *afs_vnode_cache(struct afs_vnode *vnode)
@@ -1427,11 +1485,43 @@ static inline void afs_check_for_remote_deletion(struct afs_fs_cursor *fc,
 	}
 }
 
+<<<<<<< HEAD
 static inline int afs_io_error(struct afs_call *call, enum afs_io_error where)
 {
 	trace_afs_io_error(call->debug_id, -EIO, where);
 	return -EIO;
 }
+=======
+/*
+ * volume.c
+ */
+#define afs_get_volume(V) do { atomic_inc(&(V)->usage); } while(0)
+
+extern void afs_put_volume(struct afs_volume *);
+extern struct afs_volume *afs_volume_lookup(struct afs_mount_params *);
+extern struct afs_server *afs_volume_pick_fileserver(struct afs_vnode *);
+extern int afs_volume_release_fileserver(struct afs_vnode *,
+					 struct afs_server *, int);
+
+/*
+ * write.c
+ */
+extern int afs_set_page_dirty(struct page *);
+extern void afs_put_writeback(struct afs_writeback *);
+extern int afs_write_begin(struct file *file, struct address_space *mapping,
+			loff_t pos, unsigned len, unsigned flags,
+			struct page **pagep, void **fsdata);
+extern int afs_write_end(struct file *file, struct address_space *mapping,
+			loff_t pos, unsigned len, unsigned copied,
+			struct page *page, void *fsdata);
+extern int afs_writepage(struct page *, struct writeback_control *);
+extern int afs_writepages(struct address_space *, struct writeback_control *);
+extern void afs_pages_written_back(struct afs_vnode *, struct afs_call *);
+extern ssize_t afs_file_write(struct kiocb *, struct iov_iter *);
+extern int afs_writeback_all(struct afs_vnode *);
+extern int afs_flush(struct file *, fl_owner_t);
+extern int afs_fsync(struct file *, loff_t, loff_t, int);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int afs_bad(struct afs_vnode *vnode, enum afs_file_error where)
 {

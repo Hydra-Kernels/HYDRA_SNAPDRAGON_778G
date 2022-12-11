@@ -59,6 +59,7 @@ btrfs_workqueue_owner(const struct __btrfs_workqueue *wq)
 	return wq->fs_info;
 }
 
+<<<<<<< HEAD
 struct btrfs_fs_info *
 btrfs_work_owner(const struct btrfs_work *work)
 {
@@ -66,6 +67,9 @@ btrfs_work_owner(const struct btrfs_work *work)
 }
 
 bool btrfs_workqueue_normal_congested(const struct btrfs_workqueue *wq)
+=======
+bool btrfs_workqueue_normal_congested(struct btrfs_workqueue *wq)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * We could compare wq->normal->pending with num_online_cpus()
@@ -78,6 +82,32 @@ bool btrfs_workqueue_normal_congested(const struct btrfs_workqueue *wq)
 
 	return atomic_read(&wq->normal->pending) > wq->normal->thresh * 2;
 }
+<<<<<<< HEAD
+=======
+
+BTRFS_WORK_HELPER(worker_helper);
+BTRFS_WORK_HELPER(delalloc_helper);
+BTRFS_WORK_HELPER(flush_delalloc_helper);
+BTRFS_WORK_HELPER(cache_helper);
+BTRFS_WORK_HELPER(submit_helper);
+BTRFS_WORK_HELPER(fixup_helper);
+BTRFS_WORK_HELPER(endio_helper);
+BTRFS_WORK_HELPER(endio_meta_helper);
+BTRFS_WORK_HELPER(endio_meta_write_helper);
+BTRFS_WORK_HELPER(endio_raid56_helper);
+BTRFS_WORK_HELPER(endio_repair_helper);
+BTRFS_WORK_HELPER(rmw_helper);
+BTRFS_WORK_HELPER(endio_write_helper);
+BTRFS_WORK_HELPER(freespace_write_helper);
+BTRFS_WORK_HELPER(delayed_meta_helper);
+BTRFS_WORK_HELPER(readahead_helper);
+BTRFS_WORK_HELPER(qgroup_rescan_helper);
+BTRFS_WORK_HELPER(extent_refs_helper);
+BTRFS_WORK_HELPER(scrub_helper);
+BTRFS_WORK_HELPER(scrubwrc_helper);
+BTRFS_WORK_HELPER(scrubnc_helper);
+BTRFS_WORK_HELPER(scrubparity_helper);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static struct __btrfs_workqueue *
 __btrfs_alloc_workqueue(struct btrfs_fs_info *fs_info, const char *name,

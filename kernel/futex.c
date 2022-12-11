@@ -574,7 +574,11 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, enum futex_a
 {
 	unsigned long address = (unsigned long)uaddr;
 	struct mm_struct *mm = current->mm;
+<<<<<<< HEAD
 	struct page *page, *tail;
+=======
+	struct page *page, *page_head;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct address_space *mapping;
 	int err, ro = 0;
 
@@ -625,6 +629,45 @@ again:
 	else
 		err = 0;
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+	page_head = page;
+	if (unlikely(PageTail(page))) {
+		put_page(page);
+		/* serialize against __split_huge_page_splitting() */
+		local_irq_disable();
+		if (likely(__get_user_pages_fast(address, 1, !ro, &page) == 1)) {
+			page_head = compound_head(page);
+			/*
+			 * page_head is valid pointer but we must pin
+			 * it before taking the PG_lock and/or
+			 * PG_compound_lock. The moment we re-enable
+			 * irqs __split_huge_page_splitting() can
+			 * return and the head page can be freed from
+			 * under us. We can't take the PG_lock and/or
+			 * PG_compound_lock on a page that could be
+			 * freed from under us.
+			 */
+			if (page != page_head) {
+				get_page(page_head);
+				put_page(page);
+			}
+			local_irq_enable();
+		} else {
+			local_irq_enable();
+			goto again;
+		}
+	}
+#else
+	page_head = compound_head(page);
+	if (page != page_head) {
+		get_page(page_head);
+		put_page(page);
+	}
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * The treatment of mapping from this point on is critical. The page
 	 * lock protects many things but in this context the page lock
@@ -635,6 +678,7 @@ again:
 	 * considered here and page lock forces unnecessarily serialization
 	 * From this point on, mapping will be re-verified if necessary and
 	 * page lock will be acquired only if it is unavoidable
+<<<<<<< HEAD
 	 *
 	 * Mapping checks require the head page for any compound page so the
 	 * head page and mapping is looked up now. For anonymous pages, it
@@ -646,6 +690,11 @@ again:
 	tail = page;
 	page = compound_head(page);
 	mapping = READ_ONCE(page->mapping);
+=======
+	 */
+
+	mapping = READ_ONCE(page_head->mapping);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * If page->mapping is NULL, then it cannot be a PageAnon
@@ -672,8 +721,13 @@ again:
 		 */
 		lock_page(page);
 		shmem_swizzled = PageSwapCache(page) || page->mapping;
+<<<<<<< HEAD
 		unlock_page(page);
 		put_page(page);
+=======
+		unlock_page(page_head);
+		put_page(page_head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (shmem_swizzled)
 			goto again;
@@ -705,6 +759,11 @@ again:
 		key->private.mm = mm;
 		key->private.address = address;
 
+<<<<<<< HEAD
+=======
+		get_futex_key_refs(key); /* implies smp_mb(); (B) */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		struct inode *inode;
 
@@ -721,9 +780,15 @@ again:
 		 */
 		rcu_read_lock();
 
+<<<<<<< HEAD
 		if (READ_ONCE(page->mapping) != mapping) {
 			rcu_read_unlock();
 			put_page(page);
+=======
+		if (READ_ONCE(page_head->mapping) != mapping) {
+			rcu_read_unlock();
+			put_page(page_head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			goto again;
 		}
@@ -731,11 +796,16 @@ again:
 		inode = READ_ONCE(mapping->host);
 		if (!inode) {
 			rcu_read_unlock();
+<<<<<<< HEAD
 			put_page(page);
+=======
+			put_page(page_head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			goto again;
 		}
 
+<<<<<<< HEAD
 		key->both.offset |= FUT_OFF_INODE; /* inode-based key */
 		key->shared.i_seq = get_inode_sequence_number(inode);
 		key->shared.pgoff = page_to_pgoff(tail);
@@ -746,6 +816,44 @@ again:
 
 out:
 	put_page(page);
+=======
+		/*
+		 * Take a reference unless it is about to be freed. Previously
+		 * this reference was taken by ihold under the page lock
+		 * pinning the inode in place so i_lock was unnecessary. The
+		 * only way for this check to fail is if the inode was
+		 * truncated in parallel which is almost certainly an
+		 * application bug. In such a case, just retry.
+		 *
+		 * We are not calling into get_futex_key_refs() in file-backed
+		 * cases, therefore a successful atomic_inc return below will
+		 * guarantee that get_futex_key() will still imply smp_mb(); (B).
+		 */
+		if (!atomic_inc_not_zero(&inode->i_count)) {
+			rcu_read_unlock();
+			put_page(page_head);
+
+			goto again;
+		}
+
+		/* Should be impossible but lets be paranoid for now */
+		if (WARN_ON_ONCE(inode->i_mapping != mapping)) {
+			err = -EFAULT;
+			rcu_read_unlock();
+			iput(inode);
+
+			goto out;
+		}
+
+		key->both.offset |= FUT_OFF_INODE; /* inode-based key */
+		key->shared.inode = inode;
+		key->shared.pgoff = basepage_index(page);
+		rcu_read_unlock();
+	}
+
+out:
+	put_page(page_head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -1616,7 +1724,28 @@ static int wake_futex_pi(u32 __user *uaddr, u32 uval, struct futex_pi_state *pi_
 
 	if (unlikely(should_fail_futex(true))) {
 		ret = -EFAULT;
+<<<<<<< HEAD
 		goto out_unlock;
+=======
+
+	if (cmpxchg_futex_value_locked(&curval, uaddr, uval, newval)) {
+		ret = -EFAULT;
+	} else if (curval != uval) {
+		/*
+		 * If a unconditional UNLOCK_PI operation (user space did not
+		 * try the TID->0 transition) raced with a waiter setting the
+		 * FUTEX_WAITERS flag between get_user() and locking the hash
+		 * bucket lock, retry the operation.
+		 */
+		if ((FUTEX_TID_MASK & curval) == uval)
+			ret = -EAGAIN;
+		else
+			ret = -EINVAL;
+	}
+	if (ret) {
+		raw_spin_unlock(&pi_state->pi_mutex.wait_lock);
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = cmpxchg_futex_value_locked(&curval, uaddr, uval, newval);
@@ -1737,6 +1866,7 @@ static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
 	int oldval, ret;
 
 	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28)) {
+<<<<<<< HEAD
 		if (oparg < 0 || oparg > 31) {
 			char comm[sizeof(current->comm)];
 			/*
@@ -1751,6 +1881,14 @@ static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
 	}
 
 	if (!access_ok(uaddr, sizeof(u32)))
+=======
+		if (oparg < 0 || oparg > 31)
+			return -EINVAL;
+		oparg = 1 << oparg;
+	}
+
+	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EFAULT;
 
 	ret = arch_futex_atomic_op_inuser(op, oparg, &oldval, uaddr);
@@ -2045,6 +2183,9 @@ static int futex_requeue(u32 __user *uaddr1, unsigned int flags,
 	 */
 	if (!IS_ENABLED(CONFIG_FUTEX_PI) && requeue_pi)
 		return -ENOSYS;
+
+	if (nr_wake < 0 || nr_requeue < 0)
+		return -EINVAL;
 
 	if (requeue_pi) {
 		/*
@@ -3168,8 +3309,16 @@ retry:
 		 * A unconditional UNLOCK_PI op raced against a waiter
 		 * setting the FUTEX_WAITERS bit. Try again.
 		 */
+<<<<<<< HEAD
 		if (ret == -EAGAIN)
 			goto pi_retry;
+=======
+		if (ret == -EAGAIN) {
+			spin_unlock(&hb->lock);
+			put_futex_key(&key);
+			goto retry;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * wake_futex_pi has detected invalid state. Tell user
 		 * space.
@@ -3396,11 +3545,20 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 		if (q.pi_state && (q.pi_state->owner != current)) {
 			spin_lock(q.lock_ptr);
 			ret = fixup_pi_state_owner(uaddr2, &q, current);
+<<<<<<< HEAD
+=======
+			if (ret && rt_mutex_owner(&q.pi_state->pi_mutex) == current)
+				rt_mutex_unlock(&q.pi_state->pi_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * Drop the reference to the pi state which
 			 * the requeue_pi() code acquired for us.
 			 */
+<<<<<<< HEAD
 			put_pi_state(q.pi_state);
+=======
+			free_pi_state(q.pi_state);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			spin_unlock(q.lock_ptr);
 			/*
 			 * Adjust the return value. It's either -EFAULT or
@@ -3436,6 +3594,14 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 		 */
 		if (res)
 			ret = (res < 0) ? res : 0;
+
+		/*
+		 * If fixup_pi_state_owner() faulted and was unable to handle
+		 * the fault, unlock the rt_mutex and return the fault to
+		 * userspace.
+		 */
+		if (ret && rt_mutex_owner(pi_mutex) == current)
+			rt_mutex_unlock(pi_mutex);
 
 		/* Unqueue and drop the lock. */
 		unqueue_me_pi(&q);

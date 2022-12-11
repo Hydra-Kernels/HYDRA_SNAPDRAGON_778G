@@ -25,6 +25,7 @@
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/ratelimit.h>
 #include <linux/kernel.h>
 #include <linux/keyctl.h>
 #include <linux/err.h>

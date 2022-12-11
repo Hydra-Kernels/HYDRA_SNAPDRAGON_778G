@@ -421,6 +421,7 @@ early_idt_handler_common:
 
 	/* The vector number is in pt_regs->gs */
 
+<<<<<<< HEAD
 	cld
 	pushl	%fs		/* pt_regs->fs (__fsh varies by model) */
 	pushl	%es		/* pt_regs->es (__esh varies by model) */
@@ -432,6 +433,10 @@ early_idt_handler_common:
 	pushl	%edx		/* pt_regs->dx */
 	pushl	%ecx		/* pt_regs->cx */
 	pushl	%ebx		/* pt_regs->bx */
+=======
+	cmpw $(__KERNEL_CS),32(%esp)
+	jne 10f
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Fix up DS and ES */
 	movl	$(__KERNEL_DS), %ecx
@@ -537,8 +542,15 @@ initial_page_table:
 	.align PGD_ALIGN
 initial_pg_fixmap:
 	.fill 1024,4,0
+<<<<<<< HEAD
 .globl swapper_pg_dir
 	.align PGD_ALIGN
+=======
+.globl empty_zero_page
+empty_zero_page:
+	.fill 4096,1,0
+.globl swapper_pg_dir
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 swapper_pg_dir:
 	.fill 1024,4,0
 	.fill PTI_USER_PGD_FILL,4,0

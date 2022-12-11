@@ -133,7 +133,11 @@ static int isp1301_remove(struct i2c_client *client)
 static struct i2c_driver isp1301_driver = {
 	.driver = {
 		.name = DRV_NAME,
+<<<<<<< HEAD
 		.of_match_table = isp1301_of_match,
+=======
+		.of_match_table = of_match_ptr(isp1301_of_match),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	.probe = isp1301_probe,
 	.remove = isp1301_remove,

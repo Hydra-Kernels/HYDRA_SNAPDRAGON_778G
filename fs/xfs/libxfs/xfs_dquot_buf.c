@@ -38,7 +38,13 @@ xfs_dquot_verify(
 	struct xfs_mount *mp,
 	xfs_disk_dquot_t *ddq,
 	xfs_dqid_t	 id,
+<<<<<<< HEAD
 	uint		 type)	  /* used only during quotacheck */
+=======
+	uint		 type,	  /* used only when IO_dorepair is true */
+	uint		 flags,
+	const char	 *str)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * We can encounter an uninitialized dquot buffer for 2 reasons:
@@ -172,7 +178,11 @@ STATIC xfs_failaddr_t
 xfs_dquot_buf_verify(
 	struct xfs_mount	*mp,
 	struct xfs_buf		*bp,
+<<<<<<< HEAD
 	bool			readahead)
+=======
+	int			warn)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct xfs_dqblk	*dqb = bp->b_addr;
 	xfs_failaddr_t		fa;
@@ -205,6 +215,7 @@ xfs_dquot_buf_verify(
 		if (i == 0)
 			id = be32_to_cpu(ddq->d_id);
 
+<<<<<<< HEAD
 		fa = xfs_dqblk_verify(mp, &dqb[i], id + i, 0);
 		if (fa) {
 			if (!readahead)
@@ -213,6 +224,11 @@ xfs_dquot_buf_verify(
 					sizeof(struct xfs_dqblk), fa);
 			return fa;
 		}
+=======
+		error = xfs_dqcheck(mp, ddq, id + i, 0, warn, __func__);
+		if (error)
+			return false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return NULL;
@@ -250,8 +266,37 @@ xfs_dquot_buf_readahead_verify(
 {
 	struct xfs_mount	*mp = bp->b_mount;
 
+<<<<<<< HEAD
 	if (!xfs_dquot_buf_verify_crc(mp, bp, true) ||
 	    xfs_dquot_buf_verify(mp, bp, true) != NULL) {
+		xfs_buf_ioerror(bp, -EIO);
+		bp->b_flags &= ~XBF_DONE;
+	}
+=======
+	if (!xfs_dquot_buf_verify_crc(mp, bp))
+		xfs_buf_ioerror(bp, -EFSBADCRC);
+	else if (!xfs_dquot_buf_verify(mp, bp, XFS_QMOPT_DOWARN))
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
+
+	if (bp->b_error)
+		xfs_verifier_error(bp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+}
+
+/*
+ * readahead errors are silent and simply leave the buffer as !done so a real
+ * read will then be run with the xfs_dquot_buf_ops verifier. See
+ * xfs_inode_buf_verify() for why we use EIO and ~XBF_DONE here rather than
+ * reporting the failure.
+ */
+static void
+xfs_dquot_buf_readahead_verify(
+	struct xfs_buf	*bp)
+{
+	struct xfs_mount	*mp = bp->b_target->bt_mount;
+
+	if (!xfs_dquot_buf_verify_crc(mp, bp) ||
+	    !xfs_dquot_buf_verify(mp, bp, 0)) {
 		xfs_buf_ioerror(bp, -EIO);
 		bp->b_flags &= ~XBF_DONE;
 	}
@@ -268,13 +313,24 @@ xfs_dquot_buf_write_verify(
 {
 	struct xfs_mount	*mp = bp->b_mount;
 
+<<<<<<< HEAD
 	xfs_dquot_buf_verify(mp, bp, false);
+=======
+	if (!xfs_dquot_buf_verify(mp, bp, XFS_QMOPT_DOWARN)) {
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
+		xfs_verifier_error(bp);
+		return;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 const struct xfs_buf_ops xfs_dquot_buf_ops = {
 	.name = "xfs_dquot",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_DQUOT_MAGIC),
 		     cpu_to_be16(XFS_DQUOT_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_dquot_buf_read_verify,
 	.verify_write = xfs_dquot_buf_write_verify,
 	.verify_struct = xfs_dquot_buf_verify_struct,
@@ -282,8 +338,11 @@ const struct xfs_buf_ops xfs_dquot_buf_ops = {
 
 const struct xfs_buf_ops xfs_dquot_buf_ra_ops = {
 	.name = "xfs_dquot_ra",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_DQUOT_MAGIC),
 		     cpu_to_be16(XFS_DQUOT_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_dquot_buf_readahead_verify,
 	.verify_write = xfs_dquot_buf_write_verify,
 };

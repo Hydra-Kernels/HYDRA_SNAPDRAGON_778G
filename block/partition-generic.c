@@ -476,7 +476,11 @@ rescan:
 
 	if (disk->fops->revalidate_disk)
 		disk->fops->revalidate_disk(disk);
+<<<<<<< HEAD
 	check_disk_size_change(disk, bdev, true);
+=======
+	check_disk_size_change(disk, bdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bdev->bd_invalidated = 0;
 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
 		return 0;

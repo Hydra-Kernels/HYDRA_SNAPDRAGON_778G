@@ -218,6 +218,7 @@ ifeq ($(CONFIG_CPU_HAS_MSA),y)
 toolchain-msa				:= $(call cc-option-yn,$(mips-cflags) -mhard-float -mfp64 -Wa$(comma)-mmsa)
 cflags-$(toolchain-msa)			+= -DTOOLCHAIN_SUPPORTS_MSA
 endif
+<<<<<<< HEAD
 toolchain-virt				:= $(call cc-option-yn,$(mips-cflags) -mvirt)
 cflags-$(toolchain-virt)		+= -DTOOLCHAIN_SUPPORTS_VIRT
 # For -mmicromips, use -Wa,-fatal-warnings to catch unsupported -mxpa which
@@ -232,6 +233,8 @@ toolchain-dsp				:= $(call cc-option-yn,$(mips-cflags) -Wa$(comma)-mdsp)
 cflags-$(toolchain-dsp)			+= -DTOOLCHAIN_SUPPORTS_DSP
 toolchain-ginv				:= $(call cc-option-yn,$(mips-cflags) -Wa$(comma)-mginv)
 cflags-$(toolchain-ginv)		+= -DTOOLCHAIN_SUPPORTS_GINV
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #
 # Firmware support

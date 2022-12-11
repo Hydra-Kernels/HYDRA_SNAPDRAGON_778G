@@ -167,7 +167,11 @@ static void __intel_pmu_lbr_enable(bool pmi)
 	 * did not change.
 	 */
 	if (cpuc->lbr_sel)
+<<<<<<< HEAD:arch/x86/events/intel/lbr.c
 		lbr_select = cpuc->lbr_sel->config & x86_pmu.lbr_sel_mask;
+=======
+		lbr_select = cpuc->lbr_sel->config;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_lbr.c
 	if (!pmi && cpuc->lbr_sel)
 		wrmsrl(MSR_LBR_SELECT, lbr_select);
 
@@ -558,7 +562,10 @@ static void intel_pmu_lbr_read_32(struct cpu_hw_events *cpuc)
 		cpuc->lbr_entries[i].in_tx	= 0;
 		cpuc->lbr_entries[i].abort	= 0;
 		cpuc->lbr_entries[i].cycles	= 0;
+<<<<<<< HEAD:arch/x86/events/intel/lbr.c
 		cpuc->lbr_entries[i].type	= 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_lbr.c
 		cpuc->lbr_entries[i].reserved	= 0;
 	}
 	cpuc->lbr_stack.nr = i;
@@ -580,9 +587,14 @@ static void intel_pmu_lbr_read_64(struct cpu_hw_events *cpuc)
 	int num = x86_pmu.lbr_nr;
 
 	if (cpuc->lbr_sel) {
+<<<<<<< HEAD:arch/x86/events/intel/lbr.c
 		need_info = !(cpuc->lbr_sel->config & LBR_NO_INFO);
 		if (cpuc->lbr_sel->config & LBR_CALL_STACK)
 			call_stack = true;
+=======
+		if (cpuc->lbr_sel->config & LBR_CALL_STACK)
+			num = tos;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_lbr.c
 	}
 
 	for (i = 0; i < num; i++) {

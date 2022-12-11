@@ -18,9 +18,12 @@
 void mips_install_watch_registers(struct task_struct *t)
 {
 	struct mips3264_watch_reg_state *watches = &t->thread.watch.mips3264;
+<<<<<<< HEAD
 	unsigned int watchhi = MIPS_WATCHHI_G |		/* Trap all ASIDs */
 			       MIPS_WATCHHI_IRW;	/* Clear result bits */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	switch (current_cpu_data.watch_reg_use_cnt) {
 	default:
 		BUG();

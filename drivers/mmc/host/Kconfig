@@ -119,7 +119,11 @@ config MMC_RICOH_MMC
 
 config MMC_SDHCI_ACPI
 	tristate "SDHCI support for ACPI enumerated SDHCI controllers"
+<<<<<<< HEAD
 	depends on MMC_SDHCI && ACPI && PCI
+=======
+	depends on MMC_SDHCI && ACPI
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select IOSF_MBI if X86
 	help
 	  This selects support for ACPI enumerated SDHCI controllers,

@@ -145,12 +145,18 @@ _GLOBAL(tm_reclaim)
 1:	tdeqi   r6, 0
 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0
 
+<<<<<<< HEAD
 	/* Stash the stack pointer away for use after reclaim */
 	std	r1, PACAR1(r13)
 
 	/* Clear MSR RI since we are about to use SCRATCH0, EE is already off */
 	li	r5, 0
 	mtmsrd	r5, 1
+=======
+	/* Clear MSR RI since we are about to change r1, EE is already off. */
+	li	r4, 0
+	mtmsrd	r4, 1
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * BE CAREFUL HERE:
@@ -180,6 +186,7 @@ _GLOBAL(tm_reclaim)
 
 	std	r11, GPR11(r1)			/* Temporary stash */
 
+<<<<<<< HEAD
 	/*
 	 * Move the saved user r1 to the kernel stack in case PACATMSCRATCH is
 	 * clobbered by an exception once we turn on MSR_RI below.
@@ -194,11 +201,16 @@ _GLOBAL(tm_reclaim)
 	GET_SCRATCH0(r11)
 	std	r11, GPR13(r1)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Reset MSR RI so we can take SLB faults again */
 	li	r11, MSR_RI
 	mtmsrd	r11, 1
 
+<<<<<<< HEAD
 	/* Store the PPR in r11 and reset to decent value */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mfspr	r11, SPRN_PPR
 	HMT_MEDIUM
 
@@ -463,8 +475,13 @@ restore_gprs:
 	REST_GPR(6, r7)
 
 	/*
+<<<<<<< HEAD
 	 * Store r1 and r5 on the stack so that we can access them after we
 	 * clear MSR RI.
+=======
+	 * Store r1 and r5 on the stack so that we can access them
+	 * after we clear MSR RI.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 
 	REST_GPR(5, r7)
@@ -474,7 +491,11 @@ restore_gprs:
 
 	REST_GPR(7, r7)
 
+<<<<<<< HEAD
 	/* Clear MSR RI since we are about to use SCRATCH0. EE is already off */
+=======
+	/* Clear MSR RI since we are about to change r1. EE is already off */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	li	r5, 0
 	mtmsrd	r5, 1
 
@@ -485,7 +506,10 @@ restore_gprs:
 	 * until we turn MSR RI back on.
 	 */
 
+<<<<<<< HEAD
 	SET_SCRATCH0(r1)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ld	r5, -8(r1)
 	ld	r1, -16(r1)
 

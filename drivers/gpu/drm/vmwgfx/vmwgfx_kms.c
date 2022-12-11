@@ -34,8 +34,11 @@
 #include <drm/drm_sysfs.h>
 #include <drm/drm_vblank.h>
 
+<<<<<<< HEAD
 #include "vmwgfx_kms.h"
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Might need a hrtimer here? */
 #define VMWGFX_PRESENT_RATE ((HZ / 60 > 0) ? HZ / 60 : 1)
 
@@ -1148,7 +1151,10 @@ static int vmw_create_bo_proxy(struct drm_device *dev,
 	struct drm_vmw_size content_base_size = {0};
 	struct vmw_resource *res;
 	unsigned int bytes_pp;
+<<<<<<< HEAD
 	struct drm_format_name_buf format_name;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret;
 
 	switch (mode_cmd->pixel_format) {
@@ -1175,7 +1181,11 @@ static int vmw_create_bo_proxy(struct drm_device *dev,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	content_base_size.width  = mode_cmd->pitches[0] / bytes_pp;
+=======
+	content_base_size.width  = mode_cmd->pitch / bytes_pp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	content_base_size.height = mode_cmd->height;
 	content_base_size.depth  = 1;
 
@@ -2245,6 +2255,7 @@ int vmw_du_connector_fill_modes(struct drm_connector *connector,
 	};
 	int i;
 	u32 assumed_bpp = 4;
+<<<<<<< HEAD
 
 	if (dev_priv->assume_16bpp)
 		assumed_bpp = 2;
@@ -2256,6 +2267,12 @@ int vmw_du_connector_fill_modes(struct drm_connector *connector,
 	 * For STDU extra limit for a mode on SVGA_REG_SCREENTARGET_MAX_WIDTH/
 	 * HEIGHT registers.
 	 */
+=======
+
+	if (dev_priv->assume_16bpp)
+		assumed_bpp = 2;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dev_priv->active_display_unit == vmw_du_screen_target) {
 		max_width  = min(max_width,  dev_priv->stdu_max_width);
 		max_height = min(max_height, dev_priv->stdu_max_height);
@@ -2575,6 +2592,108 @@ void vmw_kms_helper_validation_finish(struct vmw_private *dev_priv,
 		*out_fence = fence;
 	else
 		vmw_fence_obj_unreference(&fence);
+<<<<<<< HEAD
+=======
+
+	vmw_kms_helper_buffer_revert(buf);
+}
+
+
+/**
+ * vmw_kms_helper_resource_revert - Undo the actions of
+ * vmw_kms_helper_resource_prepare.
+ *
+ * @res: Pointer to the resource. Typically a surface.
+ *
+ * Helper to be used if an error forces the caller to undo the actions of
+ * vmw_kms_helper_resource_prepare.
+ */
+void vmw_kms_helper_resource_revert(struct vmw_validation_ctx *ctx)
+{
+	struct vmw_resource *res = ctx->res;
+
+	vmw_kms_helper_buffer_revert(ctx->buf);
+	vmw_dmabuf_unreference(&ctx->buf);
+	vmw_resource_unreserve(res, false, NULL, 0);
+	mutex_unlock(&res->dev_priv->cmdbuf_mutex);
+}
+
+/**
+ * vmw_kms_helper_resource_prepare - Reserve and validate a resource before
+ * command submission.
+ *
+ * @res: Pointer to the resource. Typically a surface.
+ * @interruptible: Whether to perform waits as interruptible.
+ *
+ * Reserves and validates also the backup buffer if a guest-backed resource.
+ * Returns 0 on success, negative error code on failure. -ERESTARTSYS if
+ * interrupted by a signal.
+ */
+int vmw_kms_helper_resource_prepare(struct vmw_resource *res,
+				    bool interruptible,
+				    struct vmw_validation_ctx *ctx)
+{
+	int ret = 0;
+
+	ctx->buf = NULL;
+	ctx->res = res;
+
+	if (interruptible)
+		ret = mutex_lock_interruptible(&res->dev_priv->cmdbuf_mutex);
+	else
+		mutex_lock(&res->dev_priv->cmdbuf_mutex);
+
+	if (unlikely(ret != 0))
+		return -ERESTARTSYS;
+
+	ret = vmw_resource_reserve(res, interruptible, false);
+	if (ret)
+		goto out_unlock;
+
+	if (res->backup) {
+		ret = vmw_kms_helper_buffer_prepare(res->dev_priv, res->backup,
+						    interruptible,
+						    res->dev_priv->has_mob);
+		if (ret)
+			goto out_unreserve;
+
+		ctx->buf = vmw_dmabuf_reference(res->backup);
+	}
+	ret = vmw_resource_validate(res);
+	if (ret)
+		goto out_revert;
+	return 0;
+
+out_revert:
+	vmw_kms_helper_buffer_revert(ctx->buf);
+out_unreserve:
+	vmw_resource_unreserve(res, false, NULL, 0);
+out_unlock:
+	mutex_unlock(&res->dev_priv->cmdbuf_mutex);
+	return ret;
+}
+
+/**
+ * vmw_kms_helper_resource_finish - Unreserve and fence a resource after
+ * kms command submission.
+ *
+ * @res: Pointer to the resource. Typically a surface.
+ * @out_fence: Optional pointer to a fence pointer. If non-NULL, a
+ * ref-counted fence pointer is returned here.
+ */
+void vmw_kms_helper_resource_finish(struct vmw_validation_ctx *ctx,
+				    struct vmw_fence_obj **out_fence)
+{
+	struct vmw_resource *res = ctx->res;
+
+	if (ctx->buf || out_fence)
+		vmw_kms_helper_buffer_finish(res->dev_priv, NULL, ctx->buf,
+					     out_fence, NULL);
+
+	vmw_dmabuf_unreference(&ctx->buf);
+	vmw_resource_unreserve(res, false, NULL, 0);
+	mutex_unlock(&res->dev_priv->cmdbuf_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

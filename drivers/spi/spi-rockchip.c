@@ -219,7 +219,46 @@ static u32 get_fifo_len(struct rockchip_spi *rs)
 
 static void rockchip_spi_set_cs(struct spi_device *spi, bool enable)
 {
+<<<<<<< HEAD
 	struct spi_master *master = spi->master;
+=======
+	u32 ser;
+	struct spi_master *master = spi->master;
+	struct rockchip_spi *rs = spi_master_get_devdata(master);
+
+	pm_runtime_get_sync(rs->dev);
+
+	ser = readl_relaxed(rs->regs + ROCKCHIP_SPI_SER) & SER_MASK;
+
+	/*
+	 * drivers/spi/spi.c:
+	 * static void spi_set_cs(struct spi_device *spi, bool enable)
+	 * {
+	 *		if (spi->mode & SPI_CS_HIGH)
+	 *			enable = !enable;
+	 *
+	 *		if (spi->cs_gpio >= 0)
+	 *			gpio_set_value(spi->cs_gpio, !enable);
+	 *		else if (spi->master->set_cs)
+	 *		spi->master->set_cs(spi, !enable);
+	 * }
+	 *
+	 * Note: enable(rockchip_spi_set_cs) = !enable(spi_set_cs)
+	 */
+	if (!enable)
+		ser |= 1 << spi->chip_select;
+	else
+		ser &= ~(1 << spi->chip_select);
+
+	writel_relaxed(ser, rs->regs + ROCKCHIP_SPI_SER);
+
+	pm_runtime_put_sync(rs->dev);
+}
+
+static int rockchip_spi_prepare_message(struct spi_master *master,
+					struct spi_message *msg)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct rockchip_spi *rs = spi_master_get_devdata(master);
 	bool cs_asserted = !enable;
 

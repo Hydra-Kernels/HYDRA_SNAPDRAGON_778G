@@ -517,6 +517,17 @@ W:	http://ez.analog.com/community/linux-device-drivers
 S:	Supported
 F:	drivers/video/backlight/adp8860_bl.c
 
+<<<<<<< HEAD
+=======
+ADS1015 HARDWARE MONITOR DRIVER
+M:	Dirk Eibach <eibach@gdsys.de>
+L:	linux-hwmon@vger.kernel.org
+S:	Maintained
+F:	Documentation/hwmon/ads1015
+F:	drivers/hwmon/ads1015.c
+F:	include/linux/i2c/ads1015.h
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ADT746X FAN DRIVER
 M:	Colin Leroy <colin@colino.net>
 S:	Maintained
@@ -798,10 +809,17 @@ S:	Supported
 F:	drivers/gpu/drm/amd/display/
 
 AMD FAM15H PROCESSOR POWER MONITORING DRIVER
+<<<<<<< HEAD
 M:	Huang Rui <ray.huang@amd.com>
 L:	linux-hwmon@vger.kernel.org
 S:	Supported
 F:	Documentation/hwmon/fam15h_power.rst
+=======
+M:	Andreas Herrmann <herrmann.der.user@googlemail.com>
+L:	linux-hwmon@vger.kernel.org
+S:	Maintained
+F:	Documentation/hwmon/fam15h_power
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 F:	drivers/hwmon/fam15h_power.c
 
 AMD FCH GPIO DRIVER
@@ -2746,6 +2764,31 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/ath.git
 S:	Supported
 F:	drivers/net/wireless/ath/ath6kl/
 
+<<<<<<< HEAD
+=======
+WILOCITY WIL6210 WIRELESS DRIVER
+M:	Maya Erez <qca_merez@qca.qualcomm.com>
+L:	linux-wireless@vger.kernel.org
+L:	wil6210@qca.qualcomm.com
+S:	Supported
+W:	http://wireless.kernel.org/en/users/Drivers/wil6210
+F:	drivers/net/wireless/ath/wil6210/
+F:	include/uapi/linux/wil6210_uapi.h
+
+CARL9170 LINUX COMMUNITY WIRELESS DRIVER
+M:	Christian Lamparter <chunkeey@googlemail.com>
+L:	linux-wireless@vger.kernel.org
+W:	http://wireless.kernel.org/en/users/Drivers/carl9170
+S:	Maintained
+F:	drivers/net/wireless/ath/carl9170/
+
+ATK0110 HWMON DRIVER
+M:	Luca Tettamanti <kronos.it@gmail.com>
+L:	linux-hwmon@vger.kernel.org
+S:	Maintained
+F:	drivers/hwmon/asus_atk0110.c
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ATI_REMOTE2 DRIVER
 M:	Ville Syrjala <syrjala@sci.fi>
 S:	Maintained
@@ -6005,7 +6048,17 @@ L:	linux-efi@vger.kernel.org
 M:	Ivan Hu <ivan.hu@canonical.com>
 M:	Ard Biesheuvel <ard.biesheuvel@linaro.org>
 S:	Maintained
+<<<<<<< HEAD
 F:	drivers/firmware/efi/test/
+=======
+F:	Documentation/efi-stub.txt
+F:	arch/ia64/kernel/efi.c
+F:	arch/x86/boot/compressed/eboot.[ch]
+F:	arch/x86/include/asm/efi.h
+F:	arch/x86/platform/efi/
+F:	drivers/firmware/efi/
+F:	include/linux/efi*.h
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 EFI VARIABLE FILESYSTEM
 M:	Matthew Garrett <matthew.garrett@nebula.com>
@@ -7202,6 +7255,10 @@ M:	Jean Delvare <jdelvare@suse.com>
 M:	Guenter Roeck <linux@roeck-us.net>
 L:	linux-hwmon@vger.kernel.org
 W:	http://hwmon.wiki.kernel.org/
+<<<<<<< HEAD
+=======
+T:	quilt http://jdelvare.nerim.net/devel/linux/jdelvare-hwmon/
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git
 S:	Maintained
 F:	Documentation/devicetree/bindings/hwmon/
@@ -9868,10 +9925,16 @@ S:	Maintained
 F:	Documentation/hwmon/max16065.rst
 F:	drivers/hwmon/max16065.c
 
+<<<<<<< HEAD
 MAX2175 SDR TUNER DRIVER
 M:	Ramesh Shanmugasundaram <ramesh.shanmugasundaram@bp.renesas.com>
 L:	linux-media@vger.kernel.org
 T:	git git://linuxtv.org/media_tree.git
+=======
+MAX20751 HARDWARE MONITOR DRIVER
+M:	Guenter Roeck <linux@roeck-us.net>
+L:	linux-hwmon@vger.kernel.org
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 S:	Maintained
 F:	Documentation/devicetree/bindings/media/i2c/max2175.txt
 F:	Documentation/media/v4l-drivers/max2175.rst
@@ -9879,9 +9942,16 @@ F:	drivers/media/i2c/max2175*
 F:	include/uapi/linux/max2175.h
 
 MAX6650 HARDWARE MONITOR AND FAN CONTROLLER DRIVER
+<<<<<<< HEAD
 L:	linux-hwmon@vger.kernel.org
 S:	Orphan
 F:	Documentation/hwmon/max6650.rst
+=======
+M:	"Hans J. Koch" <hjk@hansjkoch.de>
+L:	linux-hwmon@vger.kernel.org
+S:	Maintained
+F:	Documentation/hwmon/max6650
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 F:	drivers/hwmon/max6650.c
 
 MAX6697 HARDWARE MONITOR DRIVER
@@ -13253,8 +13323,12 @@ F:	drivers/media/usb/pwc/*
 F:	include/trace/events/pwc.h
 
 PWM FAN DRIVER
+<<<<<<< HEAD
 M:	Kamil Debski <kamil@wypas.org>
 M:	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+=======
+M:	Kamil Debski <k.debski@samsung.com>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 L:	linux-hwmon@vger.kernel.org
 S:	Supported
 F:	Documentation/devicetree/bindings/hwmon/pwm-fan.txt
@@ -16465,7 +16539,44 @@ TOSHIBA WMI HOTKEYS DRIVER
 M:	Azael Avalos <coproscefalo@gmail.com>
 L:	platform-driver-x86@vger.kernel.org
 S:	Maintained
+<<<<<<< HEAD
 F:	drivers/platform/x86/toshiba-wmi.c
+=======
+F:	drivers/mmc/host/tmio_mmc*
+F:	drivers/mmc/host/sh_mobile_sdhi.c
+F:	include/linux/mmc/tmio.h
+F:	include/linux/mmc/sh_mobile_sdhi.h
+
+TMP401 HARDWARE MONITOR DRIVER
+M:	Guenter Roeck <linux@roeck-us.net>
+L:	linux-hwmon@vger.kernel.org
+S:	Maintained
+F:	Documentation/hwmon/tmp401
+F:	drivers/hwmon/tmp401.c
+
+TMPFS (SHMEM FILESYSTEM)
+M:	Hugh Dickins <hughd@google.com>
+L:	linux-mm@kvack.org
+S:	Maintained
+F:	include/linux/shmem_fs.h
+F:	mm/shmem.c
+
+TM6000 VIDEO4LINUX DRIVER
+M:	Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+L:	linux-media@vger.kernel.org
+W:	http://linuxtv.org
+T:	git git://linuxtv.org/media_tree.git
+S:	Odd fixes
+F:	drivers/media/usb/tm6000/
+
+TW68 VIDEO4LINUX DRIVER
+M:	Hans Verkuil <hverkuil@xs4all.nl>
+L:	linux-media@vger.kernel.org
+T:	git git://linuxtv.org/media_tree.git
+W:	http://linuxtv.org
+S:	Odd Fixes
+F:	drivers/media/pci/tw68/
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 TPM DEVICE DRIVER
 M:	Peter Huewe <peterhuewe@gmx.de>

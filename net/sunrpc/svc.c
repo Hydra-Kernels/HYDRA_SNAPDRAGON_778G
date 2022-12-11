@@ -1395,9 +1395,34 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 			goto release_dropit;
 		if (*statp == rpc_garbage_args)
 			goto err_garbage;
+<<<<<<< HEAD
 		auth_stat = svc_get_autherr(rqstp, statp);
 		if (auth_stat != rpc_auth_ok)
 			goto err_release_bad_auth;
+=======
+
+		*statp = procp->pc_func(rqstp, rqstp->rq_argp, rqstp->rq_resp);
+
+		/* Encode reply */
+		if (*statp == rpc_drop_reply ||
+		    test_bit(RQ_DROPME, &rqstp->rq_flags)) {
+			if (procp->pc_release)
+				procp->pc_release(rqstp, NULL, rqstp->rq_resp);
+			goto dropit;
+		}
+		if (*statp == rpc_autherr_badcred) {
+			if (procp->pc_release)
+				procp->pc_release(rqstp, NULL, rqstp->rq_resp);
+			goto err_bad_auth;
+		}
+		if (*statp == rpc_success &&
+		    (xdr = procp->pc_encode) &&
+		    !xdr(rqstp, resv->iov_base+resv->iov_len, rqstp->rq_resp)) {
+			dprintk("svc: failed to encode reply\n");
+			/* serv->sv_stats->rpcsystemerr++; */
+			*statp = rpc_system_err;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		dprintk("svc: calling dispatcher\n");
 		if (!process.dispatch(rqstp, statp))

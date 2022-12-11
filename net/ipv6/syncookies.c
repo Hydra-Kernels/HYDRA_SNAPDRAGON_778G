@@ -210,10 +210,14 @@ struct sock *cookie_v6_check(struct sock *sk, struct sk_buff *skb)
 	treq->snt_synack	= 0;
 	treq->rcv_isn = ntohl(th->seq) - 1;
 	treq->snt_isn = cookie;
+<<<<<<< HEAD
 	treq->ts_off = 0;
 	treq->txhash = net_tx_rndhash();
 	if (IS_ENABLED(CONFIG_SMC))
 		ireq->smc_ok = 0;
+=======
+	treq->txhash = net_tx_rndhash();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We need to lookup the dst_entry to get the correct window size.

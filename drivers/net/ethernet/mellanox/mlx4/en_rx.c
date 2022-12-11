@@ -608,6 +608,10 @@ static int get_fixed_ipv6_csum(__wsum hw_checksum, struct sk_buff *skb,
 		     nexthdr == IPPROTO_HOPOPTS ||
 		     nexthdr == IPPROTO_SCTP))
 		return -1;
+<<<<<<< HEAD
+=======
+	hw_checksum = csum_add(hw_checksum, (__force __wsum)htons(ipv6h->nexthdr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* priority, version, flow_lbl */
 	temp = csum_add(hw_checksum, *(__wsum *)ipv6h);

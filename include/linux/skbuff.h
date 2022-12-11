@@ -654,8 +654,13 @@ typedef unsigned char *sk_buff_data_t;
  *	@tc_index: Traffic control index
  *	@hash: the packet hash
  *	@queue_mapping: Queue mapping for multiqueue devices
+<<<<<<< HEAD
  *	@pfmemalloc: skbuff was allocated from PFMEMALLOC reserves
  *	@active_extensions: active extensions (skb_ext_id types)
+=======
+ *	@xmit_more: More SKBs are pending for this queue
+ *	@pfmemalloc: skbuff was allocated from PFMEMALLOC reserves
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *	@ndisc_nodetype: router type (from link layer)
  *	@ooo_okay: allow the mapping of a socket to a queue to be changed
  *	@l4_hash: indicate hash is a canonical 4-tuple hash over transport
@@ -760,10 +765,17 @@ struct sk_buff {
 				fclone:2,
 				peeked:1,
 				head_frag:1,
+<<<<<<< HEAD
 				pfmemalloc:1;
 #ifdef CONFIG_SKB_EXTENSIONS
 	__u8			active_extensions;
 #endif
+=======
+				xmit_more:1,
+				pfmemalloc:1;
+	kmemcheck_bitfield_end(flags1);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* fields enclosed in headers_start/headers_end are copied
 	 * using a single memcpy() in __copy_skb_header()
 	 */
@@ -782,7 +794,12 @@ struct sk_buff {
 	__u8			__pkt_type_offset[0];
 	__u8			pkt_type:3;
 	__u8			ignore_df:1;
+<<<<<<< HEAD
+=======
+	__u8			nfctinfo:3;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__u8			nf_trace:1;
+
 	__u8			ip_summed:2;
 	__u8			ooo_okay:1;
 
@@ -791,6 +808,7 @@ struct sk_buff {
 	__u8			wifi_acked_valid:1;
 	__u8			wifi_acked:1;
 	__u8			no_fcs:1;
+
 	/* Indicates the inner headers are valid in the skbuff. */
 	__u8			encapsulation:1;
 	__u8			encap_hdr_csum:1;
@@ -806,13 +824,18 @@ struct sk_buff {
 	__u8			vlan_present:1;
 	__u8			csum_complete_sw:1;
 	__u8			csum_level:2;
+<<<<<<< HEAD
 	__u8			csum_not_inet:1;
 	__u8			dst_pending_confirm:1;
+=======
+	__u8			csum_bad:1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_IPV6_NDISC_NODETYPE
 	__u8			ndisc_nodetype:2;
 #endif
 
 	__u8			ipvs_property:1;
+
 	__u8			inner_protocol_type:1;
 
 #ifdef CONFIG_ENABLE_SFE
@@ -1247,7 +1270,11 @@ __skb_set_sw_hash(struct sk_buff *skb, __u32 hash, bool is_l4)
 }
 
 void __skb_get_hash(struct sk_buff *skb);
+<<<<<<< HEAD
 u32 __skb_get_hash_symmetric(const struct sk_buff *skb);
+=======
+u32 __skb_get_hash_symmetric(struct sk_buff *skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 u32 skb_get_poff(const struct sk_buff *skb);
 u32 __skb_get_poff(const struct sk_buff *skb, void *data,
 		   const struct flow_keys_basic *keys, int hlen);
@@ -1387,9 +1414,12 @@ static inline void skb_copy_hash(struct sk_buff *to, const struct sk_buff *from)
 static inline void skb_copy_decrypted(struct sk_buff *to,
 				      const struct sk_buff *from)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_TLS_DEVICE
 	to->decrypted = from->decrypted;
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
@@ -3358,6 +3388,42 @@ __skb_postpush_rcsum(struct sk_buff *skb, const void *start, unsigned int len,
 					   csum_partial(start, len, 0), off);
 }
 
+static inline void skb_postpush_rcsum(struct sk_buff *skb,
+				      const void *start, unsigned int len)
+{
+	/* For performing the reverse operation to skb_postpull_rcsum(),
+	 * we can instead of ...
+	 *
+	 *   skb->csum = csum_add(skb->csum, csum_partial(start, len, 0));
+	 *
+	 * ... just use this equivalent version here to save a few
+	 * instructions. Feeding csum of 0 in csum_partial() and later
+	 * on adding skb->csum is equivalent to feed skb->csum in the
+	 * first place.
+	 */
+	if (skb->ip_summed == CHECKSUM_COMPLETE)
+		skb->csum = csum_partial(start, len, skb->csum);
+}
+
+/**
+ *	skb_push_rcsum - push skb and update receive checksum
+ *	@skb: buffer to update
+ *	@len: length of data pulled
+ *
+ *	This function performs an skb_push on the packet and updates
+ *	the CHECKSUM_COMPLETE checksum.  It should be used on
+ *	receive path processing instead of skb_push unless you know
+ *	that the checksum difference is zero (e.g., a valid IP header)
+ *	or you are setting ip_summed to CHECKSUM_NONE.
+ */
+static inline unsigned char *skb_push_rcsum(struct sk_buff *skb,
+					    unsigned int len)
+{
+	skb_push(skb, len);
+	skb_postpush_rcsum(skb, skb->data, len);
+	return skb->data;
+}
+
 /**
  *	skb_postpush_rcsum - update checksum for received skb after push
  *	@skb: buffer to update
@@ -4243,7 +4309,11 @@ static inline void ipvs_reset(struct sk_buff *skb)
 #endif
 }
 
+<<<<<<< HEAD
 /* Note: This doesn't put any conntrack info in dst. */
+=======
+/* Note: This doesn't put any conntrack and bridge info in dst. */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline void __nf_copy(struct sk_buff *dst, const struct sk_buff *src,
 			     bool copy)
 {

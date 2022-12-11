@@ -362,7 +362,11 @@ int of_hwspin_lock_get_id(struct device_node *np, int index)
 		hwlock = radix_tree_deref_slot(slot);
 		if (unlikely(!hwlock))
 			continue;
+<<<<<<< HEAD
 		if (radix_tree_deref_retry(hwlock)) {
+=======
+		if (radix_tree_is_indirect_ptr(hwlock)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			slot = radix_tree_iter_retry(&iter);
 			continue;
 		}

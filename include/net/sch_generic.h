@@ -683,6 +683,7 @@ void dev_deactivate_many(struct list_head *head);
 struct Qdisc *dev_graft_qdisc(struct netdev_queue *dev_queue,
 			      struct Qdisc *qdisc);
 void qdisc_reset(struct Qdisc *qdisc);
+<<<<<<< HEAD
 void qdisc_put(struct Qdisc *qdisc);
 void qdisc_put_unlocked(struct Qdisc *qdisc);
 void qdisc_tree_reduce_backlog(struct Qdisc *qdisc, int n, int len);
@@ -710,6 +711,11 @@ qdisc_offload_graft_helper(struct net_device *dev, struct Qdisc *sch,
 {
 }
 #endif
+=======
+void qdisc_destroy(struct Qdisc *qdisc);
+void qdisc_tree_reduce_backlog(struct Qdisc *qdisc, unsigned int n,
+			       unsigned int len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
 			  const struct Qdisc_ops *ops,
 			  struct netlink_ext_ack *extack);
@@ -724,12 +730,17 @@ int skb_do_redirect(struct sk_buff *);
 static inline bool skb_at_tc_ingress(const struct sk_buff *skb)
 {
 #ifdef CONFIG_NET_CLS_ACT
+<<<<<<< HEAD
 	return skb->tc_at_ingress;
+=======
+	return G_TC_AT(skb->tc_verd) & AT_INGRESS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 	return false;
 #endif
 }
 
+<<<<<<< HEAD
 static inline bool skb_skip_tc_classify(struct sk_buff *skb)
 {
 #ifdef CONFIG_NET_CLS_ACT
@@ -742,6 +753,9 @@ static inline bool skb_skip_tc_classify(struct sk_buff *skb)
 }
 
 /* Reset all TX qdiscs greater than index of a device.  */
+=======
+/* Reset all TX qdiscs greater then index of a device.  */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline void qdisc_reset_all_tx_gt(struct net_device *dev, unsigned int i)
 {
 	struct Qdisc *qdisc;
@@ -1196,6 +1210,29 @@ static inline void qdisc_reset_queue(struct Qdisc *sch)
 
 static inline struct Qdisc *qdisc_replace(struct Qdisc *sch, struct Qdisc *new,
 					  struct Qdisc **pold)
+<<<<<<< HEAD
+=======
+{
+	struct Qdisc *old;
+
+	sch_tree_lock(sch);
+	old = *pold;
+	*pold = new;
+	if (old != NULL) {
+		unsigned int qlen = old->q.qlen;
+		unsigned int backlog = old->qstats.backlog;
+
+		qdisc_reset(old);
+		qdisc_tree_reduce_backlog(old, qlen, backlog);
+	}
+	sch_tree_unlock(sch);
+
+	return old;
+}
+
+static inline unsigned int __qdisc_queue_drop(struct Qdisc *sch,
+					      struct sk_buff_head *list)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct Qdisc *old;
 

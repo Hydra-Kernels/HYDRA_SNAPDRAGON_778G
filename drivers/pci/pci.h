@@ -469,7 +469,10 @@ static inline void pci_restore_ats_state(struct pci_dev *dev) { }
 #ifdef CONFIG_PCI_IOV
 int pci_iov_init(struct pci_dev *dev);
 void pci_iov_release(struct pci_dev *dev);
+<<<<<<< HEAD
 void pci_iov_remove(struct pci_dev *dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void pci_iov_update_resource(struct pci_dev *dev, int resno);
 resource_size_t pci_sriov_resource_alignment(struct pci_dev *dev, int resno);
 void pci_restore_iov_state(struct pci_dev *dev);
@@ -484,9 +487,12 @@ static inline void pci_iov_release(struct pci_dev *dev)
 
 {
 }
+<<<<<<< HEAD
 static inline void pci_iov_remove(struct pci_dev *dev)
 {
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline void pci_restore_iov_state(struct pci_dev *dev)
 {
 }

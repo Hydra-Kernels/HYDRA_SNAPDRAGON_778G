@@ -81,7 +81,13 @@ struct mfc_cache {
 };
 
 struct rtmsg;
+<<<<<<< HEAD
 int ipmr_get_route(struct net *net, struct sk_buff *skb,
 		   __be32 saddr, __be32 daddr,
 		   struct rtmsg *rtm, u32 portid);
+=======
+extern int ipmr_get_route(struct net *net, struct sk_buff *skb,
+			  __be32 saddr, __be32 daddr,
+			  struct rtmsg *rtm, int nowait, u32 portid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif

@@ -146,7 +146,11 @@ static struct notifier_block br_device_notifier = {
 	.notifier_call = br_device_event
 };
 
+<<<<<<< HEAD
 /* called with RTNL or RCU */
+=======
+/* called with RTNL */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int br_switchdev_event(struct notifier_block *unused,
 			      unsigned long event, void *ptr)
 {
@@ -156,7 +160,11 @@ static int br_switchdev_event(struct notifier_block *unused,
 	struct switchdev_notifier_fdb_info *fdb_info;
 	int err = NOTIFY_DONE;
 
+<<<<<<< HEAD
 	p = br_port_get_rtnl_rcu(dev);
+=======
+	p = br_port_get_rtnl(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!p)
 		goto out;
 

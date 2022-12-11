@@ -2049,7 +2049,12 @@ static void phy_copy_pause_bits(unsigned long *dst, unsigned long *src)
  */
 void phy_advertise_supported(struct phy_device *phydev)
 {
+<<<<<<< HEAD
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(new);
+=======
+	phydev->supported &= ~(PHY_1000BT_FEATURES | PHY_100BT_FEATURES |
+			       PHY_10BT_FEATURES);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	linkmode_copy(new, phydev->supported);
 	phy_copy_pause_bits(new, phydev->advertising);
@@ -2377,7 +2382,15 @@ static struct phy_driver genphy_driver = {
 	.phy_id_mask	= 0xffffffff,
 	.name		= "Generic PHY",
 	.soft_reset	= genphy_no_soft_reset,
+<<<<<<< HEAD
 	.get_features	= genphy_read_abilities,
+=======
+	.config_init	= genphy_config_init,
+	.features	= PHY_GBIT_FEATURES | SUPPORTED_MII |
+			  SUPPORTED_AUI | SUPPORTED_FIBRE |
+			  SUPPORTED_BNC,
+	.config_aneg	= genphy_config_aneg,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.aneg_done	= genphy_aneg_done,
 	.suspend	= genphy_suspend,
 	.resume		= genphy_resume,

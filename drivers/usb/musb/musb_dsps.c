@@ -311,6 +311,17 @@ static void dsps_musb_clear_ep_rxintr(struct musb *musb, int epnum)
 	musb_writel(musb->ctrl_base, wrp->epintr_status, epintr);
 }
 
+void dsps_musb_clear_ep_rxintr(struct musb *musb, int epnum)
+{
+	u32 epintr;
+	struct dsps_glue *glue = dev_get_drvdata(musb->controller->parent);
+	const struct dsps_musb_wrapper *wrp = glue->wrp;
+
+	/* musb->lock might already been held */
+	epintr = (1 << epnum) << wrp->rxep_shift;
+	musb_writel(musb->ctrl_base, wrp->epintr_status, epintr);
+}
+
 static irqreturn_t dsps_interrupt(int irq, void *hci)
 {
 	struct musb  *musb = hci;

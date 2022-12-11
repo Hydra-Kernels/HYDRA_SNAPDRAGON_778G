@@ -292,7 +292,11 @@ EXPORT_SYMBOL_GPL(adf_sriov_configure);
 int __init adf_init_pf_wq(void)
 {
 	/* Workqueue for PF2VF responses */
+<<<<<<< HEAD
 	pf2vf_resp_wq = alloc_workqueue("qat_pf2vf_resp_wq", WQ_MEM_RECLAIM, 0);
+=======
+	pf2vf_resp_wq = create_workqueue("qat_pf2vf_resp_wq");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return !pf2vf_resp_wq ? -ENOMEM : 0;
 }

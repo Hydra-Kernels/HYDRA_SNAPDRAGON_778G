@@ -50,13 +50,27 @@
 #include "addr.h"
 #include "net.h"
 #include "bearer.h"
+<<<<<<< HEAD
 #include "netlink.h"
 #include "msg.h"
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* IANA assigned UDP port */
 #define UDP_PORT_DEFAULT	6118
 
 #define UDP_MIN_HEADROOM        48
+<<<<<<< HEAD
+=======
+
+static const struct nla_policy tipc_nl_udp_policy[TIPC_NLA_UDP_MAX + 1] = {
+	[TIPC_NLA_UDP_UNSPEC]	= {.type = NLA_UNSPEC},
+	[TIPC_NLA_UDP_LOCAL]	= {.type = NLA_BINARY,
+				   .len = sizeof(struct sockaddr_storage)},
+	[TIPC_NLA_UDP_REMOTE]	= {.type = NLA_BINARY,
+				   .len = sizeof(struct sockaddr_storage)},
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * struct udp_media_addr - IP/UDP addressing information
@@ -363,8 +377,11 @@ static int tipc_udp_recv(struct sock *sk, struct sk_buff *skb)
 {
 	struct udp_bearer *ub;
 	struct tipc_bearer *b;
+<<<<<<< HEAD
 	struct tipc_msg *hdr;
 	int err;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ub = rcu_dereference_sk_user_data(sk);
 	if (!ub) {
@@ -738,7 +755,12 @@ static int tipc_udp_enable(struct net *net, struct tipc_bearer *b,
 			err = -EINVAL;
 			goto err;
 		}
+<<<<<<< HEAD
 		b->mtu = b->media->mtu;
+=======
+		b->mtu = dev->mtu - sizeof(struct iphdr)
+			- sizeof(struct udphdr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if IS_ENABLED(CONFIG_IPV6)
 	} else if (local.proto == htons(ETH_P_IPV6)) {
 		udp_conf.family = AF_INET6;

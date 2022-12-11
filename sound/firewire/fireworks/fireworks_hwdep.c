@@ -193,7 +193,11 @@ hwdep_poll(struct snd_hwdep *hwdep, struct file *file, poll_table *wait)
 
 	spin_lock_irq(&efw->lock);
 	if (efw->dev_lock_changed || efw->pull_ptr != efw->push_ptr)
+<<<<<<< HEAD
 		events = EPOLLIN | EPOLLRDNORM;
+=======
+		events = POLLIN | POLLRDNORM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	else
 		events = 0;
 	spin_unlock_irq(&efw->lock);

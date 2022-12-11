@@ -776,14 +776,22 @@ static void apply_config_terms(struct evsel *evsel,
 {
 	struct perf_evsel_config_term *term;
 	struct list_head *config_terms = &evsel->config_terms;
+<<<<<<< HEAD
 	struct perf_event_attr *attr = &evsel->core.attr;
+=======
+	struct perf_event_attr *attr = &evsel->attr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* callgraph default */
 	struct callchain_param param = {
 		.record_mode = callchain_param.record_mode,
 	};
 	u32 dump_size = 0;
+<<<<<<< HEAD
 	int max_stack = 0;
 	const char *callgraph_buf = NULL;
+=======
+	char *callgraph_buf = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	list_for_each_entry(term, config_terms, list) {
 		switch (term->type) {

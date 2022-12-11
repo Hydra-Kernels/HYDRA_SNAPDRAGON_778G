@@ -210,12 +210,19 @@ static int pcpu_alloc_lowcore(struct pcpu *pcpu, int cpu)
 	lc->nodat_stack = nodat_stack + STACK_INIT_OFFSET;
 	lc->cpu_nr = cpu;
 	lc->spinlock_lockval = arch_spin_lockval(cpu);
+<<<<<<< HEAD
 	lc->spinlock_index = 0;
 	lc->br_r1_trampoline = 0x07f1;	/* br %r1 */
 	lc->return_lpswe = gen_lpswe(__LC_RETURN_PSW);
 	lc->return_mcck_lpswe = gen_lpswe(__LC_RETURN_MCCK_PSW);
 	if (nmi_alloc_per_cpu(lc))
 		goto out_async;
+=======
+	lc->br_r1_trampoline = 0x07f1;	/* br %r1 */
+	if (MACHINE_HAS_VX)
+		lc->vector_save_area_addr =
+			(unsigned long) &lc->vector_save_area;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (vdso_alloc_per_cpu(lc))
 		goto out_mcesa;
 	lowcore_ptr[cpu] = lc;
@@ -276,7 +283,10 @@ static void pcpu_prepare_secondary(struct pcpu *pcpu, int cpu)
 	       sizeof(lc->stfle_fac_list));
 	memcpy(lc->alt_stfle_fac_list, S390_lowcore.alt_stfle_fac_list,
 	       sizeof(lc->alt_stfle_fac_list));
+<<<<<<< HEAD
 	arch_spin_lock_setup(cpu);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void pcpu_attach_task(struct pcpu *pcpu, struct task_struct *tsk)

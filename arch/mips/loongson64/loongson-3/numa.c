@@ -196,6 +196,7 @@ static void __init node_mem_init(unsigned int node)
 		memblock_reserve(start_pfn << PAGE_SHIFT,
 				 ((kernel_end_pfn - start_pfn) << PAGE_SHIFT));
 
+<<<<<<< HEAD
 		/* Reserve 0xfe000000~0xffffffff for RS780E integrated GPU */
 		if (node_end_pfn(0) >= (0xffffffff >> PAGE_SHIFT))
 			memblock_reserve((node_addrspace_offset | 0xfe000000),
@@ -203,6 +204,13 @@ static void __init node_mem_init(unsigned int node)
 
 		/* Reserve pfn range 0~node[0]->node_start_pfn */
 		memblock_reserve(0, PAGE_SIZE * start_pfn);
+=======
+	if (node == 0 && node_end_pfn(0) >= (0xffffffff >> PAGE_SHIFT)) {
+		/* Reserve 0xfe000000~0xffffffff for RS780E integrated GPU */
+		reserve_bootmem_node(NODE_DATA(node),
+				(node_addrspace_offset | 0xfe000000),
+				32 << 20, BOOTMEM_DEFAULT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

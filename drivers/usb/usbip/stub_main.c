@@ -243,6 +243,51 @@ static void stub_device_rebind(void)
 #endif
 }
 
+static int do_rebind(char *busid, struct bus_id_priv *busid_priv)
+{
+	int ret;
+
+	/* device_attach() callers should hold parent lock for USB */
+	if (busid_priv->udev->dev.parent)
+		device_lock(busid_priv->udev->dev.parent);
+	ret = device_attach(&busid_priv->udev->dev);
+	if (busid_priv->udev->dev.parent)
+		device_unlock(busid_priv->udev->dev.parent);
+	if (ret < 0) {
+		dev_err(&busid_priv->udev->dev, "rebind failed\n");
+		return ret;
+	}
+	return 0;
+}
+
+static void stub_device_rebind(void)
+{
+#if IS_MODULE(CONFIG_USBIP_HOST)
+	struct bus_id_priv *busid_priv;
+	int i;
+
+	/* update status to STUB_BUSID_OTHER so probe ignores the device */
+	spin_lock(&busid_table_lock);
+	for (i = 0; i < MAX_BUSID; i++) {
+		if (busid_table[i].name[0] &&
+		    busid_table[i].shutdown_busid) {
+			busid_priv = &(busid_table[i]);
+			busid_priv->status = STUB_BUSID_OTHER;
+		}
+	}
+	spin_unlock(&busid_table_lock);
+
+	/* now run rebind - no need to hold locks. driver files are removed */
+	for (i = 0; i < MAX_BUSID; i++) {
+		if (busid_table[i].name[0] &&
+		    busid_table[i].shutdown_busid) {
+			busid_priv = &(busid_table[i]);
+			do_rebind(busid_table[i].name, busid_priv);
+		}
+	}
+#endif
+}
+
 static ssize_t rebind_store(struct device_driver *dev, const char *buf,
 				 size_t count)
 {
@@ -356,10 +401,27 @@ void stub_device_cleanup_urbs(struct stub_device *sdev)
 	dev_dbg(&sdev->udev->dev, "Stub device cleaning up urbs\n");
 
 	while ((priv = stub_priv_pop(sdev))) {
+<<<<<<< HEAD
 		for (i = 0; i < priv->num_urbs; i++)
 			usb_kill_urb(priv->urbs[i]);
 
 		stub_free_priv_and_urb(priv);
+=======
+		urb = priv->urb;
+		dev_dbg(&sdev->udev->dev, "free urb seqnum %lu\n",
+			priv->seqnum);
+		usb_kill_urb(urb);
+
+		kmem_cache_free(stub_priv_cache, priv);
+
+		kfree(urb->transfer_buffer);
+		urb->transfer_buffer = NULL;
+
+		kfree(urb->setup_packet);
+		urb->setup_packet = NULL;
+
+		usb_free_urb(urb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

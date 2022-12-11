@@ -3371,7 +3371,11 @@ u64 ieee80211_calculate_rx_timestamp(struct ieee80211_local *local,
 	if (WARN_ONCE(!rate,
 		      "Invalid bitrate: flags=0x%llx, idx=%d, vht_nss=%d\n",
 		      (unsigned long long)status->flag, status->rate_idx,
+<<<<<<< HEAD
 		      status->nss))
+=======
+		      status->vht_nss))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	/* rewind from end of MPDU */

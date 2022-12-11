@@ -45,6 +45,7 @@ gf119_sor_dp_audio_sym(struct nvkm_ior *sor, int head, u16 h, u32 v)
 void
 gf119_sor_dp_audio(struct nvkm_ior *sor, int head, bool enable)
 {
+<<<<<<< HEAD
 	struct nvkm_device *device = sor->disp->engine.subdev.device;
 	const u32 hoff = 0x800 * head;
 	const u32 data = 0x80000000 | (0x00000001 * enable);
@@ -54,6 +55,12 @@ gf119_sor_dp_audio(struct nvkm_ior *sor, int head, bool enable)
 		if (!(nvkm_rd32(device, 0x616618 + hoff) & 0x80000000))
 			break;
 	);
+=======
+	struct nvkm_device *device = outp->base.disp->engine.subdev.device;
+	const u32 soff = gf119_sor_soff(outp);
+	nvkm_mask(device, 0x61c110 + soff, 0x0f0f0f0f, 0x01010101 * pattern);
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void

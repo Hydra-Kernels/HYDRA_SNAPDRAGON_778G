@@ -45,7 +45,11 @@
 static struct microcode_ops	*microcode_ops;
 static bool dis_ucode_ldr = true;
 
+<<<<<<< HEAD
 bool initrd_gone;
+=======
+static bool dis_ucode_ldr = true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 LIST_HEAD(microcode_cache);
 
@@ -113,8 +117,12 @@ static bool amd_check_current_patch_level(void)
 
 static bool __init check_loader_disabled_bsp(void)
 {
+<<<<<<< HEAD
 	static const char *__dis_opt_str = "dis_ucode_ldr";
 
+=======
+	u32 a, b, c, d;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_X86_32
 	const char *cmdline = (const char *)__pa_nodebug(boot_command_line);
 	const char *option  = (const char *)__pa_nodebug(__dis_opt_str);
@@ -126,11 +134,19 @@ static bool __init check_loader_disabled_bsp(void)
 	bool *res = &dis_ucode_ldr;
 #endif
 
+<<<<<<< HEAD
+=======
+	a = 1;
+	c = 0;
+	native_cpuid(&a, &b, &c, &d);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * CPUID(1).ECX[31]: reserved for hypervisor use. This is still not
 	 * completely accurate as xen pv guests don't see that CPUID bit set but
 	 * that's good enough as they don't land on the BSP path anyway.
 	 */
+<<<<<<< HEAD
 	if (native_cpuid_ecx(1) & BIT(31))
 		return *res;
 
@@ -139,6 +155,11 @@ static bool __init check_loader_disabled_bsp(void)
 			return *res;
 	}
 
+=======
+	if (c & BIT(31))
+		return *res;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (cmdline_find_option_bool(cmdline, option) <= 0)
 		*res = false;
 
@@ -166,7 +187,12 @@ bool get_builtin_firmware(struct cpio_data *cd, const char *name)
 
 void __init load_ucode_bsp(void)
 {
+<<<<<<< HEAD
 	unsigned int cpuid_1_eax;
+=======
+	int vendor;
+	unsigned int family;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool intel = true;
 
 	if (!have_cpuid_p())
@@ -176,12 +202,20 @@ void __init load_ucode_bsp(void)
 
 	switch (x86_cpuid_vendor()) {
 	case X86_VENDOR_INTEL:
+<<<<<<< HEAD
 		if (x86_family(cpuid_1_eax) < 6)
+=======
+		if (family < 6)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 		break;
 
 	case X86_VENDOR_AMD:
+<<<<<<< HEAD
 		if (x86_family(cpuid_1_eax) < 0x10)
+=======
+		if (family < 0x10)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 		intel = false;
 		break;
@@ -196,7 +230,11 @@ void __init load_ucode_bsp(void)
 	if (intel)
 		load_ucode_intel_bsp();
 	else
+<<<<<<< HEAD
 		load_ucode_amd_bsp(cpuid_1_eax);
+=======
+		load_ucode_amd_bsp(family);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static bool check_loader_disabled_ap(void)
@@ -215,9 +253,16 @@ void load_ucode_ap(void)
 	if (check_loader_disabled_ap())
 		return;
 
+<<<<<<< HEAD
 	cpuid_1_eax = native_cpuid_eax(1);
 
 	switch (x86_cpuid_vendor()) {
+=======
+	vendor = x86_vendor();
+	family = x86_family();
+
+	switch (vendor) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case X86_VENDOR_INTEL:
 		if (x86_family(cpuid_1_eax) >= 6)
 			load_ucode_intel_ap();

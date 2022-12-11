@@ -266,12 +266,19 @@
 		cfi_st	$8, PT_R8, \docfi
 		cfi_st	$9, PT_R9, \docfi
 #endif
+<<<<<<< HEAD
 		LONG_S	ra, PT_EPC(sp)
 		.if \docfi
 		.cfi_rel_offset ra, PT_EPC
 		.endif
 		cfi_st	$25, PT_R25, \docfi
 		cfi_st	$28, PT_R28, \docfi
+=======
+		LONG_S	v1, PT_EPC(sp)
+		LONG_S	$25, PT_R25(sp)
+		LONG_S	$28, PT_R28(sp)
+		LONG_S	$31, PT_R31(sp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Set thread_info if we're coming from user mode */
 		mfc0	k0, CP0_STATUS

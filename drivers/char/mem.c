@@ -148,6 +148,7 @@ static ssize_t read_mem(struct file *file, char __user *buf,
 
 	while (count > 0) {
 		unsigned long remaining;
+<<<<<<< HEAD
 		int allowed, probe;
 
 		sz = size_inside_page(p, count);
@@ -177,6 +178,31 @@ static ssize_t read_mem(struct file *file, char __user *buf,
 				goto failed;
 
 			remaining = copy_to_user(buf, bounce, sz);
+=======
+		int allowed;
+
+		sz = size_inside_page(p, count);
+
+		allowed = page_is_allowed(p >> PAGE_SHIFT);
+		if (!allowed)
+			return -EPERM;
+		if (allowed == 2) {
+			/* Show zeros for restricted memory. */
+			remaining = clear_user(buf, sz);
+		} else {
+			/*
+			 * On ia64 if a page has been mapped somewhere as
+			 * uncached, then it must also be accessed uncached
+			 * by the kernel or data corruption may occur.
+			 */
+			ptr = xlate_dev_mem_ptr(p);
+			if (!ptr)
+				return -EFAULT;
+
+			remaining = copy_to_user(buf, ptr, sz);
+
+			unxlate_dev_mem_ptr(p, ptr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (remaining)
@@ -375,10 +401,13 @@ static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 	size_t size = vma->vm_end - vma->vm_start;
 	phys_addr_t offset = (phys_addr_t)vma->vm_pgoff << PAGE_SHIFT;
 
+<<<<<<< HEAD
 	/* Does it even fit in phys_addr_t? */
 	if (offset >> PAGE_SHIFT != vma->vm_pgoff)
 		return -EINVAL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* It's illegal to wrap around the end of the physical address space. */
 	if (offset + (phys_addr_t)size - 1 < offset)
 		return -EINVAL;

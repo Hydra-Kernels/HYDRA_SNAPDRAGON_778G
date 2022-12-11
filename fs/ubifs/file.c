@@ -1465,7 +1465,11 @@ static int ubifs_migrate_page(struct address_space *mapping,
 {
 	int rc;
 
+<<<<<<< HEAD
 	rc = migrate_page_move_mapping(mapping, newpage, page, 0);
+=======
+	rc = migrate_page_move_mapping(mapping, newpage, page, NULL, mode, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (rc != MIGRATEPAGE_SUCCESS)
 		return rc;
 
@@ -1474,10 +1478,14 @@ static int ubifs_migrate_page(struct address_space *mapping,
 		SetPagePrivate(newpage);
 	}
 
+<<<<<<< HEAD
 	if (mode != MIGRATE_SYNC_NO_COPY)
 		migrate_page_copy(newpage, page);
 	else
 		migrate_page_states(newpage, page);
+=======
+	migrate_page_copy(newpage, page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return MIGRATEPAGE_SUCCESS;
 }
 #endif

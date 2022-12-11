@@ -95,7 +95,24 @@ xfs_growfs_data_private(
 			id.agsize = nb -
 				(id.agno * (xfs_rfsblock_t)mp->m_sb.sb_agblocks);
 		else
+<<<<<<< HEAD
 			id.agsize = mp->m_sb.sb_agblocks;
+=======
+			agsize = mp->m_sb.sb_agblocks;
+		agf->agf_length = cpu_to_be32(agsize);
+		agf->agf_roots[XFS_BTNUM_BNOi] = cpu_to_be32(XFS_BNO_BLOCK(mp));
+		agf->agf_roots[XFS_BTNUM_CNTi] = cpu_to_be32(XFS_CNT_BLOCK(mp));
+		agf->agf_levels[XFS_BTNUM_BNOi] = cpu_to_be32(1);
+		agf->agf_levels[XFS_BTNUM_CNTi] = cpu_to_be32(1);
+		agf->agf_flfirst = cpu_to_be32(1);
+		agf->agf_fllast = 0;
+		agf->agf_flcount = 0;
+		tmpsize = agsize - XFS_PREALLOC_BLOCKS(mp);
+		agf->agf_freeblks = cpu_to_be32(tmpsize);
+		agf->agf_longest = cpu_to_be32(tmpsize);
+		if (xfs_sb_version_hascrc(&mp->m_sb))
+			uuid_copy(&agf->agf_uuid, &mp->m_sb.sb_meta_uuid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		error = xfs_ag_init_headers(mp, &id);
 		if (error) {

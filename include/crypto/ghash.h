@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Common values for the GHASH hash function
+=======
+/*
+ * Common values for GHASH algorithms
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #ifndef __CRYPTO_GHASH_H__

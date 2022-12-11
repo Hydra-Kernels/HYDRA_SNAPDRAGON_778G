@@ -90,6 +90,12 @@ static int digsig_verify_rsa(struct key *key,
 		goto err1;
 	}
 
+	if (!ukp) {
+		/* key was revoked before we acquired its semaphore */
+		err = -EKEYREVOKED;
+		goto err1;
+	}
+
 	if (ukp->datalen < sizeof(*pkh))
 		goto err1;
 

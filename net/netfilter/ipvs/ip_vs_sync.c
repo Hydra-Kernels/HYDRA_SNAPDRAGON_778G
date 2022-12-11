@@ -49,7 +49,11 @@
 #include <linux/kthread.h>
 #include <linux/wait.h>
 #include <linux/kernel.h>
+<<<<<<< HEAD
 #include <linux/sched/signal.h>
+=======
+#include <linux/sched.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <asm/unaligned.h>		/* Used for ntoh_seq and hton_seq */
 
@@ -1753,8 +1757,13 @@ static int sync_thread_backup(void *data)
 int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 		      int state)
 {
+<<<<<<< HEAD
 	struct ip_vs_sync_thread_data *ti = NULL, *tinfo;
 	struct task_struct *task;
+=======
+	struct ip_vs_sync_thread_data *tinfo = NULL;
+	struct task_struct **array = NULL, *task;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct net_device *dev;
 	char *name;
 	int (*threadfn)(void *data);
@@ -1766,10 +1775,13 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 	IP_VS_DBG(7, "Each ip_vs_sync_conn entry needs %zd bytes\n",
 		  sizeof(struct ip_vs_sync_conn_v0));
 
+<<<<<<< HEAD
 	/* increase the module use count */
 	if (!ip_vs_use_count_inc())
 		return -ENOPROTOOPT;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Do not hold one mutex and then to block on another */
 	for (;;) {
 		rtnl_lock();
@@ -1827,7 +1839,11 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 		threadfn = sync_thread_master;
 	} else if (state == IP_VS_STATE_BACKUP) {
 		result = -EEXIST;
+<<<<<<< HEAD
 		if (ipvs->backup_tinfo)
+=======
+		if (ipvs->backup_threads)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out_early;
 
 		ipvs->bcfg = *c;
@@ -1842,7 +1858,11 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 		struct ipvs_master_sync_state *ms;
 
 		result = -ENOMEM;
+<<<<<<< HEAD
 		ipvs->ms = kcalloc(count, sizeof(ipvs->ms[0]), GFP_KERNEL);
+=======
+		ipvs->ms = kzalloc(count * sizeof(ipvs->ms[0]), GFP_KERNEL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!ipvs->ms)
 			goto out;
 		ms = ipvs->ms;
@@ -1854,6 +1874,15 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 					  master_wakeup_work_handler);
 			ms->ipvs = ipvs;
 		}
+<<<<<<< HEAD
+=======
+	} else {
+		array = kzalloc(count * sizeof(struct task_struct *),
+				GFP_KERNEL);
+		result = -ENOMEM;
+		if (!array)
+			goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	result = -ENOMEM;
 	ti = kcalloc(count, sizeof(struct ip_vs_sync_thread_data),
@@ -1862,14 +1891,28 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 		goto out;
 
 	for (id = 0; id < count; id++) {
+<<<<<<< HEAD
 		tinfo = &ti[id];
 		tinfo->ipvs = ipvs;
+=======
+		result = -ENOMEM;
+		tinfo = kmalloc(sizeof(*tinfo), GFP_KERNEL);
+		if (!tinfo)
+			goto out;
+		tinfo->ipvs = ipvs;
+		tinfo->sock = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (state == IP_VS_STATE_BACKUP) {
 			result = -ENOMEM;
 			tinfo->buf = kmalloc(ipvs->bcfg.sync_maxlen,
 					     GFP_KERNEL);
 			if (!tinfo->buf)
 				goto out;
+<<<<<<< HEAD
+=======
+		} else {
+			tinfo->buf = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		tinfo->id = id;
 		if (state == IP_VS_STATE_MASTER)
@@ -1899,11 +1942,18 @@ int start_sync_thread(struct netns_ipvs *ipvs, struct ipvs_sync_daemon_cfg *c,
 
 	mutex_unlock(&ipvs->sync_mutex);
 	rtnl_unlock();
+<<<<<<< HEAD
+=======
+
+	/* increase the module use count */
+	ip_vs_use_count_inc();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 
 out:
 	/* We do not need RTNL lock anymore, release it here so that
+<<<<<<< HEAD
 	 * sock_release below can use rtnl_lock to leave the mcast group.
 	 */
 	rtnl_unlock();
@@ -1913,12 +1963,25 @@ out:
 			if (tinfo->task)
 				kthread_stop(tinfo->task);
 		}
+=======
+	 * sock_release below and in the kthreads can use rtnl_lock
+	 * to leave the mcast group.
+	 */
+	rtnl_unlock();
+	count = id;
+	while (count-- > 0) {
+		if (state == IP_VS_STATE_MASTER)
+			kthread_stop(ipvs->ms[count].master_thread);
+		else
+			kthread_stop(array[count]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	if (!(ipvs->sync_state & IP_VS_STATE_MASTER)) {
 		kfree(ipvs->ms);
 		ipvs->ms = NULL;
 	}
 	mutex_unlock(&ipvs->sync_mutex);
+<<<<<<< HEAD
 
 	/* No more mutexes, release socks */
 	if (ti) {
@@ -1932,14 +1995,26 @@ out:
 
 	/* decrease the module use count */
 	ip_vs_use_count_dec();
+=======
+	if (tinfo) {
+		if (tinfo->sock)
+			sock_release(tinfo->sock);
+		kfree(tinfo->buf);
+		kfree(tinfo);
+	}
+	kfree(array);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return result;
 
 out_early:
 	mutex_unlock(&ipvs->sync_mutex);
 	rtnl_unlock();
+<<<<<<< HEAD
 
 	/* decrease the module use count */
 	ip_vs_use_count_dec();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return result;
 }
 

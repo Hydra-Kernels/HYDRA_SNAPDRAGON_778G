@@ -710,6 +710,9 @@ static inline bool skb_vlan_tagged_multi(struct sk_buff *skb)
 		if (unlikely(!pskb_may_pull(skb, VLAN_ETH_HLEN)))
 			return false;
 
+		if (unlikely(!pskb_may_pull(skb, VLAN_ETH_HLEN)))
+			return false;
+
 		veh = (struct vlan_ethhdr *)skb->data;
 		protocol = veh->h_vlan_encapsulated_proto;
 	}
@@ -740,7 +743,10 @@ static inline netdev_features_t vlan_features_check(struct sk_buff *skb,
 			    NETIF_F_FRAGLIST | NETIF_F_HW_VLAN_CTAG_TX |
 			    NETIF_F_HW_VLAN_STAG_TX;
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return features;
 }
 

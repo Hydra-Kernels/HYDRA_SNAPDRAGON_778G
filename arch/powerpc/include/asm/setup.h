@@ -29,6 +29,7 @@ void initmem_init(void);
 void setup_panic(void);
 #define ARCH_PANIC_TIMEOUT 180
 
+<<<<<<< HEAD
 #ifdef CONFIG_PPC_PSERIES
 extern void pseries_enable_reloc_on_exc(void);
 extern void pseries_disable_reloc_on_exc(void);
@@ -41,6 +42,8 @@ static inline void pseries_big_endian_exceptions(void) {}
 static inline void pseries_little_endian_exceptions(void) {}
 #endif /* CONFIG_PPC_PSERIES */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void rfi_flush_enable(bool enable);
 
 /* These are bit flags */
@@ -51,6 +54,7 @@ enum l1d_flush_type {
 	L1D_FLUSH_MTTRIG	= 0x8,
 };
 
+<<<<<<< HEAD
 void setup_rfi_flush(enum l1d_flush_type, bool enable);
 void setup_entry_flush(bool enable);
 void setup_uaccess_flush(bool enable);
@@ -77,6 +81,10 @@ void setup_spectre_v2(void);
 static inline void setup_spectre_v2(void) {};
 #endif
 void do_btb_flush_fixups(void);
+=======
+void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
+void do_rfi_flush_fixups(enum l1d_flush_type types);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* !__ASSEMBLY__ */
 

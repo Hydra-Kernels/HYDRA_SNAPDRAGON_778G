@@ -179,12 +179,20 @@ static int __replace_page(struct vm_area_struct *vma, unsigned long addr,
 
 	mmu_notifier_invalidate_range_start(&range);
 	err = -EAGAIN;
+<<<<<<< HEAD
 	if (!page_vma_mapped_walk(&pvmw)) {
 		if (new_page)
 			mem_cgroup_cancel_charge(new_page, memcg, false);
 		goto unlock;
 	}
 	VM_BUG_ON_PAGE(addr != pvmw.address, old_page);
+=======
+	ptep = page_check_address(page, mm, addr, &ptl, 0);
+	if (!ptep) {
+		mem_cgroup_cancel_charge(kpage, memcg);
+		goto unlock;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (new_page) {
 		get_page(new_page);
@@ -217,8 +225,13 @@ static int __replace_page(struct vm_area_struct *vma, unsigned long addr,
 
 	err = 0;
  unlock:
+<<<<<<< HEAD
 	mmu_notifier_invalidate_range_end(&range);
 	unlock_page(old_page);
+=======
+	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
+	unlock_page(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 

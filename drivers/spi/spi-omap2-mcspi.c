@@ -1079,6 +1079,7 @@ static int omap2_mcspi_setup(struct spi_device *spi)
 		spi->controller_state = cs;
 		/* Link this to context save list */
 		list_add_tail(&cs->node, &ctx->cs);
+<<<<<<< HEAD
 		initial_setup = true;
 
 		if (gpio_is_valid(spi->cs_gpio)) {
@@ -1090,6 +1091,24 @@ static int omap2_mcspi_setup(struct spi_device *spi)
 			gpio_direction_output(spi->cs_gpio,
 					 !(spi->mode & SPI_CS_HIGH));
 		}
+=======
+
+		if (gpio_is_valid(spi->cs_gpio)) {
+			ret = gpio_request(spi->cs_gpio, dev_name(&spi->dev));
+			if (ret) {
+				dev_err(&spi->dev, "failed to request gpio\n");
+				return ret;
+			}
+			gpio_direction_output(spi->cs_gpio,
+					 !(spi->mode & SPI_CS_HIGH));
+		}
+	}
+
+	if (!mcspi_dma->dma_rx || !mcspi_dma->dma_tx) {
+		ret = omap2_mcspi_request_dma(spi);
+		if (ret < 0 && ret != -EAGAIN)
+			return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = pm_runtime_get_sync(mcspi->dev);

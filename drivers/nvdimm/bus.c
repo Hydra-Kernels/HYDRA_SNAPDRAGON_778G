@@ -1022,9 +1022,13 @@ static int __nd_ioctl(struct nvdimm_bus *nvdimm_bus, struct nvdimm *nvdimm,
 		case ND_CMD_VENDOR:
 		case ND_CMD_SET_CONFIG_DATA:
 		case ND_CMD_ARS_START:
+<<<<<<< HEAD
 		case ND_CMD_CLEAR_ERROR:
 		case ND_CMD_CALL:
 			dev_dbg(dev, "'%s' command while read-only.\n",
+=======
+			dev_dbg(&nvdimm_bus->dev, "'%s' command while read-only.\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					nvdimm ? nvdimm_cmd_name(cmd)
 					: nvdimm_bus_cmd_name(cmd));
 			return -EPERM;
@@ -1122,6 +1126,7 @@ static int __nd_ioctl(struct nvdimm_bus *nvdimm_bus, struct nvdimm *nvdimm,
 	rc = nd_desc->ndctl(nd_desc, nvdimm, cmd, buf, buf_len, &cmd_rc);
 	if (rc < 0)
 		goto out_unlock;
+<<<<<<< HEAD
 
 	if (!nvdimm && cmd == ND_CMD_CLEAR_ERROR && cmd_rc >= 0) {
 		struct nd_cmd_clear_error *clear_err = buf;
@@ -1129,16 +1134,28 @@ static int __nd_ioctl(struct nvdimm_bus *nvdimm_bus, struct nvdimm *nvdimm,
 		nvdimm_account_cleared_poison(nvdimm_bus, clear_err->address,
 				clear_err->cleared);
 	}
+=======
+	nvdimm_bus_unlock(&nvdimm_bus->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (copy_to_user(p, buf, buf_len))
 		rc = -EFAULT;
 
+<<<<<<< HEAD
 out_unlock:
 	nvdimm_bus_unlock(dev);
 	nd_device_unlock(dev);
 out:
 	kfree(in_env);
 	kfree(out_env);
+=======
+	vfree(buf);
+	return rc;
+
+ out_unlock:
+	nvdimm_bus_unlock(&nvdimm_bus->dev);
+ out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vfree(buf);
 	return rc;
 }

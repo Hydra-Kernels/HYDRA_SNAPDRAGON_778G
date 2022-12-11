@@ -213,10 +213,17 @@ static int sun4i_spi_transfer_one(struct spi_master *master,
 	u32 reg;
 
 	/* We don't support transfer larger than the FIFO */
+<<<<<<< HEAD
 	if (tfr->len > SUN4I_MAX_XFER_SIZE)
 		return -EMSGSIZE;
 
 	if (tfr->tx_buf && tfr->len >= SUN4I_MAX_XFER_SIZE)
+=======
+	if (tfr->len > SUN4I_FIFO_DEPTH)
+		return -EMSGSIZE;
+
+	if (tfr->tx_buf && tfr->len >= SUN4I_FIFO_DEPTH)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EMSGSIZE;
 
 	reinit_completion(&sspi->done);

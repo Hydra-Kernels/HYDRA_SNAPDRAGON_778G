@@ -8,8 +8,16 @@
  * Copyright 2006-2007	Jiri Benc <jbenc@suse.cz>
  * Copyright 2007, Michael Wu <flamingice@sourmilk.net>
  * Copyright 2007-2010, Intel Corporation
+<<<<<<< HEAD
  * Copyright(c) 2015-2017 Intel Deutschland GmbH
  * Copyright (C) 2018        Intel Corporation
+=======
+ * Copyright(c) 2015 Intel Deutschland GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 /**
@@ -281,6 +289,10 @@ void ___ieee80211_start_rx_ba_session(struct sta_info *sta,
 		.timeout = timeout,
 		.ssn = start_seq_num,
 	};
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int i, ret = -EOPNOTSUPP;
 	u16 status = WLAN_STATUS_REQUEST_DECLINED;
 	u16 max_buf_size;

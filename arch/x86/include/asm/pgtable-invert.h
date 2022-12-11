@@ -4,6 +4,7 @@
 
 #ifndef __ASSEMBLY__
 
+<<<<<<< HEAD
 /*
  * A clear pte value is special, and doesn't get inverted.
  *
@@ -16,6 +17,11 @@
 static inline bool __pte_needs_invert(u64 val)
 {
 	return val && !(val & _PAGE_PRESENT);
+=======
+static inline bool __pte_needs_invert(u64 val)
+{
+	return !(val & _PAGE_PRESENT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Get a mask to xor with the page table entry to get the correct pfn. */

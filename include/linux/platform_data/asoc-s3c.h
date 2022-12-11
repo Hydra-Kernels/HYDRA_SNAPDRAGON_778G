@@ -39,10 +39,19 @@ struct samsung_i2s_type {
  */
 struct s3c_audio_pdata {
 	int (*cfg_gpio)(struct platform_device *);
+<<<<<<< HEAD
 	dma_filter_fn dma_filter;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	void *dma_playback;
 	void *dma_capture;
 	void *dma_play_sec;
 	void *dma_capture_mic;
+<<<<<<< HEAD
 	struct samsung_i2s_type type;
+=======
+	union {
+		struct samsung_i2s i2s;
+	} type;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };

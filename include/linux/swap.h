@@ -311,12 +311,46 @@ void *workingset_eviction(struct page *page);
 void workingset_refault(struct page *page, void *shadow);
 void workingset_activation(struct page *page);
 
+<<<<<<< HEAD
 /* Only track the nodes of mappings with shadow entries */
 void workingset_update_node(struct xa_node *node);
 #define mapping_set_update(xas, mapping) do {				\
 	if (!dax_mapping(mapping) && !shmem_mapping(mapping))		\
 		xas_set_update(xas, workingset_update_node);		\
 } while (0)
+=======
+static inline unsigned int workingset_node_pages(struct radix_tree_node *node)
+{
+	return node->count & RADIX_TREE_COUNT_MASK;
+}
+
+static inline void workingset_node_pages_inc(struct radix_tree_node *node)
+{
+	node->count++;
+}
+
+static inline void workingset_node_pages_dec(struct radix_tree_node *node)
+{
+	VM_WARN_ON_ONCE(!workingset_node_pages(node));
+	node->count--;
+}
+
+static inline unsigned int workingset_node_shadows(struct radix_tree_node *node)
+{
+	return node->count >> RADIX_TREE_COUNT_SHIFT;
+}
+
+static inline void workingset_node_shadows_inc(struct radix_tree_node *node)
+{
+	node->count += 1U << RADIX_TREE_COUNT_SHIFT;
+}
+
+static inline void workingset_node_shadows_dec(struct radix_tree_node *node)
+{
+	VM_WARN_ON_ONCE(!workingset_node_shadows(node));
+	node->count -= 1U << RADIX_TREE_COUNT_SHIFT;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* linux/mm/page_alloc.c */
 extern unsigned long totalreserve_pages;

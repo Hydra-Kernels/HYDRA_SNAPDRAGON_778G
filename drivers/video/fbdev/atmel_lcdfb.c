@@ -1028,12 +1028,42 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
 		goto put_display_node;
 	}
 
+<<<<<<< HEAD
 	ret = fb_videomode_from_videomode(&vm, &fb_vm);
 	if (ret < 0)
+=======
+	timings_np = of_get_child_by_name(display_np, "display-timings");
+	if (!timings_np) {
+		dev_err(dev, "failed to find display-timings node\n");
+		ret = -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto put_display_node;
 
 	fb_add_videomode(&fb_vm, &info->modelist);
 
+<<<<<<< HEAD
+=======
+		ret = videomode_from_timings(timings, &vm, i);
+		if (ret < 0)
+			goto put_timings_node;
+		ret = fb_videomode_from_videomode(&vm, &fb_vm);
+		if (ret < 0)
+			goto put_timings_node;
+
+		fb_add_videomode(&fb_vm, &info->modelist);
+	}
+
+	/*
+	 * FIXME: Make sure we are not referencing any fields in display_np
+	 * and timings_np and drop our references to them before returning to
+	 * avoid leaking the nodes on probe deferral and driver unbind.
+	 */
+
+	return 0;
+
+put_timings_node:
+	of_node_put(timings_np);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 put_display_node:
 	of_node_put(display_np);
 	return ret;

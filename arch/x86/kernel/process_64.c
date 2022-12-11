@@ -52,6 +52,7 @@
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
 #include <asm/xen/hypervisor.h>
+<<<<<<< HEAD
 #include <asm/vdso.h>
 #include <asm/resctrl_sched.h>
 #include <asm/unistd.h>
@@ -60,6 +61,8 @@
 /* Not included via unistd.h */
 #include <asm/unistd_32_ia32.h>
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "process.h"
 
@@ -573,6 +576,17 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	switch_to_extra(prev_p, next_p);
 
 #ifdef CONFIG_XEN_PV
+	/*
+	 * On Xen PV, IOPL bits in pt_regs->flags have no effect, and
+	 * current_pt_regs()->flags may not match the current task's
+	 * intended IOPL.  We need to switch it manually.
+	 */
+	if (unlikely(static_cpu_has(X86_FEATURE_XENPV) &&
+		     prev->iopl != next->iopl))
+		xen_set_iopl_mask(next->iopl);
+#endif
+
+#ifdef CONFIG_XEN
 	/*
 	 * On Xen PV, IOPL bits in pt_regs->flags have no effect, and
 	 * current_pt_regs()->flags may not match the current task's

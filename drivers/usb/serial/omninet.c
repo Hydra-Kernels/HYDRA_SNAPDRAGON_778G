@@ -32,10 +32,19 @@
 
 /* function prototypes */
 static void omninet_process_read_urb(struct urb *urb);
+<<<<<<< HEAD
 static int omninet_prepare_write_buffer(struct usb_serial_port *port,
 				void *buf, size_t count);
 static int omninet_calc_num_ports(struct usb_serial *serial,
 				struct usb_serial_endpoints *epds);
+=======
+static void omninet_write_bulk_callback(struct urb *urb);
+static int  omninet_write(struct tty_struct *tty, struct usb_serial_port *port,
+				const unsigned char *buf, int count);
+static int  omninet_write_room(struct tty_struct *tty);
+static void omninet_disconnect(struct usb_serial *serial);
+static int omninet_attach(struct usb_serial *serial);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int omninet_port_probe(struct usb_serial_port *port);
 static int omninet_port_remove(struct usb_serial_port *port);
 
@@ -54,8 +63,13 @@ static struct usb_serial_driver zyxel_omninet_device = {
 	},
 	.description =		"ZyXEL - omni.net lcd plus usb",
 	.id_table =		id_table,
+<<<<<<< HEAD
 	.num_bulk_out =		2,
 	.calc_num_ports =	omninet_calc_num_ports,
+=======
+	.num_ports =		1,
+	.attach =		omninet_attach,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.port_probe =		omninet_port_probe,
 	.port_remove =		omninet_port_remove,
 	.process_read_urb =	omninet_process_read_urb,
@@ -100,6 +114,7 @@ struct omninet_data {
 	__u8	od_outseq;	/* Sequence number for bulk_out URBs */
 };
 
+<<<<<<< HEAD
 static int omninet_calc_num_ports(struct usb_serial *serial,
 					struct usb_serial_endpoints *epds)
 {
@@ -108,6 +123,17 @@ static int omninet_calc_num_ports(struct usb_serial *serial,
 	epds->num_bulk_out = 1;
 
 	return 1;
+=======
+static int omninet_attach(struct usb_serial *serial)
+{
+	/* The second bulk-out endpoint is used for writing. */
+	if (serial->num_bulk_out < 2) {
+		dev_err(&serial->interface->dev, "missing endpoints\n");
+		return -ENODEV;
+	}
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int omninet_port_probe(struct usb_serial_port *port)
@@ -133,6 +159,14 @@ static int omninet_port_remove(struct usb_serial_port *port)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int omninet_open(struct tty_struct *tty, struct usb_serial_port *port)
+{
+	return usb_serial_generic_open(tty, port);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define OMNINET_HEADERLEN	4
 #define OMNINET_BULKOUTSIZE	64
 #define OMNINET_PAYLOADSIZE	(OMNINET_BULKOUTSIZE - OMNINET_HEADERLEN)

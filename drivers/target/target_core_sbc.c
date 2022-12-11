@@ -417,7 +417,12 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
 	sense_reason_t ret = TCM_NO_SENSE;
 
 	spin_lock_irq(&cmd->t_state_lock);
+<<<<<<< HEAD
 	if (success) {
+=======
+	if (cmd->transport_state & CMD_T_SENT) {
+		cmd->se_cmd_flags |= SCF_COMPARE_AND_WRITE_POST;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*post_ret = 1;
 
 		if (cmd->scsi_status == SAM_STAT_CHECK_CONDITION)

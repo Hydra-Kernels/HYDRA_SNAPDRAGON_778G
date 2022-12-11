@@ -643,7 +643,13 @@ struct r5conf {
 	} __percpu *percpu;
 	int scribble_disks;
 	int scribble_sectors;
+<<<<<<< HEAD
 	struct hlist_node node;
+=======
+#ifdef CONFIG_HOTPLUG_CPU
+	struct notifier_block	cpu_notify;
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Free stripes pool

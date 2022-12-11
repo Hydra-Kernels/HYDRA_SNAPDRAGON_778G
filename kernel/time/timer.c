@@ -257,7 +257,11 @@ int timer_migration_handler(struct ctl_table *table, int write,
 {
 	int ret;
 
+<<<<<<< HEAD
 	mutex_lock(&timer_keys_mutex);
+=======
+	mutex_lock(&mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
 	if (!ret && write)
 		timers_update_migration();
@@ -953,7 +957,11 @@ static struct timer_base *lock_timer_base(struct timer_list *timer,
 	__acquires(timer->base->lock)
 {
 	for (;;) {
+<<<<<<< HEAD
 		struct timer_base *base;
+=======
+		struct tvec_base *base;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		u32 tf;
 
 		/*

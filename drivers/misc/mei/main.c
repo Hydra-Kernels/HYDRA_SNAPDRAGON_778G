@@ -186,9 +186,26 @@ static ssize_t mei_read(struct file *file, char __user *ubuf,
 	}
 	mutex_lock(&dev->device_lock);
 
+<<<<<<< HEAD
 	if (!mei_cl_is_connected(cl)) {
 		rets = -ENODEV;
 		goto out;
+=======
+		if (wait_event_interruptible(cl->rx_wait,
+				(!list_empty(&cl->rd_completed)) ||
+				(!mei_cl_is_connected(cl)))) {
+
+			if (signal_pending(current))
+				return -EINTR;
+			return -ERESTARTSYS;
+		}
+
+		mutex_lock(&dev->device_lock);
+		if (!mei_cl_is_connected(cl)) {
+			rets = -ENODEV;
+			goto out;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	cb = mei_cl_read_cb(cl, file);

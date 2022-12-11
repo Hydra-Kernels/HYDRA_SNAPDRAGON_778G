@@ -1715,7 +1715,11 @@ static const char *get_field_str(struct tep_filter_arg *arg, struct tep_record *
 		val = record->data + arg->str.field->offset;
 		size = arg->str.field->size;
 
+<<<<<<< HEAD
 		if (arg->str.field->flags & TEP_FIELD_IS_DYNAMIC) {
+=======
+		if (arg->str.field->flags & FIELD_IS_DYNAMIC) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			addr = *(unsigned int *)val;
 			val = record->data + (addr & 0xffff);
 			size = addr >> 16;

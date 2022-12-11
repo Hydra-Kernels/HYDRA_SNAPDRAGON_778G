@@ -878,9 +878,14 @@ static s32 ixgbe_read_ee_hostif_buffer_X550(struct ixgbe_hw *hw,
 		buffer.hdr.req.checksum = FW_DEFAULT_CHECKSUM;
 
 		/* convert offset from words to bytes */
+<<<<<<< HEAD
 		buffer.address = (__force u32)cpu_to_be32((offset +
 							   current_word) * 2);
 		buffer.length = (__force u16)cpu_to_be16(words_to_read * 2);
+=======
+		buffer.address = cpu_to_be32((offset + current_word) * 2);
+		buffer.length = cpu_to_be16(words_to_read * 2);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		buffer.pad2 = 0;
 		buffer.pad3 = 0;
 

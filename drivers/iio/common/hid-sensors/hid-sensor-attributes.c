@@ -30,12 +30,15 @@ static struct {
 	{HID_USAGE_SENSOR_ACCEL_3D,
 		HID_USAGE_SENSOR_UNITS_G, 9, 806650000},
 
+<<<<<<< HEAD
 	{HID_USAGE_SENSOR_GRAVITY_VECTOR, 0, 9, 806650000},
 	{HID_USAGE_SENSOR_GRAVITY_VECTOR,
 		HID_USAGE_SENSOR_UNITS_METERS_PER_SEC_SQRD, 1, 0},
 	{HID_USAGE_SENSOR_GRAVITY_VECTOR,
 		HID_USAGE_SENSOR_UNITS_G, 9, 806650000},
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{HID_USAGE_SENSOR_GYRO_3D, 0, 0, 17453293},
 	{HID_USAGE_SENSOR_GYRO_3D,
 		HID_USAGE_SENSOR_UNITS_RADIANS_PER_SECOND, 1, 0},
@@ -56,6 +59,7 @@ static struct {
 
 	{HID_USAGE_SENSOR_PRESSURE, 0, 100, 0},
 	{HID_USAGE_SENSOR_PRESSURE, HID_USAGE_SENSOR_UNITS_PASCAL, 0, 1000000},
+<<<<<<< HEAD
 
 	{HID_USAGE_SENSOR_TIME_TIMESTAMP, 0, 1000000000, 0},
 	{HID_USAGE_SENSOR_TIME_TIMESTAMP, HID_USAGE_SENSOR_UNITS_MILLISECOND,
@@ -71,6 +75,8 @@ static struct {
 	{HID_USAGE_SENSOR_TEMPERATURE, HID_USAGE_SENSOR_UNITS_DEGREES, 1000, 0},
 
 	{HID_USAGE_SENSOR_HUMIDITY, 0, 1000, 0},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static void simple_div(int dividend, int divisor, int *whole,
@@ -320,10 +326,16 @@ static void adjust_exponent_nano(int *val0, int *val1, int scale0,
 			return;
 		}
 		for (i = 0; i < exp; ++i) {
+<<<<<<< HEAD
 			divisor = int_pow(10, 8 - i);
 			x = scale1 / divisor;
 			res += int_pow(10, exp - 1 - i) * x;
 			scale1 = scale1 % divisor;
+=======
+			x = scale1 / pow_10(8 - i);
+			res += (pow_10(exp - 1 - i) * x);
+			scale1 = scale1 % pow_10(8 - i);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		*val0 += res;
 		*val1 = scale1 * int_pow(10, exp);
@@ -338,12 +350,20 @@ static void adjust_exponent_nano(int *val0, int *val1, int scale0,
 		rem = scale0 % divisor;
 		res = 0;
 		for (i = 0; i < (9 - exp); ++i) {
+<<<<<<< HEAD
 			divisor = int_pow(10, 8 - i);
 			x = scale1 / divisor;
 			res += int_pow(10, 8 - exp - i) * x;
 			scale1 = scale1 % divisor;
 		}
 		*val1 = rem * int_pow(10, 9 - exp) + res;
+=======
+			x = scale1 / pow_10(8 - i);
+			res += (pow_10(8 - exp - i) * x);
+			scale1 = scale1 % pow_10(8 - i);
+		}
+		*val1 = rem * pow_10(9 - exp) + res;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		*val0 = scale0;
 		*val1 = scale1;

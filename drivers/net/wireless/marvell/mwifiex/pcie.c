@@ -1069,7 +1069,10 @@ static int mwifiex_pcie_delete_cmdrsp_buf(struct mwifiex_adapter *adapter)
 		mwifiex_unmap_pci_memory(adapter, card->cmd_buf,
 					 PCI_DMA_TODEVICE);
 		dev_kfree_skb_any(card->cmd_buf);
+<<<<<<< HEAD:drivers/net/wireless/marvell/mwifiex/pcie.c
 		card->cmd_buf = NULL;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/mwifiex/pcie.c
 	}
 	return 0;
 }

@@ -76,6 +76,12 @@ static int __net_init tipc_init_net(struct net *net)
 		goto out_nametbl;
 
 	INIT_LIST_HEAD(&tn->dist_queue);
+<<<<<<< HEAD
+=======
+	err = tipc_topsrv_start(net);
+	if (err)
+		goto out_subscr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	err = tipc_bcast_init(net);
 	if (err)

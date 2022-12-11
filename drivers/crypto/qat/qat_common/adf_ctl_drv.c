@@ -471,17 +471,23 @@ static int __init adf_register_ctl_device_driver(void)
 	if (adf_init_pf_wq())
 		goto err_pf_wq;
 
+<<<<<<< HEAD
 	if (adf_init_vf_wq())
 		goto err_vf_wq;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (qat_crypto_register())
 		goto err_crypto_register;
 
 	return 0;
 
 err_crypto_register:
+<<<<<<< HEAD
 	adf_exit_vf_wq();
 err_vf_wq:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	adf_exit_pf_wq();
 err_pf_wq:
 	adf_exit_aer();
@@ -496,7 +502,10 @@ static void __exit adf_unregister_ctl_device_driver(void)
 {
 	adf_chr_drv_destroy();
 	adf_exit_aer();
+<<<<<<< HEAD
 	adf_exit_vf_wq();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	adf_exit_pf_wq();
 	qat_crypto_unregister();
 	adf_clean_vf_map(false);

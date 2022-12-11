@@ -126,8 +126,11 @@ list_remove_head(x,c,...)
 sizeof(<+...c...+>)
 |
  &c->member
+<<<<<<< HEAD
 |
 T c;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 |
 c = E
 |

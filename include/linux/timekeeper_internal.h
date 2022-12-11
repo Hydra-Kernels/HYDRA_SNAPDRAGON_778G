@@ -33,8 +33,13 @@
  */
 struct tk_read_base {
 	struct clocksource	*clock;
+<<<<<<< HEAD
 	u64			mask;
 	u64			cycle_last;
+=======
+	cycle_t			mask;
+	cycle_t			cycle_last;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32			mult;
 	u32			shift;
 	u64			xtime_nsec;

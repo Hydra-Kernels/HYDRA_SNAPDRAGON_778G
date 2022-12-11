@@ -2153,6 +2153,7 @@ void inode_nohighmem(struct inode *inode)
 	mapping_set_gfp_mask(inode->i_mapping, GFP_USER);
 }
 EXPORT_SYMBOL(inode_nohighmem);
+<<<<<<< HEAD
 
 /**
  * timespec64_trunc - Truncate timespec64 to a granularity
@@ -2319,3 +2320,5 @@ int vfs_ioc_fssetxattr_check(struct inode *inode, const struct fsxattr *old_fa,
 	return 0;
 }
 EXPORT_SYMBOL(vfs_ioc_fssetxattr_check);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

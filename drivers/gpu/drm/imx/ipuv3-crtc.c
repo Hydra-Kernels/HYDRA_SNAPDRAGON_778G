@@ -380,10 +380,20 @@ static int ipu_crtc_init(struct ipu_crtc *ipu_crtc,
 		goto err_put_resources;
 	}
 
+<<<<<<< HEAD
 	crtc->port = pdata->of_node;
 	drm_crtc_helper_add(crtc, &ipu_helper_funcs);
 	drm_crtc_init_with_planes(drm, crtc, &ipu_crtc->plane[0]->base, NULL,
 				  &ipu_crtc_funcs, NULL);
+=======
+	ret = imx_drm_add_crtc(drm, &ipu_crtc->base, &ipu_crtc->imx_crtc,
+			&ipu_crtc->plane[0]->base, &ipu_crtc_helper_funcs,
+			pdata->of_node);
+	if (ret) {
+		dev_err(ipu_crtc->dev, "adding crtc failed with %d.\n", ret);
+		goto err_put_resources;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = ipu_plane_get_resources(ipu_crtc->plane[0]);
 	if (ret) {

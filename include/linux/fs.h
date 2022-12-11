@@ -765,6 +765,11 @@ static inline unsigned int i_blocksize(const struct inode *node)
 	return (1 << node->i_blkbits);
 }
 
+static inline unsigned int i_blocksize(const struct inode *node)
+{
+	return (1 << node->i_blkbits);
+}
+
 static inline int inode_unhashed(struct inode *inode)
 {
 	return hlist_unhashed(&inode->i_hash);
@@ -809,11 +814,16 @@ enum inode_i_mutex_lock_class
 
 static inline void inode_lock(struct inode *inode)
 {
+<<<<<<< HEAD
 	down_write(&inode->i_rwsem);
+=======
+	mutex_lock(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void inode_unlock(struct inode *inode)
 {
+<<<<<<< HEAD
 	up_write(&inode->i_rwsem);
 }
 
@@ -825,31 +835,46 @@ static inline void inode_lock_shared(struct inode *inode)
 static inline void inode_unlock_shared(struct inode *inode)
 {
 	up_read(&inode->i_rwsem);
+=======
+	mutex_unlock(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline int inode_trylock(struct inode *inode)
 {
+<<<<<<< HEAD
 	return down_write_trylock(&inode->i_rwsem);
 }
 
 static inline int inode_trylock_shared(struct inode *inode)
 {
 	return down_read_trylock(&inode->i_rwsem);
+=======
+	return mutex_trylock(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline int inode_is_locked(struct inode *inode)
 {
+<<<<<<< HEAD
 	return rwsem_is_locked(&inode->i_rwsem);
+=======
+	return mutex_is_locked(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void inode_lock_nested(struct inode *inode, unsigned subclass)
 {
+<<<<<<< HEAD
 	down_write_nested(&inode->i_rwsem, subclass);
 }
 
 static inline void inode_lock_shared_nested(struct inode *inode, unsigned subclass)
 {
 	down_read_nested(&inode->i_rwsem, subclass);
+=======
+	mutex_lock_nested(&inode->i_mutex, subclass);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void lock_two_nondirectories(struct inode *, struct inode*);
@@ -1354,7 +1379,16 @@ static inline struct inode *file_inode(const struct file *f)
 
 static inline struct dentry *file_dentry(const struct file *file)
 {
+<<<<<<< HEAD
 	return d_real(file->f_path.dentry, file_inode(file));
+=======
+	struct dentry *dentry = file->f_path.dentry;
+
+	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
+		return dentry->d_op->d_real(dentry, file_inode(file));
+	else
+		return dentry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline int locks_lock_file_wait(struct file *filp, struct file_lock *fl)
@@ -1435,6 +1469,7 @@ extern int send_sigurg(struct fown_struct *fown);
 /* sb->s_iflags */
 #define SB_I_CGROUPWB	0x00000001	/* cgroup-aware writeback enabled */
 #define SB_I_NOEXEC	0x00000002	/* Ignore executables on this fs */
+<<<<<<< HEAD
 #define SB_I_NODEV	0x00000004	/* Ignore devices on this fs */
 #define SB_I_MULTIROOT	0x00000008	/* Multiple roots to the dentry tree */
 
@@ -1442,6 +1477,9 @@ extern int send_sigurg(struct fown_struct *fown);
 #define SB_I_USERNS_VISIBLE		0x00000010 /* fstype already mounted */
 #define SB_I_IMA_UNVERIFIABLE_SIGNATURE	0x00000020
 #define SB_I_UNTRUSTED_MOUNTER		0x00000040
+=======
+#define SB_I_MULTIROOT	0x00000008	/* Multiple roots to the dentry tree */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Possible states of 'frozen' field */
 enum {
@@ -3667,6 +3705,7 @@ static inline bool dir_relax(struct inode *inode)
 {
 	inode_unlock(inode);
 	inode_lock(inode);
+<<<<<<< HEAD
 	return !IS_DEADDIR(inode);
 }
 
@@ -3674,11 +3713,14 @@ static inline bool dir_relax_shared(struct inode *inode)
 {
 	inode_unlock_shared(inode);
 	inode_lock_shared(inode);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return !IS_DEADDIR(inode);
 }
 
 extern bool path_noexec(const struct path *path);
 extern void inode_nohighmem(struct inode *inode);
+<<<<<<< HEAD
 
 /* mm/fadvise.c */
 extern int vfs_fadvise(struct file *file, loff_t offset, loff_t len,
@@ -3717,5 +3759,7 @@ static inline int inode_drain_writes(struct inode *inode)
 	inode_dio_wait(inode);
 	return filemap_write_and_wait(inode->i_mapping);
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* _LINUX_FS_H */

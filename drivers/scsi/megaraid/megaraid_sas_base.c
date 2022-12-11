@@ -850,6 +850,7 @@ megasas_fire_cmd_skinny(struct megasas_instance *instance,
 	       &(regs)->inbound_high_queue_port);
 	writel((lower_32_bits(frame_phys_addr) | (frame_count<<1))|1,
 	       &(regs)->inbound_low_queue_port);
+	mmiowb();
 	spin_unlock_irqrestore(&instance->hba_lock, flags);
 }
 
@@ -1827,9 +1828,17 @@ megasas_queue_command(struct Scsi_Host *shost, struct scsi_cmnd *scmd)
 		goto out_done;
 	}
 
+<<<<<<< HEAD
 	if ((scmd->cmnd[0] == SYNCHRONIZE_CACHE) &&
 	    MEGASAS_IS_LOGICAL(scmd->device) &&
 	    (!instance->fw_sync_cache_support)) {
+=======
+	/*
+	 * FW takes care of flush cache on its own for Virtual Disk.
+	 * No need to send it down for VD. For JBOD send SYNCHRONIZE_CACHE to FW.
+	 */
+	if ((scmd->cmnd[0] == SYNCHRONIZE_CACHE) && MEGASAS_IS_LOGICAL(scmd)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		scmd->result = DID_OK << 16;
 		goto out_done;
 	}
@@ -5925,7 +5934,11 @@ static int megasas_init_fw(struct megasas_instance *instance)
 
 	/* Find first memory bar */
 	bar_list = pci_select_bars(instance->pdev, IORESOURCE_MEM);
+<<<<<<< HEAD
 	instance->bar = find_first_bit(&bar_list, BITS_PER_LONG);
+=======
+	instance->bar = find_first_bit(&bar_list, sizeof(unsigned long));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (pci_request_selected_regions(instance->pdev, 1<<instance->bar,
 					 "megasas: LSI")) {
 		dev_printk(KERN_DEBUG, &instance->pdev->dev, "IO memory region busy!\n");
@@ -6431,7 +6444,11 @@ fail_alloc_dma_buf:
 fail_ready_state:
 	iounmap(instance->reg_set);
 
+<<<<<<< HEAD
 fail_ioremap:
+=======
+      fail_ioremap:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pci_release_selected_regions(instance->pdev, 1<<instance->bar);
 
 	dev_err(&instance->pdev->dev, "Failed from %s %d\n",
@@ -7385,6 +7402,118 @@ static int megasas_probe_one(struct pci_dev *pdev,
 	instance = (struct megasas_instance *)host->hostdata;
 	memset(instance, 0, sizeof(*instance));
 	atomic_set(&instance->fw_reset_no_pci_access, 0);
+<<<<<<< HEAD
+=======
+	instance->pdev = pdev;
+
+	switch (instance->pdev->device) {
+	case PCI_DEVICE_ID_LSI_FUSION:
+	case PCI_DEVICE_ID_LSI_PLASMA:
+	case PCI_DEVICE_ID_LSI_INVADER:
+	case PCI_DEVICE_ID_LSI_FURY:
+	case PCI_DEVICE_ID_LSI_INTRUDER:
+	case PCI_DEVICE_ID_LSI_INTRUDER_24:
+	case PCI_DEVICE_ID_LSI_CUTLASS_52:
+	case PCI_DEVICE_ID_LSI_CUTLASS_53:
+	{
+		instance->ctrl_context_pages =
+			get_order(sizeof(struct fusion_context));
+		instance->ctrl_context = (void *)__get_free_pages(GFP_KERNEL,
+				instance->ctrl_context_pages);
+		if (!instance->ctrl_context) {
+			dev_printk(KERN_DEBUG, &pdev->dev, "Failed to allocate "
+			       "memory for Fusion context info\n");
+			goto fail_alloc_dma_buf;
+		}
+		fusion = instance->ctrl_context;
+		memset(fusion, 0,
+			((1 << PAGE_SHIFT) << instance->ctrl_context_pages));
+		if ((instance->pdev->device == PCI_DEVICE_ID_LSI_FUSION) ||
+			(instance->pdev->device == PCI_DEVICE_ID_LSI_PLASMA))
+			fusion->adapter_type = THUNDERBOLT_SERIES;
+		else
+			fusion->adapter_type = INVADER_SERIES;
+	}
+	break;
+	default: /* For all other supported controllers */
+
+		instance->producer =
+			pci_alloc_consistent(pdev, sizeof(u32),
+					     &instance->producer_h);
+		instance->consumer =
+			pci_alloc_consistent(pdev, sizeof(u32),
+					     &instance->consumer_h);
+
+		if (!instance->producer || !instance->consumer) {
+			dev_printk(KERN_DEBUG, &pdev->dev, "Failed to allocate"
+			       "memory for producer, consumer\n");
+			goto fail_alloc_dma_buf;
+		}
+
+		*instance->producer = 0;
+		*instance->consumer = 0;
+		break;
+	}
+
+	instance->system_info_buf = pci_zalloc_consistent(pdev,
+					sizeof(struct MR_DRV_SYSTEM_INFO),
+					&instance->system_info_h);
+
+	if (!instance->system_info_buf)
+		dev_info(&instance->pdev->dev, "Can't allocate system info buffer\n");
+
+	/* Crash dump feature related initialisation*/
+	instance->drv_buf_index = 0;
+	instance->drv_buf_alloc = 0;
+	instance->crash_dump_fw_support = 0;
+	instance->crash_dump_app_support = 0;
+	instance->fw_crash_state = UNAVAILABLE;
+	spin_lock_init(&instance->crashdump_lock);
+	instance->crash_dump_buf = NULL;
+
+	if (!reset_devices)
+		instance->crash_dump_buf = pci_alloc_consistent(pdev,
+						CRASH_DMA_BUF_SIZE,
+						&instance->crash_dump_h);
+	if (!instance->crash_dump_buf)
+		dev_err(&pdev->dev, "Can't allocate Firmware "
+			"crash dump DMA buffer\n");
+
+	megasas_poll_wait_aen = 0;
+	instance->flag_ieee = 0;
+	instance->ev = NULL;
+	instance->issuepend_done = 1;
+	instance->adprecovery = MEGASAS_HBA_OPERATIONAL;
+	instance->is_imr = 0;
+
+	instance->evt_detail = pci_alloc_consistent(pdev,
+						    sizeof(struct
+							   megasas_evt_detail),
+						    &instance->evt_detail_h);
+
+	if (!instance->evt_detail) {
+		dev_printk(KERN_DEBUG, &pdev->dev, "Failed to allocate memory for "
+		       "event detail structure\n");
+		goto fail_alloc_dma_buf;
+	}
+
+	/*
+	 * Initialize locks and queues
+	 */
+	INIT_LIST_HEAD(&instance->cmd_pool);
+	INIT_LIST_HEAD(&instance->internal_reset_pending_q);
+
+	atomic_set(&instance->fw_outstanding,0);
+
+	init_waitqueue_head(&instance->int_cmd_wait_q);
+	init_waitqueue_head(&instance->abort_cmd_wait_q);
+
+	spin_lock_init(&instance->mfi_pool_lock);
+	spin_lock_init(&instance->hba_lock);
+	spin_lock_init(&instance->completion_lock);
+
+	mutex_init(&instance->reset_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Initialize PCI related and misc parameters
@@ -7916,6 +8045,7 @@ skip_firing_dcmds:
 						  fusion->max_map_sz,
 						  fusion->ld_map[i],
 						  fusion->ld_map_phys[i]);
+<<<<<<< HEAD
 			if (fusion->ld_drv_map[i]) {
 				if (is_vmalloc_addr(fusion->ld_drv_map[i]))
 					vfree(fusion->ld_drv_map[i]);
@@ -7924,6 +8054,11 @@ skip_firing_dcmds:
 						   fusion->drv_map_pages);
 			}
 
+=======
+			if (fusion->ld_drv_map[i])
+				free_pages((ulong)fusion->ld_drv_map[i],
+					fusion->drv_map_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (fusion->pd_seq_sync[i])
 				dma_free_coherent(&instance->pdev->dev,
 					pd_seq_map_sz,
@@ -8316,6 +8451,7 @@ out:
 
 	for (i = 0; i < ioc->sge_count; i++) {
 		if (kbuff_arr[i]) {
+<<<<<<< HEAD
 			if (instance->consistent_mask_64bit)
 				dma_free_coherent(&instance->pdev->dev,
 					le32_to_cpu(kern_sge64[i].length),
@@ -8326,6 +8462,12 @@ out:
 					le32_to_cpu(kern_sge32[i].length),
 					kbuff_arr[i],
 					le32_to_cpu(kern_sge32[i].phys_addr));
+=======
+			dma_free_coherent(&instance->pdev->dev,
+					  le32_to_cpu(kern_sge32[i].length),
+					  kbuff_arr[i],
+					  le32_to_cpu(kern_sge32[i].phys_addr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			kbuff_arr[i] = NULL;
 		}
 	}
@@ -8478,9 +8620,12 @@ static int megasas_mgmt_compat_ioctl_fw(struct file *file, unsigned long arg)
 		get_user(user_sense_off, &cioc->sense_off))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	if (local_sense_off != user_sense_off)
 		return -EINVAL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (local_sense_len) {
 		void __user **sense_ioc_ptr =
 			(void __user **)((u8 *)((unsigned long)&ioc->frame.raw) + local_sense_off);
@@ -8767,8 +8912,12 @@ megasas_aen_polling(struct work_struct *work)
 	u32 seq_num;
 	u16 ld_target_id;
 	int error;
+<<<<<<< HEAD
 	u8  dcmd_ret = DCMD_SUCCESS;
 	struct scsi_device *sdev1;
+=======
+	u8  dcmd_ret = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!instance) {
 		printk(KERN_ERR "invalid instance!\n");
@@ -8787,6 +8936,7 @@ megasas_aen_polling(struct work_struct *work)
 
 		case MR_EVT_PD_INSERTED:
 		case MR_EVT_PD_REMOVED:
+<<<<<<< HEAD
 			event_type = SCAN_PD_CHANNEL;
 			break;
 
@@ -8812,11 +8962,48 @@ megasas_aen_polling(struct work_struct *work)
 		case MR_EVT_FOREIGN_CFG_IMPORTED:
 		case MR_EVT_LD_STATE_CHANGE:
 			event_type = SCAN_PD_CHANNEL | SCAN_VD_CHANNEL;
+=======
+			dcmd_ret = megasas_get_pd_list(instance);
+			if (dcmd_ret == 0)
+				doscan = SCAN_PD_CHANNEL;
+			break;
+
+		case MR_EVT_LD_OFFLINE:
+		case MR_EVT_CFG_CLEARED:
+		case MR_EVT_LD_DELETED:
+		case MR_EVT_LD_CREATED:
+			if (!instance->requestorId ||
+				(instance->requestorId && megasas_get_ld_vf_affiliation(instance, 0)))
+				dcmd_ret = megasas_ld_list_query(instance, MR_LD_QUERY_TYPE_EXPOSED_TO_HOST);
+
+			if (dcmd_ret == 0)
+				doscan = SCAN_VD_CHANNEL;
+
+			break;
+
+		case MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED:
+		case MR_EVT_FOREIGN_CFG_IMPORTED:
+		case MR_EVT_LD_STATE_CHANGE:
+			dcmd_ret = megasas_get_pd_list(instance);
+
+			if (dcmd_ret != 0)
+				break;
+
+			if (!instance->requestorId ||
+				(instance->requestorId && megasas_get_ld_vf_affiliation(instance, 0)))
+				dcmd_ret = megasas_ld_list_query(instance, MR_LD_QUERY_TYPE_EXPOSED_TO_HOST);
+
+			if (dcmd_ret != 0)
+				break;
+
+			doscan = SCAN_VD_CHANNEL | SCAN_PD_CHANNEL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_info(&instance->pdev->dev, "scanning for scsi%d...\n",
 				instance->host->host_no);
 			break;
 
 		case MR_EVT_CTRL_PROP_CHANGED:
+<<<<<<< HEAD
 			dcmd_ret = megasas_get_ctrl_info(instance);
 			if (dcmd_ret == DCMD_SUCCESS &&
 			    instance->snapdump_wait_time) {
@@ -8846,6 +9033,65 @@ megasas_aen_polling(struct work_struct *work)
 		megasas_add_remove_devices(instance, event_type);
 
 	if (dcmd_ret == DCMD_SUCCESS)
+=======
+				dcmd_ret = megasas_get_ctrl_info(instance);
+				break;
+		default:
+			doscan = 0;
+			break;
+		}
+	} else {
+		dev_err(&instance->pdev->dev, "invalid evt_detail!\n");
+		mutex_unlock(&instance->reset_mutex);
+		kfree(ev);
+		return;
+	}
+
+	mutex_unlock(&instance->reset_mutex);
+
+	if (doscan & SCAN_PD_CHANNEL) {
+		for (i = 0; i < MEGASAS_MAX_PD_CHANNELS; i++) {
+			for (j = 0; j < MEGASAS_MAX_DEV_PER_CHANNEL; j++) {
+				pd_index = i*MEGASAS_MAX_DEV_PER_CHANNEL + j;
+				sdev1 = scsi_device_lookup(host, i, j, 0);
+				if (instance->pd_list[pd_index].driveState ==
+							MR_PD_STATE_SYSTEM) {
+					if (!sdev1)
+						scsi_add_device(host, i, j, 0);
+					else
+						scsi_device_put(sdev1);
+				} else {
+					if (sdev1) {
+						scsi_remove_device(sdev1);
+						scsi_device_put(sdev1);
+					}
+				}
+			}
+		}
+	}
+
+	if (doscan & SCAN_VD_CHANNEL) {
+		for (i = 0; i < MEGASAS_MAX_LD_CHANNELS; i++) {
+			for (j = 0; j < MEGASAS_MAX_DEV_PER_CHANNEL; j++) {
+				ld_index = (i * MEGASAS_MAX_DEV_PER_CHANNEL) + j;
+				sdev1 = scsi_device_lookup(host, MEGASAS_MAX_PD_CHANNELS + i, j, 0);
+				if (instance->ld_ids[ld_index] != 0xff) {
+					if (!sdev1)
+						scsi_add_device(host, MEGASAS_MAX_PD_CHANNELS + i, j, 0);
+					else
+						scsi_device_put(sdev1);
+				} else {
+					if (sdev1) {
+						scsi_remove_device(sdev1);
+						scsi_device_put(sdev1);
+					}
+				}
+			}
+		}
+	}
+
+	if (dcmd_ret == 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		seq_num = le32_to_cpu(instance->evt_detail->seq_num) + 1;
 	else
 		seq_num = instance->last_seq_num;

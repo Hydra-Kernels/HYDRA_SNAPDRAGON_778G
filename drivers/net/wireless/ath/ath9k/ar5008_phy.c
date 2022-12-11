@@ -270,6 +270,9 @@ void ar5008_hw_cmn_spur_mitigate(struct ath_hw *ah,
 	};
 	static const int inc[4] = { 0, 100, 0, 0 };
 
+	memset(&mask_m, 0, sizeof(int8_t) * 123);
+	memset(&mask_p, 0, sizeof(int8_t) * 123);
+
 	cur_bin = -6000;
 	upper = bin + 100;
 	lower = bin - 100;

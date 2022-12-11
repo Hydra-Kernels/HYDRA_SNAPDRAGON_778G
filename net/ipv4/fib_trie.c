@@ -2104,6 +2104,7 @@ static int fn_trie_dump_leaf(struct key_vector *l, struct fib_table *tb,
 
 	/* rcu_read_lock is hold by caller */
 	hlist_for_each_entry_rcu(fa, &l->leaf, fa_list) {
+<<<<<<< HEAD
 		struct fib_info *fi = fa->fa_info;
 
 		if (i < s_i)
@@ -2125,6 +2126,13 @@ static int fn_trie_dump_leaf(struct key_vector *l, struct fib_table *tb,
 			if (filter->dev &&
 			    !fib_info_nh_uses_dev(fi, filter->dev))
 				goto next;
+=======
+		int err;
+
+		if (i < s_i) {
+			i++;
+			continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (filter->dump_routes) {
@@ -2144,11 +2152,22 @@ static int fn_trie_dump_leaf(struct key_vector *l, struct fib_table *tb,
 			i_fa++;
 		}
 
+<<<<<<< HEAD
 		if (filter->dump_exceptions) {
 			err = fib_dump_info_fnhe(skb, cb, tb->tb_id, fi,
 						 &i_fa, s_fa, flags);
 			if (err < 0)
 				goto stop;
+=======
+		err = fib_dump_info(skb, NETLINK_CB(cb->skb).portid,
+				    cb->nlh->nlmsg_seq, RTM_NEWROUTE,
+				    tb->tb_id, fa->fa_type,
+				    xkey, KEYLENGTH - fa->fa_slen,
+				    fa->fa_tos, fa->fa_info, NLM_F_MULTI);
+		if (err < 0) {
+			cb->args[4] = i;
+			return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 next:
@@ -2185,7 +2204,11 @@ int fib_table_dump(struct fib_table *tb, struct sk_buff *skb,
 	while ((l = leaf_walk_rcu(&tp, key)) != NULL) {
 		int err;
 
+<<<<<<< HEAD
 		err = fn_trie_dump_leaf(l, tb, skb, cb, filter);
+=======
+		err = fn_trie_dump_leaf(l, tb, skb, cb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err < 0) {
 			cb->args[3] = key;
 			cb->args[2] = count;

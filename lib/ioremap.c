@@ -112,8 +112,18 @@ static inline int ioremap_pmd_range(pud_t *pud, unsigned long addr,
 	do {
 		next = pmd_addr_end(addr, end);
 
+<<<<<<< HEAD
 		if (ioremap_try_huge_pmd(pmd, addr, next, phys_addr, prot))
 			continue;
+=======
+		if (ioremap_pmd_enabled() &&
+		    ((next - addr) == PMD_SIZE) &&
+		    IS_ALIGNED(phys_addr + addr, PMD_SIZE) &&
+		    pmd_free_pte_page(pmd)) {
+			if (pmd_set_huge(pmd, phys_addr + addr, prot))
+				continue;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (ioremap_pte_range(pmd, addr, next, phys_addr, prot))
 			return -ENOMEM;
@@ -155,8 +165,18 @@ static inline int ioremap_pud_range(p4d_t *p4d, unsigned long addr,
 	do {
 		next = pud_addr_end(addr, end);
 
+<<<<<<< HEAD
 		if (ioremap_try_huge_pud(pud, addr, next, phys_addr, prot))
 			continue;
+=======
+		if (ioremap_pud_enabled() &&
+		    ((next - addr) == PUD_SIZE) &&
+		    IS_ALIGNED(phys_addr + addr, PUD_SIZE) &&
+		    pud_free_pmd_page(pud)) {
+			if (pud_set_huge(pud, phys_addr + addr, prot))
+				continue;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (ioremap_pmd_range(pud, addr, next, phys_addr, prot))
 			return -ENOMEM;

@@ -64,6 +64,17 @@
 	: [addr] "r" (uaddr), [oparg] "r" (arg),	\
 	  [fault] "I" (-EFAULT)				\
 	: "memory")
+<<<<<<< HEAD
+=======
+
+static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
+		u32 __user *uaddr)
+{
+	int oldval = 0, ret;
+
+#if !XCHAL_HAVE_S32C1I
+	return -ENOSYS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
@@ -105,9 +116,12 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
 		*oval = oldval;
 
 	return ret;
+<<<<<<< HEAD
 #else
 	return -ENOSYS;
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline int
@@ -123,6 +137,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
 
 	__asm__ __volatile__ (
 	"	# futex_atomic_cmpxchg_inatomic\n"
+<<<<<<< HEAD
 #if XCHAL_HAVE_EXCLUSIVE
 	"1:	l32ex	%[tmp], %[addr]\n"
 	"	s32i	%[tmp], %[uval], 0\n"
@@ -153,6 +168,24 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
 	: [ret] "+r" (ret), [newval] "+r" (newval), [tmp] "=&r" (tmp)
 	: [addr] "r" (uaddr), [oldval] "r" (oldval), [uval] "r" (uval),
 	  [fault] "I" (-EFAULT)
+=======
+	"	wsr	%5, scompare1\n"
+	"1:	s32c1i	%1, %4, 0\n"
+	"	s32i	%1, %6, 0\n"
+	"2:\n"
+	"	.section .fixup,\"ax\"\n"
+	"	.align 4\n"
+	"3:	.long	2b\n"
+	"4:	l32r	%1, 3b\n"
+	"	movi	%0, %7\n"
+	"	jx	%1\n"
+	"	.previous\n"
+	"	.section __ex_table,\"a\"\n"
+	"	.long 1b,4b\n"
+	"	.previous\n"
+	: "+r" (ret), "+r" (newval), "+m" (*uaddr), "+m" (*uval)
+	: "r" (uaddr), "r" (oldval), "r" (uval), "I" (-EFAULT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	: "memory");
 
 	return ret;

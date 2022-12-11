@@ -1432,6 +1432,13 @@ static int usbvision_probe(struct usb_interface *intf,
 	printk(KERN_INFO "%s: %s found\n", __func__,
 				usbvision_device_data[model].model_string);
 
+	/*
+	 * this is a security check.
+	 * an exploit using an incorrect bInterfaceNumber is known
+	 */
+	if (ifnum >= USB_MAXINTERFACES || !dev->actconfig->interface[ifnum])
+		return -ENODEV;
+
 	if (usbvision_device_data[model].interface >= 0)
 		interface = &dev->actconfig->interface[usbvision_device_data[model].interface]->altsetting[0];
 	else if (ifnum < dev->actconfig->desc.bNumInterfaces)
@@ -1444,8 +1451,13 @@ static int usbvision_probe(struct usb_interface *intf,
 	}
 
 	if (interface->desc.bNumEndpoints < 2) {
+<<<<<<< HEAD
 		dev_err(&intf->dev, "interface %d has %d endpoints, but must have minimum 2\n",
 			ifnum, interface->desc.bNumEndpoints);
+=======
+		dev_err(&intf->dev, "interface %d has %d endpoints, but must"
+		    " have minimum 2\n", ifnum, interface->desc.bNumEndpoints);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = -ENODEV;
 		goto err_usb;
 	}

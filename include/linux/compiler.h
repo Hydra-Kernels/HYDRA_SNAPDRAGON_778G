@@ -20,11 +20,19 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #define likely_notrace(x)	__builtin_expect(!!(x), 1)
 #define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
 
+<<<<<<< HEAD
 #define __branch_check__(x, expect, is_constant) ({			\
 			long ______r;					\
 			static struct ftrace_likely_data		\
 				__aligned(4)				\
 				__section(_ftrace_annotated_branch)	\
+=======
+#define __branch_check__(x, expect) ({					\
+			long ______r;					\
+			static struct ftrace_branch_data		\
+				__attribute__((__aligned__(4)))		\
+				__attribute__((section("_ftrace_annotated_branch"))) \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				______f = {				\
 				.data.func = __func__,			\
 				.data.file = __FILE__,			\
@@ -53,6 +61,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
  * "Define 'is'", Bill Clinton
  * "Define 'if'", Steven Rostedt
  */
+<<<<<<< HEAD
 #define if(cond, ...) if ( __trace_if_var( !!(cond , ## __VA_ARGS__) ) )
 
 #define __trace_if_var(cond) (__builtin_constant_p(cond) ? (cond) : __trace_if_value(cond))
@@ -71,6 +80,25 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 		(__if_trace.miss_hit[0]++,0);		\
 })
 
+=======
+#define if(cond, ...) __trace_if( (cond , ## __VA_ARGS__) )
+#define __trace_if(cond) \
+	if (__builtin_constant_p(!!(cond)) ? !!(cond) :			\
+	({								\
+		int ______r;						\
+		static struct ftrace_branch_data			\
+			__attribute__((__aligned__(4)))			\
+			__attribute__((section("_ftrace_branch")))	\
+			______f = {					\
+				.func = __func__,			\
+				.file = __FILE__,			\
+				.line = __LINE__,			\
+			};						\
+		______r = !!(cond);					\
+		______f.miss_hit[______r]++;					\
+		______r;						\
+	}))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_PROFILE_ALL_BRANCHES */
 
 #else

@@ -141,16 +141,23 @@ xfs_inode_buf_write_verify(
 
 const struct xfs_buf_ops xfs_inode_buf_ops = {
 	.name = "xfs_inode",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_DINODE_MAGIC),
 		     cpu_to_be16(XFS_DINODE_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_inode_buf_read_verify,
 	.verify_write = xfs_inode_buf_write_verify,
 };
 
 const struct xfs_buf_ops xfs_inode_buf_ra_ops = {
+<<<<<<< HEAD
 	.name = "xfs_inode_ra",
 	.magic16 = { cpu_to_be16(XFS_DINODE_MAGIC),
 		     cpu_to_be16(XFS_DINODE_MAGIC) },
+=======
+	.name = "xxfs_inode_ra",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_inode_buf_readahead_verify,
 	.verify_write = xfs_inode_buf_write_verify,
 };
@@ -548,6 +555,14 @@ xfs_dinode_verify(
 			mode, flags);
 	if (fa)
 		return fa;
+
+	/* don't allow invalid i_size */
+	if (be64_to_cpu(dip->di_size) & (1ULL << 63))
+		return false;
+
+	/* No zero-length symlinks. */
+	if (S_ISLNK(be16_to_cpu(dip->di_mode)) && dip->di_size == 0)
+		return false;
 
 	/* only version 3 or greater inodes are extensively verified here */
 	if (dip->di_version < 3)

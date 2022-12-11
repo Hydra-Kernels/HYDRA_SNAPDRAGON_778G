@@ -117,8 +117,13 @@ static const struct pci_device_id cxl_pci_tbl[] = {
 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
+<<<<<<< HEAD
 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0623), },
 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0628), },
+=======
+	{ PCI_DEVICE_CLASS(0x120000, ~0), },
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ }
 };
 MODULE_DEVICE_TABLE(pci, cxl_pci_tbl);
@@ -631,8 +636,23 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
 	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
 	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
 
+<<<<<<< HEAD
 	return;
 }
+=======
+	/* Wait until CORE TB and PSL TB difference <= 16usecs */
+	do {
+		msleep(1);
+		if (retry++ > 5) {
+			pr_err("PSL: Timebase sync: giving up!\n");
+			return -EIO;
+		}
+		psl_tb = cxl_p1_read(adapter, CXL_PSL_Timebase);
+		delta = mftb() - psl_tb;
+		if (delta < 0)
+			delta = -delta;
+	} while (tb_to_ns(delta) > 16000);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int init_implementation_afu_regs_psl9(struct cxl_afu *afu)
 {
@@ -1801,7 +1821,11 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
 	/* There should only be one entry, but go through the list
 	 * anyway
 	 */
+<<<<<<< HEAD
 	if (afu == NULL || afu->phb == NULL)
+=======
+	if (afu->phb == NULL)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return result;
 
 	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
@@ -2001,6 +2025,11 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
 
 		if (afu->phb == NULL)
 			continue;
+<<<<<<< HEAD
+=======
+
+		cxl_pci_vphb_reconfigure(afu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
 			/* Reset the device context.
@@ -2070,7 +2099,11 @@ static void cxl_pci_resume(struct pci_dev *pdev)
 	for (i = 0; i < adapter->slices; i++) {
 		afu = adapter->afu[i];
 
+<<<<<<< HEAD
 		if (afu == NULL || afu->phb == NULL)
+=======
+		if (afu->phb == NULL)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 
 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {

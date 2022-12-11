@@ -685,6 +685,7 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
 	bool boot = false;
 	int ret;
 
+<<<<<<< HEAD
 	if (vga_switcheroo_client_probe_defer(pdev))
 		return -EPROBE_DEFER;
 
@@ -693,6 +694,12 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
 	 */
 	ret = nvkm_device_pci_new(pdev, nouveau_config, "error",
 				  true, false, 0, &device);
+=======
+	/* We need to check that the chipset is supported before booting
+	 * fbdev off the hardware, as there's no way to put it back.
+	 */
+	ret = nvkm_device_pci_new(pdev, NULL, "error", true, false, 0, &device);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		return ret;
 
@@ -1013,10 +1020,16 @@ nouveau_pmops_runtime_resume(struct device *dev)
 	pci_set_master(pdev);
 
 	ret = nouveau_do_resume(drm_dev, true);
+<<<<<<< HEAD
 	if (ret) {
 		NV_ERROR(drm, "resume failed with: %d\n", ret);
 		return ret;
 	}
+=======
+
+	if (!drm_dev->mode_config.poll_enabled)
+		drm_kms_helper_poll_enable(drm_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* do magic */
 	nvif_mask(&device->object, 0x088488, (1 << 25), (1 << 25));

@@ -1282,7 +1282,11 @@ radix_tree_gang_lookup(const struct radix_tree_root *root, void **results,
 		results[ret] = rcu_dereference_raw(*slot);
 		if (!results[ret])
 			continue;
+<<<<<<< HEAD
 		if (radix_tree_is_internal_node(results[ret])) {
+=======
+		if (radix_tree_is_indirect_ptr(results[ret])) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			slot = radix_tree_iter_retry(&iter);
 			continue;
 		}
@@ -1323,7 +1327,11 @@ radix_tree_gang_lookup_tag(const struct radix_tree_root *root, void **results,
 		results[ret] = rcu_dereference_raw(*slot);
 		if (!results[ret])
 			continue;
+<<<<<<< HEAD
 		if (radix_tree_is_internal_node(results[ret])) {
+=======
+		if (radix_tree_is_indirect_ptr(results[ret])) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			slot = radix_tree_iter_retry(&iter);
 			continue;
 		}

@@ -202,7 +202,11 @@ static void check_stack(unsigned long ip, unsigned long *stack)
 	 * Some archs may not have the passed in ip in the dump.
 	 * If that happens, we need to show everything.
 	 */
+<<<<<<< HEAD
 	if (i == stack_trace_nr_entries)
+=======
+	if (i == stack_trace_max.nr_entries)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		i = 0;
 
 	/*

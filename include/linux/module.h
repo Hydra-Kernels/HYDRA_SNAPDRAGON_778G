@@ -306,6 +306,7 @@ struct mod_tree_node {
 	struct latch_tree_node node;
 };
 
+<<<<<<< HEAD
 struct module_layout {
 	/* The actual code + data. */
 	void *base;
@@ -330,10 +331,13 @@ struct module_layout {
 #define __module_layout_align
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct mod_kallsyms {
 	Elf_Sym *symtab;
 	unsigned int num_symtab;
 	char *strtab;
+<<<<<<< HEAD
 	char *typetab;
 };
 
@@ -346,6 +350,10 @@ struct klp_modinfo {
 };
 #endif
 
+=======
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct module {
 	enum module_state state;
 
@@ -864,7 +872,11 @@ static inline void module_bug_finalize(const Elf_Ehdr *hdr,
 static inline void module_bug_cleanup(struct module *mod) {}
 #endif	/* CONFIG_GENERIC_BUG */
 
+<<<<<<< HEAD
 #ifdef CONFIG_RETPOLINE
+=======
+#ifdef RETPOLINE
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern bool retpoline_module_ok(bool has_retpoline);
 #else
 static inline bool retpoline_module_ok(bool has_retpoline)

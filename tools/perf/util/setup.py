@@ -54,6 +54,7 @@ ext_sources = [f.strip() for f in open('util/python-ext-sources')
 				if len(f.strip()) > 0 and f[0] != '#']
 
 # use full paths with source files
+<<<<<<< HEAD
 ext_sources = list(map(lambda x: '%s/%s' % (src_perf, x) , ext_sources))
 
 extra_libraries = []
@@ -61,6 +62,9 @@ if '-DHAVE_LIBNUMA_SUPPORT' in cflags:
     extra_libraries = [ 'numa' ]
 if '-DHAVE_LIBCAP_SUPPORT' in cflags:
     extra_libraries += [ 'cap' ]
+=======
+ext_sources = map(lambda x: '%s/%s' % (src_perf, x) , ext_sources)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 perf = Extension('perf',
 		  sources = ext_sources,

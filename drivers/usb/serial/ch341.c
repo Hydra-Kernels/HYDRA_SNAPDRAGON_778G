@@ -210,7 +210,11 @@ static int ch341_get_status(struct usb_device *dev, struct ch341_private *priv)
 		goto out;
 
 	spin_lock_irqsave(&priv->lock, flags);
+<<<<<<< HEAD
 	priv->msr = (~(*buffer)) & CH341_BITS_MODEM_STAT;
+=======
+	priv->line_status = (~(*buffer)) & CH341_BITS_MODEM_STAT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 out:	kfree(buffer);
@@ -307,11 +311,14 @@ static int ch341_port_probe(struct usb_serial_port *port)
 
 	spin_lock_init(&priv->lock);
 	priv->baud_rate = DEFAULT_BAUD_RATE;
+<<<<<<< HEAD
 	/*
 	 * Some CH340 devices appear unable to change the initial LCR
 	 * settings, so set a sane 8N1 default.
 	 */
 	priv->lcr = CH341_LCR_ENABLE_RX | CH341_LCR_ENABLE_TX | CH341_LCR_CS8;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	r = ch341_configure(port->serial->dev, priv);
 	if (r < 0)
@@ -375,6 +382,13 @@ static int ch341_open(struct tty_struct *tty, struct usb_serial_port *port)
 	struct ch341_private *priv = usb_get_serial_port_data(port);
 	int r;
 
+<<<<<<< HEAD
+=======
+	r = ch341_configure(serial->dev, priv);
+	if (r)
+		return r;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (tty)
 		ch341_set_termios(tty, port, NULL);
 
@@ -384,12 +398,15 @@ static int ch341_open(struct tty_struct *tty, struct usb_serial_port *port)
 		dev_err(&port->dev, "%s - failed to submit interrupt urb: %d\n",
 			__func__, r);
 		return r;
+<<<<<<< HEAD
 	}
 
 	r = ch341_get_status(port->serial->dev, priv);
 	if (r < 0) {
 		dev_err(&port->dev, "failed to read modem status: %d\n", r);
 		goto err_kill_interrupt_urb;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	r = usb_serial_generic_open(tty, port);
@@ -422,6 +439,7 @@ static void ch341_set_termios(struct tty_struct *tty,
 
 	baud_rate = tty_get_baud_rate(tty);
 
+<<<<<<< HEAD
 	lcr = CH341_LCR_ENABLE_RX | CH341_LCR_ENABLE_TX;
 
 	switch (C_CSIZE(tty)) {
@@ -470,6 +488,27 @@ static void ch341_set_termios(struct tty_struct *tty,
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	ch341_set_handshake(port->serial->dev, priv->mcr);
+=======
+	if (baud_rate) {
+		priv->baud_rate = baud_rate;
+		ch341_set_baudrate(port->serial->dev, priv);
+	}
+
+	/* Unimplemented:
+	 * (cflag & CSIZE) : data bits [5, 8]
+	 * (cflag & PARENB) : parity {NONE, EVEN, ODD}
+	 * (cflag & CSTOPB) : stop bits [1, 2]
+	 */
+
+	spin_lock_irqsave(&priv->lock, flags);
+	if (C_BAUD(tty) == B0)
+		priv->line_control &= ~(CH341_BIT_DTR | CH341_BIT_RTS);
+	else if (old_termios && (old_termios->c_cflag & CBAUD) == B0)
+		priv->line_control |= (CH341_BIT_DTR | CH341_BIT_RTS);
+	spin_unlock_irqrestore(&priv->lock, flags);
+
+	ch341_set_handshake(port->serial->dev, priv->line_control);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void ch341_break_ctl(struct tty_struct *tty, int break_state)
@@ -645,29 +684,41 @@ static int ch341_tiocmget(struct tty_struct *tty)
 static int ch341_reset_resume(struct usb_serial *serial)
 {
 	struct usb_serial_port *port = serial->port[0];
+<<<<<<< HEAD
 	struct ch341_private *priv;
 	int ret;
 
 	priv = usb_get_serial_port_data(port);
 	if (!priv)
 		return 0;
+=======
+	struct ch341_private *priv = usb_get_serial_port_data(port);
+	int ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* reconfigure ch341 serial port after bus-reset */
 	ch341_configure(serial->dev, priv);
 
+<<<<<<< HEAD
 	if (tty_port_initialized(&port->port)) {
+=======
+	if (test_bit(ASYNCB_INITIALIZED, &port->port.flags)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = usb_submit_urb(port->interrupt_in_urb, GFP_NOIO);
 		if (ret) {
 			dev_err(&port->dev, "failed to submit interrupt urb: %d\n",
 				ret);
 			return ret;
 		}
+<<<<<<< HEAD
 
 		ret = ch341_get_status(port->serial->dev, priv);
 		if (ret < 0) {
 			dev_err(&port->dev, "failed to read modem status: %d\n",
 				ret);
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return usb_serial_generic_resume(serial);

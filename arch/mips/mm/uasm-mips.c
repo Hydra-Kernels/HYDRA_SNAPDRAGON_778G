@@ -67,7 +67,11 @@ static const struct insn insn_table[insn_invalid] = {
 #ifndef CONFIG_CPU_MIPSR6
 	[insn_cache]	= {M(cache_op, 0, 0, 0, 0, 0),  RS | RT | SIMM},
 #else
+<<<<<<< HEAD
 	[insn_cache]	= {M6(spec3_op, 0, 0, 0, cache6_op),  RS | RT | SIMM9},
+=======
+	{ insn_cache,  M6(spec3_op, 0, 0, 0, cache6_op),  RS | RT | SIMM9 },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	[insn_cfc1]	= {M(cop1_op, cfc_op, 0, 0, 0, 0), RT | RD},
 	[insn_cfcmsa]	= {M(msa_op, 0, msa_cfc_op, 0, 0, msa_elm_op), RD | RE},

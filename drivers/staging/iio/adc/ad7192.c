@@ -230,6 +230,7 @@ static inline bool ad7192_valid_external_frequency(u32 freq)
 		freq <= AD7192_EXT_FREQ_MHZ_MAX);
 }
 
+<<<<<<< HEAD
 static int ad7192_of_clock_select(struct ad7192_state *st)
 {
 	struct device_node *np = st->sd.spi->dev.of_node;
@@ -252,6 +253,10 @@ static int ad7192_of_clock_select(struct ad7192_state *st)
 }
 
 static int ad7192_setup(struct ad7192_state *st, struct device_node *np)
+=======
+static int ad7192_setup(struct ad7192_state *st,
+			const struct ad7192_platform_data *pdata)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct iio_dev *indio_dev = spi_get_drvdata(st->sd.spi);
 	bool rej60_en, refin2_en;
@@ -276,6 +281,29 @@ static int ad7192_setup(struct ad7192_state *st, struct device_node *np)
 		dev_warn(&st->sd.spi->dev, "device ID query failed (0x%X)\n",
 			 id);
 
+<<<<<<< HEAD
+=======
+	switch (pdata->clock_source_sel) {
+	case AD7192_CLK_INT:
+	case AD7192_CLK_INT_CO:
+		st->mclk = AD7192_INT_FREQ_MHZ;
+		break;
+	case AD7192_CLK_EXT_MCLK1_2:
+	case AD7192_CLK_EXT_MCLK2:
+		if (ad7192_valid_external_frequency(pdata->ext_clk_hz)) {
+			st->mclk = pdata->ext_clk_hz;
+			break;
+		}
+		dev_err(&st->sd.spi->dev, "Invalid frequency setting %u\n",
+			pdata->ext_clk_hz);
+		ret = -EINVAL;
+		goto out;
+	default:
+		ret = -EINVAL;
+		goto out;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	st->mode = AD7192_MODE_SEL(AD7192_MODE_IDLE) |
 		AD7192_MODE_CLKSRC(st->clock_sel) |
 		AD7192_MODE_RATE(480);

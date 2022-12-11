@@ -341,7 +341,14 @@ static int ipvlan_rcv_frame(struct ipvl_addr *addr, struct sk_buff **pskb,
 		if (dev_forward_skb(ipvlan->dev, skb) == NET_RX_SUCCESS)
 			success = true;
 	} else {
+<<<<<<< HEAD
 		skb->dev = dev;
+=======
+		if (!ether_addr_equal_64bits(eth_hdr(skb)->h_dest,
+					     ipvlan->phy_dev->dev_addr))
+			skb->pkt_type = PACKET_OTHERHOST;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = RX_HANDLER_ANOTHER;
 		success = true;
 	}

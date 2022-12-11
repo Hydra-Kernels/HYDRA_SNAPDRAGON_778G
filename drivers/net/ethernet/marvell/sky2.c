@@ -5100,7 +5100,11 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	INIT_WORK(&hw->restart_work, sky2_restart);
 
 	pci_set_drvdata(pdev, hw);
+<<<<<<< HEAD
 	pdev->d3_delay = 300;
+=======
+	pdev->d3_delay = 200;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

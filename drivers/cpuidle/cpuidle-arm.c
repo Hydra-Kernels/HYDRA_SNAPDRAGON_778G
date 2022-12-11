@@ -33,12 +33,35 @@
 static int arm_enter_idle_state(struct cpuidle_device *dev,
 				struct cpuidle_driver *drv, int idx)
 {
+<<<<<<< HEAD
 	/*
 	 * Pass idle state index to arm_cpuidle_suspend which in turn
 	 * will call the CPU ops suspend protocol with idle index as a
 	 * parameter.
 	 */
 	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
+=======
+	int ret;
+
+	if (!idx) {
+		cpu_do_idle();
+		return idx;
+	}
+
+	ret = cpu_pm_enter();
+	if (!ret) {
+		/*
+		 * Pass idle state index to cpu_suspend which in turn will
+		 * call the CPU ops suspend protocol with idle index as a
+		 * parameter.
+		 */
+		ret = arm_cpuidle_suspend(idx);
+
+		cpu_pm_exit();
+	}
+
+	return ret ? -1 : idx;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct cpuidle_driver arm_idle_driver __initdata = {
@@ -120,9 +143,19 @@ static int __init arm_idle_init_cpu(int cpu)
 		goto out_kfree_drv;
 	}
 
+<<<<<<< HEAD
 	ret = cpuidle_register(drv, NULL);
 	if (ret)
 		goto out_kfree_drv;
+=======
+		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+		if (!dev) {
+			pr_err("Failed to allocate cpuidle device\n");
+			ret = -ENOMEM;
+			goto out_fail;
+		}
+		dev->cpu = cpu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

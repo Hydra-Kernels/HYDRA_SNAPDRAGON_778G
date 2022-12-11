@@ -22,8 +22,11 @@
 
 #include <linux/debugfs.h>
 #include <linux/scatterlist.h>
+<<<<<<< HEAD
 #include <linux/crypto.h>
 #include <crypto/aes.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <crypto/algapi.h>
 #include <crypto/b128ops.h>
 #include <crypto/hash.h>
@@ -573,7 +576,11 @@ int smp_generate_oob(struct hci_dev *hdev, u8 hash[16], u8 rand[16])
 			/* This is unlikely, but we need to check that
 			 * we didn't accidentially generate a debug key.
 			 */
+<<<<<<< HEAD
 			if (crypto_memneq(smp->local_pk, debug_pk, 64))
+=======
+			if (crypto_memneq(smp->local_sk, debug_sk, 32))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 		}
 		smp->debug_key = false;
@@ -986,8 +993,12 @@ static u8 smp_random(struct smp_chan *smp)
 		return SMP_UNSPECIFIED;
 
 	if (crypto_memneq(smp->pcnf, confirm, sizeof(smp->pcnf))) {
+<<<<<<< HEAD
 		bt_dev_err(hcon->hdev, "pairing failed "
 			   "(confirmation values mismatch)");
+=======
+		BT_ERR("Pairing failed (confirmation values mismatch)");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return SMP_CONFIRM_FAILED;
 	}
 
@@ -1901,7 +1912,11 @@ static u8 sc_send_public_key(struct smp_chan *smp)
 			/* This is unlikely, but we need to check that
 			 * we didn't accidentially generate a debug key.
 			 */
+<<<<<<< HEAD
 			if (crypto_memneq(smp->local_pk, debug_pk, 64))
+=======
+			if (crypto_memneq(smp->local_sk, debug_sk, 32))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 		}
 	}

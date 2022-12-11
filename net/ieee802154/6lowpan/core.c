@@ -212,7 +212,11 @@ static int lowpan_device_event(struct notifier_block *unused,
 		return NOTIFY_DONE;
 	wpan_dev = ndev->ieee802154_ptr;
 	if (!wpan_dev)
+<<<<<<< HEAD
 		return NOTIFY_DONE;
+=======
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	switch (event) {
 	case NETDEV_UNREGISTER:

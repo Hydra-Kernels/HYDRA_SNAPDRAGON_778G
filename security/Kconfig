@@ -32,10 +32,22 @@ config SECURITY
 
 	  If you are unsure how to answer this question, answer N.
 
+<<<<<<< HEAD
 config SECURITY_WRITABLE_HOOKS
 	depends on SECURITY
 	bool
 	default n
+=======
+config PAGE_TABLE_ISOLATION
+	bool "Remove the kernel mapping in user mode"
+	default y
+	depends on X86_64 && SMP
+	help
+	  This enforces a strict kernel and user space isolation, in order
+	  to close hardware side channels on kernel address information.
+
+	  If you are unsure how to answer this question, answer Y.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 config SECURITYFS
 	bool "Enable the securityfs filesystem"

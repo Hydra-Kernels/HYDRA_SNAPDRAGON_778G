@@ -157,6 +157,7 @@ struct ccp_aes_cmac_exp_ctx {
 	u8 buf[AES_BLOCK_SIZE];
 };
 
+<<<<<<< HEAD
 /***** 3DES related defines *****/
 struct ccp_des3_ctx {
 	enum ccp_engine engine;
@@ -180,6 +181,11 @@ struct ccp_des3_req_ctx {
  */
 #define MAX_SHA_CONTEXT_SIZE	SHA512_DIGEST_SIZE
 #define MAX_SHA_BLOCK_SIZE	SHA512_BLOCK_SIZE
+=======
+/***** SHA related defines *****/
+#define MAX_SHA_CONTEXT_SIZE	SHA256_DIGEST_SIZE
+#define MAX_SHA_BLOCK_SIZE	SHA256_BLOCK_SIZE
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct ccp_sha_ctx {
 	struct scatterlist opad_sg;
@@ -232,6 +238,7 @@ struct ccp_sha_exp_ctx {
 	u8 buf[MAX_SHA_BLOCK_SIZE];
 };
 
+<<<<<<< HEAD
 /***** RSA related defines *****/
 
 struct ccp_rsa_ctx {
@@ -254,6 +261,8 @@ struct ccp_rsa_req_ctx {
 #define	CCP_RSA_MAXMOD	(4 * 1024 / 8)
 #define	CCP5_RSA_MAXMOD	(16 * 1024 / 8)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /***** Common Context Structure *****/
 struct ccp_ctx {
 	int (*complete)(struct crypto_async_request *req, int ret);

@@ -17,6 +17,7 @@ typedef struct {
 	 */
 	u64 ctx_id;
 
+<<<<<<< HEAD
 	/*
 	 * Any code that needs to do any sort of TLB flushing for this
 	 * mm will first make its changes to the page tables, then
@@ -27,6 +28,8 @@ typedef struct {
 	 */
 	atomic64_t tlb_gen;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_MODIFY_LDT_SYSCALL
 	struct rw_semaphore	ldt_usr_sem;
 	struct ldt_struct	*ldt;
@@ -59,7 +62,10 @@ typedef struct {
 #define INIT_MM_CONTEXT(mm)						\
 	.context = {							\
 		.ctx_id = 1,						\
+<<<<<<< HEAD
 		.lock = __MUTEX_INITIALIZER(mm.context.lock),		\
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 void leave_mm(int cpu);

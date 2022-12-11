@@ -982,11 +982,15 @@ static void nfs4_session_limit_rwsize(struct nfs_server *server)
 	server_resp_sz = sess->fc_attrs.max_resp_sz - nfs41_maxread_overhead;
 	server_rqst_sz = sess->fc_attrs.max_rqst_sz - nfs41_maxwrite_overhead;
 
+<<<<<<< HEAD
 	if (server->dtsize > server_resp_sz)
 		server->dtsize = server_resp_sz;
 	if (server->rsize > server_resp_sz)
+=======
+	if (!server->rsize || server->rsize > server_resp_sz)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		server->rsize = server_resp_sz;
-	if (server->wsize > server_rqst_sz)
+	if (!server->wsize || server->wsize > server_rqst_sz)
 		server->wsize = server_rqst_sz;
 #endif /* CONFIG_NFS_V4_1 */
 }

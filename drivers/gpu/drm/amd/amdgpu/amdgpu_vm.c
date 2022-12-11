@@ -2194,6 +2194,7 @@ int amdgpu_vm_bo_replace_map(struct amdgpu_device *adev,
 
 	/* make sure object fit at this offset */
 	eaddr = saddr + size - 1;
+<<<<<<< HEAD
 	if (saddr >= eaddr ||
 	    (bo && offset + size > amdgpu_bo_size(bo)))
 		return -EINVAL;
@@ -2207,13 +2208,49 @@ int amdgpu_vm_bo_replace_map(struct amdgpu_device *adev,
 	if (r) {
 		kfree(mapping);
 		return r;
+=======
+	if ((saddr >= eaddr) || (offset + size > amdgpu_bo_size(bo_va->bo)))
+		return -EINVAL;
+
+	last_pfn = eaddr / AMDGPU_GPU_PAGE_SIZE;
+	if (last_pfn >= adev->vm_manager.max_pfn) {
+		dev_err(adev->dev, "va above limit (0x%08X >= 0x%08X)\n",
+			last_pfn, adev->vm_manager.max_pfn);
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	saddr /= AMDGPU_GPU_PAGE_SIZE;
 	eaddr /= AMDGPU_GPU_PAGE_SIZE;
 
+<<<<<<< HEAD
 	mapping->start = saddr;
 	mapping->last = eaddr;
+=======
+	spin_lock(&vm->it_lock);
+	it = interval_tree_iter_first(&vm->va, saddr, eaddr);
+	spin_unlock(&vm->it_lock);
+	if (it) {
+		struct amdgpu_bo_va_mapping *tmp;
+		tmp = container_of(it, struct amdgpu_bo_va_mapping, it);
+		/* bo and tmp overlap, invalid addr */
+		dev_err(adev->dev, "bo %p va 0x%010Lx-0x%010Lx conflict with "
+			"0x%010lx-0x%010lx\n", bo_va->bo, saddr, eaddr,
+			tmp->it.start, tmp->it.last + 1);
+		r = -EINVAL;
+		goto error;
+	}
+
+	mapping = kmalloc(sizeof(*mapping), GFP_KERNEL);
+	if (!mapping) {
+		r = -ENOMEM;
+		goto error;
+	}
+
+	INIT_LIST_HEAD(&mapping->list);
+	mapping->it.start = saddr;
+	mapping->it.last = eaddr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mapping->offset = offset;
 	mapping->flags = flags;
 
@@ -2673,9 +2710,16 @@ long amdgpu_vm_wait_idle(struct amdgpu_vm *vm, long timeout)
 int amdgpu_vm_init(struct amdgpu_device *adev, struct amdgpu_vm *vm,
 		   int vm_context, unsigned int pasid)
 {
+<<<<<<< HEAD
 	struct amdgpu_bo_param bp;
 	struct amdgpu_bo *root;
 	int r, i;
+=======
+	const unsigned align = min(AMDGPU_VM_PTB_ALIGN_SIZE,
+		AMDGPU_VM_PTE_COUNT * 8);
+	unsigned pd_size, pd_entries;
+	int i, r;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	vm->va = RB_ROOT_CACHED;
 	for (i = 0; i < AMDGPU_MAX_VMHUBS; i++)
@@ -2688,9 +2732,25 @@ int amdgpu_vm_init(struct amdgpu_device *adev, struct amdgpu_vm *vm,
 	spin_lock_init(&vm->invalidated_lock);
 	INIT_LIST_HEAD(&vm->freed);
 
+<<<<<<< HEAD
 	/* create scheduler entity for page table updates */
 	r = drm_sched_entity_init(&vm->entity, adev->vm_manager.vm_pte_rqs,
 				  adev->vm_manager.vm_pte_num_rqs, NULL);
+=======
+	/* allocate page table array */
+	vm->page_tables = drm_calloc_large(pd_entries, sizeof(struct amdgpu_vm_pt));
+	if (vm->page_tables == NULL) {
+		DRM_ERROR("Cannot allocate memory for page table array\n");
+		return -ENOMEM;
+	}
+
+	vm->page_directory_fence = NULL;
+
+	r = amdgpu_bo_create(adev, pd_size, align, true,
+			     AMDGPU_GEM_DOMAIN_VRAM,
+			     AMDGPU_GEM_CREATE_NO_CPU_ACCESS,
+			     NULL, NULL, &vm->page_directory);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (r)
 		return r;
 
@@ -2985,6 +3045,7 @@ void amdgpu_vm_fini(struct amdgpu_device *adev, struct amdgpu_vm *vm)
 		amdgpu_vm_free_mapping(adev, vm, mapping, NULL);
 	}
 
+<<<<<<< HEAD
 	root = amdgpu_bo_ref(vm->root.base.bo);
 	r = amdgpu_bo_reserve(root, true);
 	if (r) {
@@ -2992,6 +3053,20 @@ void amdgpu_vm_fini(struct amdgpu_device *adev, struct amdgpu_vm *vm)
 	} else {
 		amdgpu_vm_free_pts(adev, vm, NULL);
 		amdgpu_bo_unreserve(root);
+=======
+	for (i = 0; i < amdgpu_vm_num_pdes(adev); i++)
+		amdgpu_bo_unref(&vm->page_tables[i].bo);
+	drm_free_large(vm->page_tables);
+
+	amdgpu_bo_unref(&vm->page_directory);
+	fence_put(vm->page_directory_fence);
+	for (i = 0; i < AMDGPU_MAX_RINGS; ++i) {
+		unsigned id = vm->ids[i].id;
+
+		atomic_long_cmpxchg(&adev->vm_manager.ids[id].owner,
+				    (long)vm, 0);
+		fence_put(vm->ids[i].flushed_updates);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	amdgpu_bo_unref(&root);
 	WARN_ON(vm->root.base.bo);

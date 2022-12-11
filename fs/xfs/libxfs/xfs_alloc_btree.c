@@ -362,10 +362,15 @@ xfs_allocbt_write_verify(
 
 }
 
+<<<<<<< HEAD
 const struct xfs_buf_ops xfs_bnobt_buf_ops = {
 	.name = "xfs_bnobt",
 	.magic = { cpu_to_be32(XFS_ABTB_MAGIC),
 		   cpu_to_be32(XFS_ABTB_CRC_MAGIC) },
+=======
+const struct xfs_buf_ops xfs_allocbt_buf_ops = {
+	.name = "xfs_allocbt",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_allocbt_read_verify,
 	.verify_write = xfs_allocbt_write_verify,
 	.verify_struct = xfs_allocbt_verify,

@@ -305,7 +305,12 @@ static int pciehp_resume(struct pcie_device *dev)
 	if (pme_is_native(dev))
 		pcie_enable_interrupt(ctrl);
 
+<<<<<<< HEAD
 	pciehp_check_presence(ctrl);
+=======
+	/* reinitialize the chipset's event detection logic */
+	pcie_reenable_notification(ctrl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

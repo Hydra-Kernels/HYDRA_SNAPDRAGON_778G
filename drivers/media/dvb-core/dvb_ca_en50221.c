@@ -844,6 +844,21 @@ static int dvb_ca_en50221_write_data(struct dvb_ca_private *ca, int slot,
 	 */
 	status = ca->pub->read_cam_control(ca->pub, slot, CTRLIF_STATUS);
 	if (status < 0)
+<<<<<<< HEAD
+=======
+		goto exit;
+
+	if (status & (STATUSREG_DA | STATUSREG_RE)) {
+		if (status & STATUSREG_DA)
+			dvb_ca_en50221_thread_wakeup(ca);
+
+		status = -EAGAIN;
+		goto exit;
+	}
+
+	/* send the amount of data */
+	if ((status = ca->pub->write_cam_control(ca->pub, slot, CTRLIF_SIZE_HIGH, bytes_write >> 8)) != 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto exit;
 
 	if (status & (STATUSREG_DA | STATUSREG_RE)) {

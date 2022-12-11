@@ -1996,6 +1996,7 @@ static int prctl_set_mm_map(int opt, const void __user *addr, unsigned long data
 	}
 
 	if (prctl_map.exe_fd != (u32)-1) {
+<<<<<<< HEAD
 		/*
 		 * Make sure the caller has the rights to
 		 * change /proc/pid/exe link: only local sys admin should
@@ -2004,16 +2005,22 @@ static int prctl_set_mm_map(int opt, const void __user *addr, unsigned long data
 		if (!ns_capable(current_user_ns(), CAP_SYS_ADMIN))
 			return -EINVAL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		error = prctl_set_mm_exe_file(mm, prctl_map.exe_fd);
 		if (error)
 			return error;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * arg_lock protects concurent updates but we still need mmap_sem for
 	 * read to exclude races with sys_brk.
 	 */
 	down_read(&mm->mmap_sem);
+=======
+	down_write(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We don't validate if these members are pointing to
@@ -2052,7 +2059,11 @@ static int prctl_set_mm_map(int opt, const void __user *addr, unsigned long data
 	if (prctl_map.auxv_size)
 		memcpy(mm->saved_auxv, user_auxv, sizeof(user_auxv));
 
+<<<<<<< HEAD
 	up_read(&mm->mmap_sem);
+=======
+	up_write(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 #endif /* CONFIG_CHECKPOINT_RESTORE */
@@ -2123,12 +2134,16 @@ static int prctl_set_mm(int opt, unsigned long addr,
 
 	error = -EINVAL;
 
+<<<<<<< HEAD
 	/*
 	 * arg_lock protects concurent updates of arg boundaries, we need
 	 * mmap_sem for a) concurrent sys_brk, b) finding VMA for addr
 	 * validation.
 	 */
 	down_read(&mm->mmap_sem);
+=======
+	down_write(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vma = find_vma(mm, addr);
 
 	spin_lock(&mm->arg_lock);
@@ -2219,8 +2234,12 @@ static int prctl_set_mm(int opt, unsigned long addr,
 
 	error = 0;
 out:
+<<<<<<< HEAD
 	spin_unlock(&mm->arg_lock);
 	up_read(&mm->mmap_sem);
+=======
+	up_write(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return error;
 }
 
@@ -2236,6 +2255,7 @@ static int prctl_get_tid_address(struct task_struct *me, int __user **tid_addr)
 }
 #endif
 
+<<<<<<< HEAD
 static int propagate_has_child_subreaper(struct task_struct *p, void *data)
 {
 	/*
@@ -2254,6 +2274,8 @@ static int propagate_has_child_subreaper(struct task_struct *p, void *data)
 	return 1;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int __weak arch_prctl_spec_ctrl_get(struct task_struct *t, unsigned long which)
 {
 	return -EINVAL;
@@ -2265,6 +2287,7 @@ int __weak arch_prctl_spec_ctrl_set(struct task_struct *t, unsigned long which,
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_MMU
 static int prctl_update_vma_anon_name(struct vm_area_struct *vma,
 		struct vm_area_struct **prev,
@@ -2412,6 +2435,8 @@ static int prctl_set_vma(unsigned long opt, unsigned long start,
 }
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 		unsigned long, arg4, unsigned long, arg5)
 {
@@ -2608,12 +2633,15 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 	case PR_GET_FP_MODE:
 		error = GET_FP_MODE(me);
 		break;
+<<<<<<< HEAD
 	case PR_SVE_SET_VL:
 		error = SVE_SET_VL(arg2);
 		break;
 	case PR_SVE_GET_VL:
 		error = SVE_GET_VL();
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case PR_GET_SPECULATION_CTRL:
 		if (arg3 || arg4 || arg5)
 			return -EINVAL;
@@ -2624,6 +2652,7 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 			return -EINVAL;
 		error = arch_prctl_spec_ctrl_set(me, arg2, arg3);
 		break;
+<<<<<<< HEAD
 	case PR_SET_VMA:
 		error = prctl_set_vma(arg2, arg3, arg4, arg5);
 		break;
@@ -2642,6 +2671,8 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 			return -EINVAL;
 		error = GET_TAGGED_ADDR_CTRL();
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		error = -EINVAL;
 		break;

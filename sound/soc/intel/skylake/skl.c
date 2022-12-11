@@ -696,12 +696,15 @@ static int probe_codec(struct hdac_bus *bus, int addr)
 	unsigned int cmd = (addr << 28) | (AC_NODE_ROOT << 20) |
 		(AC_VERB_PARAMETERS << 8) | AC_PAR_VENDOR_ID;
 	unsigned int res = -1;
+<<<<<<< HEAD
 	struct skl_dev *skl = bus_to_skl(bus);
 #if IS_ENABLED(CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC)
 	struct hdac_hda_priv *hda_codec;
 	int err;
 #endif
 	struct hdac_device *hdev;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_lock(&bus->cmd_mutex);
 	snd_hdac_bus_send_cmd(bus, cmd);
@@ -1027,6 +1030,7 @@ static int skl_probe(struct pci_dev *pci,
 
 	skl->pci_id = pci->device;
 
+<<<<<<< HEAD
 	device_disable_async_suspend(bus->dev);
 
 	skl->nhlt = intel_nhlt_init(bus->dev);
@@ -1040,6 +1044,12 @@ static int skl_probe(struct pci_dev *pci,
 		dev_warn(bus->dev, "no nhlt info found, continuing to try to enable HDaudio codec\n");
 #endif
 	} else {
+=======
+	if (skl->nhlt == NULL) {
+		err = -ENODEV;
+		goto out_free;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		err = skl_nhlt_create_sysfs(skl);
 		if (err < 0) {

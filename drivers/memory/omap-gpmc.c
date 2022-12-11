@@ -2023,6 +2023,143 @@ static void __maybe_unused gpmc_read_timings_dt(struct device_node *np,
 		of_property_read_bool(np, "gpmc,time-para-granularity");
 }
 
+<<<<<<< HEAD
+=======
+#if IS_ENABLED(CONFIG_MTD_NAND)
+
+static const char * const nand_xfer_types[] = {
+	[NAND_OMAP_PREFETCH_POLLED]		= "prefetch-polled",
+	[NAND_OMAP_POLLED]			= "polled",
+	[NAND_OMAP_PREFETCH_DMA]		= "prefetch-dma",
+	[NAND_OMAP_PREFETCH_IRQ]		= "prefetch-irq",
+};
+
+static int gpmc_probe_nand_child(struct platform_device *pdev,
+				 struct device_node *child)
+{
+	u32 val;
+	const char *s;
+	struct gpmc_timings gpmc_t;
+	struct omap_nand_platform_data *gpmc_nand_data;
+
+	if (of_property_read_u32(child, "reg", &val) < 0) {
+		dev_err(&pdev->dev, "%s has no 'reg' property\n",
+			child->full_name);
+		return -ENODEV;
+	}
+
+	gpmc_nand_data = devm_kzalloc(&pdev->dev, sizeof(*gpmc_nand_data),
+				      GFP_KERNEL);
+	if (!gpmc_nand_data)
+		return -ENOMEM;
+
+	gpmc_nand_data->cs = val;
+	gpmc_nand_data->of_node = child;
+
+	/* Detect availability of ELM module */
+	gpmc_nand_data->elm_of_node = of_parse_phandle(child, "ti,elm-id", 0);
+	if (gpmc_nand_data->elm_of_node == NULL)
+		gpmc_nand_data->elm_of_node =
+					of_parse_phandle(child, "elm_id", 0);
+
+	/* select ecc-scheme for NAND */
+	if (of_property_read_string(child, "ti,nand-ecc-opt", &s)) {
+		pr_err("%s: ti,nand-ecc-opt not found\n", __func__);
+		return -ENODEV;
+	}
+
+	if (!strcmp(s, "sw"))
+		gpmc_nand_data->ecc_opt = OMAP_ECC_HAM1_CODE_SW;
+	else if (!strcmp(s, "ham1") ||
+		 !strcmp(s, "hw") || !strcmp(s, "hw-romcode"))
+		gpmc_nand_data->ecc_opt =
+				OMAP_ECC_HAM1_CODE_HW;
+	else if (!strcmp(s, "bch4"))
+		if (gpmc_nand_data->elm_of_node)
+			gpmc_nand_data->ecc_opt =
+				OMAP_ECC_BCH4_CODE_HW;
+		else
+			gpmc_nand_data->ecc_opt =
+				OMAP_ECC_BCH4_CODE_HW_DETECTION_SW;
+	else if (!strcmp(s, "bch8"))
+		if (gpmc_nand_data->elm_of_node)
+			gpmc_nand_data->ecc_opt =
+				OMAP_ECC_BCH8_CODE_HW;
+		else
+			gpmc_nand_data->ecc_opt =
+				OMAP_ECC_BCH8_CODE_HW_DETECTION_SW;
+	else if (!strcmp(s, "bch16"))
+		if (gpmc_nand_data->elm_of_node)
+			gpmc_nand_data->ecc_opt =
+				OMAP_ECC_BCH16_CODE_HW;
+		else
+			pr_err("%s: BCH16 requires ELM support\n", __func__);
+	else
+		pr_err("%s: ti,nand-ecc-opt invalid value\n", __func__);
+
+	/* select data transfer mode for NAND controller */
+	if (!of_property_read_string(child, "ti,nand-xfer-type", &s))
+		for (val = 0; val < ARRAY_SIZE(nand_xfer_types); val++)
+			if (!strcasecmp(s, nand_xfer_types[val])) {
+				gpmc_nand_data->xfer_type = val;
+				break;
+			}
+
+	gpmc_nand_data->flash_bbt = of_get_nand_on_flash_bbt(child);
+
+	val = of_get_nand_bus_width(child);
+	if (val == 16)
+		gpmc_nand_data->devsize = NAND_BUSWIDTH_16;
+
+	gpmc_read_timings_dt(child, &gpmc_t);
+	gpmc_nand_init(gpmc_nand_data, &gpmc_t);
+
+	return 0;
+}
+#else
+static int gpmc_probe_nand_child(struct platform_device *pdev,
+				 struct device_node *child)
+{
+	return 0;
+}
+#endif
+
+#if IS_ENABLED(CONFIG_MTD_ONENAND)
+static int gpmc_probe_onenand_child(struct platform_device *pdev,
+				 struct device_node *child)
+{
+	u32 val;
+	struct omap_onenand_platform_data *gpmc_onenand_data;
+
+	if (of_property_read_u32(child, "reg", &val) < 0) {
+		dev_err(&pdev->dev, "%s has no 'reg' property\n",
+			child->full_name);
+		return -ENODEV;
+	}
+
+	gpmc_onenand_data = devm_kzalloc(&pdev->dev, sizeof(*gpmc_onenand_data),
+					 GFP_KERNEL);
+	if (!gpmc_onenand_data)
+		return -ENOMEM;
+
+	gpmc_onenand_data->cs = val;
+	gpmc_onenand_data->of_node = child;
+	gpmc_onenand_data->dma_channel = -1;
+
+	if (!of_property_read_u32(child, "dma-channel", &val))
+		gpmc_onenand_data->dma_channel = val;
+
+	return gpmc_onenand_init(gpmc_onenand_data);
+}
+#else
+static int gpmc_probe_onenand_child(struct platform_device *pdev,
+				    struct device_node *child)
+{
+	return 0;
+}
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * gpmc_probe_generic_child - configures the gpmc for a child device
  * @pdev:	pointer to gpmc platform device

@@ -2841,7 +2841,11 @@ static int ib_rate_to_mlx5(struct mlx5_ib_dev *dev, u8 rate)
 	if (rate == IB_RATE_PORT_CURRENT)
 		return 0;
 
+<<<<<<< HEAD
 	if (rate < IB_RATE_2_5_GBPS || rate > IB_RATE_600_GBPS)
+=======
+	if (rate < IB_RATE_2_5_GBPS || rate > IB_RATE_300_GBPS)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	while (rate != IB_RATE_PORT_CURRENT &&
@@ -4901,8 +4905,55 @@ static int __begin_wqe(struct mlx5_ib_qp *qp, void **seg,
 		       int *size, void **cur_edge, int nreq,
 		       bool send_signaled, bool solicited)
 {
+<<<<<<< HEAD
 	if (unlikely(mlx5_wq_overflow(&qp->sq, nreq, qp->ibqp.send_cq)))
 		return -ENOMEM;
+=======
+	while (bytecnt > 0) {
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		__iowrite64_copy(dst++, src++, 8);
+		bytecnt -= 64;
+		if (unlikely(src == qp->sq.qend))
+			src = mlx5_get_send_wqe(qp, 0);
+	}
+}
+
+static u8 get_fence(u8 fence, struct ib_send_wr *wr)
+{
+	if (unlikely(wr->opcode == IB_WR_LOCAL_INV &&
+		     wr->send_flags & IB_SEND_FENCE))
+		return MLX5_FENCE_MODE_STRONG_ORDERING;
+
+	if (unlikely(fence)) {
+		if (wr->send_flags & IB_SEND_FENCE)
+			return MLX5_FENCE_MODE_SMALL_AND_FENCE;
+		else
+			return fence;
+	} else if (unlikely(wr->send_flags & IB_SEND_FENCE)) {
+		return MLX5_FENCE_MODE_FENCE;
+	}
+
+	return 0;
+}
+
+static int begin_wqe(struct mlx5_ib_qp *qp, void **seg,
+		     struct mlx5_wqe_ctrl_seg **ctrl,
+		     struct ib_send_wr *wr, unsigned *idx,
+		     int *size, int nreq)
+{
+	int err = 0;
+
+	if (unlikely(mlx5_wq_overflow(&qp->sq, nreq, qp->ibqp.send_cq))) {
+		err = -ENOMEM;
+		return err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	*idx = qp->sq.cur_post & (qp->sq.wqe_cnt - 1);
 	*seg = mlx5_frag_buf_get_wqe(&qp->sq.fbc, *idx);
@@ -5866,6 +5917,7 @@ int mlx5_ib_dealloc_xrcd(struct ib_xrcd *xrcd, struct ib_udata *udata)
 	u32 xrcdn = to_mxrcd(xrcd)->xrcdn;
 	int err;
 
+<<<<<<< HEAD
 	err = mlx5_cmd_xrcd_dealloc(dev->mdev, xrcdn, 0);
 	if (err)
 		mlx5_ib_warn(dev, "failed to dealloc xrcdn 0x%x\n", xrcdn);
@@ -6116,6 +6168,13 @@ static int prepare_user_rq(struct ib_pd *pd,
 	}
 
 	rwq->user_index = ucmd.user_index;
+=======
+	err = mlx5_core_xrcd_dealloc(dev->mdev, xrcdn);
+	if (err)
+		mlx5_ib_warn(dev, "failed to dealloc xrcdn 0x%x\n", xrcdn);
+
+	kfree(xrcd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

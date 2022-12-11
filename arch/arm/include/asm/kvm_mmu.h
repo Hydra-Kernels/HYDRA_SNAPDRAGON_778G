@@ -253,6 +253,7 @@ static inline void __invalidate_icache_guest_page(kvm_pfn_t pfn,
 
 	VM_BUG_ON(size & ~PAGE_MASK);
 
+<<<<<<< HEAD
 	if (icache_is_vivt_asid_tagged())
 		return;
 
@@ -271,15 +272,21 @@ static inline void __invalidate_icache_guest_page(kvm_pfn_t pfn,
 	 */
 	iclsz = 4 << (read_cpuid(CPUID_CACHETYPE) & 0xf);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while (size) {
 		void *va = kmap_atomic_pfn(pfn);
 		void *end = va + PAGE_SIZE;
 		void *addr = va;
 
+<<<<<<< HEAD
 		do {
 			write_sysreg(addr, ICIMVAU);
 			addr += iclsz;
 		} while (addr < end);
+=======
+		kvm_flush_dcache_to_poc(va, PAGE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		dsb(ishst);
 		isb();
@@ -290,11 +297,17 @@ static inline void __invalidate_icache_guest_page(kvm_pfn_t pfn,
 		kunmap_atomic(va);
 	}
 
+<<<<<<< HEAD
 	/* Check if we need to invalidate the BTB */
 	if ((read_cpuid_ext(CPUID_EXT_MMFR1) >> 28) != 4) {
 		write_sysreg(0, BPIALLIS);
 		dsb(ishst);
 		isb();
+=======
+	if (!icache_is_pipt() && !icache_is_vivt_asid_tagged()) {
+		/* any kind of VIPT cache */
+		__flush_icache_all();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

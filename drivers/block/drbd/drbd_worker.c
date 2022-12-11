@@ -270,7 +270,11 @@ void drbd_request_endio(struct bio *bio)
 		what = COMPLETED_OK;
 	}
 
+<<<<<<< HEAD
 	req->private_bio = ERR_PTR(blk_status_to_errno(bio->bi_status));
+=======
+	req->private_bio = ERR_PTR(bio->bi_error);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bio_put(bio);
 
 	/* not req_mod(), we need irqsave here! */

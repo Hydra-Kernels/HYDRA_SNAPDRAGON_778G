@@ -67,7 +67,10 @@ static uint i8k_fan_mult = I8K_FAN_MULT;
 static uint i8k_pwm_mult;
 static uint i8k_fan_max = I8K_FAN_HIGH;
 static bool disallow_fan_type_call;
+<<<<<<< HEAD
 static bool disallow_fan_support;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define I8K_HWMON_HAVE_TEMP1	(1 << 0)
 #define I8K_HWMON_HAVE_TEMP2	(1 << 1)
@@ -268,7 +271,11 @@ static int _i8k_get_fan_type(int fan)
 {
 	struct smm_regs regs = { .eax = I8K_SMM_GET_FAN_TYPE, };
 
+<<<<<<< HEAD
 	if (disallow_fan_support || disallow_fan_type_call)
+=======
+	if (disallow_fan_type_call)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	regs.ebx = fan & 0xff;
@@ -278,7 +285,11 @@ static int _i8k_get_fan_type(int fan)
 static int i8k_get_fan_type(int fan)
 {
 	/* I8K_SMM_GET_FAN_TYPE SMM call is expensive, so cache values */
+<<<<<<< HEAD
 	static int types[3] = { INT_MIN, INT_MIN, INT_MIN };
+=======
+	static int types[2] = { INT_MIN, INT_MIN };
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (types[fan] == INT_MIN)
 		types[fan] = _i8k_get_fan_type(fan);
@@ -792,10 +803,15 @@ static struct attribute *i8k_attrs[] = {
 static umode_t i8k_is_visible(struct kobject *kobj, struct attribute *attr,
 			      int index)
 {
+<<<<<<< HEAD
 	if (disallow_fan_support && index >= 20)
 		return 0;
 	if (disallow_fan_type_call &&
 	    (index == 21 || index == 25 || index == 28))
+=======
+	if (disallow_fan_type_call &&
+	    (index == 9 || index == 12))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	if (index >= 0 && index <= 1 &&
 	    !(i8k_hwmon_flags & I8K_HWMON_HAVE_TEMP1))
@@ -1079,7 +1095,11 @@ MODULE_DEVICE_TABLE(dmi, i8k_dmi_table);
  * of affected Dell machines for which we disallow I8K_SMM_GET_FAN_TYPE call.
  * See bug: https://bugzilla.kernel.org/show_bug.cgi?id=100121
  */
+<<<<<<< HEAD
 static const struct dmi_system_id i8k_blacklist_fan_type_dmi_table[] __initconst = {
+=======
+static struct dmi_system_id i8k_blacklist_fan_type_dmi_table[] __initdata = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{
 		.ident = "Dell Studio XPS 8000",
 		.matches = {
@@ -1101,6 +1121,7 @@ static const struct dmi_system_id i8k_blacklist_fan_type_dmi_table[] __initconst
 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Inspiron 580 "),
 		},
 	},
+<<<<<<< HEAD
 	{ }
 };
 
@@ -1132,6 +1153,8 @@ static struct dmi_system_id i8k_blacklist_fan_support_dmi_table[] __initdata = {
 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "XPS13 9333"),
 		},
 	},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ }
 };
 
@@ -1157,6 +1180,7 @@ static int __init i8k_probe(void)
 			i8k_get_dmi_data(DMI_BIOS_VERSION));
 	}
 
+<<<<<<< HEAD
 	if (dmi_check_system(i8k_blacklist_fan_support_dmi_table)) {
 		pr_warn("broken Dell BIOS detected, disallow fan support\n");
 		if (!force)
@@ -1168,6 +1192,10 @@ static int __init i8k_probe(void)
 		if (!force)
 			disallow_fan_type_call = true;
 	}
+=======
+	if (dmi_check_system(i8k_blacklist_fan_type_dmi_table))
+		disallow_fan_type_call = true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	strlcpy(bios_version, i8k_get_dmi_data(DMI_BIOS_VERSION),
 		sizeof(bios_version));

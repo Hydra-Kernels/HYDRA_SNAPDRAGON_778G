@@ -29,11 +29,15 @@
 #include <linux/ptrace.h>
 #include <linux/screen_info.h>
 #include <linux/kdebug.h>
+<<<<<<< HEAD
 #include <linux/efi.h>
 #include <linux/random.h>
 #include <linux/kernel.h>
 #include <linux/syscore_ops.h>
 #include <clocksource/hyperv_timer.h>
+=======
+#include <linux/random.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include "hyperv_vmbus.h"
 
 struct vmbus_dynid {
@@ -104,10 +108,15 @@ static struct notifier_block hyperv_panic_block = {
 	.notifier_call = hyperv_panic_event,
 };
 
+<<<<<<< HEAD
 static const char *fb_mmio_name = "fb_range";
 static struct resource *fb_mmio;
 static struct resource *hyperv_mmio;
 static DEFINE_SEMAPHORE(hyperv_mmio_lock);
+=======
+struct resource *hyperv_mmio;
+DEFINE_SEMAPHORE(hyperv_mmio_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int vmbus_exists(void)
 {
@@ -991,9 +1000,14 @@ static void vmbus_device_release(struct device *device)
 	struct hv_device *hv_dev = device_to_hv_device(device);
 	struct vmbus_channel *channel = hv_dev->channel;
 
+<<<<<<< HEAD
 	mutex_lock(&vmbus_connection.channel_mutex);
 	hv_process_channel_removal(channel);
 	mutex_unlock(&vmbus_connection.channel_mutex);
+=======
+	hv_process_channel_removal(channel,
+				   channel->offermsg.child_relid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(hv_dev);
 }
 
@@ -1392,10 +1406,21 @@ static int vmbus_bus_init(void)
 	ret = hv_synic_alloc();
 	if (ret)
 		goto err_alloc;
+<<<<<<< HEAD
 
 	ret = hv_stimer_alloc(VMBUS_MESSAGE_SINT);
 	if (ret < 0)
 		goto err_alloc;
+=======
+	/*
+	 * Initialize the per-cpu interrupt state and
+	 * connect to the host.
+	 */
+	on_each_cpu(hv_synic_init, NULL, 1);
+	ret = vmbus_connect();
+	if (ret)
+		goto err_connect;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Initialize the per-cpu interrupt state and stimer state.
@@ -1461,16 +1486,27 @@ static int vmbus_bus_init(void)
 	return 0;
 
 err_connect:
+<<<<<<< HEAD
 	cpuhp_remove_state(hyperv_cpuhp_online);
 err_cpuhp:
 	hv_stimer_free();
+=======
+	on_each_cpu(hv_synic_cleanup, NULL, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_alloc:
 	hv_synic_free();
 	hv_remove_vmbus_irq();
 
 	bus_unregister(&hv_bus);
+<<<<<<< HEAD
 	unregister_sysctl_table(hv_ctl_table_hdr);
 	hv_ctl_table_hdr = NULL;
+=======
+
+err_cleanup:
+	hv_cleanup(false);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -2074,6 +2110,7 @@ int vmbus_allocate_mmio(struct resource **new, struct hv_device *device_obj,
 	struct resource *iter, *shadow;
 	resource_size_t range_min, range_max, start;
 	const char *dev_n = dev_name(&device_obj->device);
+<<<<<<< HEAD
 	int retval;
 
 	retval = -ENXIO;
@@ -2098,6 +2135,13 @@ int vmbus_allocate_mmio(struct resource **new, struct hv_device *device_obj,
 			}
 		}
 	}
+=======
+	u32 fb_end = screen_info.lfb_base + (screen_info.lfb_size << 1);
+	int i, retval;
+
+	retval = -ENXIO;
+	down(&hyperv_mmio_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (iter = hyperv_mmio; iter; iter = iter->sibling) {
 		if ((iter->start >= max) || (iter->end <= min))
@@ -2119,7 +2163,19 @@ int vmbus_allocate_mmio(struct resource **new, struct hv_device *device_obj,
 				goto exit;
 			}
 
+<<<<<<< HEAD
 			__release_region(iter, start, size);
+=======
+			start = (local_min + align - 1) & ~(align - 1);
+			for (; start + size - 1 <= local_max; start += align) {
+				*new = request_mem_region_exclusive(start, size,
+								    dev_n);
+				if (*new) {
+					retval = 0;
+					goto exit;
+				}
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -2362,12 +2418,22 @@ static struct acpi_driver vmbus_acpi_driver = {
 
 static void hv_kexec_handler(void)
 {
+<<<<<<< HEAD
 	hv_stimer_global_cleanup();
 	vmbus_initiate_unload(false);
 	/* Make sure conn_state is set as hv_synic_cleanup checks for it */
 	mb();
 	cpuhp_remove_state(hyperv_cpuhp_online);
 	hyperv_cleanup();
+=======
+	int cpu;
+
+	hv_synic_clockevents_cleanup();
+	vmbus_initiate_unload();
+	for_each_online_cpu(cpu)
+		smp_call_function_single(cpu, hv_synic_cleanup, NULL, 1);
+	hv_cleanup(false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static void hv_crash_handler(struct pt_regs *regs)
@@ -2380,6 +2446,7 @@ static void hv_crash_handler(struct pt_regs *regs)
 	 * doing the cleanup for current CPU only. This should be sufficient
 	 * for kdump.
 	 */
+<<<<<<< HEAD
 	cpu = smp_processor_id();
 	hv_stimer_cleanup(cpu);
 	hv_synic_disable_regs(cpu);
@@ -2425,6 +2492,10 @@ static void hv_synic_resume(void)
 static struct syscore_ops hv_synic_syscore_ops = {
 	.suspend = hv_synic_suspend,
 	.resume = hv_synic_resume,
+=======
+	hv_synic_cleanup(NULL);
+	hv_cleanup(true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static int __init hv_acpi_init(void)
@@ -2498,8 +2569,16 @@ static void __exit vmbus_exit(void)
 	unregister_sysctl_table(hv_ctl_table_hdr);
 	hv_ctl_table_hdr = NULL;
 	bus_unregister(&hv_bus);
+<<<<<<< HEAD
 
 	cpuhp_remove_state(hyperv_cpuhp_online);
+=======
+	hv_cleanup(false);
+	for_each_online_cpu(cpu) {
+		tasklet_kill(hv_context.event_dpc[cpu]);
+		smp_call_function_single(cpu, hv_synic_cleanup, NULL, 1);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	hv_synic_free();
 	acpi_bus_unregister_driver(&vmbus_acpi_driver);
 }

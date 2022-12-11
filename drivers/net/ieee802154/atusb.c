@@ -125,14 +125,23 @@ static int atusb_read_reg(struct atusb *atusb, u8 reg)
 {
 	struct usb_device *usb_dev = atusb->usb_dev;
 	int ret;
+<<<<<<< HEAD
 	u8 *buffer;
 	u8 value;
+=======
+	uint8_t *buffer;
+	uint8_t value;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	buffer = kmalloc(1, GFP_KERNEL);
 	if (!buffer)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	dev_dbg(&usb_dev->dev, "%s: reg = 0x%x\n", __func__, reg);
+=======
+	dev_dbg(&usb_dev->dev, "atusb: reg = 0x%x\n", reg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = atusb_control_msg(atusb, usb_rcvctrlpipe(usb_dev, 0),
 				ATUSB_REG_READ, ATUSB_REQ_FROM_DEV,
 				0, reg, buffer, 1, 1000);
@@ -796,7 +805,10 @@ static const struct ieee802154_ops atusb_ops = {
 static int atusb_get_and_show_revision(struct atusb *atusb)
 {
 	struct usb_device *usb_dev = atusb->usb_dev;
+<<<<<<< HEAD
 	char *hw_name;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned char *buffer;
 	int ret;
 

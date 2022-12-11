@@ -195,10 +195,26 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
 };
 
+<<<<<<< HEAD
 /* AXP803 and AXP813/AXP818 share the same interrupts */
 static const struct resource axp803_usb_power_supply_resources[] = {
 	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
 	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+=======
+static struct resource axp288_power_button_resources[] = {
+	{
+		.name	= "PEK_DBR",
+		.start	= AXP288_IRQ_POKP,
+		.end	= AXP288_IRQ_POKP,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.name	= "PEK_DBF",
+		.start	= AXP288_IRQ_POKN,
+		.end	= AXP288_IRQ_POKN,
+		.flags	= IORESOURCE_IRQ,
+	},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static const struct resource axp22x_pek_resources[] = {

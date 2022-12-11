@@ -187,7 +187,20 @@ static int hdc100x_get_measurement(struct hdc100x_data *data,
 		dev_err(&client->dev, "cannot read sensor data\n");
 		return ret;
 	}
+<<<<<<< HEAD
 	return be16_to_cpu(val);
+=======
+	val = ret << 8;
+
+	ret = i2c_smbus_read_byte(client);
+	if (ret < 0) {
+		dev_err(&client->dev, "cannot read low byte measurement");
+		return ret;
+	}
+	val |= ret;
+
+	return val;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hdc100x_get_heater_status(struct hdc100x_data *data)
@@ -236,7 +249,11 @@ static int hdc100x_read_raw(struct iio_dev *indio_dev,
 			*val2 = 65536;
 			return IIO_VAL_FRACTIONAL;
 		} else {
+<<<<<<< HEAD
 			*val = 100000;
+=======
+			*val = 100;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			*val2 = 65536;
 			return IIO_VAL_FRACTIONAL;
 		}

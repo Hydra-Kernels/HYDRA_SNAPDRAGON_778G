@@ -2394,10 +2394,18 @@ static int cxgb_up(struct adapter *adap)
 			goto irq_err;
 	}
 
+<<<<<<< HEAD
 	enable_rx(adap);
 	t4_sge_start(adap);
 	t4_intr_enable(adap);
 	adap->flags |= CXGB4_FULL_INIT_DONE;
+=======
+	mutex_lock(&uld_mutex);
+	enable_rx(adap);
+	t4_sge_start(adap);
+	t4_intr_enable(adap);
+	adap->flags |= FULL_INIT_DONE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&uld_mutex);
 
 	notify_ulds(adap, CXGB4_STATE_UP);

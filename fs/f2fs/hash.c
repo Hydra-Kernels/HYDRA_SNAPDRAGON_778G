@@ -68,9 +68,26 @@ static void str2hashbuf(const unsigned char *msg, size_t len,
 		*buf++ = pad;
 }
 
+<<<<<<< HEAD
 static u32 TEA_hash_name(const u8 *p, size_t len)
+=======
+f2fs_hash_t f2fs_dentry_hash(const struct qstr *name_info,
+				struct f2fs_filename *fname)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	__u32 in[8], buf[4];
+<<<<<<< HEAD
+=======
+	const unsigned char *name = name_info->name;
+	size_t len = name_info->len;
+
+	/* encrypted bigname case */
+	if (fname && !fname->disk_name.name)
+		return cpu_to_le32(fname->hash);
+
+	if (is_dot_dotdot(name_info))
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Initialize the default seed for the hash checksum functions */
 	buf[0] = 0x67452301;

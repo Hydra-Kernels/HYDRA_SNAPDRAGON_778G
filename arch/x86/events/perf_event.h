@@ -661,7 +661,10 @@ struct x86_pmu {
 			pebs_no_isolation	:1;
 	int		pebs_record_size;
 	int		pebs_buffer_size;
+<<<<<<< HEAD:arch/x86/events/perf_event.h
 	int		max_pebs_events;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event.h
 	void		(*drain_pebs)(struct pt_regs *regs);
 	struct event_constraint *pebs_constraints;
 	void		(*pebs_aliases)(struct perf_event *event);
@@ -1049,12 +1052,17 @@ void intel_pmu_lbr_init_hsw(void);
 
 void intel_pmu_lbr_init_skl(void);
 
+<<<<<<< HEAD:arch/x86/events/perf_event.h
 void intel_pmu_lbr_init_knl(void);
 
 void intel_pmu_pebs_data_source_nhm(void);
 
 void intel_pmu_pebs_data_source_skl(bool pmem);
 
+=======
+void intel_pmu_pebs_data_source_nhm(void);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event.h
 int intel_pmu_setup_lbr_filter(struct perf_event *event);
 
 void intel_pt_interrupt(void);

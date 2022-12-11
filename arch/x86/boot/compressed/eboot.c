@@ -110,7 +110,12 @@ preserve_pci_rom_image(efi_pci_io_protocol_t *pci, struct pci_setup_rom **__rom)
 	if (status != EFI_SUCCESS)
 		goto free_struct;
 
+<<<<<<< HEAD
 	memcpy(rom->romdata, romimage, romsize);
+=======
+	memcpy(rom->romdata, (void *)(unsigned long)pci->romimage,
+	       pci->romsize);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return status;
 
 free_struct:
@@ -118,6 +123,162 @@ free_struct:
 	return status;
 }
 
+<<<<<<< HEAD
+=======
+static void
+setup_efi_pci32(struct boot_params *params, void **pci_handle,
+		unsigned long size)
+{
+	efi_pci_io_protocol_32 *pci = NULL;
+	efi_guid_t pci_proto = EFI_PCI_IO_PROTOCOL_GUID;
+	u32 *handles = (u32 *)(unsigned long)pci_handle;
+	efi_status_t status;
+	unsigned long nr_pci;
+	struct setup_data *data;
+	int i;
+
+	data = (struct setup_data *)(unsigned long)params->hdr.setup_data;
+
+	while (data && data->next)
+		data = (struct setup_data *)(unsigned long)data->next;
+
+	nr_pci = size / sizeof(u32);
+	for (i = 0; i < nr_pci; i++) {
+		struct pci_setup_rom *rom = NULL;
+		u32 h = handles[i];
+
+		status = efi_call_early(handle_protocol, h,
+					&pci_proto, (void **)&pci);
+
+		if (status != EFI_SUCCESS)
+			continue;
+
+		if (!pci)
+			continue;
+
+		status = __setup_efi_pci32(pci, &rom);
+		if (status != EFI_SUCCESS)
+			continue;
+
+		if (data)
+			data->next = (unsigned long)rom;
+		else
+			params->hdr.setup_data = (unsigned long)rom;
+
+		data = (struct setup_data *)rom;
+
+	}
+}
+
+static efi_status_t
+__setup_efi_pci64(efi_pci_io_protocol_64 *pci, struct pci_setup_rom **__rom)
+{
+	struct pci_setup_rom *rom;
+	efi_status_t status;
+	unsigned long size;
+	uint64_t attributes;
+
+	status = efi_early->call(pci->attributes, pci,
+				 EfiPciIoAttributeOperationGet, 0,
+				 &attributes);
+	if (status != EFI_SUCCESS)
+		return status;
+
+	if (!pci->romimage || !pci->romsize)
+		return EFI_INVALID_PARAMETER;
+
+	size = pci->romsize + sizeof(*rom);
+
+	status = efi_call_early(allocate_pool, EFI_LOADER_DATA, size, &rom);
+	if (status != EFI_SUCCESS) {
+		efi_printk(sys_table, "Failed to alloc mem for rom\n");
+		return status;
+	}
+
+	rom->data.type = SETUP_PCI;
+	rom->data.len = size - sizeof(struct setup_data);
+	rom->data.next = 0;
+	rom->pcilen = pci->romsize;
+	*__rom = rom;
+
+	status = efi_early->call(pci->pci.read, pci, EfiPciIoWidthUint16,
+				 PCI_VENDOR_ID, 1, &(rom->vendor));
+
+	if (status != EFI_SUCCESS) {
+		efi_printk(sys_table, "Failed to read rom->vendor\n");
+		goto free_struct;
+	}
+
+	status = efi_early->call(pci->pci.read, pci, EfiPciIoWidthUint16,
+				 PCI_DEVICE_ID, 1, &(rom->devid));
+
+	if (status != EFI_SUCCESS) {
+		efi_printk(sys_table, "Failed to read rom->devid\n");
+		goto free_struct;
+	}
+
+	status = efi_early->call(pci->get_location, pci, &(rom->segment),
+				 &(rom->bus), &(rom->device), &(rom->function));
+
+	if (status != EFI_SUCCESS)
+		goto free_struct;
+
+	memcpy(rom->romdata, (void *)(unsigned long)pci->romimage,
+	       pci->romsize);
+	return status;
+
+free_struct:
+	efi_call_early(free_pool, rom);
+	return status;
+
+}
+
+static void
+setup_efi_pci64(struct boot_params *params, void **pci_handle,
+		unsigned long size)
+{
+	efi_pci_io_protocol_64 *pci = NULL;
+	efi_guid_t pci_proto = EFI_PCI_IO_PROTOCOL_GUID;
+	u64 *handles = (u64 *)(unsigned long)pci_handle;
+	efi_status_t status;
+	unsigned long nr_pci;
+	struct setup_data *data;
+	int i;
+
+	data = (struct setup_data *)(unsigned long)params->hdr.setup_data;
+
+	while (data && data->next)
+		data = (struct setup_data *)(unsigned long)data->next;
+
+	nr_pci = size / sizeof(u64);
+	for (i = 0; i < nr_pci; i++) {
+		struct pci_setup_rom *rom = NULL;
+		u64 h = handles[i];
+
+		status = efi_call_early(handle_protocol, h,
+					&pci_proto, (void **)&pci);
+
+		if (status != EFI_SUCCESS)
+			continue;
+
+		if (!pci)
+			continue;
+
+		status = __setup_efi_pci64(pci, &rom);
+		if (status != EFI_SUCCESS)
+			continue;
+
+		if (data)
+			data->next = (unsigned long)rom;
+		else
+			params->hdr.setup_data = (unsigned long)rom;
+
+		data = (struct setup_data *)rom;
+
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * There's no way to return an informative status from this function,
  * because any analysis (and printing of error messages) needs to be

@@ -73,6 +73,15 @@ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
 	child->ptracer_cred = get_cred(ptracer_cred);
 }
 
+void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
+		   const struct cred *ptracer_cred)
+{
+	BUG_ON(!list_empty(&child->ptrace_entry));
+	list_add(&child->ptrace_entry, &new_parent->ptraced);
+	child->parent = new_parent;
+	child->ptracer_cred = get_cred(ptracer_cred);
+}
+
 /*
  * ptrace a task: make the debugger its new parent and
  * move it to the ptrace list.
@@ -81,7 +90,13 @@ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
  */
 static void ptrace_link(struct task_struct *child, struct task_struct *new_parent)
 {
+<<<<<<< HEAD
 	__ptrace_link(child, new_parent, current_cred());
+=======
+	rcu_read_lock();
+	__ptrace_link(child, new_parent, __task_cred(new_parent));
+	rcu_read_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -342,6 +357,7 @@ static int __ptrace_may_access(struct task_struct *task, unsigned int mode)
 	return -EPERM;
 ok:
 	rcu_read_unlock();
+<<<<<<< HEAD
 	/*
 	 * If a task drops privileges and becomes nondumpable (through a syscall
 	 * like setresuid()) while we are trying to access it, we must ensure
@@ -352,6 +368,8 @@ ok:
 	 * Pairs with a write barrier in commit_creds().
 	 */
 	smp_rmb();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mm = task->mm;
 	if (mm &&
 	    ((get_dumpable(mm) != SUID_DUMP_USER) &&

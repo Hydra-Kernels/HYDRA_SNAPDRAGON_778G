@@ -2175,7 +2175,11 @@ module_exit(vmci_transport_exit);
 
 MODULE_AUTHOR("VMware, Inc.");
 MODULE_DESCRIPTION("VMCI transport for Virtual Sockets");
+<<<<<<< HEAD
 MODULE_VERSION("1.0.5.0-k");
+=======
+MODULE_VERSION("1.0.3.0-k");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("vmware_vsock");
 MODULE_ALIAS_NETPROTO(PF_VSOCK);

@@ -330,11 +330,23 @@ do_unaligned_user (struct pt_regs *regs)
 
 	current->thread.bad_vaddr = regs->excvaddr;
 	current->thread.error_code = -3;
+<<<<<<< HEAD
 	pr_info_ratelimited("Unaligned memory access to %08lx in '%s' "
 			    "(pid = %d, pc = %#010lx)\n",
 			    regs->excvaddr, current->comm,
 			    task_pid_nr(current), regs->pc);
 	force_sig_fault(SIGBUS, BUS_ADRALN, (void *) regs->excvaddr);
+=======
+	printk("Unaligned memory access to %08lx in '%s' "
+	       "(pid = %d, pc = %#010lx)\n",
+	       regs->excvaddr, current->comm, task_pid_nr(current), regs->pc);
+	info.si_signo = SIGBUS;
+	info.si_errno = 0;
+	info.si_code = BUS_ADRALN;
+	info.si_addr = (void *) regs->excvaddr;
+	force_sig_info(SIGBUS, &info, current);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 

@@ -2,9 +2,13 @@
 #ifndef NVM_H
 #define NVM_H
 
+<<<<<<< HEAD
 #include <linux/blkdev.h>
 #include <linux/types.h>
 #include <uapi/linux/lightnvm.h>
+=======
+#include <linux/types.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 enum {
 	NVM_IO_OK = 0,
@@ -16,6 +20,7 @@ enum {
 	NVM_IOTYPE_GC = 1,
 };
 
+<<<<<<< HEAD
 /* common format */
 #define NVM_GEN_CH_BITS  (8)
 #define NVM_GEN_LUN_BITS (8)
@@ -36,10 +41,19 @@ enum {
 	NVM_OCSSD_SPEC_12 = 12,
 	NVM_OCSSD_SPEC_20 = 20,
 };
+=======
+#define NVM_BLK_BITS (16)
+#define NVM_PG_BITS  (16)
+#define NVM_SEC_BITS (8)
+#define NVM_PL_BITS  (8)
+#define NVM_LUN_BITS (8)
+#define NVM_CH_BITS  (8)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct ppa_addr {
 	/* Generic structure for all addresses */
 	union {
+<<<<<<< HEAD
 		/* generic device format */
 		struct {
 			u64 ch		: NVM_GEN_CH_BITS;
@@ -73,6 +87,17 @@ struct ppa_addr {
 			u64 is_cached	: 1;
 		} c;
 
+=======
+		struct {
+			u64 blk		: NVM_BLK_BITS;
+			u64 pg		: NVM_PG_BITS;
+			u64 sec		: NVM_SEC_BITS;
+			u64 pl		: NVM_PL_BITS;
+			u64 lun		: NVM_LUN_BITS;
+			u64 ch		: NVM_CH_BITS;
+		} g;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		u64 ppa;
 	};
 };
@@ -80,6 +105,7 @@ struct ppa_addr {
 struct nvm_rq;
 struct nvm_id;
 struct nvm_dev;
+<<<<<<< HEAD
 struct nvm_tgt_dev;
 struct nvm_chk_meta;
 
@@ -90,6 +116,20 @@ typedef int (nvm_get_chk_meta_fn)(struct nvm_dev *, sector_t, int,
 							struct nvm_chk_meta *);
 typedef int (nvm_submit_io_fn)(struct nvm_dev *, struct nvm_rq *, void *);
 typedef void *(nvm_create_dma_pool_fn)(struct nvm_dev *, char *, int);
+=======
+
+typedef int (nvm_l2p_update_fn)(u64, u32, __le64 *, void *);
+typedef int (nvm_bb_update_fn)(struct ppa_addr, int, u8 *, void *);
+typedef int (nvm_id_fn)(struct nvm_dev *, struct nvm_id *);
+typedef int (nvm_get_l2p_tbl_fn)(struct nvm_dev *, u64, u32,
+				nvm_l2p_update_fn *, void *);
+typedef int (nvm_op_bb_tbl_fn)(struct nvm_dev *, struct ppa_addr, int,
+				nvm_bb_update_fn *, void *);
+typedef int (nvm_op_set_bb_fn)(struct nvm_dev *, struct nvm_rq *, int);
+typedef int (nvm_submit_io_fn)(struct nvm_dev *, struct nvm_rq *);
+typedef int (nvm_erase_blk_fn)(struct nvm_dev *, struct nvm_rq *);
+typedef void *(nvm_create_dma_pool_fn)(struct nvm_dev *, char *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 typedef void (nvm_destroy_dma_pool_fn)(void *);
 typedef void *(nvm_dev_dma_alloc_fn)(struct nvm_dev *, void *, gfp_t,
 								dma_addr_t *);
@@ -97,19 +137,37 @@ typedef void (nvm_dev_dma_free_fn)(void *, void*, dma_addr_t);
 
 struct nvm_dev_ops {
 	nvm_id_fn		*identity;
+<<<<<<< HEAD
 	nvm_op_bb_tbl_fn	*get_bb_tbl;
 	nvm_op_set_bb_fn	*set_bb_tbl;
 
 	nvm_get_chk_meta_fn	*get_chk_meta;
 
 	nvm_submit_io_fn	*submit_io;
+=======
+	nvm_get_l2p_tbl_fn	*get_l2p_tbl;
+	nvm_op_bb_tbl_fn	*get_bb_tbl;
+	nvm_op_set_bb_fn	*set_bb_tbl;
+
+	nvm_submit_io_fn	*submit_io;
+	nvm_erase_blk_fn	*erase_block;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	nvm_create_dma_pool_fn	*create_dma_pool;
 	nvm_destroy_dma_pool_fn	*destroy_dma_pool;
 	nvm_dev_dma_alloc_fn	*dev_dma_alloc;
 	nvm_dev_dma_free_fn	*dev_dma_free;
+<<<<<<< HEAD
 };
 
+=======
+
+	unsigned int		max_phys_sect;
+};
+
+
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_NVM
 
 #include <linux/blkdev.h>
@@ -161,6 +219,7 @@ enum {
 	NVM_BLK_T_GRWN_BAD	= 0x2,
 	NVM_BLK_T_DEV		= 0x4,
 	NVM_BLK_T_HOST		= 0x8,
+<<<<<<< HEAD
 
 	/* Memory capabilities */
 	NVM_ID_CAP_SLC		= 0x1,
@@ -175,6 +234,8 @@ enum {
 	/* Device capabilities */
 	NVM_ID_DCAP_BBLKMGMT	= 0x1,
 	NVM_UD_DCAP_ECC		= 0x2,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct nvm_id_lp_mlc {
@@ -274,11 +335,14 @@ struct nvm_target {
 #define NVM_VERSION_MINOR 0
 #define NVM_VERSION_PATCH 0
 
+<<<<<<< HEAD
 #define NVM_MAX_VLBA (64) /* max logical blocks in a vector command */
 
 struct nvm_rq;
 typedef void (nvm_end_io_fn)(struct nvm_rq *);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct nvm_rq {
 	struct nvm_tgt_dev *dev;
 
@@ -323,6 +387,7 @@ static inline struct ppa_addr *nvm_rq_to_ppa_list(struct nvm_rq *rqd)
 	return (rqd->nr_ppas > 1) ? rqd->ppa_list : &rqd->ppa_addr;
 }
 
+<<<<<<< HEAD
 enum {
 	NVM_BLK_ST_FREE =	0x1,	/* Free block */
 	NVM_BLK_ST_TGT =	0x2,	/* Block in use by target */
@@ -334,6 +399,10 @@ struct nvm_geo {
 	/* device reported version */
 	u8	major_ver_id;
 	u8	minor_ver_id;
+=======
+struct nvm_lun {
+	int id;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* kernel short version */
 	u8	version;
@@ -471,6 +540,7 @@ static inline struct ppa_addr dev_to_generic_addr(struct nvm_dev *dev,
 	struct ppa_addr l;
 
 	l.ppa = 0;
+<<<<<<< HEAD
 
 	if (geo->version == NVM_OCSSD_SPEC_12) {
 		struct nvm_addrf_12 *ppaf = (struct nvm_addrf_12 *)&geo->addrf;
@@ -489,6 +559,23 @@ static inline struct ppa_addr dev_to_generic_addr(struct nvm_dev *dev,
 		l.m.chk = (r.ppa & lbaf->chk_mask) >> lbaf->chk_offset;
 		l.m.sec = (r.ppa & lbaf->sec_mask) >> lbaf->sec_offset;
 	}
+=======
+	/*
+	 * (r.ppa << X offset) & X len bitmask. X eq. blk, pg, etc.
+	 */
+	l.g.blk = (r.ppa >> dev->ppaf.blk_offset) &
+					(((1 << dev->ppaf.blk_len) - 1));
+	l.g.pg |= (r.ppa >> dev->ppaf.pg_offset) &
+					(((1 << dev->ppaf.pg_len) - 1));
+	l.g.sec |= (r.ppa >> dev->ppaf.sect_offset) &
+					(((1 << dev->ppaf.sect_len) - 1));
+	l.g.pl |= (r.ppa >> dev->ppaf.pln_offset) &
+					(((1 << dev->ppaf.pln_len) - 1));
+	l.g.lun |= (r.ppa >> dev->ppaf.lun_offset) &
+					(((1 << dev->ppaf.lun_len) - 1));
+	l.g.ch |= (r.ppa >> dev->ppaf.ch_offset) &
+					(((1 << dev->ppaf.ch_len) - 1));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return l;
 }

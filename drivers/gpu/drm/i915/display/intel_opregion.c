@@ -706,10 +706,40 @@ static u32 acpi_display_type(struct intel_connector *connector)
 static void intel_didl_outputs(struct drm_i915_private *dev_priv)
 {
 	struct intel_opregion *opregion = &dev_priv->opregion;
+<<<<<<< HEAD:drivers/gpu/drm/i915/display/intel_opregion.c
 	struct intel_connector *connector;
 	struct drm_connector_list_iter conn_iter;
 	int i = 0, max_outputs;
 	int display_index[16] = {};
+=======
+	struct drm_connector *connector;
+	acpi_handle handle;
+	struct acpi_device *acpi_dev, *acpi_cdev, *acpi_video_bus = NULL;
+	unsigned long long device_id;
+	acpi_status status;
+	u32 temp, max_outputs;
+	int i = 0;
+
+	handle = ACPI_HANDLE(&dev->pdev->dev);
+	if (!handle || acpi_bus_get_device(handle, &acpi_dev))
+		return;
+
+	if (acpi_is_video_device(handle))
+		acpi_video_bus = acpi_dev;
+	else {
+		list_for_each_entry(acpi_cdev, &acpi_dev->children, node) {
+			if (acpi_is_video_device(acpi_cdev->handle)) {
+				acpi_video_bus = acpi_cdev;
+				break;
+			}
+		}
+	}
+
+	if (!acpi_video_bus) {
+		DRM_DEBUG_KMS("No ACPI video bus found\n");
+		return;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i915/intel_opregion.c
 
 	/*
 	 * In theory, did2, the extended didl, gets added at opregion version

@@ -225,6 +225,7 @@ int nfsd_vers(struct nfsd_net *nn, int vers, enum vers_op change)
 static void
 nfsd_adjust_nfsd_versions4(struct nfsd_net *nn)
 {
+<<<<<<< HEAD
 	unsigned i;
 
 	for (i = 0; i <= NFSD_SUPPORTED_MINOR_VERSION; i++) {
@@ -236,6 +237,8 @@ nfsd_adjust_nfsd_versions4(struct nfsd_net *nn)
 
 int nfsd_minorversion(struct nfsd_net *nn, u32 minorversion, enum vers_op change)
 {
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (minorversion > NFSD_SUPPORTED_MINOR_VERSION &&
 	    change != NFSD_AVAIL)
 		return -1;
@@ -525,15 +528,26 @@ void nfsd_reset_versions(struct nfsd_net *nn)
 	int i;
 
 	for (i = 0; i < NFSD_NRVERS; i++)
+<<<<<<< HEAD
 		if (nfsd_vers(nn, i, NFSD_TEST))
+=======
+		if (nfsd_vers(i, NFSD_TEST))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 
 	for (i = 0; i < NFSD_NRVERS; i++)
 		if (i != 4)
+<<<<<<< HEAD
 			nfsd_vers(nn, i, NFSD_SET);
 		else {
 			int minor = 0;
 			while (nfsd_minorversion(nn, minor, NFSD_SET) >= 0)
+=======
+			nfsd_vers(i, NFSD_SET);
+		else {
+			int minor = 0;
+			while (nfsd_minorversion(minor, NFSD_SET) >= 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				minor++;
 		}
 }
@@ -958,7 +972,11 @@ static __be32 map_new_errors(u32 vers, __be32 nfserr)
  * problem, we enforce these assumptions here:
  */
 static bool nfs_request_too_big(struct svc_rqst *rqstp,
+<<<<<<< HEAD
 				const struct svc_procedure *proc)
+=======
+				struct svc_procedure *proc)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * The ACL code has more careful bounds-checking and is not

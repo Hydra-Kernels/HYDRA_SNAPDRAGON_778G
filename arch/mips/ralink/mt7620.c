@@ -190,6 +190,7 @@ static struct rt2880_pmx_func gpio_grp_mt7628[] = {
 	FUNC("gpio", 0, 11, 1),
 };
 
+<<<<<<< HEAD
 static struct rt2880_pmx_func p4led_kn_grp_mt7628[] = {
 	FUNC("jtag", 3, 30, 1),
 	FUNC("utif", 2, 30, 1),
@@ -267,6 +268,15 @@ static struct rt2880_pmx_func p0led_an_grp_mt7628[] = {
 	FUNC("p0led_an", 0, 43, 1),
 };
 
+=======
+static struct rt2880_pmx_func wled_kn_grp_mt7628[] = {
+	FUNC("rsvd", 3, 35, 1),
+	FUNC("rsvd", 2, 35, 1),
+	FUNC("gpio", 1, 35, 1),
+	FUNC("wled_kn", 0, 35, 1),
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct rt2880_pmx_func wled_an_grp_mt7628[] = {
 	FUNC("rsvd", 3, 44, 1),
 	FUNC("rsvd", 2, 44, 1),
@@ -276,6 +286,7 @@ static struct rt2880_pmx_func wled_an_grp_mt7628[] = {
 
 #define MT7628_GPIO_MODE_MASK		0x3
 
+<<<<<<< HEAD
 #define MT7628_GPIO_MODE_P4LED_KN	58
 #define MT7628_GPIO_MODE_P3LED_KN	56
 #define MT7628_GPIO_MODE_P2LED_KN	54
@@ -287,6 +298,9 @@ static struct rt2880_pmx_func wled_an_grp_mt7628[] = {
 #define MT7628_GPIO_MODE_P2LED_AN	38
 #define MT7628_GPIO_MODE_P1LED_AN	36
 #define MT7628_GPIO_MODE_P0LED_AN	34
+=======
+#define MT7628_GPIO_MODE_WLED_KN	48
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define MT7628_GPIO_MODE_WLED_AN	32
 #define MT7628_GPIO_MODE_PWM1		30
 #define MT7628_GPIO_MODE_PWM0		28
@@ -333,6 +347,7 @@ static struct rt2880_pmx_group mt7628an_pinmux_data[] = {
 				1, MT7628_GPIO_MODE_GPIO),
 	GRP_G("wled_an", wled_an_grp_mt7628, MT7628_GPIO_MODE_MASK,
 				1, MT7628_GPIO_MODE_WLED_AN),
+<<<<<<< HEAD
 	GRP_G("p0led_an", p0led_an_grp_mt7628, MT7628_GPIO_MODE_MASK,
 				1, MT7628_GPIO_MODE_P0LED_AN),
 	GRP_G("p1led_an", p1led_an_grp_mt7628, MT7628_GPIO_MODE_MASK,
@@ -355,6 +370,10 @@ static struct rt2880_pmx_group mt7628an_pinmux_data[] = {
 				1, MT7628_GPIO_MODE_P3LED_KN),
 	GRP_G("p4led_kn", p4led_kn_grp_mt7628, MT7628_GPIO_MODE_MASK,
 				1, MT7628_GPIO_MODE_P4LED_KN),
+=======
+	GRP_G("wled_kn", wled_kn_grp_mt7628, MT7628_GPIO_MODE_MASK,
+				1, MT7628_GPIO_MODE_WLED_KN),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ 0 }
 };
 

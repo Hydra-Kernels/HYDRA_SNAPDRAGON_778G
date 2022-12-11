@@ -586,7 +586,21 @@ void try_to_unmap_flush(void)
 	if (!tlb_ubc->flush_required)
 		return;
 
+<<<<<<< HEAD
 	arch_tlbbatch_flush(&tlb_ubc->arch);
+=======
+	cpu = get_cpu();
+
+	if (cpumask_test_cpu(cpu, &tlb_ubc->cpumask)) {
+		count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL);
+		local_flush_tlb();
+		trace_tlb_flush(TLB_LOCAL_SHOOTDOWN, TLB_FLUSH_ALL);
+	}
+
+	if (cpumask_any_but(&tlb_ubc->cpumask, cpu) < nr_cpu_ids)
+		flush_tlb_others(&tlb_ubc->cpumask, NULL, 0, TLB_FLUSH_ALL);
+	cpumask_clear(&tlb_ubc->cpumask);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tlb_ubc->flush_required = false;
 	tlb_ubc->writable = false;
 }

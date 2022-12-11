@@ -184,7 +184,7 @@ static int crypto_kw_decrypt(struct skcipher_request *req)
 	if (block.A != cpu_to_be64(0xa6a6a6a6a6a6a6a6ULL))
 		ret = -EBADMSG;
 
-	memzero_explicit(&block, sizeof(struct crypto_kw_block));
+	memzero_explicit(block, sizeof(struct crypto_kw_block));
 
 	return ret;
 }
@@ -255,7 +255,7 @@ static int crypto_kw_encrypt(struct skcipher_request *req)
 	/* establish the IV for the caller to pick up */
 	memcpy(req->iv, &block.A, SEMIBSIZE);
 
-	memzero_explicit(&block, sizeof(struct crypto_kw_block));
+	memzero_explicit(block, sizeof(struct crypto_kw_block));
 
 	return 0;
 }

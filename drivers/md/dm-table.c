@@ -406,7 +406,11 @@ static int upgrade_mode(struct dm_dev_internal *dd, fmode_t new_mode,
  */
 dev_t dm_get_dev_t(const char *path)
 {
+<<<<<<< HEAD
 	dev_t dev;
+=======
+	dev_t uninitialized_var(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct block_device *bdev;
 
 	bdev = lookup_bdev(path);
@@ -430,13 +434,17 @@ int dm_get_device(struct dm_target *ti, const char *path, fmode_t mode,
 {
 	int r;
 	dev_t dev;
+<<<<<<< HEAD
 	unsigned int major, minor;
 	char dummy;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct dm_dev_internal *dd;
 	struct dm_table *t = ti->table;
 
 	BUG_ON(!t);
 
+<<<<<<< HEAD
 	if (sscanf(path, "%u:%u%c", &major, &minor, &dummy) == 2) {
 		/* Extract the major/minor numbers */
 		dev = MKDEV(major, minor);
@@ -447,6 +455,11 @@ int dm_get_device(struct dm_target *ti, const char *path, fmode_t mode,
 		if (!dev)
 			return -ENODEV;
 	}
+=======
+	dev = dm_get_dev_t(path);
+	if (!dev)
+		return -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dd = find_device(&t->devices, dev);
 	if (!dd) {

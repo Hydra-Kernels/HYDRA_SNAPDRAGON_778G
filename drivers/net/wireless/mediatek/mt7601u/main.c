@@ -351,7 +351,11 @@ mt76_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;
+<<<<<<< HEAD
 	u16 ssn = params->ssn;
+=======
+	u16 *ssn = &params->ssn;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct mt76_sta *msta = (struct mt76_sta *) sta->drv_priv;
 
 	WARN_ON(msta->wcid.idx > GROUP_WCID(0));

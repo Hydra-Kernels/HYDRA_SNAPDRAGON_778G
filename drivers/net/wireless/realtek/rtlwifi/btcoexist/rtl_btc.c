@@ -181,7 +181,19 @@ void rtl_btc_power_on_setting(struct rtl_priv *rtlpriv)
 	if (!btcoexist)
 		return;
 
+<<<<<<< HEAD
 	exhalbtc_power_on_setting(btcoexist);
+=======
+	bt_type = rtl_get_hwpg_bt_type(rtlpriv);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "%s, bt_type is %d\n",
+		 __func__, bt_type);
+	exhalbtc_set_chip_type(bt_type);
+
+	if (rtlpriv->cfg->mod_params->ant_sel == 1)
+		exhalbtc_set_ant_num(rtlpriv, BT_COEX_ANT_TYPE_DETECTED, 1);
+	else
+		exhalbtc_set_ant_num(rtlpriv, BT_COEX_ANT_TYPE_PG, ant_num);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)

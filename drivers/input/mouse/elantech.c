@@ -1104,6 +1104,48 @@ static int elantech_get_resolution_v4(struct psmouse *psmouse,
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Advertise INPUT_PROP_BUTTONPAD for clickpads. The testing of bit 12 in
+ * fw_version for this is based on the following fw_version & caps table:
+ *
+ * Laptop-model:           fw_version:     caps:           buttons:
+ * Acer S3                 0x461f00        10, 13, 0e      clickpad
+ * Acer S7-392             0x581f01        50, 17, 0d      clickpad
+ * Acer V5-131             0x461f02        01, 16, 0c      clickpad
+ * Acer V5-551             0x461f00        ?               clickpad
+ * Asus K53SV              0x450f01        78, 15, 0c      2 hw buttons
+ * Asus G46VW              0x460f02        00, 18, 0c      2 hw buttons
+ * Asus G750JX             0x360f00        00, 16, 0c      2 hw buttons
+ * Asus TP500LN            0x381f17        10, 14, 0e      clickpad
+ * Asus X750JN             0x381f17        10, 14, 0e      clickpad
+ * Asus UX31               0x361f00        20, 15, 0e      clickpad
+ * Asus UX32VD             0x361f02        00, 15, 0e      clickpad
+ * Avatar AVIU-145A2       0x361f00        ?               clickpad
+ * Fujitsu LIFEBOOK E544   0x470f00        d0, 12, 09      2 hw buttons
+ * Fujitsu LIFEBOOK E546   0x470f00        50, 12, 09      2 hw buttons
+ * Fujitsu LIFEBOOK E547   0x470f00        50, 12, 09      2 hw buttons
+ * Fujitsu LIFEBOOK E554   0x570f01        40, 14, 0c      2 hw buttons
+ * Fujitsu LIFEBOOK E557   0x570f01        40, 14, 0c      2 hw buttons
+ * Fujitsu T725            0x470f01        05, 12, 09      2 hw buttons
+ * Fujitsu H730            0x570f00        c0, 14, 0c      3 hw buttons (**)
+ * Gigabyte U2442          0x450f01        58, 17, 0c      2 hw buttons
+ * Lenovo L430             0x350f02        b9, 15, 0c      2 hw buttons (*)
+ * Lenovo L530             0x350f02        b9, 15, 0c      2 hw buttons (*)
+ * Samsung NF210           0x150b00        78, 14, 0a      2 hw buttons
+ * Samsung NP770Z5E        0x575f01        10, 15, 0f      clickpad
+ * Samsung NP700Z5B        0x361f06        21, 15, 0f      clickpad
+ * Samsung NP900X3E-A02    0x575f03        ?               clickpad
+ * Samsung NP-QX410        0x851b00        19, 14, 0c      clickpad
+ * Samsung RC512           0x450f00        08, 15, 0c      2 hw buttons
+ * Samsung RF710           0x450f00        ?               2 hw buttons
+ * System76 Pangolin       0x250f01        ?               2 hw buttons
+ * (*) + 3 trackpoint buttons
+ * (**) + 0 trackpoint buttons
+ * Note: Lenovo L430 and Lenovo L430 have the same fw_version/caps
+ */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void elantech_set_buttonpad_prop(struct psmouse *psmouse)
 {
 	struct input_dev *dev = psmouse->dev;
@@ -1134,6 +1176,7 @@ static const struct dmi_system_id elantech_dmi_has_middle_button[] = {
 			DMI_MATCH(DMI_PRODUCT_NAME, "CELSIUS H760"),
 		},
 	},
+<<<<<<< HEAD
 	{
 		/* Fujitsu H780 also has a middle button */
 		.matches = {
@@ -1141,8 +1184,16 @@ static const struct dmi_system_id elantech_dmi_has_middle_button[] = {
 			DMI_MATCH(DMI_PRODUCT_NAME, "CELSIUS H780"),
 		},
 	},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	{ }
+};
+
+static const char * const middle_button_pnp_ids[] = {
+	"LEN2131", /* ThinkPad P52 w/ NFC */
+	"LEN2132", /* ThinkPad P52 */
+	NULL
 };
 
 /*
@@ -1163,7 +1214,12 @@ static int elantech_set_input_params(struct psmouse *psmouse)
 	__clear_bit(EV_REL, dev->evbit);
 
 	__set_bit(BTN_LEFT, dev->keybit);
+<<<<<<< HEAD
 	if (info->has_middle_button)
+=======
+	if (dmi_check_system(elantech_dmi_has_middle_button) ||
+			psmouse_matches_pnp_id(psmouse, middle_button_pnp_ids))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		__set_bit(BTN_MIDDLE, dev->keybit);
 	__set_bit(BTN_RIGHT, dev->keybit);
 
@@ -1607,7 +1663,11 @@ static int elantech_set_properties(struct elantech_device_info *info)
 			info->hw_version = 3;
 			break;
 		case 6 ... 15:
+<<<<<<< HEAD
 			info->hw_version = 4;
+=======
+			etd->hw_version = 4;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		default:
 			return -1;
@@ -1703,6 +1763,7 @@ static int elantech_query_info(struct psmouse *psmouse,
 			     info->samples[2]);
 	}
 
+<<<<<<< HEAD
 	if (info->pattern > 0x00 && info->ic_version == 0xf) {
 		if (info->send_cmd(psmouse, ETP_ICBODY_QUERY, ic_body)) {
 			psmouse_err(psmouse, "failed to query ic body\n");
@@ -1719,6 +1780,9 @@ static int elantech_query_info(struct psmouse *psmouse,
 		info->product_id &= 0xff;
 
 	if (info->samples[1] == 0x74 && info->hw_version == 0x03) {
+=======
+	if (etd->samples[1] == 0x74 && etd->hw_version == 0x03) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * This module has a bug which makes absolute mode
 		 * unusable, so let's abort so we'll be using standard
@@ -1726,6 +1790,7 @@ static int elantech_query_info(struct psmouse *psmouse,
 		 */
 		psmouse_info(psmouse,
 			     "absolute mode broken, forcing standard PS/2 protocol\n");
+<<<<<<< HEAD
 		return -ENODEV;
 	}
 
@@ -2033,6 +2098,11 @@ static int elantech_setup_ps2(struct psmouse *psmouse,
 	for (i = 1; i < 256; i++)
 		etd->parity[i] = etd->parity[i & (i - 1)] ^ 1;
 
+=======
+		goto init_fail;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (elantech_set_absolute_mode(psmouse)) {
 		psmouse_err(psmouse,
 			    "failed to put touchpad into absolute mode.\n");

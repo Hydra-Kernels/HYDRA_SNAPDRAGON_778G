@@ -514,7 +514,13 @@ struct uvc_buffer *uvc_queue_next_buffer(struct uvc_video_queue *queue,
 	nextbuf = __uvc_queue_get_current_buffer(queue);
 	spin_unlock_irqrestore(&queue->irqlock, flags);
 
+<<<<<<< HEAD
 	uvc_queue_buffer_release(buf);
+=======
+	buf->state = buf->error ? UVC_BUF_STATE_ERROR : UVC_BUF_STATE_DONE;
+	vb2_set_plane_payload(&buf->buf.vb2_buf, 0, buf->bytesused);
+	vb2_buffer_done(&buf->buf.vb2_buf, VB2_BUF_STATE_DONE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return nextbuf;
 }

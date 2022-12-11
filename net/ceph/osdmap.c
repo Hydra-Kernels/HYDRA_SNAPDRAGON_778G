@@ -477,6 +477,7 @@ static struct crush_map *crush_decode(void *pbyval, void *end)
 		u32 yes;
 		struct crush_rule *r;
 
+		err = -EINVAL;
 		ceph_decode_32_safe(p, end, yes, bad);
 		if (!yes) {
 			dout("crush_decode NO rule %d off %x %p to %p\n",
@@ -1637,13 +1638,18 @@ struct ceph_osdmap *ceph_osdmap_decode(void **p, void *end)
  *     new_up_client: { osd=6, addr=... } # set osd_state and addr
  *     new_state: { osd=6, xorstate=EXISTS } # clear osd_state
  */
+<<<<<<< HEAD
 static int decode_new_up_state_weight(void **p, void *end, u8 struct_v,
+=======
+static int decode_new_up_state_weight(void **p, void *end,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				      struct ceph_osdmap *map)
 {
 	void *new_up_client;
 	void *new_state;
 	void *new_weight_end;
 	u32 len;
+<<<<<<< HEAD
 	int i;
 
 	new_up_client = *p;
@@ -1659,6 +1665,18 @@ static int decode_new_up_state_weight(void **p, void *end, u8 struct_v,
 	new_state = *p;
 	ceph_decode_32_safe(p, end, len, e_inval);
 	len *= sizeof(u32) + (struct_v >= 5 ? sizeof(u32) : sizeof(u8));
+=======
+
+	new_up_client = *p;
+	ceph_decode_32_safe(p, end, len, e_inval);
+	len *= sizeof(u32) + sizeof(struct ceph_entity_addr);
+	ceph_decode_need(p, end, len, e_inval);
+	*p += len;
+
+	new_state = *p;
+	ceph_decode_32_safe(p, end, len, e_inval);
+	len *= sizeof(u32) + sizeof(u8);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ceph_decode_need(p, end, len, e_inval);
 	*p += len;
 
@@ -1694,6 +1712,7 @@ static int decode_new_up_state_weight(void **p, void *end, u8 struct_v,
 	len = ceph_decode_32(p);
 	while (len--) {
 		s32 osd;
+<<<<<<< HEAD
 		u32 xorstate;
 		int ret;
 
@@ -1702,6 +1721,13 @@ static int decode_new_up_state_weight(void **p, void *end, u8 struct_v,
 			xorstate = ceph_decode_32(p);
 		else
 			xorstate = ceph_decode_8(p);
+=======
+		u8 xorstate;
+		int ret;
+
+		osd = ceph_decode_32(p);
+		xorstate = ceph_decode_8(p);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (xorstate == 0)
 			xorstate = CEPH_OSD_UP;
 		BUG_ON(osd >= map->max_osd);
@@ -1730,9 +1756,15 @@ static int decode_new_up_state_weight(void **p, void *end, u8 struct_v,
 		struct ceph_entity_addr addr;
 
 		osd = ceph_decode_32(p);
+<<<<<<< HEAD
 		BUG_ON(osd >= map->max_osd);
 		if (ceph_decode_entity_addr(p, end, &addr))
 			goto e_inval;
+=======
+		ceph_decode_copy(p, &addr, sizeof(addr));
+		ceph_decode_addr(&addr);
+		BUG_ON(osd >= map->max_osd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pr_info("osd%d up\n", osd);
 		map->osd_state[osd] |= CEPH_OSD_EXISTS | CEPH_OSD_UP;
 		map->osd_addr[osd] = addr;
@@ -1835,7 +1867,11 @@ struct ceph_osdmap *osdmap_apply_incremental(void **p, void *end,
 	}
 
 	/* new_up_client, new_state, new_weight */
+<<<<<<< HEAD
 	err = decode_new_up_state_weight(p, end, struct_v, map);
+=======
+	err = decode_new_up_state_weight(p, end, map);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err)
 		goto bad;
 

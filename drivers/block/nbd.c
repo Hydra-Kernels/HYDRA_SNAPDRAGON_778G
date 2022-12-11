@@ -1200,6 +1200,7 @@ static void nbd_clear_sock(struct nbd_device *nbd)
 	nbd->task_setup = NULL;
 }
 
+<<<<<<< HEAD
 static void nbd_config_put(struct nbd_device *nbd)
 {
 	if (refcount_dec_and_mutex_lock(&nbd->config_refs,
@@ -1219,6 +1220,24 @@ static void nbd_config_put(struct nbd_device *nbd)
 				kfree(config->socks[i]);
 			}
 			kfree(config->socks);
+=======
+		spin_unlock_irq(q->queue_lock);
+
+		nbd = req->rq_disk->private_data;
+
+		BUG_ON(nbd->magic != NBD_MAGIC);
+
+		dev_dbg(nbd_to_dev(nbd), "request %p: dequeued (flags=%x)\n",
+			req, req->cmd_type);
+
+		if (unlikely(!nbd->sock)) {
+			dev_err_ratelimited(disk_to_dev(nbd->disk),
+					    "Attempted send on closed socket\n");
+			req->errors++;
+			nbd_end_request(nbd, req);
+			spin_lock_irq(q->queue_lock);
+			continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		kfree(nbd->config);
 		nbd->config = NULL;

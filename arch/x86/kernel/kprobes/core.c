@@ -37,8 +37,11 @@
 #include <linux/kdebug.h>
 #include <linux/kallsyms.h>
 #include <linux/ftrace.h>
+<<<<<<< HEAD
 #include <linux/frame.h>
 #include <linux/kasan.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/moduleloader.h>
 
 #include <asm/text-patching.h>
@@ -154,7 +157,11 @@ NOKPROBE_SYMBOL(skip_prefixes);
  * Returns non-zero if INSN is boostable.
  * RIP relative instructions are adjusted at copying time in 64 bits mode
  */
+<<<<<<< HEAD
 int can_boost(struct insn *insn, void *addr)
+=======
+int can_boost(kprobe_opcode_t *opcodes, void *addr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	kprobe_opcode_t opcode;
 	insn_byte_t prefix;
@@ -450,14 +457,47 @@ void free_insn_page(void *page)
 	module_memfree(page);
 }
 
+/* Recover page to RW mode before releasing it */
+void free_insn_page(void *page)
+{
+	set_memory_nx((unsigned long)page & PAGE_MASK, 1);
+	set_memory_rw((unsigned long)page & PAGE_MASK, 1);
+	module_memfree(page);
+}
+
+/* Prepare reljump right after instruction to boost */
+static void prepare_boost(struct kprobe *p, int length)
+{
+	if (can_boost(p->ainsn.insn, p->addr) &&
+	    MAX_INSN_SIZE - length >= RELATIVEJUMP_SIZE) {
+		/*
+		 * These instructions can be executed directly if it
+		 * jumps back to correct address.
+		 */
+		synthesize_reljump(p->ainsn.insn + length, p->addr + length);
+		p->ainsn.boostable = 1;
+	} else {
+		p->ainsn.boostable = -1;
+	}
+}
+
 static int arch_copy_kprobe(struct kprobe *p)
 {
+<<<<<<< HEAD
 	struct insn insn;
 	kprobe_opcode_t buf[MAX_INSN_SIZE];
 	int len;
 
 	/* Copy an instruction with recovering if other optprobe modifies it.*/
 	len = __copy_instruction(buf, p->addr, p->ainsn.insn, &insn);
+=======
+	int len;
+
+	set_memory_rw((unsigned long)p->ainsn.insn & PAGE_MASK, 1);
+
+	/* Copy an instruction with recovering if other optprobe modifies it.*/
+	len = __copy_instruction(p->ainsn.insn, p->addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!len)
 		return -EINVAL;
 
@@ -465,7 +505,13 @@ static int arch_copy_kprobe(struct kprobe *p)
 	 * __copy_instruction can modify the displacement of the instruction,
 	 * but it doesn't affect boostable check.
 	 */
+<<<<<<< HEAD
 	len = prepare_boost(buf, p, &insn);
+=======
+	prepare_boost(p, len);
+
+	set_memory_ro((unsigned long)p->ainsn.insn & PAGE_MASK, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Check whether the instruction modifies Interrupt Flag or not */
 	p->ainsn.if_modifier = is_IF_modifier(buf);
@@ -1026,11 +1072,14 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
 		 * So clear it by resetting the current kprobe:
 		 */
 		regs->flags &= ~X86_EFLAGS_TF;
+<<<<<<< HEAD
 		/*
 		 * Since the single step (trap) has been cancelled,
 		 * we need to restore BTF here.
 		 */
 		restore_btf();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * If the TF flag was set before the kprobe hit,

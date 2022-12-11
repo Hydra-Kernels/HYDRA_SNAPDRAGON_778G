@@ -527,6 +527,7 @@ static int __arm_lpae_map(struct arm_lpae_io_pgtable *data, unsigned long iova,
 		if (!cptep)
 			return -ENOMEM;
 
+<<<<<<< HEAD
 		pte = arm_lpae_install_table(cptep, ptep, 0, cfg, 0);
 		if (pte)
 			__arm_lpae_free_pages(cptep, tblsz, cfg, cookie);
@@ -537,6 +538,15 @@ static int __arm_lpae_map(struct arm_lpae_io_pgtable *data, unsigned long iova,
 	if (pte && !iopte_leaf(pte, lvl, data->iop.fmt)) {
 		cptep = iopte_deref(pte, data);
 	} else if (pte) {
+=======
+		pte = __pa(cptep) | ARM_LPAE_PTE_TYPE_TABLE;
+		if (cfg->quirks & IO_PGTABLE_QUIRK_ARM_NS)
+			pte |= ARM_LPAE_PTE_NSTABLE;
+		__arm_lpae_set_pte(ptep, pte, cfg);
+	} else if (!iopte_leaf(pte, lvl)) {
+		cptep = iopte_deref(pte, data);
+	} else {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* We require an unmap first */
 		WARN_ON(!selftest_running);
 		return -EEXIST;
@@ -724,7 +734,10 @@ static void __arm_lpae_free_pgtable(struct arm_lpae_io_pgtable *data, int lvl,
 {
 	arm_lpae_iopte *start, *end;
 	unsigned long table_size;
+<<<<<<< HEAD
 	void *cookie = data->iop.cookie;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (lvl == ARM_LPAE_START_LVL(data))
 		table_size = data->pgd_size;

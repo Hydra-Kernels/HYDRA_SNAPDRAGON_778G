@@ -297,6 +297,7 @@ void qeth_l2_setup_bridgeport_attrs(struct qeth_card *card)
 	mutex_unlock(&card->sbp_lock);
 }
 
+<<<<<<< HEAD
 /* VNIC CHARS support */
 
 /* convert sysfs attr name to VNIC characteristic */
@@ -460,5 +461,12 @@ const struct attribute_group *qeth_l2_attr_groups[] = {
 	/* l2 specific, see qeth_l2_only_attr_groups: */
 	&qeth_l2_bridgeport_attr_group,
 	&qeth_l2_vnicc_attr_group,
+=======
+const struct attribute_group *qeth_l2_attr_groups[] = {
+	&qeth_device_attr_group,
+	&qeth_device_blkt_group,
+	/* l2 specific, see l2_{create,remove}_device_attributes(): */
+	&qeth_l2_bridgeport_attr_group,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	NULL,
 };

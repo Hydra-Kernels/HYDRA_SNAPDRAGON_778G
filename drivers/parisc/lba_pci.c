@@ -108,10 +108,19 @@ static u32 lba_t32;
 
 #define LBA_SKIP_PROBE(d) ((d)->flags & LBA_FLAG_SKIP_PROBE)
 
+<<<<<<< HEAD
 static inline struct lba_device *LBA_DEV(struct pci_hba_data *hba)
 {
 	return container_of(hba, struct lba_device, hba);
 }
+=======
+
+/* Looks nice and keeps the compiler happy */
+#define LBA_DEV(d) ({				\
+	void *__pdata = d;			\
+	BUG_ON(!__pdata);			\
+	(struct lba_device *)__pdata; })
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
 ** Only allow 8 subsidiary busses per LBA
@@ -1740,6 +1749,7 @@ static void quirk_diva_aux_disable(struct pci_dev *dev)
 }
 DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_HP, PCI_DEVICE_ID_HP_DIVA_AUX,
 	quirk_diva_aux_disable);
+<<<<<<< HEAD
 
 static void quirk_tosca_aux_disable(struct pci_dev *dev)
 {
@@ -1752,3 +1762,5 @@ static void quirk_tosca_aux_disable(struct pci_dev *dev)
 }
 DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_HP, PCI_DEVICE_ID_HP_DIVA,
 	quirk_tosca_aux_disable);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

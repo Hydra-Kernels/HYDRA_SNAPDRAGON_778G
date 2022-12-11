@@ -243,6 +243,7 @@ enum usbip_side {
 #define	SDEV_EVENT_ERROR_SUBMIT	(USBIP_EH_SHUTDOWN | USBIP_EH_RESET)
 #define	SDEV_EVENT_ERROR_MALLOC	(USBIP_EH_SHUTDOWN | USBIP_EH_UNUSABLE)
 
+<<<<<<< HEAD
 #define VUDC_EVENT_REMOVED   (USBIP_EH_SHUTDOWN | USBIP_EH_RESET | USBIP_EH_BYE)
 #define	VUDC_EVENT_DOWN		(USBIP_EH_SHUTDOWN | USBIP_EH_RESET)
 #define	VUDC_EVENT_ERROR_TCP	(USBIP_EH_SHUTDOWN | USBIP_EH_RESET)
@@ -250,6 +251,8 @@ enum usbip_side {
 #define	VUDC_EVENT_ERROR_USB	(USBIP_EH_SHUTDOWN | USBIP_EH_UNUSABLE)
 #define	VUDC_EVENT_ERROR_MALLOC	(USBIP_EH_SHUTDOWN | USBIP_EH_UNUSABLE)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define	VDEV_EVENT_REMOVED (USBIP_EH_SHUTDOWN | USBIP_EH_RESET | USBIP_EH_BYE)
 #define	VDEV_EVENT_DOWN		(USBIP_EH_SHUTDOWN | USBIP_EH_RESET)
 #define	VDEV_EVENT_ERROR_TCP	(USBIP_EH_SHUTDOWN | USBIP_EH_RESET)
@@ -263,9 +266,12 @@ struct usbip_device {
 	/* lock for status */
 	spinlock_t lock;
 
+<<<<<<< HEAD
 	/* mutex for synchronizing sysfs store paths */
 	struct mutex sysfs_lock;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int sockfd;
 	struct socket *tcp_socket;
 

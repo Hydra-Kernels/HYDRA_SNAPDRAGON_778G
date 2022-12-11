@@ -140,6 +140,7 @@ unsigned long __rounddown_pow_of_two(unsigned long n)
 		(n) & (1ULL <<  4) ?  4 :	\
 		(n) & (1ULL <<  3) ?  3 :	\
 		(n) & (1ULL <<  2) ?  2 :	\
+<<<<<<< HEAD
 		1) :				\
 	-1)
 
@@ -160,6 +161,12 @@ unsigned long __rounddown_pow_of_two(unsigned long n)
 	(sizeof(n) <= 4) ?		\
 	__ilog2_u32(n) :		\
 	__ilog2_u64(n)			\
+=======
+		1 ) :				\
+	(sizeof(n) <= 4) ?			\
+	__ilog2_u32(n) :			\
+	__ilog2_u64(n)				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  )
 
 /**
@@ -221,6 +228,7 @@ int __order_base_2(unsigned long n)
 	__order_base_2(n)			\
 )
 
+<<<<<<< HEAD
 static inline __attribute__((const))
 int __bits_per(unsigned long n)
 {
@@ -253,5 +261,19 @@ int __bits_per(unsigned long n)
 			? 1 : ilog2(n) + 1	\
 	) :					\
 	__bits_per(n)				\
+=======
+static inline __attribute_const__
+int __order_base_2(unsigned long n)
+{
+	return n > 1 ? ilog2(n - 1) + 1 : 0;
+}
+
+#define order_base_2(n)				\
+(						\
+	__builtin_constant_p(n) ? (		\
+		((n) == 0 || (n) == 1) ? 0 :	\
+		ilog2((n) - 1) + 1) :		\
+	__order_base_2(n)			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 )
 #endif /* _LINUX_LOG2_H */

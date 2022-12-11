@@ -148,10 +148,16 @@
 #else
 #define VTTBR_X		(5 - KVM_T0SZ)
 #endif
+<<<<<<< HEAD
 #define VTTBR_CNP_BIT     _AC(1, UL)
 #define VTTBR_BADDR_MASK  (((_AC(1, ULL) << (40 - VTTBR_X)) - 1) << VTTBR_X)
 #define VTTBR_VMID_SHIFT  _AC(48, ULL)
 #define VTTBR_VMID_MASK(size)	(_AT(u64, (1 << size) - 1) << VTTBR_VMID_SHIFT)
+=======
+#define VTTBR_BADDR_MASK  (((1LLU << (40 - VTTBR_X)) - 1) << VTTBR_X)
+#define VTTBR_VMID_SHIFT  (48LLU)
+#define VTTBR_VMID_MASK	  (0xffLLU << VTTBR_VMID_SHIFT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Hyp Syndrome Register (HSR) bits */
 #define HSR_EC_SHIFT	(26)

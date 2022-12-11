@@ -333,7 +333,11 @@ static int show_cpuinfo(struct seq_file *m, void *v)
 			   (loops_per_jiffy / (5000 / HZ)) % 100);
 
 	seq_printf(m, "\n");
+<<<<<<< HEAD
 
+=======
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* If this is the last cpu, print the summary */
 	if (cpumask_next(cpu_id, cpu_online_mask) >= nr_cpu_ids)
 		show_cpuinfo_summary(m);

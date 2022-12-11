@@ -77,11 +77,16 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 			goto err;
 		}
 
+<<<<<<< HEAD
 		if (socket->type != SOCK_STREAM) {
 			dev_err(dev, "Expecting SOCK_STREAM - found %d",
 				socket->type);
 			goto sock_err;
 		}
+=======
+		sdev->ud.tcp_socket = socket;
+		sdev->ud.sockfd = sockfd;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* unlock and create threads and get tasks */
 		spin_unlock_irq(&sdev->ud.lock);
@@ -311,6 +316,7 @@ static int stub_probe(struct usb_device *udev)
 	const char *udev_busid = dev_name(&udev->dev);
 	struct bus_id_priv *busid_priv;
 	int rc = 0;
+<<<<<<< HEAD
 	char save_status;
 
 	dev_dbg(&udev->dev, "Enter probe\n");
@@ -321,6 +327,10 @@ static int stub_probe(struct usb_device *udev)
 	sdev = stub_device_alloc(udev);
 	if (!sdev)
 		return -ENOMEM;
+=======
+
+	dev_dbg(&udev->dev, "Enter probe\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* check we should claim or not by busid_table */
 	busid_priv = get_busid_priv(udev_busid);
@@ -336,9 +346,12 @@ static int stub_probe(struct usb_device *udev)
 		 * See driver_probe_device() in driver/base/dd.c
 		 */
 		rc = -ENODEV;
+<<<<<<< HEAD
 		if (!busid_priv)
 			goto sdev_free;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto call_put_busid_priv;
 	}
 
@@ -358,6 +371,15 @@ static int stub_probe(struct usb_device *udev)
 		goto call_put_busid_priv;
 	}
 
+<<<<<<< HEAD
+=======
+	/* ok, this is my device */
+	sdev = stub_device_alloc(udev);
+	if (!sdev) {
+		rc = -ENOMEM;
+		goto call_put_busid_priv;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dev_info(&udev->dev,
 		"usbip-host: register new device (bus %u dev %u)\n",
@@ -389,8 +411,24 @@ static int stub_probe(struct usb_device *udev)
 		goto err_port;
 	}
 
+<<<<<<< HEAD
 	return 0;
 
+=======
+	rc = stub_add_files(&udev->dev);
+	if (rc) {
+		dev_err(&udev->dev, "stub_add_files for %s\n", udev_busid);
+		goto err_files;
+	}
+	busid_priv->status = STUB_BUSID_ALLOC;
+
+	rc = 0;
+	goto call_put_busid_priv;
+
+err_files:
+	usb_hub_release_port(udev->parent, udev->portnum,
+			     (struct usb_dev_state *) udev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_port:
 	dev_set_drvdata(&udev->dev, NULL);
 	usb_put_dev(udev);
@@ -410,6 +448,11 @@ call_put_busid_priv:
 sdev_free:
 	stub_device_free(sdev);
 
+<<<<<<< HEAD
+=======
+call_put_busid_priv:
+	put_busid_priv(busid_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -445,9 +488,13 @@ static void stub_disconnect(struct usb_device *udev)
 	/* get stub_device */
 	if (!sdev) {
 		dev_err(&udev->dev, "could not get device");
+<<<<<<< HEAD
 		/* release busid_lock */
 		put_busid_priv(busid_priv);
 		return;
+=======
+		goto call_put_busid_priv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	dev_set_drvdata(&udev->dev, NULL);
@@ -464,12 +511,17 @@ static void stub_disconnect(struct usb_device *udev)
 				  (struct usb_dev_state *) udev);
 	if (rc) {
 		dev_dbg(&udev->dev, "unable to release port\n");
-		return;
+		goto call_put_busid_priv;
 	}
 
 	/* If usb reset is called from event handler */
+<<<<<<< HEAD
 	if (usbip_in_eh(current))
 		return;
+=======
+	if (busid_priv->sdev->ud.eh == current)
+		goto call_put_busid_priv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* we already have busid_priv, just lock busid_lock */
 	spin_lock(&busid_priv->busid_lock);
@@ -491,9 +543,15 @@ static void stub_disconnect(struct usb_device *udev)
 
 	if (busid_priv->status == STUB_BUSID_ALLOC)
 		busid_priv->status = STUB_BUSID_ADDED;
+<<<<<<< HEAD
 	/* release busid_lock */
 	spin_unlock(&busid_priv->busid_lock);
 	return;
+=======
+
+call_put_busid_priv:
+	put_busid_priv(busid_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_PM

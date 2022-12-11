@@ -609,7 +609,11 @@ static int htab_map_get_next_key(struct bpf_map *map, void *key, void *next_key)
 	if (!key)
 		goto find_first_elem;
 
+<<<<<<< HEAD
 	hash = htab_map_hash(key, key_size, htab->hashrnd);
+=======
+	hash = htab_map_hash(key, key_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	head = select_bucket(htab, hash);
 

@@ -201,6 +201,7 @@ void wakeup_source_remove(struct wakeup_source *ws)
 
 	raw_spin_lock_irqsave(&events_lock, flags);
 	list_del_rcu(&ws->entry);
+<<<<<<< HEAD
 	raw_spin_unlock_irqrestore(&events_lock, flags);
 	synchronize_srcu(&wakeup_srcu);
 
@@ -210,6 +211,10 @@ void wakeup_source_remove(struct wakeup_source *ws)
 	 * this wakeup source as not registered.
 	 */
 	ws->timer.function = NULL;
+=======
+	spin_unlock_irqrestore(&events_lock, flags);
+	synchronize_srcu(&wakeup_srcu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(wakeup_source_remove);
 
@@ -359,8 +364,15 @@ void device_wakeup_arm_wake_irqs(void)
 	int srcuidx;
 
 	srcuidx = srcu_read_lock(&wakeup_srcu);
+<<<<<<< HEAD
 	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
 		dev_pm_arm_wake_irq(ws->wakeirq);
+=======
+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+		if (ws->wakeirq)
+			dev_pm_arm_wake_irq(ws->wakeirq);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	srcu_read_unlock(&wakeup_srcu, srcuidx);
 }
 
@@ -375,8 +387,15 @@ void device_wakeup_disarm_wake_irqs(void)
 	int srcuidx;
 
 	srcuidx = srcu_read_lock(&wakeup_srcu);
+<<<<<<< HEAD
 	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
 		dev_pm_disarm_wake_irq(ws->wakeirq);
+=======
+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+		if (ws->wakeirq)
+			dev_pm_disarm_wake_irq(ws->wakeirq);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	srcu_read_unlock(&wakeup_srcu, srcuidx);
 }
 
@@ -1100,8 +1119,12 @@ static void *wakeup_sources_stats_seq_start(struct seq_file *m,
 					loff_t *pos)
 {
 	struct wakeup_source *ws;
+<<<<<<< HEAD
 	loff_t n = *pos;
 	int *srcuidx = m->private;
+=======
+	int srcuidx;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (n == 0) {
 		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
@@ -1109,11 +1132,18 @@ static void *wakeup_sources_stats_seq_start(struct seq_file *m,
 			"last_change\tprevent_suspend_time\n");
 	}
 
+<<<<<<< HEAD
 	*srcuidx = srcu_read_lock(&wakeup_srcu);
 	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
 		if (n-- <= 0)
 			return ws;
 	}
+=======
+	srcuidx = srcu_read_lock(&wakeup_srcu);
+	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+		print_wakeup_source_stats(m, ws);
+	srcu_read_unlock(&wakeup_srcu, srcuidx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return NULL;
 }

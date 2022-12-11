@@ -672,10 +672,17 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
 			return 1;
 	if (info->hdr->e_machine == EM_PPC64)
 		/* Special register function linked on all modules during final link of .ko */
+<<<<<<< HEAD
 		if (strstarts(symname, "_restgpr0_") ||
 		    strstarts(symname, "_savegpr0_") ||
 		    strstarts(symname, "_restvr_") ||
 		    strstarts(symname, "_savevr_") ||
+=======
+		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
+		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0 ||
+		    strncmp(symname, "_restvr_", sizeof("_restvr_") - 1) == 0 ||
+		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0 ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		    strcmp(symname, ".TOC.") == 0)
 			return 1;
 	/* Do not ignore this symbol */
@@ -2300,6 +2307,16 @@ static void add_intree_flag(struct buffer *b, int is_intree)
 
 /* Cannot check for assembler */
 static void add_retpoline(struct buffer *b)
+<<<<<<< HEAD
+=======
+{
+	buf_printf(b, "\n#ifdef RETPOLINE\n");
+	buf_printf(b, "MODULE_INFO(retpoline, \"Y\");\n");
+	buf_printf(b, "#endif\n");
+}
+
+static void add_staging_flag(struct buffer *b, const char *name)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	buf_printf(b, "\n#ifdef CONFIG_RETPOLINE\n");
 	buf_printf(b, "MODULE_INFO(retpoline, \"Y\");\n");

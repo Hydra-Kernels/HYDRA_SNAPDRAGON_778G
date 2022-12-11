@@ -150,6 +150,69 @@ int bio_integrity_add_page(struct bio *bio, struct page *page,
 EXPORT_SYMBOL(bio_integrity_add_page);
 
 /**
+<<<<<<< HEAD
+=======
+ * bio_integrity_enabled - Check whether integrity can be passed
+ * @bio:	bio to check
+ *
+ * Description: Determines whether bio_integrity_prep() can be called
+ * on this bio or not.	bio data direction and target device must be
+ * set prior to calling.  The functions honors the write_generate and
+ * read_verify flags in sysfs.
+ */
+bool bio_integrity_enabled(struct bio *bio)
+{
+	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
+
+	if (!bio_is_rw(bio))
+		return false;
+
+	if (!bio_sectors(bio))
+		return false;
+
+	/* Already protected? */
+	if (bio_integrity(bio))
+		return false;
+
+	if (bi == NULL)
+		return false;
+
+	if (bio_data_dir(bio) == READ && bi->profile->verify_fn != NULL &&
+	    (bi->flags & BLK_INTEGRITY_VERIFY))
+		return true;
+
+	if (bio_data_dir(bio) == WRITE && bi->profile->generate_fn != NULL &&
+	    (bi->flags & BLK_INTEGRITY_GENERATE))
+		return true;
+
+	return false;
+}
+EXPORT_SYMBOL(bio_integrity_enabled);
+
+/**
+ * bio_integrity_intervals - Return number of integrity intervals for a bio
+ * @bi:		blk_integrity profile for device
+ * @sectors:	Size of the bio in 512-byte sectors
+ *
+ * Description: The block layer calculates everything in 512 byte
+ * sectors but integrity metadata is done in terms of the data integrity
+ * interval size of the storage device.  Convert the block layer sectors
+ * to the appropriate number of integrity intervals.
+ */
+static inline unsigned int bio_integrity_intervals(struct blk_integrity *bi,
+						   unsigned int sectors)
+{
+	return sectors >> (bi->interval_exp - 9);
+}
+
+static inline unsigned int bio_integrity_bytes(struct blk_integrity *bi,
+					       unsigned int sectors)
+{
+	return bio_integrity_intervals(bi, sectors) * bi->tuple_size;
+}
+
+/**
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * bio_integrity_process - Process integrity metadata for a bio
  * @bio:	bio to generate/verify integrity metadata for
  * @proc_iter:  iterator to process

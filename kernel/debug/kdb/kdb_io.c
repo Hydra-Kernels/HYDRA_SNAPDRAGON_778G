@@ -349,8 +349,12 @@ poll_again:
 			}
 			kdb_printf("\n");
 			for (i = 0; i < count; i++) {
+<<<<<<< HEAD
 				ret = kallsyms_symbol_next(p_tmp, i, buf_size);
 				if (WARN_ON(!ret))
+=======
+				if (WARN_ON(!kallsyms_symbol_next(p_tmp, i)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					break;
 				if (ret != -E2BIG)
 					kdb_printf("%s ", p_tmp);

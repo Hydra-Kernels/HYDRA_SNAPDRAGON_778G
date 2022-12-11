@@ -5412,7 +5412,10 @@ static void ufshcd_force_reset_auto_bkops(struct ufs_hba *hba)
 		hba->ee_ctrl_mask &= ~MASK_EE_URGENT_BKOPS;
 		ufshcd_disable_auto_bkops(hba);
 	}
+<<<<<<< HEAD
 	hba->is_urgent_bkops_lvl_checked = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline int ufshcd_get_bkops_status(struct ufs_hba *hba, u32 *status)
@@ -5724,7 +5727,11 @@ static void ufshcd_exception_event_handler(struct work_struct *work)
 	hba = container_of(work, struct ufs_hba, eeh_work);
 
 	pm_runtime_get_sync(hba->dev);
+<<<<<<< HEAD
 	ufshcd_scsi_block_requests(hba);
+=======
+	scsi_block_requests(hba->host);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	err = ufshcd_get_ee_status(hba, &status);
 	if (err) {
 		dev_err(hba->dev, "%s: failed to get exception status %d\n",
@@ -5738,6 +5745,7 @@ static void ufshcd_exception_event_handler(struct work_struct *work)
 		ufshcd_bkops_exception_event_handler(hba);
 
 out:
+<<<<<<< HEAD
 	ufshcd_scsi_unblock_requests(hba);
 	/*
 	 * pm_runtime_get_noresume is called while scheduling
@@ -5747,6 +5755,10 @@ out:
 	 */
 	pm_runtime_put_noidle(hba->dev);
 	pm_runtime_put(hba->dev);
+=======
+	scsi_unblock_requests(hba->host);
+	pm_runtime_put_sync(hba->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return;
 }
 
@@ -8079,6 +8091,18 @@ static int ufshcd_config_vreg(struct device *dev,
 
 	reg = vreg->reg;
 	name = vreg->name;
+<<<<<<< HEAD
+=======
+
+	if (regulator_count_voltages(reg) > 0) {
+		min_uV = on ? vreg->min_uV : 0;
+		ret = regulator_set_voltage(reg, min_uV, vreg->max_uV);
+		if (ret) {
+			dev_err(dev, "%s: %s set voltage failed, err=%d\n",
+					__func__, name, ret);
+			goto out;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (regulator_count_voltages(reg) > 0) {
 		uA_load = on ? vreg->max_uA : 0;
@@ -8991,10 +9015,13 @@ static int ufshcd_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 			goto set_old_link_state;
 	}
 
+<<<<<<< HEAD
 	ret = ufshcd_crypto_resume(hba, pm_op);
 	if (ret)
 		goto set_old_dev_pwr_mode;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ufshcd_keep_autobkops_enabled_except_suspend(hba))
 		ufshcd_enable_auto_bkops(hba);
 	else

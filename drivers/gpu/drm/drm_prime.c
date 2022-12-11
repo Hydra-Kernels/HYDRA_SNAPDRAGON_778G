@@ -370,6 +370,79 @@ int drm_prime_fd_to_handle_ioctl(struct drm_device *dev, void *data,
 			args->fd, &args->handle);
 }
 
+<<<<<<< HEAD
+=======
+static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
+	.attach = drm_gem_map_attach,
+	.detach = drm_gem_map_detach,
+	.map_dma_buf = drm_gem_map_dma_buf,
+	.unmap_dma_buf = drm_gem_unmap_dma_buf,
+	.release = drm_gem_dmabuf_release,
+	.kmap = drm_gem_dmabuf_kmap,
+	.kmap_atomic = drm_gem_dmabuf_kmap_atomic,
+	.kunmap = drm_gem_dmabuf_kunmap,
+	.kunmap_atomic = drm_gem_dmabuf_kunmap_atomic,
+	.mmap = drm_gem_dmabuf_mmap,
+	.vmap = drm_gem_dmabuf_vmap,
+	.vunmap = drm_gem_dmabuf_vunmap,
+};
+
+/**
+ * DOC: PRIME Helpers
+ *
+ * Drivers can implement @gem_prime_export and @gem_prime_import in terms of
+ * simpler APIs by using the helper functions @drm_gem_prime_export and
+ * @drm_gem_prime_import.  These functions implement dma-buf support in terms of
+ * six lower-level driver callbacks:
+ *
+ * Export callbacks:
+ *
+ *  - @gem_prime_pin (optional): prepare a GEM object for exporting
+ *
+ *  - @gem_prime_get_sg_table: provide a scatter/gather table of pinned pages
+ *
+ *  - @gem_prime_vmap: vmap a buffer exported by your driver
+ *
+ *  - @gem_prime_vunmap: vunmap a buffer exported by your driver
+ *
+ *  - @gem_prime_mmap (optional): mmap a buffer exported by your driver
+ *
+ * Import callback:
+ *
+ *  - @gem_prime_import_sg_table (import): produce a GEM object from another
+ *    driver's scatter/gather table
+ */
+
+/**
+ * drm_gem_prime_export - helper library implementation of the export callback
+ * @dev: drm_device to export from
+ * @obj: GEM object to export
+ * @flags: flags like DRM_CLOEXEC
+ *
+ * This is the implementation of the gem_prime_export functions for GEM drivers
+ * using the PRIME helpers.
+ */
+struct dma_buf *drm_gem_prime_export(struct drm_device *dev,
+				     struct drm_gem_object *obj,
+				     int flags)
+{
+	struct dma_buf_export_info exp_info = {
+		.exp_name = KBUILD_MODNAME, /* white lie for debug */
+		.owner = dev->driver->fops->owner,
+		.ops = &drm_gem_prime_dmabuf_ops,
+		.size = obj->size,
+		.flags = flags,
+		.priv = obj,
+	};
+
+	if (dev->driver->gem_prime_res_obj)
+		exp_info.resv = dev->driver->gem_prime_res_obj(obj);
+
+	return dma_buf_export(&exp_info);
+}
+EXPORT_SYMBOL(drm_gem_prime_export);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct dma_buf *export_and_register_object(struct drm_device *dev,
 						  struct drm_gem_object *obj,
 						  uint32_t flags)

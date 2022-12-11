@@ -145,6 +145,12 @@ static int ext4_readdir(struct file *file, struct dir_context *ctx)
 			return err;
 	}
 
+	if (ext4_encrypted_inode(inode)) {
+		err = ext4_get_encryption_info(inode);
+		if (err && err != -ENOKEY)
+			return err;
+	}
+
 	if (is_dx_dir(inode)) {
 		err = ext4_dx_readdir(file, ctx);
 		if (err != ERR_BAD_DX_DIR) {

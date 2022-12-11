@@ -165,6 +165,7 @@ smb2_compound_op(const unsigned int xid, struct cifs_tcon *tcon,
 		trace_smb3_mkdir_enter(xid, ses->Suid, tcon->tid, full_path);
 		break;
 	case SMB2_OP_RMDIR:
+<<<<<<< HEAD
 		memset(&si_iov, 0, sizeof(si_iov));
 		rqst[num_rqst].rq_iov = si_iov;
 		rqst[num_rqst].rq_nvec = 1;
@@ -181,6 +182,18 @@ smb2_compound_op(const unsigned int xid, struct cifs_tcon *tcon,
 		smb2_set_next_command(tcon, &rqst[num_rqst]);
 		smb2_set_related(&rqst[num_rqst++]);
 		trace_smb3_rmdir_enter(xid, ses->Suid, tcon->tid, full_path);
+=======
+		tmprc = SMB2_rmdir(xid, tcon, fid.persistent_fid,
+				   fid.volatile_fid);
+		break;
+	case SMB2_OP_RENAME:
+		tmprc = SMB2_rename(xid, tcon, fid.persistent_fid,
+				    fid.volatile_fid, (__le16 *)data);
+		break;
+	case SMB2_OP_HARDLINK:
+		tmprc = SMB2_set_hardlink(xid, tcon, fid.persistent_fid,
+					  fid.volatile_fid, (__le16 *)data);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case SMB2_OP_SET_EOF:
 		memset(&si_iov, 0, sizeof(si_iov));
@@ -538,9 +551,15 @@ int
 smb2_rmdir(const unsigned int xid, struct cifs_tcon *tcon, const char *name,
 	   struct cifs_sb_info *cifs_sb)
 {
+<<<<<<< HEAD
 	return smb2_compound_op(xid, tcon, cifs_sb, name, DELETE, FILE_OPEN,
 				CREATE_NOT_FILE, ACL_NO_MODE,
 				NULL, SMB2_OP_RMDIR, NULL);
+=======
+	return smb2_open_op_close(xid, tcon, cifs_sb, name, DELETE, FILE_OPEN,
+				  CREATE_NOT_FILE,
+				  NULL, SMB2_OP_RMDIR);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int
@@ -618,7 +637,11 @@ smb2_set_file_info(struct inode *inode, const char *full_path,
 	int rc;
 
 	if ((buf->CreationTime == 0) && (buf->LastAccessTime == 0) &&
+<<<<<<< HEAD
 	    (buf->LastWriteTime == 0) && (buf->ChangeTime == 0) &&
+=======
+	    (buf->LastWriteTime == 0) && (buf->ChangeTime) &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    (buf->Attributes == 0))
 		return 0; /* would be a no op, no sense sending this */
 
@@ -626,9 +649,15 @@ smb2_set_file_info(struct inode *inode, const char *full_path,
 	if (IS_ERR(tlink))
 		return PTR_ERR(tlink);
 
+<<<<<<< HEAD
 	rc = smb2_compound_op(xid, tlink_tcon(tlink), cifs_sb, full_path,
 			      FILE_WRITE_ATTRIBUTES, FILE_OPEN,
 			      0, ACL_NO_MODE, buf, SMB2_OP_SET_INFO, NULL);
+=======
+	rc = smb2_open_op_close(xid, tlink_tcon(tlink), cifs_sb, full_path,
+				FILE_WRITE_ATTRIBUTES, FILE_OPEN, 0, buf,
+				SMB2_OP_SET_INFO);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cifs_put_tlink(tlink);
 	return rc;
 }

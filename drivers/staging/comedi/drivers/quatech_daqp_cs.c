@@ -644,7 +644,11 @@ static int daqp_ao_insn_write(struct comedi_device *dev,
 	outb(0, dev->iobase + DAQP_AUX_REG);
 
 	for (i = 0; i < insn->n; i++) {
+<<<<<<< HEAD
 		unsigned int val = data[i];
+=======
+		unsigned val = data[i];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		int ret;
 
 		/* D/A transfer rate is about 8ms */

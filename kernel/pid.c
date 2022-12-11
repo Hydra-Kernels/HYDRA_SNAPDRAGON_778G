@@ -206,8 +206,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 	}
 
 	if (unlikely(is_child_reaper(pid))) {
-		if (pid_ns_prepare_proc(ns))
+		if (pid_ns_prepare_proc(ns)) {
+			disable_pid_allocation(ns);
 			goto out_free;
+		}
 	}
 
 	get_pid_ns(ns);
@@ -431,8 +433,19 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 	rcu_read_lock();
 	if (!ns)
 		ns = task_active_pid_ns(current);
+<<<<<<< HEAD
 	if (likely(pid_alive(task)))
 		nr = pid_nr_ns(rcu_dereference(*task_pid_ptr(task, type)), ns);
+=======
+	if (likely(pid_alive(task))) {
+		if (type != PIDTYPE_PID) {
+			if (type == __PIDTYPE_TGID)
+				type = PIDTYPE_PID;
+			task = task->group_leader;
+		}
+		nr = pid_nr_ns(rcu_dereference(task->pids[type].pid), ns);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rcu_read_unlock();
 
 	return nr;

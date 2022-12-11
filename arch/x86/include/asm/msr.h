@@ -233,12 +233,18 @@ static __always_inline unsigned long long rdtsc_ordered(void)
 	 * Thus, use the preferred barrier on the respective CPU, aiming for
 	 * RDTSCP as the default.
 	 */
+<<<<<<< HEAD
 	asm volatile(ALTERNATIVE_2("rdtsc",
 				   "lfence; rdtsc", X86_FEATURE_LFENCE_RDTSC,
 				   "rdtscp", X86_FEATURE_RDTSCP)
 			: EAX_EDX_RET(val, low, high)
 			/* RDTSCP clobbers ECX with MSR_TSC_AUX. */
 			:: "ecx");
+=======
+	barrier_nospec();
+	return rdtsc();
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return EAX_EDX_VAL(val, low, high);
 }

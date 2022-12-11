@@ -58,6 +58,9 @@ static DEFINE_MUTEX(mce_log_mutex);
 /* sysfs synchronization */
 static DEFINE_MUTEX(mce_sysfs_mutex);
 
+/* sysfs synchronization */
+static DEFINE_MUTEX(mce_sysfs_mutex);
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/mce.h>
 
@@ -1279,13 +1282,20 @@ void do_machine_check(struct pt_regs *regs, long error_code)
 	char *msg = "Unknown";
 	struct mce m, *final;
 	int worst = 0;
+<<<<<<< HEAD:arch/x86/kernel/cpu/mce/core.c
+=======
+	int severity;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mcheck/mce.c
 
 	/*
 	 * Establish sequential order between the CPUs entering the machine
 	 * check handler.
 	 */
 	int order = -1;
+<<<<<<< HEAD:arch/x86/kernel/cpu/mce/core.c
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mcheck/mce.c
 	/*
 	 * If no_way_out gets set, there is no safe way to recover from this
 	 * MCE.  If mca_cfg.tolerant is cranked up, we'll try anyway.
@@ -1297,6 +1307,20 @@ void do_machine_check(struct pt_regs *regs, long error_code)
 	 * error.
 	 */
 	int kill_it = 0;
+<<<<<<< HEAD:arch/x86/kernel/cpu/mce/core.c
+=======
+	DECLARE_BITMAP(toclear, MAX_NR_BANKS);
+	DECLARE_BITMAP(valid_banks, MAX_NR_BANKS);
+	char *msg = "Unknown";
+	u64 recover_paddr = ~0ull;
+	int flags = MF_ACTION_REQUIRED;
+
+	/*
+	 * MCEs are always local on AMD. Same is determined by MCG_STATUS_LMCES
+	 * on Intel.
+	 */
+	int lmce = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mcheck/mce.c
 
 	/*
 	 * MCEs are always local on AMD. Same is determined by MCG_STATUS_LMCES
@@ -1377,6 +1401,27 @@ void do_machine_check(struct pt_regs *regs, long error_code)
 		if (worst >= MCE_PANIC_SEVERITY && mca_cfg.tolerant < 3) {
 			mce_severity(&m, cfg->tolerant, &msg, true);
 			mce_panic("Local fatal machine check!", &m, msg);
+<<<<<<< HEAD:arch/x86/kernel/cpu/mce/core.c
+=======
+		}
+	}
+
+	/*
+	 * At insane "tolerant" levels we take no action. Otherwise
+	 * we only die if we have no other choice. For less serious
+	 * issues we try to recover, or limit damage to the current
+	 * process.
+	 */
+	if (cfg->tolerant < 3) {
+		if (no_way_out)
+			mce_panic("Fatal machine check on current CPU", &m, msg);
+		if (worst == MCE_AR_SEVERITY) {
+			recover_paddr = m.addr;
+			if (!(m.mcgstatus & MCG_STATUS_RIPV))
+				flags |= MF_MUST_KILL;
+		} else if (kill_it) {
+			force_sig(SIGBUS, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mcheck/mce.c
 		}
 	}
 

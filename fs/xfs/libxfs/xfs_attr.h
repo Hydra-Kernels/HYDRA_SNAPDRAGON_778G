@@ -108,9 +108,15 @@ typedef struct attrlist_cursor_kern {
  *========================================================================*/
 
 
+<<<<<<< HEAD:fs/xfs/libxfs/xfs_attr.h
 /* void; state communicated via *context */
 typedef void (*put_listent_func_t)(struct xfs_attr_list_context *, int,
 			      unsigned char *, int, int);
+=======
+/* Return 0 on success, or -errno; other state communicated via *context */
+typedef int (*put_listent_func_t)(struct xfs_attr_list_context *, int,
+			      unsigned char *, int, int, unsigned char *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/xfs/xfs_attr.h
 
 typedef struct xfs_attr_list_context {
 	struct xfs_trans		*tp;

@@ -108,4 +108,9 @@ void nvkm_dp_disable(struct nvkm_outp *, struct nvkm_ior *);
 #define DPCD_SC00_SET_POWER                                                0x03
 #define DPCD_SC00_SET_POWER_D0                                             0x01
 #define DPCD_SC00_SET_POWER_D3                                             0x03
+<<<<<<< HEAD:drivers/gpu/drm/nouveau/nvkm/engine/disp/dp.h
+=======
+
+void nvkm_dp_train(struct work_struct *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/nouveau/nvkm/engine/disp/dport.h
 #endif

@@ -3037,8 +3037,17 @@ static int __init comedi_init(void)
 
 		dev = comedi_alloc_board_minor(NULL);
 		if (IS_ERR(dev)) {
+<<<<<<< HEAD
 			retval = PTR_ERR(dev);
 			goto out_cleanup_board_minors;
+=======
+			comedi_cleanup_board_minors();
+			class_destroy(comedi_class);
+			cdev_del(&comedi_cdev);
+			unregister_chrdev_region(MKDEV(COMEDI_MAJOR, 0),
+						 COMEDI_NUM_MINORS);
+			return PTR_ERR(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		/* comedi_alloc_board_minor() locked the mutex */
 		lockdep_assert_held(&dev->mutex);

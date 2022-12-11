@@ -44,6 +44,10 @@ struct drm_dp_vcpi {
 
 /**
  * struct drm_dp_mst_port - MST port
+<<<<<<< HEAD
+=======
+ * @kref: reference count for this port.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @port_num: port number
  * @input: if this port is an input port.
  * @mcs: message capability status - DP 1.2 spec.
@@ -72,6 +76,7 @@ struct drm_dp_mst_port {
 	 */
 	struct kref topology_kref;
 
+<<<<<<< HEAD
 	/**
 	 * @malloc_kref: refcount for the memory allocation containing this
 	 * structure. See drm_dp_mst_get_port_malloc() and
@@ -79,6 +84,8 @@ struct drm_dp_mst_port {
 	 */
 	struct kref malloc_kref;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u8 port_num;
 	bool input;
 	bool mcs;
@@ -441,6 +448,22 @@ struct drm_dp_mst_topology_state {
 
 /**
  * struct drm_dp_mst_topology_mgr - DisplayPort MST manager
+<<<<<<< HEAD
+=======
+ * @dev: device pointer for adding i2c devices etc.
+ * @cbs: callbacks for connector addition and destruction.
+ * @max_dpcd_transaction_bytes - maximum number of bytes to read/write in one go.
+ * @aux: aux channel for the DP connector.
+ * @max_payloads: maximum number of payloads the GPU can generate.
+ * @conn_base_id: DRM connector ID this mgr is connected to.
+ * @down_rep_recv: msg receiver state for down replies.
+ * @up_req_recv: msg receiver state for up requests.
+ * @lock: protects mst state, primary, dpcd.
+ * @mst_state: if this manager is enabled for an MST capable port.
+ * @mst_primary: pointer to the primary branch device.
+ * @dpcd: cache of DPCD for primary port.
+ * @pbn_div: PBN to slots divisor.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * This struct represents the toplevel displayport MST topology manager.
  * There should be one instance of this for every MST capable DP connector
@@ -493,10 +516,15 @@ struct drm_dp_mst_topology_mgr {
 	 */
 	struct drm_dp_sideband_msg_rx up_req_recv;
 
+<<<<<<< HEAD
 	/**
 	 * @lock: protects mst state, primary, dpcd.
 	 */
 	struct mutex lock;
+=======
+	/* pointer to info about the initial MST device */
+	struct mutex lock; /* protects mst_state + primary + dpcd */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/**
 	 * @mst_state: If this manager is enabled for an MST capable port. False
@@ -508,9 +536,12 @@ struct drm_dp_mst_topology_mgr {
 	 */
 	struct drm_dp_mst_branch *mst_primary;
 
+<<<<<<< HEAD
 	/**
 	 * @dpcd: Cache of DPCD for primary port.
 	 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u8 dpcd[DP_RECEIVER_CAP_SIZE];
 	/**
 	 * @sink_count: Sink count from DEVICE_SERVICE_IRQ_VECTOR_ESI0.
@@ -535,6 +566,10 @@ struct drm_dp_mst_topology_mgr {
 	 * @tx_msg_downq: List of pending down replies.
 	 */
 	struct list_head tx_msg_downq;
+<<<<<<< HEAD
+=======
+	bool tx_down_in_progress;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/**
 	 * @payload_lock: Protect payload information.

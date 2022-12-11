@@ -265,7 +265,11 @@ static int pfkey_broadcast(struct sk_buff *skb, gfp_t allocation,
 	rcu_read_unlock();
 
 	if (one_sk != NULL)
+<<<<<<< HEAD
 		err = pfkey_broadcast_one(skb, allocation, one_sk);
+=======
+		err = pfkey_broadcast_one(skb, &skb2, allocation, one_sk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kfree_skb(skb);
 	return err;

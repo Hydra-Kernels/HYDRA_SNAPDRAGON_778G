@@ -553,6 +553,12 @@ static long tce_iommu_build_v2(struct tce_container *container,
 	unsigned long hpa;
 	enum dma_data_direction dirtmp;
 
+	if (!tbl->it_userspace) {
+		ret = tce_iommu_userspace_view_alloc(tbl);
+		if (ret)
+			return ret;
+	}
+
 	for (i = 0; i < pages; ++i) {
 		struct mm_iommu_table_group_mem_t *mem = NULL;
 		__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry + i);
@@ -626,7 +632,11 @@ static long tce_iommu_create_table(struct tce_container *container,
 			page_shift, window_size, levels, ptbl);
 
 	WARN_ON(!ret && !(*ptbl)->it_ops->free);
+<<<<<<< HEAD
 	WARN_ON(!ret && ((*ptbl)->it_allocated_size > table_size));
+=======
+	WARN_ON(!ret && ((*ptbl)->it_allocated_size != table_size));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

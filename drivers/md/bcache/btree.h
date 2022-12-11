@@ -266,6 +266,7 @@ void bch_initial_mark_key(struct cache_set *c, int level, struct bkey *k);
 static inline void wake_up_gc(struct cache_set *c)
 {
 	wake_up(&c->gc_wait);
+<<<<<<< HEAD
 }
 
 static inline void force_wake_up_gc(struct cache_set *c)
@@ -284,6 +285,8 @@ static inline void force_wake_up_gc(struct cache_set *c)
 	 */
 	atomic_set(&c->sectors_to_gc, -1);
 	wake_up_gc(c);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define MAP_DONE	0

@@ -63,6 +63,7 @@ static inline void tsx_init(void) { }
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
 extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
+<<<<<<< HEAD
 extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
 extern void init_intel_cacheinfo(struct cpuinfo_x86 *c);
 extern void init_amd_cacheinfo(struct cpuinfo_x86 *c);
@@ -80,5 +81,9 @@ extern void x86_spec_ctrl_setup_ap(void);
 extern void update_srbds_msr(void);
 
 extern u64 x86_read_arch_cap_msr(void);
+=======
+
+extern void x86_spec_ctrl_setup_ap(void);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* ARCH_X86_CPU_H */

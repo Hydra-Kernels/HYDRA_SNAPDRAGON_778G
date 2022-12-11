@@ -203,6 +203,7 @@ static int weim_parse_dt(struct platform_device *pdev, void __iomem *base)
 			return ret;
 	}
 
+<<<<<<< HEAD
 	if (of_property_read_bool(pdev->dev.of_node, "fsl,burst-clk-enable")) {
 		if (devtype->wcr_bcm) {
 			reg = readl(base + devtype->wcr_offset);
@@ -213,6 +214,11 @@ static int weim_parse_dt(struct platform_device *pdev, void __iomem *base)
 			return -EINVAL;
 		}
 	}
+=======
+	for_each_available_child_of_node(pdev->dev.of_node, child) {
+		if (!child->name)
+			continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for_each_available_child_of_node(pdev->dev.of_node, child) {
 		ret = weim_timing_setup(&pdev->dev, child, base, devtype, &ts);

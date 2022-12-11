@@ -30,10 +30,13 @@ int pci_enable_rom(struct pci_dev *pdev)
 	if (!res->flags)
 		return -1;
 
+<<<<<<< HEAD
 	/* Nothing to enable if we're using a shadow copy in RAM */
 	if (res->flags & IORESOURCE_ROM_SHADOW)
 		return 0;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Ideally pci_update_resource() would update the ROM BAR address,
 	 * and we would only set the enable bit here.  But apparently some

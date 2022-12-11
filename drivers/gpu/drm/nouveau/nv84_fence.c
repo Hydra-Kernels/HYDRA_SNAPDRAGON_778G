@@ -99,7 +99,12 @@ nv84_fence_context_del(struct nouveau_channel *chan)
 
 	nouveau_bo_wr32(priv->bo, chan->chid * 16 / 4, fctx->base.sequence);
 	mutex_lock(&priv->mutex);
+<<<<<<< HEAD
 	nouveau_vma_del(&fctx->vma);
+=======
+	nouveau_bo_vma_del(priv->bo, &fctx->vma_gart);
+	nouveau_bo_vma_del(priv->bo, &fctx->vma);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&priv->mutex);
 	nouveau_fence_context_del(&fctx->base);
 	chan->fence = NULL;
@@ -126,8 +131,23 @@ nv84_fence_context_new(struct nouveau_channel *chan)
 	fctx->base.sequence = nv84_fence_read(chan);
 
 	mutex_lock(&priv->mutex);
+<<<<<<< HEAD
 	ret = nouveau_vma_new(priv->bo, chan->vmm, &fctx->vma);
 	mutex_unlock(&priv->mutex);
+=======
+	ret = nouveau_bo_vma_add(priv->bo, cli->vm, &fctx->vma);
+	if (ret == 0) {
+		ret = nouveau_bo_vma_add(priv->bo_gart, cli->vm,
+					&fctx->vma_gart);
+	}
+	mutex_unlock(&priv->mutex);
+
+	/* map display semaphore buffers into channel's vm */
+	for (i = 0; !ret && i < chan->drm->dev->mode_config.num_crtc; i++) {
+		struct nouveau_bo *bo = nv50_display_crtc_sema(chan->drm->dev, i);
+		ret = nouveau_bo_vma_add(bo, cli->vm, &fctx->dispc_vma[i]);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ret)
 		nv84_fence_context_del(chan);

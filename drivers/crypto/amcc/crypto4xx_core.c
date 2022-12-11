@@ -182,6 +182,10 @@ static u32 crypto4xx_build_pdr(struct crypto4xx_device *dev)
 				  dev->pdr_pa);
 		return -ENOMEM;
 	}
+<<<<<<< HEAD
+=======
+	memset(dev->pdr, 0, sizeof(struct ce_pd) * PPC4XX_NUM_PD);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dev->shadow_sa_pool = dma_alloc_coherent(dev->core_dev->device,
 				   sizeof(union shadow_sa_buf) * PPC4XX_NUM_PD,
 				   &dev->shadow_sa_pool_pa,
@@ -221,9 +225,14 @@ static void crypto4xx_destroy_pdr(struct crypto4xx_device *dev)
 				  dev->pdr, dev->pdr_pa);
 
 	if (dev->shadow_sa_pool)
+<<<<<<< HEAD
 		dma_free_coherent(dev->core_dev->device,
 			sizeof(union shadow_sa_buf) * PPC4XX_NUM_PD,
 			dev->shadow_sa_pool, dev->shadow_sa_pool_pa);
+=======
+		dma_free_coherent(dev->core_dev->device, 256 * PPC4XX_NUM_PD,
+				  dev->shadow_sa_pool, dev->shadow_sa_pool_pa);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (dev->shadow_sr_pool)
 		dma_free_coherent(dev->core_dev->device,

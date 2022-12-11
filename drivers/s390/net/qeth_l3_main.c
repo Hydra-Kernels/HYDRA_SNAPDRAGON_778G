@@ -1919,6 +1919,7 @@ static int qeth_l3_get_cast_type(struct sk_buff *skb)
 
 static u8 qeth_l3_cast_type_to_flag(int cast_type)
 {
+<<<<<<< HEAD
 	if (cast_type == RTN_MULTICAST)
 		return QETH_CAST_MULTICAST;
 	if (cast_type == RTN_ANYCAST)
@@ -1926,6 +1927,23 @@ static u8 qeth_l3_cast_type_to_flag(int cast_type)
 	if (cast_type == RTN_BROADCAST)
 		return QETH_CAST_BROADCAST;
 	return QETH_CAST_UNICAST;
+=======
+	char daddr[16];
+	struct af_iucv_trans_hdr *iucv_hdr;
+
+	memset(hdr, 0, sizeof(struct qeth_hdr));
+	hdr->hdr.l3.id = QETH_HEADER_TYPE_LAYER3;
+	hdr->hdr.l3.ext_flags = 0;
+	hdr->hdr.l3.length = skb->len - ETH_HLEN;
+	hdr->hdr.l3.flags = QETH_HDR_IPV6 | QETH_CAST_UNICAST;
+
+	iucv_hdr = (struct af_iucv_trans_hdr *) (skb->data + ETH_HLEN);
+	memset(daddr, 0, sizeof(daddr));
+	daddr[0] = 0xfe;
+	daddr[1] = 0x80;
+	memcpy(&daddr[8], iucv_hdr->destUserID, 8);
+	memcpy(hdr->hdr.l3.dest_addr, daddr, 16);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void qeth_l3_fill_header(struct qeth_qdio_out_q *queue,
@@ -2070,8 +2088,151 @@ static netdev_tx_t qeth_l3_hard_start_xmit(struct sk_buff *skb,
 	else
 		rc = qeth_xmit(card, skb, queue, ipv, qeth_l3_fill_header);
 
+<<<<<<< HEAD
 	if (!rc)
 		return NETDEV_TX_OK;
+=======
+	large_send = skb_is_gso(skb);
+
+	if ((card->info.type == QETH_CARD_TYPE_IQD) && (!large_send) &&
+	    (skb_shinfo(skb)->nr_frags == 0)) {
+		new_skb = skb;
+		data_offset = ETH_HLEN;
+		hdr = kmem_cache_alloc(qeth_core_header_cache, GFP_ATOMIC);
+		if (!hdr)
+			goto tx_drop;
+		elements_needed++;
+	} else {
+		/* create a clone with writeable headroom */
+		new_skb = skb_realloc_headroom(skb, sizeof(struct qeth_hdr_tso)
+					+ VLAN_HLEN);
+		if (!new_skb)
+			goto tx_drop;
+	}
+
+	if (card->info.type == QETH_CARD_TYPE_IQD) {
+		if (data_offset < 0)
+			skb_pull(new_skb, ETH_HLEN);
+	} else {
+		if (ipv == 4) {
+			skb_pull(new_skb, ETH_HLEN);
+		}
+
+		if (ipv != 4 && skb_vlan_tag_present(new_skb)) {
+			skb_push(new_skb, VLAN_HLEN);
+			skb_copy_to_linear_data(new_skb, new_skb->data + 4, 4);
+			skb_copy_to_linear_data_offset(new_skb, 4,
+				new_skb->data + 8, 4);
+			skb_copy_to_linear_data_offset(new_skb, 8,
+				new_skb->data + 12, 4);
+			tag = (u16 *)(new_skb->data + 12);
+			*tag = __constant_htons(ETH_P_8021Q);
+			*(tag + 1) = htons(skb_vlan_tag_get(new_skb));
+		}
+	}
+
+	netif_stop_queue(dev);
+
+	/* fix hardware limitation: as long as we do not have sbal
+	 * chaining we can not send long frag lists
+	 */
+	if (large_send) {
+		if (qeth_l3_tso_elements(new_skb) + 1 > 16) {
+			if (skb_linearize(new_skb))
+				goto tx_drop;
+			if (card->options.performance_stats)
+				card->perf_stats.tx_lin++;
+		}
+	}
+
+	if (large_send && (cast_type == RTN_UNSPEC)) {
+		hdr = (struct qeth_hdr *)skb_push(new_skb,
+						sizeof(struct qeth_hdr_tso));
+		memset(hdr, 0, sizeof(struct qeth_hdr_tso));
+		qeth_l3_fill_header(card, hdr, new_skb, ipv, cast_type);
+		qeth_tso_fill_header(card, hdr, new_skb);
+		elements_needed++;
+	} else {
+		if (data_offset < 0) {
+			hdr = (struct qeth_hdr *)skb_push(new_skb,
+						sizeof(struct qeth_hdr));
+			qeth_l3_fill_header(card, hdr, new_skb, ipv,
+						cast_type);
+		} else {
+			if (new_skb->protocol == ETH_P_AF_IUCV)
+				qeth_l3_fill_af_iucv_hdr(card, hdr, new_skb);
+			else {
+				qeth_l3_fill_header(card, hdr, new_skb, ipv,
+							cast_type);
+				hdr->hdr.l3.length = new_skb->len - data_offset;
+			}
+		}
+
+		if (skb->ip_summed == CHECKSUM_PARTIAL)
+			qeth_l3_hdr_csum(card, hdr, new_skb);
+	}
+
+	elems = qeth_get_elements_no(card, new_skb, elements_needed);
+	if (!elems) {
+		if (data_offset >= 0)
+			kmem_cache_free(qeth_core_header_cache, hdr);
+		goto tx_drop;
+	}
+	elements_needed += elems;
+	nr_frags = skb_shinfo(new_skb)->nr_frags;
+
+	if (card->info.type != QETH_CARD_TYPE_IQD) {
+		int len;
+		if (large_send)
+			len = ((unsigned long)tcp_hdr(new_skb) +
+				tcp_hdr(new_skb)->doff * 4) -
+				(unsigned long)new_skb->data;
+		else
+			len = sizeof(struct qeth_hdr_layer3);
+
+		if (qeth_hdr_chk_and_bounce(new_skb, &hdr, len))
+			goto tx_drop;
+		rc = qeth_do_send_packet(card, queue, new_skb, hdr,
+					 elements_needed);
+	} else
+		rc = qeth_do_send_packet_fast(card, queue, new_skb, hdr,
+					elements_needed, data_offset, 0);
+
+	if (!rc) {
+		card->stats.tx_packets++;
+		card->stats.tx_bytes += tx_bytes;
+		if (new_skb != skb)
+			dev_kfree_skb_any(skb);
+		if (card->options.performance_stats) {
+			if (large_send) {
+				card->perf_stats.large_send_bytes += tx_bytes;
+				card->perf_stats.large_send_cnt++;
+			}
+			if (nr_frags) {
+				card->perf_stats.sg_skbs_sent++;
+				/* nr_frags + skb->data */
+				card->perf_stats.sg_frags_sent += nr_frags + 1;
+			}
+		}
+		rc = NETDEV_TX_OK;
+	} else {
+		if (data_offset >= 0)
+			kmem_cache_free(qeth_core_header_cache, hdr);
+
+		if (rc == -EBUSY) {
+			if (new_skb != skb)
+				dev_kfree_skb_any(new_skb);
+			return NETDEV_TX_BUSY;
+		} else
+			goto tx_drop;
+	}
+
+	netif_wake_queue(dev);
+	if (card->options.performance_stats)
+		card->perf_stats.outbound_time += qeth_get_micros() -
+			card->perf_stats.outbound_start_time;
+	return rc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 tx_drop:
 	QETH_TXQ_STAT_INC(queue, tx_dropped);
@@ -2227,6 +2388,7 @@ static int qeth_l3_setup_netdev(struct qeth_card *card, bool carrier_ok)
 				NETIF_F_HW_VLAN_CTAG_RX |
 				NETIF_F_HW_VLAN_CTAG_FILTER;
 
+<<<<<<< HEAD
 	netif_keep_dst(card->dev);
 	if (card->dev->hw_features & (NETIF_F_TSO | NETIF_F_TSO6))
 		netif_set_gso_max_size(card->dev,
@@ -2241,6 +2403,12 @@ out:
 	if (rc)
 		card->dev->netdev_ops = NULL;
 	return rc;
+=======
+	SET_NETDEV_DEV(card->dev, &card->gdev->dev);
+	netif_napi_add(card->dev, &card->napi, qeth_l3_poll, QETH_NAPI_WEIGHT);
+	netif_carrier_off(card->dev);
+	return register_netdev(card->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const struct device_type qeth_l3_devtype = {
@@ -2253,6 +2421,7 @@ static int qeth_l3_probe_device(struct ccwgroup_device *gdev)
 	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
 	int rc;
 
+<<<<<<< HEAD
 	hash_init(card->ip_htable);
 	mutex_init(&card->ip_lock);
 	card->cmd_wq = alloc_ordered_workqueue("%s_cmd", 0,
@@ -2270,6 +2439,13 @@ static int qeth_l3_probe_device(struct ccwgroup_device *gdev)
 
 	hash_init(card->ip_mc_htable);
 	INIT_WORK(&card->rx_mode_work, qeth_l3_rx_mode_work);
+=======
+	rc = qeth_l3_create_device_attributes(&gdev->dev);
+	if (rc)
+		return rc;
+	card->options.layer2 = 0;
+	card->info.hwtrap = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -2289,6 +2465,12 @@ static void qeth_l3_remove_device(struct ccwgroup_device *cgdev)
 	cancel_work_sync(&card->close_dev_work);
 	if (qeth_netdev_is_registered(card->dev))
 		unregister_netdev(card->dev);
+<<<<<<< HEAD
+=======
+		free_netdev(card->dev);
+		card->dev = NULL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	flush_workqueue(card->cmd_wq);
 	destroy_workqueue(card->cmd_wq);
@@ -2479,8 +2661,15 @@ static int qeth_l3_control_event(struct qeth_card *card,
 }
 
 struct qeth_discipline qeth_l3_discipline = {
+<<<<<<< HEAD
 	.devtype = &qeth_l3_devtype,
 	.process_rx_buffer = qeth_l3_process_inbound_buffer,
+=======
+	.devtype = &qeth_generic_devtype,
+	.start_poll = qeth_qdio_start_poll,
+	.input_handler = (qdio_handler_t *) qeth_qdio_input_handler,
+	.output_handler = (qdio_handler_t *) qeth_qdio_output_handler,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.recover = qeth_l3_recover,
 	.setup = qeth_l3_probe_device,
 	.remove = qeth_l3_remove_device,

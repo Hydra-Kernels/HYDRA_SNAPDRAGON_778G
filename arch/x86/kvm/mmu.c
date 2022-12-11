@@ -4193,8 +4193,24 @@ static int kvm_arch_setup_async_pf(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	arch.direct_map = vcpu->arch.mmu->direct_map;
 	arch.cr3 = vcpu->arch.mmu->get_cr3(vcpu);
 
+<<<<<<< HEAD
 	return kvm_setup_async_pf(vcpu, cr2_or_gpa,
 				  kvm_vcpu_gfn_to_hva(vcpu, gfn), &arch);
+=======
+	return kvm_setup_async_pf(vcpu, gva, kvm_vcpu_gfn_to_hva(vcpu, gfn), &arch);
+}
+
+bool kvm_can_do_async_pf(struct kvm_vcpu *vcpu)
+{
+	if (unlikely(!lapic_in_kernel(vcpu) ||
+		     kvm_event_needs_reinjection(vcpu)))
+		return false;
+
+	if (is_guest_mode(vcpu))
+		return false;
+
+	return kvm_x86_ops->interrupt_allowed(vcpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static bool try_async_pf(struct kvm_vcpu *vcpu, bool prefault, gfn_t gfn,
@@ -4219,7 +4235,11 @@ static bool try_async_pf(struct kvm_vcpu *vcpu, bool prefault, gfn_t gfn,
 		return false; /* *pfn has correct page already */
 
 	if (!prefault && kvm_can_do_async_pf(vcpu)) {
+<<<<<<< HEAD
 		trace_kvm_try_async_get_page(cr2_or_gpa, gfn);
+=======
+		trace_kvm_try_async_get_page(gva, gfn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (kvm_find_async_pf_gfn(vcpu, gfn)) {
 			trace_kvm_async_pf_doublefault(cr2_or_gpa, gfn);
 			kvm_make_request(KVM_REQ_APF_HALT, vcpu);
@@ -4666,6 +4686,8 @@ static void reset_rsvds_bits_mask_ept(struct kvm_vcpu *vcpu,
 void
 reset_shadow_zero_bits_mask(struct kvm_vcpu *vcpu, struct kvm_mmu *context)
 {
+	bool uses_nx = context->nx || context->base_role.smep_andnot_wp;
+
 	/*
 	 * KVM uses NX when TDP is disabled to handle a variety of scenarios,
 	 * notably for huge SPTEs if iTLB multi-hit mitigation is enabled and
@@ -4683,6 +4705,7 @@ reset_shadow_zero_bits_mask(struct kvm_vcpu *vcpu, struct kvm_mmu *context)
 	 * Passing "true" to the last argument is okay; it adds a check
 	 * on bit 8 of the SPTEs which KVM doesn't use anyway.
 	 */
+<<<<<<< HEAD
 	shadow_zero_check = &context->shadow_zero_check;
 	__reset_rsvds_bits_mask(vcpu, shadow_zero_check,
 				shadow_phys_bits,
@@ -4698,6 +4721,13 @@ reset_shadow_zero_bits_mask(struct kvm_vcpu *vcpu, struct kvm_mmu *context)
 		shadow_zero_check->rsvd_bits_mask[1][i] &= ~shadow_me_mask;
 	}
 
+=======
+	__reset_rsvds_bits_mask(vcpu, &context->shadow_zero_check,
+				boot_cpu_data.x86_phys_bits,
+				context->shadow_root_level, uses_nx,
+				guest_cpuid_has_gbpages(vcpu), is_pse(vcpu),
+				true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(reset_shadow_zero_bits_mask);
 

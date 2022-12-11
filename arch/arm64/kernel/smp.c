@@ -264,7 +264,12 @@ asmlinkage notrace void secondary_start_kernel(void)
 	set_cpu_online(cpu, true);
 	complete(&cpu_running);
 
+<<<<<<< HEAD
 	local_daif_restore(DAIF_PROCCTX);
+=======
+	local_irq_enable();
+	local_async_enable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * OK, it's off to the idle thread for us
@@ -438,6 +443,7 @@ void __init smp_prepare_boot_cpu(void)
 {
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
 	cpuinfo_store_boot_cpu();
+<<<<<<< HEAD
 
 	/*
 	 * We now know enough about the boot CPU to apply the
@@ -449,6 +455,8 @@ void __init smp_prepare_boot_cpu(void)
 	/* Conditionally switch to GIC PMR for interrupt masking */
 	if (system_uses_irq_prio_masking())
 		init_gic_priority_masking();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static u64 __init of_get_cpu_mpidr(struct device_node *dn)

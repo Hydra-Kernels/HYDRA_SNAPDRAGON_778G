@@ -34,6 +34,19 @@ EXPORT_SYMBOL(__xchg64);
 EXPORT_SYMBOL(lclear_user);
 EXPORT_SYMBOL(lstrnlen_user);
 
+<<<<<<< HEAD
+=======
+/* Global fixups - defined as int to avoid creation of function pointers */
+extern int fixup_get_user_skip_1;
+extern int fixup_get_user_skip_2;
+extern int fixup_put_user_skip_1;
+extern int fixup_put_user_skip_2;
+EXPORT_SYMBOL(fixup_get_user_skip_1);
+EXPORT_SYMBOL(fixup_get_user_skip_2);
+EXPORT_SYMBOL(fixup_put_user_skip_1);
+EXPORT_SYMBOL(fixup_put_user_skip_2);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef CONFIG_64BIT
 /* Needed so insmod can set dp value */
 extern int $global$;

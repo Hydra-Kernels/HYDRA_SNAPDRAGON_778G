@@ -514,6 +514,60 @@ static void exynos5433_tmu_initialize(struct platform_device *pdev)
 
 	dev_info(&pdev->dev, "Calibration type is %d-point calibration\n",
 			cal_type ?  2 : 1);
+<<<<<<< HEAD
+=======
+
+	/* Write temperature code for rising and falling threshold */
+	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+		int rising_reg_offset, falling_reg_offset;
+		int j = 0;
+
+		switch (i) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			rising_reg_offset = EXYNOS5433_THD_TEMP_RISE3_0;
+			falling_reg_offset = EXYNOS5433_THD_TEMP_FALL3_0;
+			j = i;
+			break;
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+			rising_reg_offset = EXYNOS5433_THD_TEMP_RISE7_4;
+			falling_reg_offset = EXYNOS5433_THD_TEMP_FALL7_4;
+			j = i - 4;
+			break;
+		default:
+			continue;
+		}
+
+		/* Write temperature code for rising threshold */
+		tz->ops->get_trip_temp(tz, i, &temp);
+		temp /= MCELSIUS;
+		threshold_code = temp_to_code(data, temp);
+
+		rising_threshold = readl(data->base + rising_reg_offset);
+		rising_threshold &= ~(0xff << j * 8);
+		rising_threshold |= (threshold_code << j * 8);
+		writel(rising_threshold, data->base + rising_reg_offset);
+
+		/* Write temperature code for falling threshold */
+		tz->ops->get_trip_hyst(tz, i, &temp_hist);
+		temp_hist = temp - (temp_hist / MCELSIUS);
+		threshold_code = temp_to_code(data, temp_hist);
+
+		falling_threshold = readl(data->base + falling_reg_offset);
+		falling_threshold &= ~(0xff << j * 8);
+		falling_threshold |= (threshold_code << j * 8);
+		writel(falling_threshold, data->base + falling_reg_offset);
+	}
+
+	data->tmu_clear_irqs(data);
+out:
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void exynos7_tmu_set_trip_temp(struct exynos_tmu_data *data,

@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 
+<<<<<<< HEAD
 #include <linux/sched.h>
 #include <linux/sched/clock.h>
 
 #include <asm/cpufeature.h>
 #include <asm/e820/api.h>
+=======
+#include <asm/cpufeature.h>
+#include <asm/e820.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/mtrr.h>
 #include <asm/msr.h>
 

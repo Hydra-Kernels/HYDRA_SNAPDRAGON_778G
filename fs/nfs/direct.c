@@ -77,6 +77,12 @@ struct nfs_direct_req {
 	atomic_t		io_count;	/* i/os we're waiting for */
 	spinlock_t		lock;		/* protect completion state */
 
+<<<<<<< HEAD
+=======
+	struct nfs_direct_mirror mirrors[NFS_PAGEIO_DESCRIPTOR_MIRROR_MAX];
+	int			mirror_count;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	loff_t			io_start;	/* Start offset for I/O */
 	ssize_t			count,		/* bytes actually processed */
 				max_count,	/* max expected count */
@@ -763,6 +769,7 @@ static void nfs_direct_write_completion(struct nfs_pgio_header *hdr)
 	nfs_init_cinfo_from_dreq(&cinfo, dreq);
 
 	spin_lock(&dreq->lock);
+<<<<<<< HEAD
 	if (test_bit(NFS_IOHDR_REDO, &hdr->flags)) {
 		spin_unlock(&dreq->lock);
 		goto out_put;
@@ -770,6 +777,13 @@ static void nfs_direct_write_completion(struct nfs_pgio_header *hdr)
 
 	nfs_direct_count_bytes(dreq, hdr);
 	if (hdr->good_bytes != 0) {
+=======
+
+	if (test_bit(NFS_IOHDR_ERROR, &hdr->flags))
+		dreq->error = hdr->error;
+	if (dreq->error == 0) {
+		nfs_direct_good_bytes(dreq, hdr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (nfs_write_need_commit(hdr)) {
 			if (dreq->flags == NFS_ODIRECT_RESCHED_WRITES)
 				request_commit = true;

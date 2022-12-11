@@ -1806,7 +1806,10 @@ void snd_pcm_period_elapsed(struct snd_pcm_substream *substream)
 #endif
  _end:
 	kill_fasync(&runtime->fasync, SIGIO, POLL_IN);
+<<<<<<< HEAD
  _unlock:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	snd_pcm_stream_unlock_irqrestore(substream, flags);
 }
 EXPORT_SYMBOL(snd_pcm_period_elapsed);

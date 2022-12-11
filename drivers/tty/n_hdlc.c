@@ -815,14 +815,24 @@ static __poll_t n_hdlc_tty_poll(struct tty_struct *tty, struct file *filp,
 
 		/* set bits for operations that won't block */
 		if (!list_empty(&n_hdlc->rx_buf_list.list))
+<<<<<<< HEAD
 			mask |= EPOLLIN | EPOLLRDNORM;	/* readable */
 		if (test_bit(TTY_OTHER_CLOSED, &tty->flags))
 			mask |= EPOLLHUP;
+=======
+			mask |= POLLIN | POLLRDNORM;	/* readable */
+		if (test_bit(TTY_OTHER_CLOSED, &tty->flags))
+			mask |= POLLHUP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (tty_hung_up_p(filp))
 			mask |= EPOLLHUP;
 		if (!tty_is_writelocked(tty) &&
 				!list_empty(&n_hdlc->tx_free_buf_list.list))
+<<<<<<< HEAD
 			mask |= EPOLLOUT | EPOLLWRNORM;	/* writable */
+=======
+			mask |= POLLOUT | POLLWRNORM;	/* writable */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return mask;
 }	/* end of n_hdlc_tty_poll() */

@@ -523,11 +523,22 @@ static bool radeon_mst_mode_fixup(struct drm_encoder *encoder,
 
 
 	drm_mode_set_crtcinfo(adjusted_mode, 0);
+<<<<<<< HEAD
 	dig_connector = mst_enc->connector->con_priv;
 	dig_connector->dp_lane_count = drm_dp_max_lane_count(dig_connector->dpcd);
 	dig_connector->dp_clock = drm_dp_max_link_rate(dig_connector->dpcd);
 	DRM_DEBUG_KMS("dig clock %p %d %d\n", dig_connector,
 		      dig_connector->dp_lane_count, dig_connector->dp_clock);
+=======
+	{
+	  struct radeon_connector_atom_dig *dig_connector;
+	  dig_connector = mst_enc->connector->con_priv;
+	  dig_connector->dp_lane_count = drm_dp_max_lane_count(dig_connector->dpcd);
+	  dig_connector->dp_clock = drm_dp_max_link_rate(dig_connector->dpcd);
+	  DRM_DEBUG_KMS("dig clock %p %d %d\n", dig_connector,
+			dig_connector->dp_lane_count, dig_connector->dp_clock);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 

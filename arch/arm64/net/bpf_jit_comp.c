@@ -809,15 +809,21 @@ static int build_body(struct jit_ctx *ctx, bool extra_pass)
 		const struct bpf_insn *insn = &prog->insnsi[i];
 		int ret;
 
+<<<<<<< HEAD
 		if (ctx->image == NULL)
 			ctx->offset[i] = ctx->idx;
 		ret = build_insn(insn, ctx, extra_pass);
+=======
+		ret = build_insn(insn, ctx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret > 0) {
 			i++;
 			if (ctx->image == NULL)
 				ctx->offset[i] = ctx->idx;
 			continue;
 		}
+		if (ctx->image == NULL)
+			ctx->offset[i] = ctx->idx;
 		if (ret)
 			return ret;
 	}

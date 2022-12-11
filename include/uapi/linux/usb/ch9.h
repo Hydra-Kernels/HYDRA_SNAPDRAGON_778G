@@ -971,6 +971,7 @@ struct usb_ssp_cap_descriptor {
 } __attribute__((packed));
 
 /*
+<<<<<<< HEAD
  * USB Power Delivery Capability Descriptor:
  * Defines capabilities for PD
  */
@@ -1069,6 +1070,8 @@ struct usb_pd_cap_provider_port_descriptor {
 } __attribute__((packed));
 
 /*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Precision time measurement capability descriptor: advertised by devices and
  * hubs that support PTM
  */
@@ -1079,12 +1082,20 @@ struct usb_ptm_cap_descriptor {
 	__u8  bDevCapabilityType;
 } __attribute__((packed));
 
+<<<<<<< HEAD
 #define USB_DT_USB_PTM_ID_SIZE		3
 /*
  * The size of the descriptor for the Sublink Speed Attribute Count
  * (SSAC) specified in bmAttributes[4:0]. SSAC is zero-based
  */
 #define USB_DT_USB_SSP_CAP_SIZE(ssac)	(12 + (ssac + 1) * 4)
+=======
+/*
+ * The size of the descriptor for the Sublink Speed Attribute Count
+ * (SSAC) specified in bmAttributes[4:0].
+ */
+#define USB_DT_USB_SSP_CAP_SIZE(ssac)	(16 + ssac * 4)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*-------------------------------------------------------------------------*/
 
@@ -1181,6 +1192,7 @@ enum usb3_link_state {
 	USB3_LPM_U3
 };
 
+#define USB_DT_USB_PTM_ID_SIZE		3
 /*
  * A U1 timeout of 0x0 means the parent hub will reject any transitions to U1.
  * 0xff means the parent hub will accept transitions to U1, but will not

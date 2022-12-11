@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 // SPDX-License-Identifier: GPL-2.0
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define DISABLE_BRANCH_PROFILING
 #define pr_fmt(fmt) "kasan: " fmt
 
@@ -362,6 +365,7 @@ void __init kasan_init(void)
 	kasan_populate_early_shadow(shadow_cpu_entry_end,
 			kasan_mem_to_shadow((void *)__START_KERNEL_map));
 
+<<<<<<< HEAD
 	kasan_populate_shadow((unsigned long)kasan_mem_to_shadow(_stext),
 			      (unsigned long)kasan_mem_to_shadow(_end),
 			      early_pfn_to_nid(__pa(_stext)));
@@ -387,6 +391,20 @@ void __init kasan_init(void)
 
 		pte = __pte(__pa(kasan_early_shadow_page) | pgprot_val(prot));
 		set_pte(&kasan_early_shadow_pte[i], pte);
+=======
+	load_cr3(init_level4_pgt);
+	__flush_tlb_all();
+
+	/*
+	 * kasan_zero_page has been used as early shadow memory, thus it may
+	 * contain some garbage. Now we can clear and write protect it, since
+	 * after the TLB flush no one should write to it.
+	 */
+	memset(kasan_zero_page, 0, PAGE_SIZE);
+	for (i = 0; i < PTRS_PER_PTE; i++) {
+		pte_t pte = __pte(__pa(kasan_zero_page) | __PAGE_KERNEL_RO);
+		set_pte(&kasan_zero_pte[i], pte);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	/* Flush TLBs again to be sure that write protection applied. */
 	__flush_tlb_all();

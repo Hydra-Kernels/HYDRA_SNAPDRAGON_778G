@@ -2,7 +2,18 @@
 #ifndef _ASM_UM_BARRIER_H_
 #define _ASM_UM_BARRIER_H_
 
+<<<<<<< HEAD
 #include <asm/alternative.h>
+=======
+#include <asm/asm.h>
+#include <asm/segment.h>
+#include <asm/cpufeatures.h>
+#include <asm/cmpxchg.h>
+#include <asm/nops.h>
+
+#include <linux/kernel.h>
+#include <linux/irqflags.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Force strict CPU ordering.

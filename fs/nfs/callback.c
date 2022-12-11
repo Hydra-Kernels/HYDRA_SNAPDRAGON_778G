@@ -209,7 +209,11 @@ static int nfs_callback_up_net(int minorversion, struct svc_serv *serv,
 		goto err_bind;
 	}
 
+<<<<<<< HEAD
 	ret = 0;
+=======
+	ret = -EPROTONOSUPPORT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!IS_ENABLED(CONFIG_NFS_V4_1) || minorversion == 0)
 		ret = nfs4_callback_up_net(serv, net);
 	else if (xprt->ops->bc_setup)

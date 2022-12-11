@@ -29,8 +29,13 @@ struct alg_sock {
 
 	struct sock *parent;
 
+<<<<<<< HEAD
 	atomic_t refcnt;
 	atomic_t nokey_refcnt;
+=======
+	unsigned int refcnt;
+	unsigned int nokey_refcnt;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	const struct af_alg_type *type;
 	void *private;
@@ -162,7 +167,11 @@ int af_alg_unregister_type(const struct af_alg_type *type);
 
 int af_alg_release(struct socket *sock);
 void af_alg_release_parent(struct sock *sk);
+<<<<<<< HEAD
 int af_alg_accept(struct sock *sk, struct socket *newsock, bool kern);
+=======
+int af_alg_accept(struct sock *sk, struct socket *newsock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 int af_alg_make_sg(struct af_alg_sgl *sgl, struct iov_iter *iter, int len);
 void af_alg_free_sg(struct af_alg_sgl *sgl);
@@ -172,6 +181,7 @@ static inline struct alg_sock *alg_sk(struct sock *sk)
 	return (struct alg_sock *)sk;
 }
 
+<<<<<<< HEAD
 /**
  * Size of available buffer for sending data from user space to kernel.
  *
@@ -194,6 +204,9 @@ static inline int af_alg_sndbuf(struct sock *sk)
  * @return true => writable, false => not writable
  */
 static inline bool af_alg_writable(struct sock *sk)
+=======
+static inline void af_alg_init_completion(struct af_alg_completion *completion)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return PAGE_SIZE <= af_alg_sndbuf(sk);
 }

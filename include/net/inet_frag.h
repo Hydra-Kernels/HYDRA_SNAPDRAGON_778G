@@ -2,11 +2,17 @@
 #ifndef __NET_FRAG_H__
 #define __NET_FRAG_H__
 
+<<<<<<< HEAD
 #include <linux/rhashtable-types.h>
 #include <linux/completion.h>
 
 /* Per netns frag queues directory */
 struct fqdir {
+=======
+struct netns_frags {
+	/* Keep atomic mem on separate cachelines in structs that include it */
+	atomic_t		mem ____cacheline_aligned_in_smp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* sysctls */
 	long			high_thresh;
 	long			low_thresh;
@@ -112,6 +118,7 @@ struct inet_frags {
 int inet_frags_init(struct inet_frags *);
 void inet_frags_fini(struct inet_frags *);
 
+<<<<<<< HEAD
 int fqdir_init(struct fqdir **fqdirp, struct inet_frags *f, struct net *net);
 
 static inline void fqdir_pre_exit(struct fqdir *fqdir)
@@ -132,23 +139,67 @@ static inline void inet_frag_put(struct inet_frag_queue *q)
 {
 	if (refcount_dec_and_test(&q->refcnt))
 		inet_frag_destroy(q);
+=======
+static inline void inet_frags_init_net(struct netns_frags *nf)
+{
+	atomic_set(&nf->mem, 0);
+}
+void inet_frags_exit_net(struct netns_frags *nf, struct inet_frags *f);
+
+void inet_frag_kill(struct inet_frag_queue *q, struct inet_frags *f);
+void inet_frag_destroy(struct inet_frag_queue *q, struct inet_frags *f);
+struct inet_frag_queue *inet_frag_find(struct netns_frags *nf,
+		struct inet_frags *f, void *key, unsigned int hash);
+
+void inet_frag_maybe_warn_overflow(struct inet_frag_queue *q,
+				   const char *prefix);
+
+static inline void inet_frag_put(struct inet_frag_queue *q, struct inet_frags *f)
+{
+	if (atomic_dec_and_test(&q->refcnt))
+		inet_frag_destroy(q, f);
+}
+
+static inline bool inet_frag_evicting(struct inet_frag_queue *q)
+{
+	return !hlist_unhashed(&q->list_evictor);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Memory Tracking Functions. */
 
+<<<<<<< HEAD
 static inline long frag_mem_limit(const struct fqdir *fqdir)
 {
 	return atomic_long_read(&fqdir->mem);
+=======
+static inline int frag_mem_limit(struct netns_frags *nf)
+{
+	return atomic_read(&nf->mem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void sub_frag_mem_limit(struct fqdir *fqdir, long val)
 {
+<<<<<<< HEAD
 	atomic_long_sub(val, &fqdir->mem);
+=======
+	atomic_sub(i, &nf->mem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void add_frag_mem_limit(struct fqdir *fqdir, long val)
 {
+<<<<<<< HEAD
 	atomic_long_add(val, &fqdir->mem);
+=======
+	atomic_add(i, &nf->mem);
+}
+
+static inline int sum_frag_mem_limit(struct netns_frags *nf)
+{
+	return atomic_read(&nf->mem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* RFC 3168 support :

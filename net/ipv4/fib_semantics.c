@@ -231,6 +231,7 @@ void fib_nh_release(struct net *net, struct fib_nh *fib_nh)
 static void free_fib_info_rcu(struct rcu_head *head)
 {
 	struct fib_info *fi = container_of(head, struct fib_info, rcu);
+	struct dst_metrics *m;
 
 	if (fi->nh) {
 		nexthop_put(fi->nh);
@@ -242,6 +243,12 @@ static void free_fib_info_rcu(struct rcu_head *head)
 
 	ip_fib_metrics_put(fi->fib_metrics);
 
+<<<<<<< HEAD
+=======
+	m = fi->fib_metrics;
+	if (m != &dst_default_metrics && atomic_dec_and_test(&m->refcnt))
+		kfree(m);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(fi);
 }
 
@@ -669,6 +676,7 @@ static int fib_get_nhs(struct fib_info *fi, struct rtnexthop *rtnh,
 
 		memset(&fib_cfg, 0, sizeof(fib_cfg));
 
+<<<<<<< HEAD
 		if (!rtnh_ok(rtnh, remaining)) {
 			NL_SET_ERR_MSG(extack,
 				       "Invalid nexthop configuration - extra data after nexthop");
@@ -683,6 +691,15 @@ static int fib_get_nhs(struct fib_info *fi, struct rtnexthop *rtnh,
 
 		fib_cfg.fc_flags = (cfg->fc_flags & ~0xFF) | rtnh->rtnh_flags;
 		fib_cfg.fc_oif = rtnh->rtnh_ifindex;
+=======
+		if (rtnh->rtnh_flags & (RTNH_F_DEAD | RTNH_F_LINKDOWN))
+			return -EINVAL;
+
+		nexthop_nh->nh_flags =
+			(cfg->fc_flags & ~0xFF) | rtnh->rtnh_flags;
+		nexthop_nh->nh_oif = rtnh->rtnh_ifindex;
+		nexthop_nh->nh_weight = rtnh->rtnh_hops + 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		attrlen = rtnh_attrlen(rtnh);
 		if (attrlen > 0) {
@@ -840,8 +857,25 @@ int fib_nh_match(struct fib_config *cfg, struct fib_info *fi,
 	if (cfg->fc_priority && cfg->fc_priority != fi->fib_priority)
 		return 1;
 
+<<<<<<< HEAD
 	if (cfg->fc_nh_id) {
 		if (fi->nh && cfg->fc_nh_id == fi->nh->id)
+=======
+	if (cfg->fc_oif || cfg->fc_gw) {
+		if (cfg->fc_encap) {
+			if (fib_encap_match(net, cfg->fc_encap_type,
+					    cfg->fc_encap, cfg->fc_oif,
+					    fi->fib_nh, cfg))
+			    return 1;
+		}
+#ifdef CONFIG_IP_ROUTE_CLASSID
+		if (cfg->fc_flow &&
+		    cfg->fc_flow != fi->fib_nh->nh_tclassid)
+			return 1;
+#endif
+		if ((!cfg->fc_oif || cfg->fc_oif == fi->fib_nh->nh_oif) &&
+		    (!cfg->fc_gw  || cfg->fc_gw == fi->fib_nh->nh_gw))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return 0;
 		return 1;
 	}
@@ -1334,8 +1368,60 @@ static bool fib_valid_prefsrc(struct fib_config *cfg, __be32 fib_prefsrc)
 	return true;
 }
 
+<<<<<<< HEAD
 struct fib_info *fib_create_info(struct fib_config *cfg,
 				 struct netlink_ext_ack *extack)
+=======
+static int
+fib_convert_metrics(struct fib_info *fi, const struct fib_config *cfg)
+{
+	bool ecn_ca = false;
+	struct nlattr *nla;
+	int remaining;
+
+	if (!cfg->fc_mx)
+		return 0;
+
+	nla_for_each_attr(nla, cfg->fc_mx, cfg->fc_mx_len, remaining) {
+		int type = nla_type(nla);
+		u32 val;
+
+		if (!type)
+			continue;
+		if (type > RTAX_MAX)
+			return -EINVAL;
+
+		if (type == RTAX_CC_ALGO) {
+			char tmp[TCP_CA_NAME_MAX];
+
+			nla_strlcpy(tmp, nla, sizeof(tmp));
+			val = tcp_ca_get_key_by_name(tmp, &ecn_ca);
+			if (val == TCP_CA_UNSPEC)
+				return -EINVAL;
+		} else {
+			if (nla_len(nla) != sizeof(u32))
+				return -EINVAL;
+			val = nla_get_u32(nla);
+		}
+		if (type == RTAX_ADVMSS && val > 65535 - 40)
+			val = 65535 - 40;
+		if (type == RTAX_MTU && val > 65535 - 15)
+			val = 65535 - 15;
+		if (type == RTAX_HOPLIMIT && val > 255)
+			val = 255;
+		if (type == RTAX_FEATURES && (val & ~RTAX_FEATURE_MASK))
+			return -EINVAL;
+		fi->fib_metrics->metrics[type - 1] = val;
+	}
+
+	if (ecn_ca)
+		fi->fib_metrics->metrics[RTAX_FEATURES - 1] |= DST_FEATURE_ECN_CA;
+
+	return 0;
+}
+
+struct fib_info *fib_create_info(struct fib_config *cfg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int err;
 	struct fib_info *fi = NULL;
@@ -1376,6 +1462,9 @@ struct fib_info *fib_create_info(struct fib_config *cfg,
 		nhs = 0;
 	}
 
+	if (cfg->fc_flags & (RTNH_F_DEAD | RTNH_F_LINKDOWN))
+		goto err_inval;
+
 #ifdef CONFIG_IP_ROUTE_MULTIPATH
 	if (cfg->fc_mp) {
 		nhs = fib_count_nexthops(cfg->fc_mp, cfg->fc_mp_len, extack);
@@ -1409,6 +1498,7 @@ struct fib_info *fib_create_info(struct fib_config *cfg,
 	fi = kzalloc(struct_size(fi, fib_nh, nhs), GFP_KERNEL);
 	if (!fi)
 		goto failure;
+<<<<<<< HEAD
 	fi->fib_metrics = ip_fib_metrics_init(fi->fib_net, cfg->fc_mx,
 					      cfg->fc_mx_len, extack);
 	if (IS_ERR(fi->fib_metrics)) {
@@ -1417,6 +1507,18 @@ struct fib_info *fib_create_info(struct fib_config *cfg,
 		return ERR_PTR(err);
 	}
 
+=======
+	if (cfg->fc_mx) {
+		fi->fib_metrics = kzalloc(sizeof(*fi->fib_metrics), GFP_KERNEL);
+		if (unlikely(!fi->fib_metrics)) {
+			kfree(fi);
+			return ERR_PTR(err);
+		}
+		atomic_set(&fi->fib_metrics->refcnt, 1);
+	} else {
+		fi->fib_metrics = (struct dst_metrics *)&dst_default_metrics;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fib_info_cnt++;
 	fi->fib_net = net;
 	fi->fib_protocol = cfg->fc_protocol;
@@ -1768,8 +1870,28 @@ int fib_dump_info(struct sk_buff *skb, u32 portid, u32 seq, int event,
 	if (fi->nh) {
 		if (nla_put_u32(skb, RTA_NH_ID, fi->nh->id))
 			goto nla_put_failure;
+<<<<<<< HEAD
 		if (nexthop_is_blackhole(fi->nh))
 			rtm->rtm_type = RTN_BLACKHOLE;
+=======
+		if (fi->fib_nh->nh_oif &&
+		    nla_put_u32(skb, RTA_OIF, fi->fib_nh->nh_oif))
+			goto nla_put_failure;
+		if (fi->fib_nh->nh_flags & RTNH_F_LINKDOWN) {
+			in_dev = __in_dev_get_rtnl(fi->fib_nh->nh_dev);
+			if (in_dev &&
+			    IN_DEV_IGNORE_ROUTES_WITH_LINKDOWN(in_dev))
+				rtm->rtm_flags |= RTNH_F_DEAD;
+		}
+#ifdef CONFIG_IP_ROUTE_CLASSID
+		if (fi->fib_nh[0].nh_tclassid &&
+		    nla_put_u32(skb, RTA_FLOW, fi->fib_nh[0].nh_tclassid))
+			goto nla_put_failure;
+#endif
+		if (fi->fib_nh->nh_lwtstate &&
+		    lwtunnel_fill_encap(skb, fi->fib_nh->nh_lwtstate) < 0)
+			goto nla_put_failure;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (nhs == 1) {
@@ -1790,9 +1912,21 @@ int fib_dump_info(struct sk_buff *skb, u32 portid, u32 seq, int event,
 				goto nla_put_failure;
 		}
 #endif
+<<<<<<< HEAD
 	} else {
 		if (fib_add_multipath(skb, fi) < 0)
 			goto nla_put_failure;
+=======
+			if (nh->nh_lwtstate &&
+			    lwtunnel_fill_encap(skb, nh->nh_lwtstate) < 0)
+				goto nla_put_failure;
+
+			/* length of rtnetlink header + attributes */
+			rtnh->rtnh_len = nlmsg_get_pos(skb) - (void *) rtnh;
+		} endfor_nexthops(fi);
+
+		nla_nest_end(skb, mp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	nlmsg_end(skb, nlh);
@@ -2190,8 +2324,20 @@ void fib_select_multipath(struct fib_result *res, int hash)
 void fib_select_path(struct net *net, struct fib_result *res,
 		     struct flowi4 *fl4, const struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	if (fl4->flowi4_oif && !(fl4->flowi4_flags & FLOWI_FLAG_SKIP_NH_OIF))
 		goto check_saddr;
+=======
+	bool oif_check;
+
+	oif_check = (fl4->flowi4_oif == 0 ||
+		     fl4->flowi4_flags & FLOWI_FLAG_SKIP_NH_OIF);
+
+#ifdef CONFIG_IP_ROUTE_MULTIPATH
+	if (res->fi->fib_nhs > 1 && oif_check) {
+		if (mp_hash < 0)
+			mp_hash = get_hash_from_flowi4(fl4) >> 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_IP_ROUTE_MULTIPATH
 	if (fib_info_num_path(res->fi) > 1) {
@@ -2203,7 +2349,11 @@ void fib_select_path(struct net *net, struct fib_result *res,
 #endif
 	if (!res->prefixlen &&
 	    res->table->tb_num_default > 1 &&
+<<<<<<< HEAD
 	    res->type == RTN_UNICAST)
+=======
+	    res->type == RTN_UNICAST && oif_check)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fib_select_default(fl4, res);
 
 check_saddr:

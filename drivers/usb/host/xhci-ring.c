@@ -308,10 +308,15 @@ static void xhci_handle_stopped_cmd_ring(struct xhci_hcd *xhci,
 					 struct xhci_command *cur_cmd)
 {
 	struct xhci_command *i_cmd;
+<<<<<<< HEAD
+=======
+	u32 cycle_state;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Turn all aborted commands in list to no-ops, then restart */
 	list_for_each_entry(i_cmd, &xhci->cmd_list, cmd_list) {
 
+<<<<<<< HEAD
 		if (i_cmd->status != COMP_COMMAND_ABORTED)
 			continue;
 
@@ -321,6 +326,24 @@ static void xhci_handle_stopped_cmd_ring(struct xhci_hcd *xhci,
 			 i_cmd->command_trb);
 
 		trb_to_noop(i_cmd->command_trb, TRB_CMD_NOOP);
+=======
+		if (i_cmd->status != COMP_CMD_ABORT)
+			continue;
+
+		i_cmd->status = COMP_CMD_STOP;
+
+		xhci_dbg(xhci, "Turn aborted command %p to no-op\n",
+			 i_cmd->command_trb);
+		/* get cycle state from the original cmd trb */
+		cycle_state = le32_to_cpu(
+			i_cmd->command_trb->generic.field[3]) &	TRB_CYCLE;
+		/* modify the command trb to no-op command */
+		i_cmd->command_trb->generic.field[0] = 0;
+		i_cmd->command_trb->generic.field[1] = 0;
+		i_cmd->command_trb->generic.field[2] = 0;
+		i_cmd->command_trb->generic.field[3] = cpu_to_le32(
+			TRB_TYPE(TRB_CMD_NOOP) | cycle_state);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * caller waiting for completion is called when command
@@ -362,10 +385,27 @@ static int xhci_abort_cmd_ring(struct xhci_hcd *xhci, unsigned long flags)
 	ret = xhci_handshake_check_state(xhci, &xhci->op_regs->cmd_ring,
 			CMD_RING_RUNNING, 0, 1000 * 1000);
 	if (ret < 0) {
+<<<<<<< HEAD
 		xhci_err(xhci, "Abort failed to stop command ring: %d\n", ret);
 		xhci_halt(xhci);
 		xhci_hc_died(xhci);
 		return ret;
+=======
+		/* we are about to kill xhci, give it one more chance */
+		xhci_write_64(xhci, temp_64 | CMD_RING_ABORT,
+			      &xhci->op_regs->cmd_ring);
+		udelay(1000);
+		ret = xhci_handshake(&xhci->op_regs->cmd_ring,
+				     CMD_RING_RUNNING, 0, 3 * 1000 * 1000);
+		if (ret < 0) {
+			xhci_err(xhci, "Stopped the command ring failed, "
+				 "maybe the host is dead\n");
+			xhci->xhc_state |= XHCI_STATE_DYING;
+			xhci_quiesce(xhci);
+			xhci_halt(xhci);
+			return -ESHUTDOWN;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	/*
 	 * Writing the CMD_RING_ABORT bit should cause a cmd completion event,
@@ -1009,9 +1049,17 @@ void xhci_stop_endpoint_command_watchdog(struct timer_list *t)
 
 	spin_lock_irqsave(&xhci->lock, flags);
 
+<<<<<<< HEAD
 	/* bail out if cmd completed but raced with stop ep watchdog timer.*/
 	if (!(ep->ep_state & EP_STOP_CMD_PENDING) ||
 	    timer_pending(&ep->stop_cmd_timer)) {
+=======
+	ep->stop_cmds_pending--;
+	if (!(ep->stop_cmds_pending == 0 && (ep->ep_state & EP_HALT_PENDING))) {
+		xhci_dbg_trace(xhci, trace_xhci_dbg_cancel_urb,
+				"Stop EP timer ran, but no command pending, "
+				"exiting.");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock_irqrestore(&xhci->lock, flags);
 		xhci_dbg(xhci, "Stop EP timer raced with cmd completion, exit");
 		return;
@@ -1031,6 +1079,12 @@ void xhci_stop_endpoint_command_watchdog(struct timer_list *t)
 
 	spin_unlock_irqrestore(&xhci->lock, flags);
 	xhci_dbg_trace(xhci, trace_xhci_dbg_cancel_urb,
+<<<<<<< HEAD
+=======
+			"Calling usb_hc_died()");
+	usb_hc_died(xhci_to_hcd(xhci));
+	xhci_dbg_trace(xhci, trace_xhci_dbg_cancel_urb,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			"xHCI host controller is dead.");
 }
 
@@ -1396,7 +1450,11 @@ void xhci_handle_command_timeout(struct work_struct *work)
 		return;
 	}
 	/* mark this command to be cancelled */
+<<<<<<< HEAD
 	xhci->current_cmd->status = COMP_COMMAND_ABORTED;
+=======
+	xhci->current_cmd->status = COMP_CMD_ABORT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Make sure command ring is running before aborting it */
 	hw_ring_state = xhci_read_64(xhci, &xhci->op_regs->cmd_ring);
@@ -1410,7 +1468,21 @@ void xhci_handle_command_timeout(struct work_struct *work)
 		/* Prevent new doorbell, and start command abort */
 		xhci->cmd_ring_state = CMD_RING_STATE_ABORTED;
 		xhci_dbg(xhci, "Command timeout\n");
+<<<<<<< HEAD
 		xhci_abort_cmd_ring(xhci, flags);
+=======
+		ret = xhci_abort_cmd_ring(xhci, flags);
+		if (unlikely(ret == -ESHUTDOWN)) {
+			xhci_err(xhci, "Abort command ring failed\n");
+			xhci_cleanup_command_queue(xhci);
+			spin_unlock_irqrestore(&xhci->lock, flags);
+			usb_hc_died(xhci_to_hcd(xhci)->primary_hcd);
+			xhci_dbg(xhci, "xHCI host controller is dead.\n");
+
+			return;
+		}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto time_out_completed;
 	}
 
@@ -1471,6 +1543,21 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
 		return;
 	}
 
+<<<<<<< HEAD
+=======
+	cancel_delayed_work(&xhci->cmd_timer);
+
+	trace_xhci_cmd_completion(cmd_trb, (struct xhci_generic_trb *) event);
+
+	cmd_comp_code = GET_COMP_CODE(le32_to_cpu(event->status));
+
+	/* If CMD ring stopped we own the trbs between enqueue and dequeue */
+	if (cmd_comp_code == COMP_CMD_STOP) {
+		complete_all(&xhci->cmd_ring_stop_completion);
+		return;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (cmd->command_trb != xhci->cmd_ring->dequeue) {
 		xhci_err(xhci,
 			 "Command completion event does not match command\n");
@@ -1485,7 +1572,11 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
 	 */
 	if (cmd_comp_code == COMP_COMMAND_ABORTED) {
 		xhci->cmd_ring_state = CMD_RING_STATE_STOPPED;
+<<<<<<< HEAD
 		if (cmd->status == COMP_COMMAND_ABORTED) {
+=======
+		if (cmd->status == COMP_CMD_ABORT) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (xhci->current_cmd == cmd)
 				xhci->current_cmd = NULL;
 			goto event_handled;
@@ -1549,9 +1640,15 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
 	}
 
 	/* restart timer if this wasn't the last command */
+<<<<<<< HEAD
 	if (!list_is_singular(&xhci->cmd_list)) {
 		xhci->current_cmd = list_first_entry(&cmd->cmd_list,
 						struct xhci_command, cmd_list);
+=======
+	if (cmd->cmd_list.next != &xhci->cmd_list) {
+		xhci->current_cmd = list_entry(cmd->cmd_list.next,
+					       struct xhci_command, cmd_list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		xhci_mod_cmd_timer(xhci, XHCI_CMD_DEFAULT_TIMEOUT);
 	} else if (xhci->current_cmd == cmd) {
 		xhci->current_cmd = NULL;
@@ -2355,6 +2452,7 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
 		td->urb->actual_length = requested - remaining;
 	else
 		td->urb->actual_length =
+<<<<<<< HEAD
 			sum_trb_lengths(xhci, ep_ring, ep_trb) +
 			ep_trb_len - remaining;
 finish_td:
@@ -2362,6 +2460,70 @@ finish_td:
 		xhci_warn(xhci, "bad transfer trb length %d in event trb\n",
 			  remaining);
 		td->urb->actual_length = 0;
+=======
+			EVENT_TRB_LEN(le32_to_cpu(event->transfer_len));
+
+		if (td->urb->transfer_buffer_length <
+				td->urb->actual_length) {
+			xhci_warn(xhci, "HC gave bad length of %d bytes txed\n",
+				EVENT_TRB_LEN(le32_to_cpu(event->transfer_len)));
+			td->urb->actual_length = 0;
+			 /* status will be set by usb core for canceled urbs */
+		}
+	/* Fast path - was this the last TRB in the TD for this URB? */
+	} else if (event_trb == td->last_trb) {
+		if (EVENT_TRB_LEN(le32_to_cpu(event->transfer_len)) != 0) {
+			td->urb->actual_length =
+				td->urb->transfer_buffer_length -
+				EVENT_TRB_LEN(le32_to_cpu(event->transfer_len));
+			if (td->urb->transfer_buffer_length <
+					td->urb->actual_length) {
+				xhci_warn(xhci, "HC gave bad length "
+						"of %d bytes left\n",
+					  EVENT_TRB_LEN(le32_to_cpu(event->transfer_len)));
+				td->urb->actual_length = 0;
+				if (td->urb->transfer_flags & URB_SHORT_NOT_OK)
+					*status = -EREMOTEIO;
+				else
+					*status = 0;
+			}
+			/* Don't overwrite a previously set error code */
+			if (*status == -EINPROGRESS) {
+				if (td->urb->transfer_flags & URB_SHORT_NOT_OK)
+					*status = -EREMOTEIO;
+				else
+					*status = 0;
+			}
+		} else {
+			td->urb->actual_length =
+				td->urb->transfer_buffer_length;
+			/* Ignore a short packet completion if the
+			 * untransferred length was zero.
+			 */
+			if (*status == -EREMOTEIO)
+				*status = 0;
+		}
+	} else {
+		/* Slow path - walk the list, starting from the dequeue
+		 * pointer, to get the actual length transferred.
+		 */
+		td->urb->actual_length = 0;
+		for (cur_trb = ep_ring->dequeue, cur_seg = ep_ring->deq_seg;
+				cur_trb != event_trb;
+				next_trb(xhci, ep_ring, &cur_seg, &cur_trb)) {
+			if (!TRB_TYPE_NOOP_LE32(cur_trb->generic.field[3]) &&
+			    !TRB_TYPE_LINK_LE32(cur_trb->generic.field[3]))
+				td->urb->actual_length +=
+					TRB_LEN(le32_to_cpu(cur_trb->generic.field[2]));
+		}
+		/* If the ring didn't stop on a Link or No-op TRB, add
+		 * in the actual bytes transferred from the Normal TRB
+		 */
+		if (trb_comp_code != COMP_STOP_INVAL)
+			td->urb->actual_length +=
+				TRB_LEN(le32_to_cpu(cur_trb->generic.field[2])) -
+				EVENT_TRB_LEN(le32_to_cpu(event->transfer_len));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return finish_td(xhci, td, event, ep, status);
 }
@@ -3787,7 +3949,11 @@ static unsigned int xhci_get_burst_count(struct xhci_hcd *xhci,
 {
 	unsigned int max_burst;
 
+<<<<<<< HEAD
 	if (xhci->hci_version < 0x100 || urb->dev->speed < USB_SPEED_SUPER)
+=======
+	if (xhci->hci_version < 0x100 || udev->speed < USB_SPEED_SUPER)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	max_burst = urb->ep->ss_ep_comp.bMaxBurst;
@@ -3811,7 +3977,13 @@ static unsigned int xhci_get_last_burst_packet_count(struct xhci_hcd *xhci,
 	if (xhci->hci_version < 0x100)
 		return 0;
 
+<<<<<<< HEAD
 	if (urb->dev->speed >= USB_SPEED_SUPER) {
+=======
+	switch (udev->speed) {
+	case USB_SPEED_SUPER_PLUS:
+	case USB_SPEED_SUPER:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* bMaxBurst is zero based: 0 means 1 packet per burst */
 		max_burst = urb->ep->ss_ep_comp.bMaxBurst;
 		residue = total_packet_count % (max_burst + 1);
@@ -4228,7 +4400,12 @@ static int queue_command(struct xhci_hcd *xhci, struct xhci_command *cmd,
 	cmd->command_trb = xhci->cmd_ring->enqueue;
 
 	/* if there are no other commands queued we start the timeout timer */
+<<<<<<< HEAD
 	if (list_empty(&xhci->cmd_list)) {
+=======
+	if (xhci->cmd_list.next == &cmd->cmd_list &&
+	    !delayed_work_pending(&xhci->cmd_timer)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		xhci->current_cmd = cmd;
 		xhci_mod_cmd_timer(xhci, XHCI_CMD_DEFAULT_TIMEOUT);
 	}

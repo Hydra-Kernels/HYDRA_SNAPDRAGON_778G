@@ -103,6 +103,7 @@ static void jump_label_update(struct static_key *key);
  */
 int static_key_count(struct static_key *key)
 {
+<<<<<<< HEAD
 	/*
 	 * -1 means the first static_key_slow_inc() is in progress.
 	 *  static_key_enabled() must return true, so return 1 here.
@@ -119,6 +120,11 @@ void static_key_slow_inc_cpuslocked(struct static_key *key)
 
 	STATIC_KEY_CHECK_USE(key);
 	lockdep_assert_cpus_held();
+=======
+	int v, v1;
+
+	STATIC_KEY_CHECK_USE();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Careful if we get concurrent static_key_slow_inc() calls;
@@ -142,11 +148,15 @@ void static_key_slow_inc_cpuslocked(struct static_key *key)
 	if (atomic_read(&key->enabled) == 0) {
 		atomic_set(&key->enabled, -1);
 		jump_label_update(key);
+<<<<<<< HEAD
 		/*
 		 * Ensure that if the above cmpxchg loop observes our positive
 		 * value, it must also observe all the text changes.
 		 */
 		atomic_set_release(&key->enabled, 1);
+=======
+		atomic_set(&key->enabled, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		atomic_inc(&key->enabled);
 	}
@@ -163,11 +173,24 @@ EXPORT_SYMBOL_GPL(static_key_slow_inc);
 
 void static_key_enable_cpuslocked(struct static_key *key)
 {
+<<<<<<< HEAD
 	STATIC_KEY_CHECK_USE(key);
 	lockdep_assert_cpus_held();
 
 	if (atomic_read(&key->enabled) > 0) {
 		WARN_ON_ONCE(atomic_read(&key->enabled) != 1);
+=======
+	/*
+	 * The negative count check is valid even when a negative
+	 * key->enabled is in use by static_key_slow_inc(); a
+	 * __static_key_slow_dec() before the first static_key_slow_inc()
+	 * returns is unbalanced, because all other static_key_slow_inc()
+	 * instances block while the update is in progress.
+	 */
+	if (!atomic_dec_and_mutex_lock(&key->enabled, &jump_label_mutex)) {
+		WARN(atomic_read(&key->enabled) < 0,
+		     "jump label: negative count!\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	}
 
@@ -296,6 +319,13 @@ void __static_key_deferred_flush(void *key, struct delayed_work *work)
 	flush_delayed_work(work);
 }
 EXPORT_SYMBOL_GPL(__static_key_deferred_flush);
+
+void static_key_deferred_flush(struct static_key_deferred *key)
+{
+	STATIC_KEY_CHECK_USE();
+	flush_delayed_work(&key->work);
+}
+EXPORT_SYMBOL_GPL(static_key_deferred_flush);
 
 void jump_label_rate_limit(struct static_key_deferred *key,
 		unsigned long rl)

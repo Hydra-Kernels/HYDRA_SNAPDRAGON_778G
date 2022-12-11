@@ -129,6 +129,7 @@ int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
 
 	xsave = &fpu->state.xsave;
 
+<<<<<<< HEAD
 	fpu__prepare_write(fpu);
 
 	if (using_compacted_format()) {
@@ -141,11 +142,24 @@ int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
 		if (!ret)
 			ret = validate_xstate_header(&xsave->header);
 	}
+=======
+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, xsave, 0, -1);
+
+	/* xcomp_bv must be 0 when using uncompacted format */
+	if (!ret && xsave->header.xcomp_bv)
+		ret = -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * mxcsr reserved bits must be masked to zero for security reasons.
 	 */
 	xsave->i387.mxcsr &= mxcsr_feature_mask;
+
+	/*
+	 * In case of failure, mark all states as init:
+	 */
+	if (ret)
+		fpstate_init(&fpu->state);
 
 	/*
 	 * In case of failure, mark all states as init:

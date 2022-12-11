@@ -293,8 +293,11 @@ static int __init tsc_setup(char *str)
 		no_sched_irq_time = 1;
 	if (!strcmp(str, "unstable"))
 		mark_tsc_unstable("boot parameter");
+<<<<<<< HEAD
 	if (!strcmp(str, "nowatchdog"))
 		no_tsc_watchdog = 1;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 1;
 }
 

@@ -1208,10 +1208,16 @@ out_unlock:
 	return ret;
 }
 
+<<<<<<< HEAD
 static bool ttm_bo_places_compat(const struct ttm_place *places,
 				 unsigned num_placement,
 				 struct ttm_mem_reg *mem,
 				 uint32_t *new_flags)
+=======
+bool ttm_bo_mem_compat(struct ttm_placement *placement,
+		       struct ttm_mem_reg *mem,
+		       uint32_t *new_flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned i;
 
@@ -1231,6 +1237,7 @@ static bool ttm_bo_places_compat(const struct ttm_place *places,
 	}
 	return false;
 }
+EXPORT_SYMBOL(ttm_bo_mem_compat);
 
 bool ttm_bo_mem_compat(struct ttm_placement *placement,
 		       struct ttm_mem_reg *mem,
@@ -1872,8 +1879,12 @@ int ttm_bo_swapout(struct ttm_bo_global *glob, struct ttm_operation_ctx *ctx)
 {
 	struct ttm_buffer_object *bo;
 	int ret = -EBUSY;
+<<<<<<< HEAD
 	bool locked;
 	unsigned i;
+=======
+	int put_count;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock(&glob->lru_lock);
 	for (i = 0; i < TTM_MAX_BO_PRIORITY; ++i) {
@@ -1908,9 +1919,19 @@ int ttm_bo_swapout(struct ttm_bo_global *glob, struct ttm_operation_ctx *ctx)
 	 * Move to system cached
 	 */
 
+<<<<<<< HEAD
 	if (bo->mem.mem_type != TTM_PL_SYSTEM ||
 	    bo->ttm->caching_state != tt_cached) {
 		struct ttm_operation_ctx ctx = { false, false };
+=======
+	ret = ttm_bo_wait(bo, false, false, false);
+
+	if (unlikely(ret != 0))
+		goto out;
+
+	if (bo->mem.mem_type != TTM_PL_SYSTEM ||
+	    bo->ttm->caching_state != tt_cached) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct ttm_mem_reg evict_mem;
 
 		evict_mem = bo->mem;

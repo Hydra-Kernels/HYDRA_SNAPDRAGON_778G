@@ -51,18 +51,77 @@ static const char *handler[]= {
 };
 
 int show_unhandled_signals = 0;
+<<<<<<< HEAD
+=======
+
+/*
+ * Dump out the contents of some memory nicely...
+ */
+static void dump_mem(const char *lvl, const char *str, unsigned long bottom,
+		     unsigned long top, bool compat)
+{
+	unsigned long first;
+	mm_segment_t fs;
+	int i;
+	unsigned int width = compat ? 4 : 8;
+
+	/*
+	 * We need to switch to kernel mode so that we can use __get_user
+	 * to safely read from kernel space.
+	 */
+	fs = get_fs();
+	set_fs(KERNEL_DS);
+
+	printk("%s%s(0x%016lx to 0x%016lx)\n", lvl, str, bottom, top);
+
+	for (first = bottom & ~31; first < top; first += 32) {
+		unsigned long p;
+		char str[sizeof(" 12345678") * 8 + 1];
+
+		memset(str, ' ', sizeof(str));
+		str[sizeof(str) - 1] = '\0';
+
+		for (p = first, i = 0; i < (32 / width)
+					&& p < top; i++, p += width) {
+			if (p >= bottom && p < top) {
+				unsigned long val;
+
+				if (width == 8) {
+					if (__get_user(val, (unsigned long *)p) == 0)
+						sprintf(str + i * 17, " %016lx", val);
+					else
+						sprintf(str + i * 17, " ????????????????");
+				} else {
+					if (__get_user(val, (unsigned int *)p) == 0)
+						sprintf(str + i * 9, " %08lx", val);
+					else
+						sprintf(str + i * 9, " ????????");
+				}
+			}
+		}
+		printk("%s%04lx:%s\n", lvl, first & 0xffff, str);
+	}
+
+	set_fs(fs);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static void dump_backtrace_entry(unsigned long where)
 {
 	printk(" %pS\n", (void *)where);
 }
 
+<<<<<<< HEAD
 static void dump_kernel_instr(const char *lvl, struct pt_regs *regs)
+=======
+static void __dump_instr(const char *lvl, struct pt_regs *regs)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned long addr = instruction_pointer(regs);
 	char str[sizeof("00000000 ") * 5 + 2 + 1], *p = str;
 	int i;
 
+<<<<<<< HEAD
 	if (user_mode(regs))
 		return;
 
@@ -70,6 +129,12 @@ static void dump_kernel_instr(const char *lvl, struct pt_regs *regs)
 		unsigned int val, bad;
 
 		bad = aarch64_insn_read(&((u32 *)addr)[i], &val);
+=======
+	for (i = -4; i < 1; i++) {
+		unsigned int val, bad;
+
+		bad = get_user(val, &((u32 *)addr)[i]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (!bad)
 			p += sprintf(p, i == 0 ? "(%08x) " : "%08x ", val);
@@ -78,8 +143,24 @@ static void dump_kernel_instr(const char *lvl, struct pt_regs *regs)
 			break;
 		}
 	}
+<<<<<<< HEAD
 
 	printk("%sCode: %s\n", lvl, str);
+=======
+	printk("%sCode: %s\n", lvl, str);
+}
+
+static void dump_instr(const char *lvl, struct pt_regs *regs)
+{
+	if (!user_mode(regs)) {
+		mm_segment_t fs = get_fs();
+		set_fs(KERNEL_DS);
+		__dump_instr(lvl, regs);
+		set_fs(fs);
+	} else {
+		__dump_instr(lvl, regs);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void dump_backtrace(struct pt_regs *regs, struct task_struct *tsk)
@@ -788,6 +869,7 @@ const char *esr_get_class_string(u32 esr)
  */
 asmlinkage void bad_mode(struct pt_regs *regs, int reason, unsigned int esr)
 {
+<<<<<<< HEAD
 	console_verbose();
 
 	pr_crit("Bad mode in %s handler detected on CPU%d, code 0x%08x -- %s\n",
@@ -847,6 +929,41 @@ asmlinkage void handle_bad_stack(struct pt_regs *regs)
 	 */
 	nmi_panic(NULL, "kernel stack overflow");
 	cpu_park_loop();
+=======
+	console_verbose();
+
+	pr_crit("Bad mode in %s handler detected, code 0x%08x -- %s\n",
+		handler[reason], esr, esr_get_class_string(esr));
+
+	die("Oops - bad mode", regs, 0);
+	local_irq_disable();
+	panic("bad mode");
+}
+
+/*
+ * bad_el0_sync handles unexpected, but potentially recoverable synchronous
+ * exceptions taken from EL0. Unlike bad_mode, this returns.
+ */
+asmlinkage void bad_el0_sync(struct pt_regs *regs, int reason, unsigned int esr)
+{
+	siginfo_t info;
+	void __user *pc = (void __user *)instruction_pointer(regs);
+	console_verbose();
+
+	pr_crit("Bad EL0 synchronous exception detected on CPU%d, code 0x%08x -- %s\n",
+		smp_processor_id(), esr, esr_get_class_string(esr));
+	__show_regs(regs);
+
+	info.si_signo = SIGILL;
+	info.si_errno = 0;
+	info.si_code  = ILL_ILLOPC;
+	info.si_addr  = pc;
+
+	current->thread.fault_address = 0;
+	current->thread.fault_code = 0;
+
+	force_sig_info(info.si_signo, &info, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 

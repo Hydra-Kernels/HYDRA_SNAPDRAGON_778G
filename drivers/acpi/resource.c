@@ -33,6 +33,7 @@ static inline bool acpi_iospace_resource_valid(struct resource *res)
  */
 static inline bool
 acpi_iospace_resource_valid(struct resource *res) { return true; }
+<<<<<<< HEAD
 #endif
 
 #if IS_ENABLED(CONFIG_ACPI_GENERIC_GSI)
@@ -46,6 +47,8 @@ static inline bool is_gsi(struct acpi_resource_extended_irq *ext_irq)
 {
 	return true;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 static bool acpi_dev_resource_len_valid(u64 start, u64 end, u64 len, bool io)

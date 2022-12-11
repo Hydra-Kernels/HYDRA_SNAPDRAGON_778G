@@ -491,8 +491,11 @@ struct ubi_debug_info {
  * @fm_work: fastmap work queue
  * @fm_work_scheduled: non-zero if fastmap work was scheduled
  * @fast_attach: non-zero if UBI was attached by fastmap
+<<<<<<< HEAD
  * @fm_anchor: The next anchor PEB to use for fastmap
  * @fm_do_produce_anchor: If true produce an anchor PEB in wl
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * @used: RB-tree of used physical eraseblocks
  * @erroneous: RB-tree of erroneous used physical eraseblocks
@@ -601,8 +604,11 @@ struct ubi_device {
 	struct work_struct fm_work;
 	int fm_work_scheduled;
 	int fast_attach;
+<<<<<<< HEAD
 	struct ubi_wl_entry *fm_anchor;
 	int fm_do_produce_anchor;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Wear-leveling sub-system's stuff */
 	struct rb_root used;
@@ -966,8 +972,11 @@ size_t ubi_calc_fm_size(struct ubi_device *ubi);
 int ubi_update_fastmap(struct ubi_device *ubi);
 int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		     struct ubi_attach_info *scan_ai);
+<<<<<<< HEAD
 int ubi_fastmap_init_checkmap(struct ubi_volume *vol, int leb_count);
 void ubi_fastmap_destroy_checkmap(struct ubi_volume *vol);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 static inline int ubi_update_fastmap(struct ubi_device *ubi) { return 0; }
 int static inline ubi_fastmap_init_checkmap(struct ubi_volume *vol, int leb_count) { return 0; }

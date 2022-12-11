@@ -42,7 +42,11 @@ static inline u64 gic_read_iar_common(void)
 {
 	u64 irqstat;
 
+<<<<<<< HEAD
 	irqstat = read_sysreg_s(SYS_ICC_IAR1_EL1);
+=======
+	asm volatile("mrs_s %0, " __stringify(ICC_IAR1_EL1) : "=r" (irqstat));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dsb(sy);
 	return irqstat;
 }

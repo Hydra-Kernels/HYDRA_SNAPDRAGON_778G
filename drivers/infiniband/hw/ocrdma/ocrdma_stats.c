@@ -820,8 +820,26 @@ void ocrdma_add_port_stats(struct ocrdma_dev *dev)
 
 	dev->reset_stats.type = OCRDMA_RESET_STATS;
 	dev->reset_stats.dev = dev;
+<<<<<<< HEAD
 	debugfs_create_file("reset_stats", 0200, dev->dir, &dev->reset_stats,
 			    &ocrdma_dbg_ops);
+=======
+	if (!debugfs_create_file("reset_stats", 0200, dev->dir,
+				&dev->reset_stats, &ocrdma_dbg_ops))
+		goto err;
+
+	/* Now create dma_mem for stats mbx command */
+	if (!ocrdma_alloc_stats_mem(dev))
+		goto err;
+
+	mutex_init(&dev->stats_lock);
+
+	return;
+err:
+	ocrdma_release_stats_mem(dev);
+	debugfs_remove_recursive(dev->dir);
+	dev->dir = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void ocrdma_rem_port_stats(struct ocrdma_dev *dev)

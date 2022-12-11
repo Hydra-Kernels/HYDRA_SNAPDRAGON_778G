@@ -1600,7 +1600,11 @@ static long vhost_net_reset_owner(struct vhost_net *n)
 	vhost_net_stop(n, &tx_sock, &rx_sock);
 	vhost_net_flush(n);
 	vhost_dev_stop(&n->dev);
+<<<<<<< HEAD
 	vhost_dev_reset_owner(&n->dev, umem);
+=======
+	vhost_dev_reset_owner(&n->dev, memory);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vhost_net_vq_reset(n);
 done:
 	mutex_unlock(&n->dev.mutex);

@@ -194,6 +194,7 @@ static inline int strtobool(const char *s, bool *res)
 {
 	return kstrtobool(s, res);
 }
+<<<<<<< HEAD
 
 int match_string(const char * const *array, size_t n, const char *string);
 int __sysfs_match_string(const char * const *array, size_t n, const char *s);
@@ -206,6 +207,8 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
  * Helper for __sysfs_match_string(). Calculates the size of @a automatically.
  */
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_BINARY_PRINTF
 int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);

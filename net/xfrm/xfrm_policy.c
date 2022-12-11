@@ -1319,10 +1319,15 @@ static void xfrm_hash_rebuild(struct work_struct *work)
 
 	/* re-insert all policies by order of creation */
 	list_for_each_entry_reverse(policy, &net->xfrm.policy_all, walk.all) {
+<<<<<<< HEAD
 		if (policy->walk.dead)
 			continue;
 		dir = xfrm_policy_id2dir(policy->index);
 		if (dir >= XFRM_POLICY_MAX) {
+=======
+		if (policy->walk.dead ||
+		    xfrm_policy_id2dir(policy->index) >= XFRM_POLICY_MAX) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* skip socket policies */
 			continue;
 		}
@@ -2153,8 +2158,12 @@ static struct xfrm_policy *xfrm_policy_lookup(struct net *net,
 }
 
 static struct xfrm_policy *xfrm_sk_policy_lookup(const struct sock *sk, int dir,
+<<<<<<< HEAD
 						 const struct flowi *fl,
 						 u16 family, u32 if_id)
+=======
+						 const struct flowi *fl, u16 family)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct xfrm_policy *pol;
 
@@ -2663,9 +2672,12 @@ free_dst:
 	if (xdst0)
 		dst_release_immediate(&xdst0->u.dst);
 
+<<<<<<< HEAD
 	return ERR_PTR(err);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int xfrm_expand_policies(const struct flowi *fl, u16 family,
 				struct xfrm_policy **pols,
 				int *num_pols, int *num_xfrms)
@@ -3034,8 +3046,12 @@ struct dst_entry *xfrm_lookup_with_ifid(struct net *net,
 	sk = sk_const_to_full_sk(sk);
 	if (sk && sk->sk_policy[XFRM_POLICY_OUT]) {
 		num_pols = 1;
+<<<<<<< HEAD
 		pols[0] = xfrm_sk_policy_lookup(sk, XFRM_POLICY_OUT, fl, family,
 						if_id);
+=======
+		pols[0] = xfrm_sk_policy_lookup(sk, XFRM_POLICY_OUT, fl, family);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = xfrm_expand_policies(fl, family, pols,
 					   &num_pols, &num_xfrms);
 		if (err < 0)
@@ -3558,7 +3574,11 @@ int __xfrm_policy_check(struct sock *sk, int dir, struct sk_buff *skb,
 	pol = NULL;
 	sk = sk_to_full_sk(sk);
 	if (sk && sk->sk_policy[dir]) {
+<<<<<<< HEAD
 		pol = xfrm_sk_policy_lookup(sk, dir, &fl, family, if_id);
+=======
+		pol = xfrm_sk_policy_lookup(sk, dir, &fl, family);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (IS_ERR(pol)) {
 			XFRM_INC_STATS(net, LINUX_MIB_XFRMINPOLERROR);
 			return 0;
@@ -4109,7 +4129,11 @@ static int __net_init xfrm_net_init(struct net *net)
 
 	/* Initialize the per-net locks here */
 	spin_lock_init(&net->xfrm.xfrm_state_lock);
+<<<<<<< HEAD
 	spin_lock_init(&net->xfrm.xfrm_policy_lock);
+=======
+	rwlock_init(&net->xfrm.xfrm_policy_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_init(&net->xfrm.xfrm_cfg_mutex);
 
 	rv = xfrm_statistics_init(net);
@@ -4124,6 +4148,12 @@ static int __net_init xfrm_net_init(struct net *net)
 	rv = xfrm_sysctl_init(net);
 	if (rv < 0)
 		goto out_sysctl;
+<<<<<<< HEAD
+=======
+	rv = flow_cache_init(net);
+	if (rv < 0)
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

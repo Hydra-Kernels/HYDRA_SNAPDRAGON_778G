@@ -860,7 +860,11 @@ int spi_map_buf(struct spi_controller *ctlr, struct device *dev,
 	sg = &sgt->sgl[0];
 	for (i = 0; i < sgs; i++) {
 
+<<<<<<< HEAD
 		if (vmalloced_buf || kmap_buf) {
+=======
+		if (vmalloced_buf) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * Next scatterlist entry size is the minimum between
 			 * the desc_len and the remaining buffer length that
@@ -869,10 +873,14 @@ int spi_map_buf(struct spi_controller *ctlr, struct device *dev,
 			min = min_t(size_t, desc_len,
 				    min_t(size_t, len,
 					  PAGE_SIZE - offset_in_page(buf)));
+<<<<<<< HEAD
 			if (vmalloced_buf)
 				vm_page = vmalloc_to_page(buf);
 			else
 				vm_page = kmap_to_page(buf);
+=======
+			vm_page = vmalloc_to_page(buf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (!vm_page) {
 				sg_free_table(sgt);
 				return -ENOMEM;

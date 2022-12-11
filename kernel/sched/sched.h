@@ -699,12 +699,19 @@ struct cfs_rq {
 	int			runtime_enabled;
 	s64			runtime_remaining;
 
+<<<<<<< HEAD
 	u64			throttled_clock;
 	u64			throttled_clock_task;
 	u64			throttled_clock_task_time;
 	int			throttled;
 	int			throttle_count;
 	struct list_head	throttled_list;
+=======
+	u64 throttled_clock, throttled_clock_task;
+	u64 throttled_clock_task_time;
+	int throttled, throttle_count, throttle_uptodate;
+	struct list_head throttled_list;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_CFS_BANDWIDTH */
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 };
@@ -733,10 +740,19 @@ struct rt_rq {
 	} highest_prio;
 #endif
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 	unsigned long		rt_nr_migratory;
 	unsigned long		rt_nr_total;
 	int			overloaded;
 	struct plist_head	pushable_tasks;
+=======
+	unsigned long rt_nr_migratory;
+	unsigned long rt_nr_total;
+	int overloaded;
+	struct plist_head pushable_tasks;
+#endif /* CONFIG_SMP */
+	int rt_queued;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* CONFIG_SMP */
 	int			rt_queued;
@@ -898,6 +914,7 @@ struct root_domain {
 	/*
 	 * For IPI pull requests, loop across the rto_mask.
 	 */
+<<<<<<< HEAD
 	struct irq_work		rto_push_work;
 	raw_spinlock_t		rto_lock;
 	/* These are only updated and read within rto_lock */
@@ -906,6 +923,16 @@ struct root_domain {
 	/* These atomics are updated outside of a lock */
 	atomic_t		rto_loop_next;
 	atomic_t		rto_loop_start;
+=======
+	struct irq_work rto_push_work;
+	raw_spinlock_t rto_lock;
+	/* These are only updated and read within rto_lock */
+	int rto_loop;
+	int rto_cpu;
+	/* These atomics are updated outside of a lock */
+	atomic_t rto_loop_next;
+	atomic_t rto_loop_start;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	/*
 	 * The "RT overload" flag: it gets set if a CPU has more than
@@ -928,10 +955,14 @@ struct root_domain {
 #endif
 };
 
+<<<<<<< HEAD
 extern void init_defrootdomain(void);
 extern void init_max_cpu_capacity(struct max_cpu_capacity *mcc);
 extern int sched_init_domains(const struct cpumask *cpu_map);
 extern void rq_attach_root(struct rq *rq, struct root_domain *rd);
+=======
+extern struct root_domain def_root_domain;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void sched_get_rd(struct root_domain *rd);
 extern void sched_put_rd(struct root_domain *rd);
 

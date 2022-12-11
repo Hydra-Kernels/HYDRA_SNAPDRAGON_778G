@@ -817,7 +817,11 @@ static int cgwb_bdi_init(struct backing_dev_info *bdi)
 	if (!bdi->wb_congested)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	refcount_set(&bdi->wb_congested->refcnt, 1);
+=======
+	atomic_set(&bdi->wb_congested->refcnt, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	err = wb_init(&bdi->wb, bdi, 1, GFP_KERNEL);
 	if (err) {
@@ -827,6 +831,7 @@ static int cgwb_bdi_init(struct backing_dev_info *bdi)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void cgwb_bdi_unregister(struct backing_dev_info *bdi) { }
 
 static void cgwb_bdi_exit(struct backing_dev_info *bdi)
@@ -843,6 +848,12 @@ static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 {
 	list_del_rcu(&wb->bdi_node);
 }
+=======
+static void cgwb_bdi_destroy(struct backing_dev_info *bdi)
+{
+	wb_congested_put(bdi->wb_congested);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
@@ -993,6 +1004,20 @@ int bdi_register_owner(struct backing_dev_info *bdi, struct device *owner)
 }
 EXPORT_SYMBOL(bdi_register_owner);
 
+int bdi_register_owner(struct backing_dev_info *bdi, struct device *owner)
+{
+	int rc;
+
+	rc = bdi_register(bdi, NULL, "%u:%u", MAJOR(owner->devt),
+			MINOR(owner->devt));
+	if (rc)
+		return rc;
+	bdi->owner = owner;
+	get_device(owner);
+	return 0;
+}
+EXPORT_SYMBOL(bdi_register_owner);
+
 /*
  * Remove bdi from bdi_list, and ensure that it is no longer visible
  */
@@ -1133,8 +1158,26 @@ long wait_iff_congested(int sync, long timeout)
 	 * If there is no congestion, yield if necessary instead
 	 * of sleeping on the congestion queue
 	 */
+<<<<<<< HEAD
 	if (atomic_read(&nr_wb_congested[sync]) == 0) {
 		cond_resched();
+=======
+	if (atomic_read(&nr_wb_congested[sync]) == 0 ||
+	    !test_bit(ZONE_CONGESTED, &zone->flags)) {
+
+		/*
+		 * Memory allocation/reclaim might be called from a WQ
+		 * context and the current implementation of the WQ
+		 * concurrency control doesn't recognize that a particular
+		 * WQ is congested if the worker thread is looping without
+		 * ever sleeping. Therefore we have to do a short sleep
+		 * here rather than calling cond_resched().
+		 */
+		if (current->flags & PF_WQ_WORKER)
+			schedule_timeout_uninterruptible(1);
+		else
+			cond_resched();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* In case we scheduled, work out time remaining */
 		ret = timeout - (jiffies - start);

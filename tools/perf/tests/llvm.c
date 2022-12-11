@@ -56,8 +56,12 @@ int
 test_llvm__fetch_bpf_obj(void **p_obj_buf,
 			 size_t *p_obj_buf_sz,
 			 enum test_llvm__testcase idx,
+<<<<<<< HEAD
 			 bool force,
 			 bool *should_load_fail)
+=======
+			 bool force)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	const char *source;
 	const char *desc;
@@ -70,8 +74,13 @@ test_llvm__fetch_bpf_obj(void **p_obj_buf,
 
 	source = bpf_source_table[idx].source;
 	desc = bpf_source_table[idx].desc;
+<<<<<<< HEAD
 	if (should_load_fail)
 		*should_load_fail = bpf_source_table[idx].should_load_fail;
+=======
+
+	perf_config(perf_config_cb, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Skip this test if user's .perfconfig doesn't set [llvm] section

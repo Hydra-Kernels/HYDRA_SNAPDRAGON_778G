@@ -554,7 +554,11 @@
 					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
 					 AT91_XDMAC_DT_PERID(36))>;
 				dma-names = "tx", "rx";
+<<<<<<< HEAD
 				clocks = <&pmc PMC_TYPE_PERIPHERAL 24>;
+=======
+				clocks = <&uart0_clk>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				clock-names = "usart";
 				status = "disabled";
 			};
@@ -570,7 +574,11 @@
 					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
 					 AT91_XDMAC_DT_PERID(38))>;
 				dma-names = "tx", "rx";
+<<<<<<< HEAD
 				clocks = <&pmc PMC_TYPE_PERIPHERAL 25>;
+=======
+				clocks = <&uart1_clk>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				clock-names = "usart";
 				status = "disabled";
 			};
@@ -586,7 +594,11 @@
 					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
 					 AT91_XDMAC_DT_PERID(40))>;
 				dma-names = "tx", "rx";
+<<<<<<< HEAD
 				clocks = <&pmc PMC_TYPE_PERIPHERAL 26>;
+=======
+				clocks = <&uart2_clk>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				clock-names = "usart";
 				status = "disabled";
 			};
@@ -754,6 +766,7 @@
 				compatible = "atmel,at91sam9260-usart";
 				reg = <0xfc008000 0x100>;
 				interrupts = <27 IRQ_TYPE_LEVEL_HIGH 7>;
+<<<<<<< HEAD
 				dmas = <&dma1
 					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
 					 AT91_XDMAC_DT_PERID(41))>,
@@ -762,6 +775,16 @@
 					 AT91_XDMAC_DT_PERID(42))>;
 				dma-names = "tx", "rx";
 				clocks = <&pmc PMC_TYPE_PERIPHERAL 27>;
+=======
+				dmas = <&dma0
+					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
+					 AT91_XDMAC_DT_PERID(41))>,
+				       <&dma0
+					(AT91_XDMAC_DT_MEM_IF(0) | AT91_XDMAC_DT_PER_IF(1) |
+					 AT91_XDMAC_DT_PERID(42))>;
+				dma-names = "tx", "rx";
+				clocks = <&uart3_clk>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				clock-names = "usart";
 				status = "disabled";
 			};

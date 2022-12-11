@@ -181,6 +181,11 @@ static noinline __init void setup_lowcore_early(void)
 
 static noinline __init void setup_facility_list(void)
 {
+<<<<<<< HEAD
+=======
+	stfle(S390_lowcore.stfle_fac_list,
+	      ARRAY_SIZE(S390_lowcore.stfle_fac_list));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memcpy(S390_lowcore.alt_stfle_fac_list,
 	       S390_lowcore.stfle_fac_list,
 	       sizeof(S390_lowcore.alt_stfle_fac_list));
@@ -230,6 +235,11 @@ static __init void detect_machine_facilities(void)
 		S390_lowcore.machine_flags |= MACHINE_FLAG_EDAT2;
 	if (test_facility(3))
 		S390_lowcore.machine_flags |= MACHINE_FLAG_IDTE;
+<<<<<<< HEAD
+=======
+	if (test_facility(40))
+		S390_lowcore.machine_flags |= MACHINE_FLAG_LPP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (test_facility(50) && test_facility(73)) {
 		S390_lowcore.machine_flags |= MACHINE_FLAG_TE;
 		__ctl_set_bit(0, 55);

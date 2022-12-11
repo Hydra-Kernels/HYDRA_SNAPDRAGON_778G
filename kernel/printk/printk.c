@@ -2451,6 +2451,10 @@ void console_unlock(void)
 	static char ext_text[CONSOLE_EXT_LOG_MAX];
 	static char text[LOG_LINE_MAX + PREFIX_MAX];
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	bool wake_klogd = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool do_cond_resched, retry;
 
 	if (console_suspended) {
@@ -2459,7 +2463,11 @@ void console_unlock(void)
 	}
 
 	/*
+<<<<<<< HEAD
 	 * Console drivers are called with interrupts disabled, so
+=======
+	 * Console drivers are called under logbuf_lock, so
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * @console_may_schedule should be cleared before; however, we may
 	 * end up dumping a lot of lines, for example, if called from
 	 * console registration path, and should invoke cond_resched()
@@ -2467,6 +2475,7 @@ void console_unlock(void)
 	 * scheduling stall on a slow console leading to RCU stall and
 	 * softlockup warnings which exacerbate the issue with more
 	 * messages practically incapacitating the system.
+<<<<<<< HEAD
 	 *
 	 * console_trylock() is not able to detect the preemptive
 	 * context reliably. Therefore the value must be stored before
@@ -2474,6 +2483,10 @@ void console_unlock(void)
 	 */
 	do_cond_resched = console_may_schedule;
 again:
+=======
+	 */
+	do_cond_resched = console_may_schedule;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	console_may_schedule = 0;
 
 	/*
@@ -2543,6 +2556,7 @@ skip:
 		console_seq++;
 		raw_spin_unlock(&logbuf_lock);
 
+<<<<<<< HEAD
 		/*
 		 * While actively printing out messages, if another printk()
 		 * were to occur on another CPU, it may wait for this one to
@@ -2550,6 +2564,17 @@ skip:
 		 * waiter waiting to take over.
 		 */
 		console_lock_spinning_enable();
+=======
+		stop_critical_timings();	/* don't trace print latency */
+		call_console_drivers(level, ext_text, ext_len, text, len);
+		start_critical_timings();
+		local_irq_restore(flags);
+
+		if (do_cond_resched)
+			cond_resched();
+	}
+	console_locked = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		stop_critical_timings();	/* don't trace print latency */
 		call_console_drivers(ext_text, ext_len, text, len);
@@ -2628,11 +2653,18 @@ void console_unblank(void)
 
 /**
  * console_flush_on_panic - flush console content on panic
+<<<<<<< HEAD
  * @mode: flush all messages in buffer or just the pending ones
  *
  * Immediately output all pending messages no matter what.
  */
 void console_flush_on_panic(enum con_flush_mode mode)
+=======
+ *
+ * Immediately output all pending messages no matter what.
+ */
+void console_flush_on_panic(void)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * If someone else is holding the console lock, trylock will fail
@@ -2643,6 +2675,7 @@ void console_flush_on_panic(enum con_flush_mode mode)
 	 */
 	console_trylock();
 	console_may_schedule = 0;
+<<<<<<< HEAD
 
 	if (mode == CONSOLE_REPLAY_ALL) {
 		unsigned long flags;
@@ -2652,6 +2685,8 @@ void console_flush_on_panic(enum con_flush_mode mode)
 		console_idx = log_first_idx;
 		logbuf_unlock_irqrestore(flags);
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	console_unlock();
 }
 

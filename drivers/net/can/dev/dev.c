@@ -543,7 +543,13 @@ void can_free_echo_skb(struct net_device *dev, unsigned int idx)
 }
 EXPORT_SYMBOL_GPL(can_free_echo_skb);
 
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
 /* CAN device restart for bus-off recovery */
+=======
+/*
+ * CAN device restart for bus-off recovery
+ */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 static void can_restart(struct net_device *dev)
 {
 	struct can_priv *priv = netdev_priv(dev);
@@ -587,8 +593,12 @@ restart:
 static void can_restart_work(struct work_struct *work)
 {
 	struct delayed_work *dwork = to_delayed_work(work);
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
 	struct can_priv *priv = container_of(dwork, struct can_priv,
 					     restart_work);
+=======
+	struct can_priv *priv = container_of(dwork, struct can_priv, restart_work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 
 	can_restart(priv->dev);
 }
@@ -748,8 +758,11 @@ struct net_device *alloc_candev_mqs(int sizeof_priv, unsigned int echo_skb_max,
 
 	priv = netdev_priv(dev);
 	priv->dev = dev;
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
 
 	dev->ml_priv = (void *)priv + ALIGN(sizeof_priv, NETDEV_ALIGN);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 
 	if (echo_skb_max) {
 		priv->echo_skb_max = echo_skb_max;
@@ -895,8 +908,12 @@ static const struct nla_policy can_policy[IFLA_CAN_MAX + 1] = {
 	[IFLA_CAN_TERMINATION]	= { .type = NLA_U16 },
 };
 
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
 static int can_validate(struct nlattr *tb[], struct nlattr *data[],
 			struct netlink_ext_ack *extack)
+=======
+static int can_validate(struct nlattr *tb[], struct nlattr *data[])
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 {
 	bool is_can_fd = false;
 
@@ -928,9 +945,14 @@ static int can_validate(struct nlattr *tb[], struct nlattr *data[],
 	return 0;
 }
 
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
 static int can_changelink(struct net_device *dev, struct nlattr *tb[],
 			  struct nlattr *data[],
 			  struct netlink_ext_ack *extack)
+=======
+static int can_changelink(struct net_device *dev,
+			  struct nlattr *tb[], struct nlattr *data[])
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 {
 	struct can_priv *priv = netdev_priv(dev);
 	int err;
@@ -1222,6 +1244,10 @@ static int can_newlink(struct net *src_net, struct net_device *dev,
 
 static void can_dellink(struct net_device *dev, struct list_head *head)
 {
+<<<<<<< HEAD:drivers/net/can/dev/dev.c
+=======
+	return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/can/dev.c
 }
 
 static struct rtnl_link_ops can_link_ops __read_mostly = {

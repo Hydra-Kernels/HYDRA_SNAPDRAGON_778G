@@ -25,6 +25,12 @@
 int gcov_events_enabled;
 DEFINE_MUTEX(gcov_lock);
 
+void __gcov_exit(void)
+{
+	/* Unused. */
+}
+EXPORT_SYMBOL(__gcov_exit);
+
 /**
  * gcov_enable_events - enable event reporting through gcov_event()
  *

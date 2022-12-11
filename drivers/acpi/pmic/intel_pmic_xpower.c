@@ -122,10 +122,13 @@ static struct pmic_table power_table[] = {
 		.reg = 0x10,
 		.bit = 0x00
 	}, /* BUC6 */
+<<<<<<< HEAD
 	{
 		.address = 0x4c,
 		.reg = 0x92,
 	}, /* GPI1 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* TMP0 - TMP5 are the same, all from GPADC */

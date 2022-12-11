@@ -603,7 +603,13 @@ asmlinkage void do_divide_error(unsigned long r4)
 		/* Let gcc know unhandled cases don't make it past here */
 		return;
 	}
+<<<<<<< HEAD
 	force_sig_fault(SIGFPE, code, NULL);
+=======
+
+	info.si_signo = SIGFPE;
+	force_sig_info(info.si_signo, &info, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 

@@ -141,7 +141,11 @@ static int create_fixed_stream_quirk(struct snd_usb_audio *chip,
 	fp = kmemdup(quirk->data, sizeof(*fp), GFP_KERNEL);
 	if (!fp)
 		return -ENOMEM;
+<<<<<<< HEAD
 
+=======
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	INIT_LIST_HEAD(&fp->list);
 	if (fp->nr_rates > MAX_NR_RATES) {
 		kfree(fp);
@@ -1448,6 +1452,7 @@ bool snd_usb_get_sample_rate_quirk(struct snd_usb_audio *chip)
 	/* devices which do not support reading the sample rate. */
 	switch (chip->usb_id) {
 	case USB_ID(0x041E, 0x4080): /* Creative Live Cam VF0610 */
+<<<<<<< HEAD
 	case USB_ID(0x04D8, 0xFEEA): /* Benchmark DAC1 Pre */
 	case USB_ID(0x0556, 0x0014): /* Phoenix Audio TMX320VC */
 	case USB_ID(0x05A3, 0x9420): /* ELP HD USB Camera */
@@ -1455,6 +1460,26 @@ bool snd_usb_get_sample_rate_quirk(struct snd_usb_audio *chip)
 	case USB_ID(0x074D, 0x3553): /* Outlaw RR2150 (Micronas UAC3553B) */
 	case USB_ID(0x1395, 0x740a): /* Sennheiser DECT */
 	case USB_ID(0x1901, 0x0191): /* GE B850V3 CP2114 audio interface */
+=======
+	case USB_ID(0x045E, 0x075D): /* MS Lifecam Cinema  */
+	case USB_ID(0x045E, 0x076D): /* MS Lifecam HD-5000 */
+	case USB_ID(0x045E, 0x076E): /* MS Lifecam HD-5001 */
+	case USB_ID(0x045E, 0x076F): /* MS Lifecam HD-6000 */
+	case USB_ID(0x045E, 0x0772): /* MS Lifecam Studio */
+	case USB_ID(0x045E, 0x0779): /* MS Lifecam HD-3000 */
+	case USB_ID(0x047F, 0x02F7): /* Plantronics BT-600 */
+	case USB_ID(0x047F, 0x0415): /* Plantronics BT-300 */
+	case USB_ID(0x047F, 0xAA05): /* Plantronics DA45 */
+	case USB_ID(0x04D8, 0xFEEA): /* Benchmark DAC1 Pre */
+	case USB_ID(0x0556, 0x0014): /* Phoenix Audio TMX320VC */
+	case USB_ID(0x05A3, 0x9420): /* ELP HD USB Camera */
+	case USB_ID(0x074D, 0x3553): /* Outlaw RR2150 (Micronas UAC3553B) */
+	case USB_ID(0x1395, 0x740a): /* Sennheiser DECT */
+	case USB_ID(0x1901, 0x0191): /* GE B850V3 CP2114 audio interface */
+	case USB_ID(0x1de7, 0x0013): /* Phoenix Audio MT202exe */
+	case USB_ID(0x1de7, 0x0014): /* Phoenix Audio TMX320 */
+	case USB_ID(0x1de7, 0x0114): /* Phoenix Audio MT202pcs */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case USB_ID(0x21B4, 0x0081): /* AudioQuest DragonFly */
 	case USB_ID(0x2912, 0x30c8): /* Audioengine D1 */
 	case USB_ID(0x413c, 0xa506): /* Dell AE515 sound bar */
@@ -1571,10 +1596,17 @@ void snd_usb_set_interface_quirk(struct usb_device *dev)
 	 * "Playback Design" products need a 50ms delay after setting the
 	 * USB interface.
 	 */
+<<<<<<< HEAD
 	switch (USB_ID_VENDOR(chip->usb_id)) {
 	case 0x23ba: /* Playback Design */
 	case 0x0644: /* TEAC Corp. */
 		msleep(50);
+=======
+	switch (le16_to_cpu(dev->descriptor.idVendor)) {
+	case 0x23ba: /* Playback Design */
+	case 0x0644: /* TEAC Corp. */
+		mdelay(50);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	}
 }
@@ -1600,11 +1632,19 @@ void snd_usb_ctl_msg_quirk(struct usb_device *dev, unsigned int pipe,
 	 * "TEAC Corp." products need a 20ms delay after each
 	 * class compliant request
 	 */
+<<<<<<< HEAD
 	if (USB_ID_VENDOR(chip->usb_id) == 0x0644 &&
 	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)
 		msleep(20);
 
 	/* ITF-USB DSD based DACs functionality need a delay
+=======
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0644) &&
+	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)
+		mdelay(20);
+
+	/* Marantz/Denon devices with USB DAC functionality need a delay
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * after each class compliant request
 	 */
 	if (is_itf_usb_dsd_dac(chip->usb_id)
@@ -1671,13 +1711,21 @@ u64 snd_usb_interface_dsd_format_quirks(struct snd_usb_audio *chip,
 
 	/* XMOS based USB DACs */
 	switch (chip->usb_id) {
+<<<<<<< HEAD
 	case USB_ID(0x1511, 0x0037): /* AURALiC VEGA */
 	case USB_ID(0x2522, 0x0012): /* LH Labs VI DAC Infinity */
+=======
+	case USB_ID(0x20b1, 0x3008): /* iFi Audio micro/nano iDSD */
+	case USB_ID(0x20b1, 0x2008): /* Matrix Audio X-Sabre */
+	case USB_ID(0x20b1, 0x300a): /* Matrix Audio Mini-i Pro */
+	case USB_ID(0x22d9, 0x0416): /* OPPO HA-1 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case USB_ID(0x2772, 0x0230): /* Pro-Ject Pre Box S2 Digital */
 		if (fp->altsetting == 2)
 			return SNDRV_PCM_FMTBIT_DSD_U32_BE;
 		break;
 
+<<<<<<< HEAD
 	case USB_ID(0x0d8c, 0x0316): /* Hegel HD12 DSD */
 	case USB_ID(0x10cb, 0x0103): /* The Bit Opus #3; with fp->dsd_raw */
 	case USB_ID(0x16d0, 0x06b2): /* NuPrime DAC-10 */
@@ -1692,6 +1740,13 @@ u64 snd_usb_interface_dsd_format_quirks(struct snd_usb_audio *chip,
 	case USB_ID(0x27f7, 0x3002): /* W4S DAC-2v2SE */
 	case USB_ID(0x29a2, 0x0086): /* Mutec MC3+ USB */
 	case USB_ID(0x6b42, 0x0042): /* MSB Technology */
+=======
+	case USB_ID(0x20b1, 0x000a): /* Gustard DAC-X20U */
+	case USB_ID(0x20b1, 0x2009): /* DIYINHK DSD DXD 384kHz USB to I2S/DSD */
+	case USB_ID(0x20b1, 0x2023): /* JLsounds I2SoverUSB */
+	case USB_ID(0x20b1, 0x3023): /* Aune X1S 32BIT/384 DSD DAC */
+	case USB_ID(0x2616, 0x0106): /* PS Audio NuWave DAC */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (fp->altsetting == 3)
 			return SNDRV_PCM_FMTBIT_DSD_U32_BE;
 		break;

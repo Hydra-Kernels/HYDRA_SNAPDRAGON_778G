@@ -11,8 +11,32 @@
 #include <asm/hwcap.h>
 #include <asm/sysreg.h>
 
+<<<<<<< HEAD
 #define MAX_CPU_FEATURES	64
 #define cpu_feature(x)		KERNEL_HWCAP_ ## x
+=======
+/*
+ * In the arm64 world (as in the ARM world), elf_hwcap is used both internally
+ * in the kernel and for user space to keep track of which optional features
+ * are supported by the current system. So let's map feature 'x' to HWCAP_x.
+ * Note that HWCAP_x constants are bit fields so we need to take the log.
+ */
+
+#define MAX_CPU_FEATURES	(8 * sizeof(elf_hwcap))
+#define cpu_feature(x)		ilog2(HWCAP_ ## x)
+
+#define ARM64_WORKAROUND_CLEAN_CACHE		0
+#define ARM64_WORKAROUND_DEVICE_LOAD_ACQUIRE	1
+#define ARM64_WORKAROUND_845719			2
+#define ARM64_HAS_SYSREG_GIC_CPUIF		3
+#define ARM64_HAS_PAN				4
+#define ARM64_HAS_LSE_ATOMICS			5
+#define ARM64_WORKAROUND_CAVIUM_23154		6
+#define ARM64_WORKAROUND_834220			7
+#define ARM64_WORKAROUND_CAVIUM_27456		8
+
+#define ARM64_NCAPS				9
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifndef __ASSEMBLY__
 
@@ -288,6 +312,7 @@ extern struct arm64_ftr_reg arm64_ftr_reg_ctrel0;
 struct arm64_cpu_capabilities {
 	const char *desc;
 	u16 capability;
+<<<<<<< HEAD
 	u16 type;
 	bool (*matches)(const struct arm64_cpu_capabilities *caps, int scope);
 	/*
@@ -303,6 +328,10 @@ struct arm64_cpu_capabilities {
 	 * routine must check it before taking any action.
 	 */
 	void (*cpu_enable)(const struct arm64_cpu_capabilities *cap);
+=======
+	bool (*matches)(const struct arm64_cpu_capabilities *);
+	int (*enable)(void *);		/* Called on all active CPUs */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	union {
 		struct {	/* To be used for erratum handling only */
 			struct midr_range midr_range;

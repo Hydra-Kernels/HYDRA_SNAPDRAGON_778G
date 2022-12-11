@@ -47,7 +47,11 @@ int crypto_poly1305_init(struct shash_desc *desc)
 }
 EXPORT_SYMBOL_GPL(crypto_poly1305_init);
 
+<<<<<<< HEAD
 void poly1305_core_setkey(struct poly1305_key *key, const u8 *raw_key)
+=======
+static void poly1305_setrkey(struct poly1305_desc_ctx *dctx, const u8 *key)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/* r &= 0xffffffc0ffffffc0ffffffc0fffffff */
 	key->r[0] = (get_unaligned_le32(raw_key +  0) >> 0) & 0x3ffffff;

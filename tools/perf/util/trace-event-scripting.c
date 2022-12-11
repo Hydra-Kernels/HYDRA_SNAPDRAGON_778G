@@ -75,12 +75,21 @@ static void register_python_scripting(struct scripting_ops *scripting_ops)
 	if (scripting_context == NULL)
 		scripting_context = malloc(sizeof(*scripting_context));
 
+<<<<<<< HEAD
        if (scripting_context == NULL ||
 	   script_spec_register("Python", scripting_ops) ||
 	   script_spec_register("py", scripting_ops)) {
 		pr_err("Error registering Python script extension: disabling it\n");
 		zfree(&scripting_context);
 	}
+=======
+	err = script_spec_register("py", scripting_ops);
+	if (err)
+		die("error registering py script extension");
+
+	if (scripting_context == NULL)
+		scripting_context = malloc(sizeof(*scripting_context));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifndef HAVE_LIBPYTHON_SUPPORT
@@ -138,12 +147,21 @@ static void register_perl_scripting(struct scripting_ops *scripting_ops)
 	if (scripting_context == NULL)
 		scripting_context = malloc(sizeof(*scripting_context));
 
+<<<<<<< HEAD
        if (scripting_context == NULL ||
 	   script_spec_register("Perl", scripting_ops) ||
 	   script_spec_register("pl", scripting_ops)) {
 		pr_err("Error registering Perl script extension: disabling it\n");
 		zfree(&scripting_context);
 	}
+=======
+	err = script_spec_register("pl", scripting_ops);
+	if (err)
+		die("error registering pl script extension");
+
+	if (scripting_context == NULL)
+		scripting_context = malloc(sizeof(*scripting_context));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifndef HAVE_LIBPERL_SUPPORT

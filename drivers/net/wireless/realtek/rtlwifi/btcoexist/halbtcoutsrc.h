@@ -773,6 +773,7 @@ void exhalbtc_dbg_control(struct btc_coexist *btcoexist, u8 code, u8 len,
 void exhalbtc_antenna_detection(struct btc_coexist *btcoexist, u32 cent_freq,
 				u32 offset, u32 span, u32 seconds);
 void exhalbtc_stack_update_profile_info(void);
+<<<<<<< HEAD
 void exhalbtc_set_hci_version(struct btc_coexist *btcoexist, u16 hci_version);
 void exhalbtc_set_bt_patch_version(struct btc_coexist *btcoexist,
 				   u16 bt_hci_version, u16 bt_patch_version);
@@ -785,6 +786,15 @@ void exhalbtc_display_bt_coex_info(struct btc_coexist *btcoexist,
 void exhalbtc_switch_band_notify(struct btc_coexist *btcoexist, u8 type);
 void exhalbtc_switch_band_notify_wifi_only(struct wifi_only_cfg *wifionly_cfg,
 					   u8 is_5g);
+=======
+void exhalbtc_set_hci_version(u16 hci_version);
+void exhalbtc_set_bt_patch_version(u16 bt_hci_version, u16 bt_patch_version);
+void exhalbtc_update_min_bt_rssi(char bt_rssi);
+void exhalbtc_set_bt_exist(bool bt_exist);
+void exhalbtc_set_chip_type(u8 chip_type);
+void exhalbtc_set_ant_num(struct rtl_priv *rtlpriv, u8 type, u8 ant_num);
+void exhalbtc_display_bt_coex_info(struct btc_coexist *btcoexist);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void exhalbtc_signal_compensation(struct btc_coexist *btcoexist,
 				  u8 *rssi_wifi, u8 *rssi_bt);
 void exhalbtc_lps_leave(struct btc_coexist *btcoexist);

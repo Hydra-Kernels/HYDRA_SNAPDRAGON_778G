@@ -3526,8 +3526,13 @@ void dwc2_hsotg_core_init_disconnected(struct dwc2_hsotg *hsotg,
 	       DOEPCTL0);
 
 	/* enable, but don't activate EP0in */
+<<<<<<< HEAD
 	dwc2_writel(hsotg, dwc2_hsotg_ep0_mps(hsotg->eps_out[0]->ep.maxpacket) |
 	       DXEPCTL_USBACTEP, DIEPCTL0);
+=======
+	dwc2_writel(dwc2_hsotg_ep0_mps(hsotg->eps_out[0]->ep.maxpacket) |
+	       DXEPCTL_USBACTEP, hsotg->regs + DIEPCTL0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* clear global NAKs */
 	val = DCTL_CGOUTNAK | DCTL_CGNPINNAK;
@@ -3550,8 +3555,13 @@ void dwc2_hsotg_core_init_disconnected(struct dwc2_hsotg *hsotg,
 	dwc2_hsotg_enqueue_setup(hsotg);
 
 	dev_dbg(hsotg->dev, "EP0: DIEPCTL0=0x%08x, DOEPCTL0=0x%08x\n",
+<<<<<<< HEAD
 		dwc2_readl(hsotg, DIEPCTL0),
 		dwc2_readl(hsotg, DOEPCTL0));
+=======
+		dwc2_readl(hsotg->regs + DIEPCTL0),
+		dwc2_readl(hsotg->regs + DOEPCTL0));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void dwc2_hsotg_core_disconnect(struct dwc2_hsotg *hsotg)

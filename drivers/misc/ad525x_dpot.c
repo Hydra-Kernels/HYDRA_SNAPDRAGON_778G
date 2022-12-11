@@ -213,8 +213,21 @@ static s32 dpot_read_i2c(struct dpot_data *dpot, u8 reg)
 		 */
 		value = swab16(value);
 
+<<<<<<< HEAD
 		if (dpot->uid == DPOT_UID(AD5274_ID))
 			value = value >> 2;
+=======
+			if (value < 0)
+				return value;
+			/*
+			 * AD5272/AD5274 returns high byte first, however
+			 * underling smbus expects low byte first.
+			 */
+			value = swab16(value);
+
+			if (dpot->uid == DPOT_UID(AD5274_ID))
+				value = value >> 2;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return value;
 	default:
 		if ((reg & DPOT_REG_TOL) || (dpot->max_pos > 256))

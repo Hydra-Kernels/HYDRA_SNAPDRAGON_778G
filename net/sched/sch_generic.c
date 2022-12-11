@@ -320,6 +320,7 @@ bool sch_direct_xmit(struct sk_buff *skb, struct Qdisc *q,
 	if (validate)
 		skb = validate_xmit_skb_list(skb, dev, &again);
 
+<<<<<<< HEAD
 #ifdef CONFIG_XFRM_OFFLOAD
 	if (unlikely(again)) {
 		if (root_lock)
@@ -330,6 +331,8 @@ bool sch_direct_xmit(struct sk_buff *skb, struct Qdisc *q,
 	}
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (likely(skb)) {
 		HARD_TX_LOCK(dev, txq, smp_processor_id());
 		if (!netif_xmit_frozen_or_stopped(txq))
@@ -338,6 +341,21 @@ bool sch_direct_xmit(struct sk_buff *skb, struct Qdisc *q,
 			qdisc_maybe_clear_missed(q, txq);
 
 		HARD_TX_UNLOCK(dev, txq);
+<<<<<<< HEAD
+=======
+	} else {
+		spin_lock(root_lock);
+		return qdisc_qlen(q);
+	}
+	spin_lock(root_lock);
+
+	if (dev_xmit_complete(ret)) {
+		/* Driver sent out skb successfully or skb was consumed */
+		ret = qdisc_qlen(q);
+	} else if (ret == NETDEV_TX_LOCKED) {
+		/* Driver try lock failed */
+		ret = handle_dev_cpu_collision(skb, txq, q);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		if (root_lock)
 			spin_lock(root_lock);

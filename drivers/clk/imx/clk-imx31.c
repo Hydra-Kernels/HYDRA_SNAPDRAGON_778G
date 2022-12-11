@@ -134,6 +134,7 @@ static void __init _mx31_clocks_init(void __iomem *base, unsigned long fref)
 
 int __init mx31_clocks_init(unsigned long fref)
 {
+<<<<<<< HEAD
 	void __iomem *base;
 
 	base = ioremap(MX31_CCM_BASE_ADDR, SZ_4K);
@@ -141,6 +142,9 @@ int __init mx31_clocks_init(unsigned long fref)
 		panic("%s: failed to map registers\n", __func__);
 
 	_mx31_clocks_init(base, fref);
+=======
+	_mx31_clocks_init(fref);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	clk_register_clkdev(clk[gpt_gate], "per", "imx-gpt.0");
 	clk_register_clkdev(clk[ipg], "ipg", "imx-gpt.0");

@@ -9,7 +9,10 @@
 
 #include <linux/bsearch.h>
 #include <linux/cpumask.h>
+<<<<<<< HEAD
 #include <linux/crash_dump.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/sort.h>
 #include <linux/stop_machine.h>
 #include <linux/types.h>
@@ -1881,8 +1884,21 @@ static void __init enable_cpu_capabilities(u16 scope_mask)
 	const struct arm64_cpu_capabilities *caps;
 	bool boot_scope;
 
+<<<<<<< HEAD
 	scope_mask &= ARM64_CPUCAP_SCOPE_MASK;
 	boot_scope = !!(scope_mask & SCOPE_BOOT_CPU);
+=======
+	for (i = 0; caps[i].desc; i++)
+		if (caps[i].enable && cpus_have_cap(caps[i].capability))
+			/*
+			 * Use stop_machine() as it schedules the work allowing
+			 * us to modify PSTATE, instead of on_each_cpu() which
+			 * uses an IPI, giving us a PSTATE that disappears when
+			 * we return.
+			 */
+			stop_machine(caps[i].enable, NULL, cpu_online_mask);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < ARM64_NCAPS; i++) {
 		unsigned int num;

@@ -71,6 +71,7 @@ static inline int skb_metadata_dst_cmp(const struct sk_buff *skb_a,
 	a = (const struct metadata_dst *) skb_dst(skb_a);
 	b = (const struct metadata_dst *) skb_dst(skb_b);
 
+<<<<<<< HEAD
 	if (!a != !b || a->type != b->type)
 		return 1;
 
@@ -93,6 +94,17 @@ struct metadata_dst *metadata_dst_alloc(u8 optslen, enum metadata_type type,
 void metadata_dst_free_percpu(struct metadata_dst __percpu *md_dst);
 struct metadata_dst __percpu *
 metadata_dst_alloc_percpu(u8 optslen, enum metadata_type type, gfp_t flags);
+=======
+	if (!a != !b || a->u.tun_info.options_len != b->u.tun_info.options_len)
+		return 1;
+
+	return memcmp(&a->u.tun_info, &b->u.tun_info,
+		      sizeof(a->u.tun_info) + a->u.tun_info.options_len);
+}
+
+struct metadata_dst *metadata_dst_alloc(u8 optslen, gfp_t flags);
+struct metadata_dst __percpu *metadata_dst_alloc_percpu(u8 optslen, gfp_t flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline struct metadata_dst *tun_rx_dst(int md_size)
 {

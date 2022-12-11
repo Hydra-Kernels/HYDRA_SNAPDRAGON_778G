@@ -357,6 +357,9 @@ static ssize_t arm_ccn_pmu_event_show(struct device *dev,
 	case CCN_TYPE_MN:
 		res += snprintf(buf + res, PAGE_SIZE - res, ",node=%d", ccn->mn_id);
 		break;
+	case CCN_TYPE_MN:
+		res += snprintf(buf + res, PAGE_SIZE - res, ",node=%d", ccn->mn_id);
+		break;
 	default:
 		res += snprintf(buf + res, PAGE_SIZE - res, ",node=?");
 		break;
@@ -762,7 +765,11 @@ static int arm_ccn_pmu_event_init(struct perf_event *event)
 	switch (type) {
 	case CCN_TYPE_MN:
 		if (node_xp != ccn->mn_id) {
+<<<<<<< HEAD:drivers/perf/arm-ccn.c
 			dev_dbg(ccn->dev, "Invalid MN ID %d!\n", node_xp);
+=======
+			dev_warn(ccn->dev, "Invalid MN ID %d!\n", node_xp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/bus/arm-ccn.c
 			return -EINVAL;
 		}
 		break;

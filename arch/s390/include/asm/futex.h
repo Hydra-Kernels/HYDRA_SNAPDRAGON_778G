@@ -28,7 +28,12 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
 	int oldval = 0, newval, ret;
 	mm_segment_t old_fs;
 
+<<<<<<< HEAD
 	old_fs = enable_sacf_uaccess();
+=======
+	load_kernel_asce();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pagefault_disable();
 	switch (op) {
 	case FUTEX_OP_SET:
@@ -60,6 +65,12 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
 	if (!ret)
 		*oval = oldval;
 
+<<<<<<< HEAD
+=======
+	if (!ret)
+		*oval = oldval;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

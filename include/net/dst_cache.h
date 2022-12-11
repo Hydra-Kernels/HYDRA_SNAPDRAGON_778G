@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 /* SPDX-License-Identifier: GPL-2.0 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef _NET_DST_CACHE_H
 #define _NET_DST_CACHE_H
 
@@ -54,7 +57,11 @@ void dst_cache_set_ip4(struct dst_cache *dst_cache, struct dst_entry *dst,
  *	local BH must be disabled.
  */
 void dst_cache_set_ip6(struct dst_cache *dst_cache, struct dst_entry *dst,
+<<<<<<< HEAD
 		       const struct in6_addr *saddr);
+=======
+		       const struct in6_addr *addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  *	dst_cache_get_ip6 - perform cache lookup and fetch ipv6 source address
@@ -71,7 +78,11 @@ struct dst_entry *dst_cache_get_ip6(struct dst_cache *dst_cache,
  *	dst_cache_reset - invalidate the cache contents
  *	@dst_cache: the cache
  *
+<<<<<<< HEAD
  *	This does not free the cached dst to avoid races and contentions.
+=======
+ *	This do not free the cached dst to avoid races and contentions.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *	the dst will be freed on later cache lookup.
  */
 static inline void dst_cache_reset(struct dst_cache *dst_cache)

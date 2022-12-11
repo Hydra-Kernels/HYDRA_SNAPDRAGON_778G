@@ -848,11 +848,26 @@ static void __init early_cmdline_parse(void)
  */
 #define VECTOR_LENGTH(n)	(1 + (n) - 2)
 
+<<<<<<< HEAD
 struct option_vector1 {
 	u8 byte1;
 	u8 arch_versions;
 	u8 arch_versions3;
 } __packed;
+=======
+unsigned char ibm_architecture_vec[] = {
+	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
+	W(0xffff0000), W(0x003e0000),	/* POWER6 */
+	W(0xffff0000), W(0x003f0000),	/* POWER7 */
+	W(0xffff0000), W(0x004b0000),	/* POWER8E */
+	W(0xffff0000), W(0x004c0000),   /* POWER8NVL */
+	W(0xffff0000), W(0x004d0000),	/* POWER8 */
+	W(0xffffffff), W(0x0f000004),	/* all 2.07-compliant */
+	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
+	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
+	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
+	NUM_VECTORS(6),			/* 6 option vectors */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct option_vector2 {
 	u8 byte1;
@@ -1025,10 +1040,17 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
 
 	.vec5_len = VECTOR_LENGTH(sizeof(struct option_vector5)),
 	/* option vector 5: PAPR/OF options */
+<<<<<<< HEAD
 	.vec5 = {
 		.byte1 = 0,				/* don't ignore, don't halt */
 		.byte2 = OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
 		OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
+=======
+	VECTOR_LENGTH(21),		/* length */
+	0,				/* don't ignore, don't halt */
+	OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
+	OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_PCI_MSI
 		/* PCIe/MSI support.  Without MSI full PCIe is not supported */
 		OV5_FEAT(OV5_MSI),
@@ -1042,6 +1064,7 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
 #else
 		0,
 #endif
+<<<<<<< HEAD
 		.associativity = OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
 		.bin_opts = OV5_FEAT(OV5_RESIZE_HPT) | OV5_FEAT(OV5_HP_EVT),
 		.micro_checkpoint = 0,
@@ -1059,6 +1082,28 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
 		.hash_ext = 0,
 		.radix_ext = 0,
 	},
+=======
+	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+	0,
+	0,
+	0,
+	/* WARNING: The offset of the "number of cores" field below
+	 * must match by the macro below. Update the definition if
+	 * the structure layout changes.
+	 */
+#define IBM_ARCH_VEC_NRCORES_OFFSET	133
+	W(NR_CPUS),			/* number of cores supported */
+	0,
+	0,
+	0,
+	0,
+	OV5_FEAT(OV5_PFO_HW_RNG) | OV5_FEAT(OV5_PFO_HW_ENCR) |
+	OV5_FEAT(OV5_PFO_HW_842),				/* Byte 17 */
+	0,							/* Byte 18 */
+	0,							/* Byte 19 */
+	0,							/* Byte 20 */
+	OV5_FEAT(OV5_SUB_PROCESSORS),				/* Byte 21 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* option vector 6: IBM PAPR hints */
 	.vec6_len = VECTOR_LENGTH(sizeof(struct option_vector6)),

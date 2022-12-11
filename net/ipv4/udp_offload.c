@@ -405,6 +405,7 @@ static struct sk_buff *udp4_ufo_fragment(struct sk_buff *skb,
 		uh->check = CSUM_MANGLED_0;
 
 	skb->ip_summed = CHECKSUM_UNNECESSARY;
+<<<<<<< HEAD
 
 	/* If there is no outer header we can fake a checksum offload
 	 * due to the fact that we have already done the checksum in
@@ -412,6 +413,8 @@ static struct sk_buff *udp4_ufo_fragment(struct sk_buff *skb,
 	 */
 	if (!skb->encap_hdr_csum)
 		features |= NETIF_F_HW_CSUM;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Fragment the skb. IP headers of the fragments are updated in
 	 * inet_gso_segment()
@@ -512,6 +515,7 @@ struct sk_buff *udp_gro_receive(struct list_head *head, struct sk_buff *skb,
 	unsigned int off = skb_gro_offset(skb);
 	int flush = 1;
 
+<<<<<<< HEAD
 	/* we can do L4 aggregation only if the packet can't land in a tunnel
 	 * otherwise we could corrupt the inner stream
 	 */
@@ -529,6 +533,10 @@ struct sk_buff *udp_gro_receive(struct list_head *head, struct sk_buff *skb,
 
 	if (NAPI_GRO_CB(skb)->encap_mark ||
 	    (uh->check && skb->ip_summed != CHECKSUM_PARTIAL &&
+=======
+	if (NAPI_GRO_CB(skb)->encap_mark ||
+	    (skb->ip_summed != CHECKSUM_PARTIAL &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	     NAPI_GRO_CB(skb)->csum_cnt == 0 &&
 	     !NAPI_GRO_CB(skb)->csum_valid))
 		goto out;
@@ -556,7 +564,13 @@ struct sk_buff *udp_gro_receive(struct list_head *head, struct sk_buff *skb,
 
 	skb_gro_pull(skb, sizeof(struct udphdr)); /* pull encapsulating udp header */
 	skb_gro_postpull_rcsum(skb, uh, sizeof(struct udphdr));
+<<<<<<< HEAD
 	pp = call_gro_receive_sk(udp_sk(sk)->gro_receive, sk, head, skb);
+=======
+	NAPI_GRO_CB(skb)->proto = uo_priv->offload->ipproto;
+	pp = call_gro_receive_udp(uo_priv->offload->callbacks.gro_receive,
+				  head, skb, uo_priv->offload);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out:
 	skb_gro_flush_final(skb, pp, flush);

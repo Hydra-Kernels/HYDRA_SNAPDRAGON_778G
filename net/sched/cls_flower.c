@@ -10,7 +10,10 @@
 #include <linux/module.h>
 #include <linux/rhashtable.h>
 #include <linux/workqueue.h>
+<<<<<<< HEAD
 #include <linux/refcount.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <linux/if_ether.h>
 #include <linux/in6.h>
@@ -92,11 +95,24 @@ struct fl_flow_tmplt {
 
 struct cls_fl_head {
 	struct rhashtable ht;
+<<<<<<< HEAD
 	spinlock_t masks_lock; /* Protect masks list */
 	struct list_head masks;
 	struct list_head hw_filters;
 	struct rcu_work rwork;
 	struct idr handle_idr;
+=======
+	struct fl_flow_mask mask;
+	struct flow_dissector dissector;
+	u32 hgen;
+	bool mask_assigned;
+	struct list_head filters;
+	struct rhashtable_params ht_params;
+	union {
+		struct work_struct work;
+		struct rcu_head	rcu;
+	};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct cls_fl_filter {
@@ -355,7 +371,29 @@ static void fl_mask_free(struct fl_flow_mask *mask, bool mask_init_done)
 	kfree(mask);
 }
 
+<<<<<<< HEAD
 static void fl_mask_free_work(struct work_struct *work)
+=======
+static void fl_destroy_sleepable(struct work_struct *work)
+{
+	struct cls_fl_head *head = container_of(work, struct cls_fl_head,
+						work);
+	if (head->mask_assigned)
+		rhashtable_destroy(&head->ht);
+	kfree(head);
+	module_put(THIS_MODULE);
+}
+
+static void fl_destroy_rcu(struct rcu_head *rcu)
+{
+	struct cls_fl_head *head = container_of(rcu, struct cls_fl_head, rcu);
+
+	INIT_WORK(&head->work, fl_destroy_sleepable);
+	schedule_work(&head->work);
+}
+
+static bool fl_destroy(struct tcf_proto *tp, bool force)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct fl_flow_mask *mask = container_of(to_rcu_work(work),
 						 struct fl_flow_mask, rwork);
@@ -376,6 +414,7 @@ static bool fl_mask_put(struct cls_fl_head *head, struct fl_flow_mask *mask)
 	if (!refcount_dec_and_test(&mask->refcnt))
 		return false;
 
+<<<<<<< HEAD
 	rhashtable_remove_fast(&head->ht, &mask->ht_node, mask_ht_params);
 
 	spin_lock(&head->masks_lock);
@@ -384,6 +423,15 @@ static bool fl_mask_put(struct cls_fl_head *head, struct fl_flow_mask *mask)
 
 	tcf_queue_work(&mask->rwork, fl_mask_free_work);
 
+=======
+	list_for_each_entry_safe(f, next, &head->filters, list) {
+		list_del_rcu(&f->list);
+		call_rcu(&f->rcu, fl_destroy_filter);
+	}
+
+	__module_get(THIS_MODULE);
+	call_rcu(&head->rcu, fl_destroy_rcu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 
@@ -1071,6 +1119,7 @@ static int fl_set_key(struct net *net, struct nlattr **tb,
 		       mask->eth.src, TCA_FLOWER_KEY_ETH_SRC_MASK,
 		       sizeof(key->eth.src));
 
+<<<<<<< HEAD
 	if (tb[TCA_FLOWER_KEY_ETH_TYPE]) {
 		ethertype = nla_get_be16(tb[TCA_FLOWER_KEY_ETH_TYPE]);
 
@@ -1101,6 +1150,11 @@ static int fl_set_key(struct net *net, struct nlattr **tb,
 			mask->basic.n_proto = cpu_to_be16(~0);
 		}
 	}
+=======
+	fl_set_key_val(tb, &key->basic.n_proto, TCA_FLOWER_KEY_ETH_TYPE,
+		       &mask->basic.n_proto, TCA_FLOWER_UNSPEC,
+		       sizeof(key->basic.n_proto));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (key->basic.n_proto == htons(ETH_P_IP) ||
 	    key->basic.n_proto == htons(ETH_P_IPV6)) {
@@ -1112,7 +1166,10 @@ static int fl_set_key(struct net *net, struct nlattr **tb,
 
 	if (tb[TCA_FLOWER_KEY_IPV4_SRC] || tb[TCA_FLOWER_KEY_IPV4_DST]) {
 		key->control.addr_type = FLOW_DISSECTOR_KEY_IPV4_ADDRS;
+<<<<<<< HEAD
 		mask->control.addr_type = ~0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fl_set_key_val(tb, &key->ipv4.src, TCA_FLOWER_KEY_IPV4_SRC,
 			       &mask->ipv4.src, TCA_FLOWER_KEY_IPV4_SRC_MASK,
 			       sizeof(key->ipv4.src));
@@ -1121,7 +1178,10 @@ static int fl_set_key(struct net *net, struct nlattr **tb,
 			       sizeof(key->ipv4.dst));
 	} else if (tb[TCA_FLOWER_KEY_IPV6_SRC] || tb[TCA_FLOWER_KEY_IPV6_DST]) {
 		key->control.addr_type = FLOW_DISSECTOR_KEY_IPV6_ADDRS;
+<<<<<<< HEAD
 		mask->control.addr_type = ~0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fl_set_key_val(tb, &key->ipv6.src, TCA_FLOWER_KEY_IPV6_SRC,
 			       &mask->ipv6.src, TCA_FLOWER_KEY_IPV6_SRC_MASK,
 			       sizeof(key->ipv6.src));

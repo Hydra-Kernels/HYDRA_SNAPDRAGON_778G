@@ -883,10 +883,15 @@ radeon_lvds_detect(struct drm_connector *connector, bool force)
 
 	if (!drm_kms_helper_is_poll_worker()) {
 		r = pm_runtime_get_sync(connector->dev->dev);
+<<<<<<< HEAD
 		if (r < 0) {
 			pm_runtime_put_autosuspend(connector->dev->dev);
 			return connector_status_disconnected;
 		}
+=======
+		if (r < 0)
+			return connector_status_disconnected;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (encoder) {
@@ -1031,10 +1036,15 @@ radeon_vga_detect(struct drm_connector *connector, bool force)
 
 	if (!drm_kms_helper_is_poll_worker()) {
 		r = pm_runtime_get_sync(connector->dev->dev);
+<<<<<<< HEAD
 		if (r < 0) {
 			pm_runtime_put_autosuspend(connector->dev->dev);
 			return connector_status_disconnected;
 		}
+=======
+		if (r < 0)
+			return connector_status_disconnected;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	encoder = radeon_best_single_encoder(connector);
@@ -1171,10 +1181,15 @@ radeon_tv_detect(struct drm_connector *connector, bool force)
 
 	if (!drm_kms_helper_is_poll_worker()) {
 		r = pm_runtime_get_sync(connector->dev->dev);
+<<<<<<< HEAD
 		if (r < 0) {
 			pm_runtime_put_autosuspend(connector->dev->dev);
 			return connector_status_disconnected;
 		}
+=======
+		if (r < 0)
+			return connector_status_disconnected;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	encoder = radeon_best_single_encoder(connector);
@@ -1257,10 +1272,15 @@ radeon_dvi_detect(struct drm_connector *connector, bool force)
 
 	if (!drm_kms_helper_is_poll_worker()) {
 		r = pm_runtime_get_sync(connector->dev->dev);
+<<<<<<< HEAD
 		if (r < 0) {
 			pm_runtime_put_autosuspend(connector->dev->dev);
 			return connector_status_disconnected;
 		}
+=======
+		if (r < 0)
+			return connector_status_disconnected;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (radeon_connector->detected_hpd_without_ddc) {
@@ -1674,10 +1694,15 @@ radeon_dp_detect(struct drm_connector *connector, bool force)
 
 	if (!drm_kms_helper_is_poll_worker()) {
 		r = pm_runtime_get_sync(connector->dev->dev);
+<<<<<<< HEAD
 		if (r < 0) {
 			pm_runtime_put_autosuspend(connector->dev->dev);
 			return connector_status_disconnected;
 		}
+=======
+		if (r < 0)
+			return connector_status_disconnected;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (!force && radeon_check_hpd_status_unchanged(connector)) {

@@ -1423,6 +1423,7 @@ ip_vs_out(struct netns_ipvs *ipvs, unsigned int hooknum, struct sk_buff *skb, in
 			goto ignore_cp;
 		return handle_response(af, skb, pd, cp, &iph, hooknum);
 	}
+<<<<<<< HEAD
 
 	/* Check for real-server-started requests */
 	if (atomic_read(&ipvs->conn_out_counter)) {
@@ -1439,6 +1440,8 @@ ip_vs_out(struct netns_ipvs *ipvs, unsigned int hooknum, struct sk_buff *skb, in
 		}
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sysctl_nat_icmp_send(ipvs) &&
 	    (pp->protocol == IPPROTO_TCP ||
 	     pp->protocol == IPPROTO_UDP ||
@@ -2061,14 +2064,24 @@ ip_vs_in(struct netns_ipvs *ipvs, unsigned int hooknum, struct sk_buff *skb, int
 
 	conn_reuse_mode = sysctl_conn_reuse_mode(ipvs);
 	if (conn_reuse_mode && !iph.fragoffs && is_new_conn(skb, &iph) && cp) {
+<<<<<<< HEAD
 		bool old_ct = false, resched = false;
+=======
+		bool uses_ct = false, resched = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (unlikely(sysctl_expire_nodest_conn(ipvs)) && cp->dest &&
 		    unlikely(!atomic_read(&cp->dest->weight))) {
 			resched = true;
+<<<<<<< HEAD
 			old_ct = ip_vs_conn_uses_old_conntrack(cp, skb);
 		} else if (is_new_conn_expected(cp, conn_reuse_mode)) {
 			old_ct = ip_vs_conn_uses_old_conntrack(cp, skb);
+=======
+			uses_ct = ip_vs_conn_uses_conntrack(cp, skb);
+		} else if (is_new_conn_expected(cp, conn_reuse_mode)) {
+			uses_ct = ip_vs_conn_uses_conntrack(cp, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (!atomic_read(&cp->n_control)) {
 				resched = true;
 			} else {
@@ -2076,17 +2089,28 @@ ip_vs_in(struct netns_ipvs *ipvs, unsigned int hooknum, struct sk_buff *skb, int
 				 * that uses conntrack while it is still
 				 * referenced by controlled connection(s).
 				 */
+<<<<<<< HEAD
 				resched = !old_ct;
+=======
+				resched = !uses_ct;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 
 		if (resched) {
+<<<<<<< HEAD
 			if (!old_ct)
 				cp->flags &= ~IP_VS_CONN_F_NFCT;
 			if (!atomic_read(&cp->n_control))
 				ip_vs_conn_expire_now(cp);
 			__ip_vs_conn_put(cp);
 			if (old_ct)
+=======
+			if (!atomic_read(&cp->n_control))
+				ip_vs_conn_expire_now(cp);
+			__ip_vs_conn_put(cp);
+			if (uses_ct)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return NF_DROP;
 			cp = NULL;
 		}

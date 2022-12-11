@@ -38,6 +38,11 @@ struct rcar_du_vsp;
  * @vblank_lock: protects vblank_wait and vblank_count
  * @vblank_wait: wait queue used to signal vertical blanking
  * @vblank_count: number of vertical blanking interrupts to wait for
+<<<<<<< HEAD
+=======
+ * @outputs: bitmask of the outputs (enum rcar_du_output) driven by this CRTC
+ * @enabled: whether the CRTC is enabled, used to control system resume
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @group: CRTC group this CRTC belongs to
  * @vsp: VSP feeding video to this CRTC
  * @vsp_pipe: index of the VSP pipeline feeding video to this CRTC
@@ -62,6 +67,12 @@ struct rcar_du_crtc {
 	spinlock_t vblank_lock;
 	wait_queue_head_t vblank_wait;
 	unsigned int vblank_count;
+<<<<<<< HEAD
+=======
+
+	unsigned int outputs;
+	bool enabled;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	struct rcar_du_group *group;
 	struct rcar_du_vsp *vsp;
@@ -102,8 +113,15 @@ enum rcar_du_output {
 	RCAR_DU_OUTPUT_MAX,
 };
 
+<<<<<<< HEAD
 int rcar_du_crtc_create(struct rcar_du_group *rgrp, unsigned int swindex,
 			unsigned int hwindex);
+=======
+int rcar_du_crtc_create(struct rcar_du_group *rgrp, unsigned int index);
+void rcar_du_crtc_enable_vblank(struct rcar_du_crtc *rcrtc, bool enable);
+void rcar_du_crtc_suspend(struct rcar_du_crtc *rcrtc);
+void rcar_du_crtc_resume(struct rcar_du_crtc *rcrtc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 void rcar_du_crtc_finish_page_flip(struct rcar_du_crtc *rcrtc);
 

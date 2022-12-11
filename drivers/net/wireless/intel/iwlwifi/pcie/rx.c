@@ -1120,10 +1120,22 @@ int iwl_pcie_rx_init(struct iwl_trans *trans)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/pcie/rx.c
 	if (trans->trans_cfg->mq_rx_supported)
 		iwl_pcie_rx_mq_hw_init(trans);
 	else
 		iwl_pcie_rx_hw_init(trans, trans_pcie->rxq);
+=======
+	cancel_work_sync(&rba->rx_alloc);
+
+	spin_lock(&rba->lock);
+	atomic_set(&rba->req_pending, 0);
+	atomic_set(&rba->req_ready, 0);
+	/* free all first - we might be reconfigured for a different size */
+	iwl_pcie_rx_free_rba(trans);
+	iwl_pcie_rx_init_rba(rba);
+	spin_unlock(&rba->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/pcie/rx.c
 
 	iwl_pcie_rxq_restock(trans, trans_pcie->rxq);
 

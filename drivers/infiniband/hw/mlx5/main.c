@@ -992,12 +992,19 @@ static int mlx5_ib_query_device(struct ib_device *ibdev,
 	props->max_qp_wr	   = 1 << MLX5_CAP_GEN(mdev, log_max_qp_sz);
 	max_rq_sg =  MLX5_CAP_GEN(mdev, max_wqe_sz_rq) /
 		     sizeof(struct mlx5_wqe_data_seg);
+<<<<<<< HEAD
 	max_sq_desc = min_t(int, MLX5_CAP_GEN(mdev, max_wqe_sz_sq), 512);
 	max_sq_sg = (max_sq_desc - sizeof(struct mlx5_wqe_ctrl_seg) -
 		     sizeof(struct mlx5_wqe_raddr_seg)) /
 		sizeof(struct mlx5_wqe_data_seg);
 	props->max_send_sge = max_sq_sg;
 	props->max_recv_sge = max_rq_sg;
+=======
+	max_sq_sg = (MLX5_CAP_GEN(mdev, max_wqe_sz_sq) -
+		     sizeof(struct mlx5_wqe_ctrl_seg)) /
+		     sizeof(struct mlx5_wqe_data_seg);
+	props->max_sge = min(max_rq_sg, max_sq_sg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	props->max_sge_rd	   = MLX5_MAX_SGE_RD;
 	props->max_cq		   = 1 << MLX5_CAP_GEN(mdev, log_max_cq);
 	props->max_cqe = (1 << MLX5_CAP_GEN(mdev, log_max_cq_sz)) - 1;
@@ -4457,6 +4464,7 @@ static const struct attribute_group mlx5_attr_group = {
 
 static void pkey_change_handler(struct work_struct *work)
 {
+<<<<<<< HEAD
 	struct mlx5_ib_port_resources *ports =
 		container_of(work, struct mlx5_ib_port_resources,
 			     pkey_change_work);
@@ -4581,6 +4589,33 @@ static int handle_port_change(struct mlx5_ib_dev *ibdev, struct mlx5_eqe *eqe,
 
 		ibev->event = (eqe->sub_type == MLX5_PORT_CHANGE_SUBTYPE_ACTIVE) ?
 				IB_EVENT_PORT_ACTIVE : IB_EVENT_PORT_ERR;
+=======
+	struct mlx5_ib_dev *ibdev = (struct mlx5_ib_dev *)context;
+	struct ib_event ibev;
+	bool fatal = false;
+	u8 port = 0;
+
+	switch (event) {
+	case MLX5_DEV_EVENT_SYS_ERROR:
+		ibev.event = IB_EVENT_DEVICE_FATAL;
+		fatal = true;
+		break;
+
+	case MLX5_DEV_EVENT_PORT_UP:
+		ibev.event = IB_EVENT_PORT_ACTIVE;
+		port = (u8)param;
+		break;
+
+	case MLX5_DEV_EVENT_PORT_DOWN:
+	case MLX5_DEV_EVENT_PORT_INITIALIZED:
+		ibev.event = IB_EVENT_PORT_ERR;
+		port = (u8)param;
+		break;
+
+	case MLX5_DEV_EVENT_LID_CHANGE:
+		ibev.event = IB_EVENT_LID_CHANGE;
+		port = (u8)param;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 
 	case MLX5_PORT_CHANGE_SUBTYPE_LID:
@@ -4652,6 +4687,7 @@ static void mlx5_ib_handle_event(struct work_struct *_work)
 
 	if (fatal)
 		ibdev->ib_active = false;
+<<<<<<< HEAD
 out:
 	kfree(work);
 }
@@ -4722,6 +4758,8 @@ static int set_has_smi_cap(struct mlx5_ib_dev *dev)
 		}
 	}
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void get_ext_port_caps(struct mlx5_ib_dev *dev)

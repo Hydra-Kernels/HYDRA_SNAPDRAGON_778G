@@ -77,6 +77,7 @@
 #include <linux/indirect_call_wrapper.h>
 #include <trace/hooks/net.h>
 
+<<<<<<< HEAD
 #include "datagram.h"
 
 struct kmem_cache *skbuff_head_cache __ro_after_init;
@@ -84,6 +85,10 @@ static struct kmem_cache *skbuff_fclone_cache __ro_after_init;
 #ifdef CONFIG_SKB_EXTENSIONS
 static struct kmem_cache *skbuff_ext_cache __ro_after_init;
 #endif
+=======
+struct kmem_cache *skbuff_head_cache __read_mostly;
+static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int sysctl_max_skb_frags __read_mostly = MAX_SKB_FRAGS;
 EXPORT_SYMBOL(sysctl_max_skb_frags);
 
@@ -3281,7 +3286,10 @@ void skb_split(struct sk_buff *skb, struct sk_buff *skb1, const u32 len)
 
 	skb_shinfo(skb1)->tx_flags |= skb_shinfo(skb)->tx_flags &
 				      SKBTX_SHARED_FRAG;
+<<<<<<< HEAD
 	skb_zerocopy_clone(skb1, skb, 0);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (len < pos)	/* Split line is inside header. */
 		skb_split_inside_header(skb, skb1, len, pos);
 	else		/* Second chunk has no header, nothing to copy. */
@@ -3996,10 +4004,13 @@ normal:
 
 		skb_shinfo(nskb)->tx_flags |= skb_shinfo(head_skb)->tx_flags &
 					      SKBTX_SHARED_FRAG;
+<<<<<<< HEAD
 
 		if (skb_orphan_frags(frag_skb, GFP_ATOMIC) ||
 		    skb_zerocopy_clone(nskb, frag_skb, GFP_ATOMIC))
 			goto err;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		while (pos < offset + len) {
 			if (i >= nfrags) {
@@ -4697,9 +4708,15 @@ void skb_complete_tx_timestamp(struct sk_buff *skb,
 	/* Take a reference to prevent skb_orphan() from freeing the socket,
 	 * but only if the socket refcount is not zero.
 	 */
+<<<<<<< HEAD
 	if (likely(refcount_inc_not_zero(&sk->sk_refcnt))) {
 		*skb_hwtstamps(skb) = *hwtstamps;
 		__skb_complete_tx_timestamp(skb, sk, SCM_TSTAMP_SND, false);
+=======
+	if (likely(atomic_inc_not_zero(&sk->sk_refcnt))) {
+		*skb_hwtstamps(skb) = *hwtstamps;
+		__skb_complete_tx_timestamp(skb, sk, SCM_TSTAMP_SND);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sock_put(sk);
 		return;
 	}
@@ -4783,7 +4800,11 @@ void skb_complete_wifi_ack(struct sk_buff *skb, bool acked)
 	/* Take a reference to prevent skb_orphan() from freeing the socket,
 	 * but only if the socket refcount is not zero.
 	 */
+<<<<<<< HEAD
 	if (likely(refcount_inc_not_zero(&sk->sk_refcnt))) {
+=======
+	if (likely(atomic_inc_not_zero(&sk->sk_refcnt))) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = sock_queue_err_skb(sk, skb);
 		sock_put(sk);
 	}
@@ -5274,6 +5295,10 @@ void skb_scrub_packet(struct sk_buff *skb, bool xnet)
 		return;
 
 	ipvs_reset(skb);
+<<<<<<< HEAD
+=======
+	skb_orphan(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb->mark = 0;
 	skb->tstamp = 0;
 }
@@ -5422,8 +5447,12 @@ EXPORT_SYMBOL_GPL(skb_gso_validate_mac_len);
 
 static struct sk_buff *skb_reorder_vlan_header(struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	int mac_len, meta_len;
 	void *meta;
+=======
+	int mac_len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (skb_cow(skb, skb_headroom(skb)) < 0) {
 		kfree_skb(skb);
@@ -5435,6 +5464,7 @@ static struct sk_buff *skb_reorder_vlan_header(struct sk_buff *skb)
 		memmove(skb_mac_header(skb) + VLAN_HLEN, skb_mac_header(skb),
 			mac_len - VLAN_HLEN - ETH_TLEN);
 	}
+<<<<<<< HEAD
 
 	meta_len = skb_metadata_len(skb);
 	if (meta_len) {
@@ -5442,6 +5472,8 @@ static struct sk_buff *skb_reorder_vlan_header(struct sk_buff *skb)
 		memmove(meta + VLAN_HLEN, meta, meta_len);
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb->mac_header += VLAN_HLEN;
 	return skb;
 }
@@ -5587,13 +5619,22 @@ int skb_vlan_push(struct sk_buff *skb, __be16 vlan_proto, u16 vlan_tci)
 
 		err = __vlan_insert_tag(skb, skb->vlan_proto,
 					skb_vlan_tag_get(skb));
-		if (err)
+		if (err) {
+			__skb_pull(skb, offset);
 			return err;
+<<<<<<< HEAD
+=======
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		skb->protocol = skb->vlan_proto;
 		skb->mac_len += VLAN_HLEN;
 
 		skb_postpush_rcsum(skb, skb->data + (2 * ETH_ALEN), VLAN_HLEN);
+<<<<<<< HEAD
+=======
+		__skb_pull(skb, offset);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	__vlan_hwaccel_put_tag(skb, vlan_proto, vlan_tci);
 	return 0;

@@ -154,7 +154,10 @@ void nf_send_reset6(struct net *net, struct sk_buff *oldskb, int hook)
 	fl6.daddr = oip6h->saddr;
 	fl6.fl6_sport = otcph->dest;
 	fl6.fl6_dport = otcph->source;
+<<<<<<< HEAD
 	fl6.flowi6_oif = l3mdev_master_ifindex(skb_dst(oldskb)->dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fl6.flowi6_mark = IP6_REPLY_MARK(net, oldskb->mark);
 	security_skb_classify_flow(oldskb, flowi6_to_flowi(&fl6));
 	dst = ip6_route_output(net, NULL, &fl6);

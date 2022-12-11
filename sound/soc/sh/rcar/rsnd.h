@@ -283,10 +283,14 @@ enum rsnd_mod_type {
 	RSND_MOD_CTU,
 	RSND_MOD_CMD,
 	RSND_MOD_SRC,
+<<<<<<< HEAD
 	RSND_MOD_SSIM3,		/* SSI multi 3 */
 	RSND_MOD_SSIM2,		/* SSI multi 2 */
 	RSND_MOD_SSIM1,		/* SSI multi 1 */
 	RSND_MOD_SSIP,		/* SSI parent */
+=======
+	RSND_MOD_SSIP, /* SSI parent */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	RSND_MOD_SSI,
 	RSND_MOD_SSIU,
 	RSND_MOD_MAX,
@@ -515,8 +519,12 @@ struct rsnd_dai_stream {
 
 #define rsnd_io_to_mod(io, i)	((i) < RSND_MOD_MAX ? (io)->mod[(i)] : NULL)
 #define rsnd_io_to_mod_ssi(io)	rsnd_io_to_mod((io), RSND_MOD_SSI)
+<<<<<<< HEAD
 #define rsnd_io_to_mod_ssiu(io)	rsnd_io_to_mod((io), RSND_MOD_SSIU)
 #define rsnd_io_to_mod_ssip(io)	rsnd_io_to_mod((io), RSND_MOD_SSIP)
+=======
+#define rsnd_io_to_mod_ssip(io) rsnd_io_to_mod((io), RSND_MOD_SSIP)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define rsnd_io_to_mod_src(io)	rsnd_io_to_mod((io), RSND_MOD_SRC)
 #define rsnd_io_to_mod_ctu(io)	rsnd_io_to_mod((io), RSND_MOD_CTU)
 #define rsnd_io_to_mod_mix(io)	rsnd_io_to_mod((io), RSND_MOD_MIX)

@@ -271,7 +271,11 @@ static int ina2xx_get_value(struct ina2xx_data *data, u8 reg,
 		break;
 	case INA2XX_CURRENT:
 		/* signed register, result in mA */
+<<<<<<< HEAD
 		val = (s16)regval * data->current_lsb_uA;
+=======
+		val = regval * data->current_lsb_uA;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		val = DIV_ROUND_CLOSEST(val, 1000);
 		break;
 	case INA2XX_CALIBRATION:
@@ -326,6 +330,7 @@ static int ina2xx_set_shunt(struct ina2xx_data *data, long val)
 	return 0;
 }
 
+<<<<<<< HEAD
 static ssize_t ina2xx_shunt_show(struct device *dev,
 				 struct device_attribute *da, char *buf)
 {
@@ -335,6 +340,9 @@ static ssize_t ina2xx_shunt_show(struct device *dev,
 }
 
 static ssize_t ina2xx_shunt_store(struct device *dev,
+=======
+static ssize_t ina2xx_store_shunt(struct device *dev,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  struct device_attribute *da,
 				  const char *buf, size_t count)
 {
@@ -403,7 +411,13 @@ static SENSOR_DEVICE_ATTR_RO(curr1_input, ina2xx_value, INA2XX_CURRENT);
 static SENSOR_DEVICE_ATTR_RO(power1_input, ina2xx_value, INA2XX_POWER);
 
 /* shunt resistance */
+<<<<<<< HEAD
 static SENSOR_DEVICE_ATTR_RW(shunt_resistor, ina2xx_shunt, INA2XX_CALIBRATION);
+=======
+static SENSOR_DEVICE_ATTR(shunt_resistor, S_IRUGO | S_IWUSR,
+			  ina2xx_show_value, ina2xx_store_shunt,
+			  INA2XX_CALIBRATION);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* update interval (ina226 only) */
 static SENSOR_DEVICE_ATTR_RW(update_interval, ina226_interval, 0);
@@ -451,7 +465,11 @@ static int ina2xx_probe(struct i2c_client *client,
 		return -ENOMEM;
 
 	/* set the device type */
+<<<<<<< HEAD
 	data->config = &ina2xx_config[chip];
+=======
+	data->config = &ina2xx_config[id->driver_data];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_init(&data->config_lock);
 
 	if (of_property_read_u32(dev->of_node, "shunt-resistor", &val) < 0) {

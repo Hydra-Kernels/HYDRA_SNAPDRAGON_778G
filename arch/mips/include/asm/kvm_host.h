@@ -313,10 +313,15 @@ struct kvm_mmu_memory_cache {
 
 #define KVM_MIPS_GUEST_TLB_SIZE	64
 struct kvm_vcpu_arch {
+<<<<<<< HEAD
 	void *guest_ebase;
 	int (*vcpu_run)(struct kvm_run *run, struct kvm_vcpu *vcpu);
 
 	/* Host registers preserved across guest mode execution */
+=======
+	void *host_ebase, *guest_ebase;
+	int (*vcpu_run)(struct kvm_run *run, struct kvm_vcpu *vcpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long host_stack;
 	unsigned long host_gp;
 	unsigned long host_pgd;
@@ -372,6 +377,12 @@ struct kvm_vcpu_arch {
 	/* Bitmask of pending exceptions to be cleared */
 	unsigned long pending_exceptions_clr;
 
+<<<<<<< HEAD
+=======
+	/* Save/Restore the entryhi register when are are preempted/scheduled back in */
+	unsigned long preempt_entryhi;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* S/W Based TLB for guest */
 	struct kvm_mips_tlb guest_tlb[KVM_MIPS_GUEST_TLB_SIZE];
 
@@ -1057,10 +1068,17 @@ extern enum emulation_result kvm_mips_emulate_msadis_exc(u32 cause,
 extern enum emulation_result kvm_mips_complete_mmio_load(struct kvm_vcpu *vcpu,
 							 struct kvm_run *run);
 
+<<<<<<< HEAD
 u32 kvm_mips_read_count(struct kvm_vcpu *vcpu);
 void kvm_mips_write_count(struct kvm_vcpu *vcpu, u32 count);
 void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack);
 void kvm_mips_init_count(struct kvm_vcpu *vcpu, unsigned long count_hz);
+=======
+uint32_t kvm_mips_read_count(struct kvm_vcpu *vcpu);
+void kvm_mips_write_count(struct kvm_vcpu *vcpu, uint32_t count);
+void kvm_mips_write_compare(struct kvm_vcpu *vcpu, uint32_t compare, bool ack);
+void kvm_mips_init_count(struct kvm_vcpu *vcpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int kvm_mips_set_count_ctl(struct kvm_vcpu *vcpu, s64 count_ctl);
 int kvm_mips_set_count_resume(struct kvm_vcpu *vcpu, s64 count_resume);
 int kvm_mips_set_count_hz(struct kvm_vcpu *vcpu, s64 count_hz);

@@ -224,6 +224,38 @@ static void flush_pending_cmds(struct hwq *hwq)
 				complete(&cmd->cevent);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	cmd->sa.host_use_b[0] |= (B_DONE | B_ERROR | B_TIMEOUT);
+	spin_unlock_irqrestore(&cmd->slock, lock_flags);
+
+	/*
+	 * We really want to send this reset at all costs, so spread
+	 * out wait time on successive retries for available room.
+	 */
+	do {
+		room = readq_be(&afu->host_map->cmd_room);
+		atomic64_set(&afu->room, room);
+		if (room)
+			goto write_rrin;
+		udelay(1 << nretry);
+	} while (nretry++ < MC_ROOM_RETRY_CNT);
+
+	pr_err("%s: no cmd_room to send reset\n", __func__);
+	return;
+
+write_rrin:
+	nretry = 0;
+	writeq_be(rrin, &afu->host_map->ioarrin);
+	do {
+		rrin = readq_be(&afu->host_map->ioarrin);
+		if (rrin != 0x1)
+			break;
+		/* Double delay each time */
+		udelay(1 << nretry);
+	} while (nretry++ < MC_ROOM_RETRY_CNT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -315,6 +347,7 @@ static int send_cmd_ioarrin(struct afu *afu, struct afu_cmd *cmd)
 	 * To avoid the performance penalty of MMIO, spread the update of
 	 * 'room' over multiple commands.
 	 */
+<<<<<<< HEAD
 	spin_lock_irqsave(&hwq->hsq_slock, lock_flags);
 	if (--hwq->room < 0) {
 		room = readq_be(&hwq->host_map->cmd_room);
@@ -325,6 +358,32 @@ static int send_cmd_ioarrin(struct afu *afu, struct afu_cmd *cmd)
 			hwq->room = 0;
 			rc = SCSI_MLQUEUE_HOST_BUSY;
 			goto out;
+=======
+retry:
+	newval = atomic64_dec_if_positive(&afu->room);
+	if (!newval) {
+		do {
+			room = readq_be(&afu->host_map->cmd_room);
+			atomic64_set(&afu->room, room);
+			if (room)
+				goto write_ioarrin;
+			udelay(1 << nretry);
+		} while (nretry++ < MC_ROOM_RETRY_CNT);
+
+		dev_err(dev, "%s: no cmd_room to send 0x%X\n",
+		       __func__, cmd->rcb.cdb[0]);
+
+		goto no_room;
+	} else if (unlikely(newval < 0)) {
+		/* This should be rare. i.e. Only if two threads race and
+		 * decrement before the MMIO read is done. In this case
+		 * just benefit from the other thread having updated
+		 * afu->room.
+		 */
+		if (nretry++ < MC_ROOM_RETRY_CNT) {
+			udelay(1 << nretry);
+			goto retry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		hwq->room = room - 1;
 	}
@@ -338,6 +397,7 @@ out:
 	return rc;
 }
 
+<<<<<<< HEAD
 /**
  * send_cmd_sq() - sends an AFU command via SQ ring
  * @afu:	AFU associated with the host.
@@ -382,6 +442,14 @@ out:
 	       readq_be(&hwq->host_map->sq_head),
 	       readq_be(&hwq->host_map->sq_tail));
 	return rc;
+=======
+no_room:
+	afu->read_room = true;
+	kref_get(&cfg->afu->mapcount);
+	schedule_work(&cfg->work_q);
+	rc = SCSI_MLQUEUE_HOST_BUSY;
+	goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -544,6 +612,16 @@ out:
 	return rc;
 }
 
+static void afu_unmap(struct kref *ref)
+{
+	struct afu *afu = container_of(ref, struct afu, mapcount);
+
+	if (likely(afu->afu_map)) {
+		cxl_psa_unmap((void __iomem *)afu->afu_map);
+		afu->afu_map = NULL;
+	}
+}
+
 /**
  * cxlflash_driver_info() - information handler for this host driver
  * @host:	SCSI host associated with device.
@@ -574,6 +652,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
 	u16 req_flags = SISL_REQ_FLAGS_SUP_UNDERRUN;
 	ulong lock_flags;
 	int rc = 0;
+	int kref_got = 0;
 
 	dev_dbg_ratelimited(dev, "%s: (scp=%p) %d/%d/%d/%llu "
 			    "cdb=(%08x-%08x-%08x-%08x)\n",
@@ -619,6 +698,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
 		cmd->rcb.data_ea = (uintptr_t)sg_virt(sg);
 	}
 
+<<<<<<< HEAD
 	cmd->scp = scp;
 	cmd->parent = afu;
 	cmd->hwq_index = hwq_index;
@@ -627,6 +707,13 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
 	cmd->rcb.ctx_id = hwq->ctx_hndl;
 	cmd->rcb.msi = SISL_MSI_RRQ_UPDATED;
 	cmd->rcb.port_sel = CHAN2PORTMASK(scp->device->channel);
+=======
+	kref_get(&cfg->afu->mapcount);
+	kref_got = 1;
+
+	cmd->rcb.ctx_id = afu->ctx_hndl;
+	cmd->rcb.port_sel = port_sel;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cmd->rcb.lun_id = lun_to_lunid(scp->device->lun);
 
 	if (scp->sc_data_direction == DMA_TO_DEVICE)
@@ -638,6 +725,12 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
 	rc = afu->send_cmd(afu, cmd);
 	atomic_dec(&afu->cmds_active);
 out:
+<<<<<<< HEAD
+=======
+	if (kref_got)
+		kref_put(&afu->mapcount, afu_unmap);
+	pr_devel("%s: returning rc=%d\n", __func__, rc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -689,12 +782,25 @@ static void cxlflash_reset_sync(struct cxlflash_cfg *cfg)
  *
  * Safe to call with AFU in a partially allocated/initialized state.
  *
+<<<<<<< HEAD
  * Cancels scheduled worker threads, waits for any active internal AFU
  * commands to timeout, disables IRQ polling and then unmaps the MMIO space.
+=======
+ * Cleans up all state associated with the command queue, and unmaps
+ * the MMIO space.
+ *
+ *  - complete() will take care of commands we initiated (they'll be checked
+ *  in as part of the cleanup that occurs after the completion)
+ *
+ *  - cmd_checkin() will take care of entries that we did not initiate and that
+ *  have not (and will not) complete because they are sitting on a [now stale]
+ *  hardware queue
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 static void stop_afu(struct cxlflash_cfg *cfg)
 {
 	struct afu *afu = cfg->afu;
+<<<<<<< HEAD
 	struct hwq *hwq;
 	int i;
 
@@ -712,12 +818,23 @@ static void stop_afu(struct cxlflash_cfg *cfg)
 
 				irq_poll_disable(&hwq->irqpoll);
 			}
+=======
+	struct afu_cmd *cmd;
+
+	if (likely(afu)) {
+		for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+			cmd = &afu->cmd[i];
+			complete(&cmd->cevent);
+			if (!atomic_read(&cmd->free))
+				cmd_checkin(cmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (likely(afu->afu_map)) {
 			cfg->ops->psa_unmap(afu->afu_map);
 			afu->afu_map = NULL;
 		}
+		kref_put(&afu->mapcount, afu_unmap);
 	}
 }
 
@@ -982,8 +1099,13 @@ static void cxlflash_remove(struct pci_dev *pdev)
 		scsi_remove_host(cfg->host);
 		/* fall through */
 	case INIT_STATE_AFU:
+<<<<<<< HEAD
 		term_afu(cfg);
 		/* fall through */
+=======
+		cancel_work_sync(&cfg->work_q);
+		term_afu(cfg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case INIT_STATE_PCI:
 		cfg->ops->destroy_afu(cfg->afu_cookie);
 		pci_disable_device(pdev);
@@ -1255,7 +1377,51 @@ static void afu_link_reset(struct afu *afu, int port, __be64 __iomem *fc_regs)
 	writeq_be(port_sel, &afu->afu_map->global.regs.afu_port_sel);
 	cxlflash_afu_sync(afu, 0, 0, AFU_GSYNC);
 
+<<<<<<< HEAD
 	dev_dbg(dev, "%s: returning port_sel=%016llx\n", __func__, port_sel);
+=======
+	pr_debug("%s: returning port_sel=%lld\n", __func__, port_sel);
+}
+
+/*
+ * Asynchronous interrupt information table
+ */
+static const struct asyc_intr_info ainfo[] = {
+	{SISL_ASTATUS_FC0_OTHER, "other error", 0, CLR_FC_ERROR | LINK_RESET},
+	{SISL_ASTATUS_FC0_LOGO, "target initiated LOGO", 0, 0},
+	{SISL_ASTATUS_FC0_CRC_T, "CRC threshold exceeded", 0, LINK_RESET},
+	{SISL_ASTATUS_FC0_LOGI_R, "login timed out, retrying", 0, LINK_RESET},
+	{SISL_ASTATUS_FC0_LOGI_F, "login failed", 0, CLR_FC_ERROR},
+	{SISL_ASTATUS_FC0_LOGI_S, "login succeeded", 0, SCAN_HOST},
+	{SISL_ASTATUS_FC0_LINK_DN, "link down", 0, 0},
+	{SISL_ASTATUS_FC0_LINK_UP, "link up", 0, 0},
+	{SISL_ASTATUS_FC1_OTHER, "other error", 1, CLR_FC_ERROR | LINK_RESET},
+	{SISL_ASTATUS_FC1_LOGO, "target initiated LOGO", 1, 0},
+	{SISL_ASTATUS_FC1_CRC_T, "CRC threshold exceeded", 1, LINK_RESET},
+	{SISL_ASTATUS_FC1_LOGI_R, "login timed out, retrying", 1, LINK_RESET},
+	{SISL_ASTATUS_FC1_LOGI_F, "login failed", 1, CLR_FC_ERROR},
+	{SISL_ASTATUS_FC1_LOGI_S, "login succeeded", 1, SCAN_HOST},
+	{SISL_ASTATUS_FC1_LINK_DN, "link down", 1, 0},
+	{SISL_ASTATUS_FC1_LINK_UP, "link up", 1, 0},
+	{0x0, "", 0, 0}		/* terminator */
+};
+
+/**
+ * find_ainfo() - locates and returns asynchronous interrupt information
+ * @status:	Status code set by AFU on error.
+ *
+ * Return: The located information or NULL when the status code is invalid.
+ */
+static const struct asyc_intr_info *find_ainfo(u64 status)
+{
+	const struct asyc_intr_info *info;
+
+	for (info = &ainfo[0]; info->status; info++)
+		if (info->status == status)
+			return info;
+
+	return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1595,6 +1761,7 @@ static irqreturn_t cxlflash_async_err_irq(int irq, void *data)
 				__func__, port);
 			cfg->lr_state = LINK_RESET_REQUIRED;
 			cfg->lr_port = port;
+			kref_get(&cfg->afu->mapcount);
 			schedule_work(&cfg->work_q);
 		}
 
@@ -1615,6 +1782,7 @@ static irqreturn_t cxlflash_async_err_irq(int irq, void *data)
 
 		if (info->action & SCAN_HOST) {
 			atomic_inc(&cfg->scan_host_needed);
+			kref_get(&cfg->afu->mapcount);
 			schedule_work(&cfg->work_q);
 		}
 	}
@@ -2146,6 +2314,7 @@ static int init_afu(struct cxlflash_cfg *cfg)
 		rc = -ENOMEM;
 		goto err1;
 	}
+	kref_init(&afu->mapcount);
 
 	/* No byte reverse on reading afu_version or string will be backwards */
 	reg = readq(&afu->afu_map->global.regs.afu_version);
@@ -2192,6 +2361,11 @@ out:
 	dev_dbg(dev, "%s: returning rc=%d\n", __func__, rc);
 	return rc;
 
+<<<<<<< HEAD
+=======
+err2:
+	kref_put(&afu->mapcount, afu_unmap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err1:
 	for (i = afu->num_hwqs - 1; i >= 0; i--) {
 		term_intr(cfg, UNMAP_THREE, i);
@@ -2734,13 +2908,21 @@ static ssize_t lun_mode_store(struct device *dev,
 
 		/*
 		 * When configured for internal LUN, there is only one channel,
+<<<<<<< HEAD
 		 * channel number 0, else there will be one less than the number
 		 * of fc ports for this card.
+=======
+		 * channel number 0, else there will be 2 (default).
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 */
 		if (afu->internal_lun)
 			shost->max_channel = 0;
 		else
+<<<<<<< HEAD
 			shost->max_channel = PORTNUM2CHAN(cfg->num_fc_ports);
+=======
+			shost->max_channel = NUM_FC_PORTS - 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		afu_reset(cfg);
 		scsi_scan_host(cfg->host);
@@ -3185,6 +3367,7 @@ static struct scsi_host_template driver_template = {
 /*
  * Device dependent values
  */
+<<<<<<< HEAD
 static struct dev_dependent_vals dev_corsa_vals = { CXLFLASH_MAX_SECTORS,
 					CXLFLASH_WWPN_VPD_REQUIRED };
 static struct dev_dependent_vals dev_flash_gt_vals = { CXLFLASH_MAX_SECTORS,
@@ -3192,6 +3375,10 @@ static struct dev_dependent_vals dev_flash_gt_vals = { CXLFLASH_MAX_SECTORS,
 static struct dev_dependent_vals dev_briard_vals = { CXLFLASH_MAX_SECTORS,
 					(CXLFLASH_NOTIFY_SHUTDOWN |
 					CXLFLASH_OCXL_DEV) };
+=======
+static struct dev_dependent_vals dev_corsa_vals = { CXLFLASH_MAX_SECTORS };
+static struct dev_dependent_vals dev_flash_gt_vals = { CXLFLASH_MAX_SECTORS };
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * PCI device binding table
@@ -3201,8 +3388,11 @@ static struct pci_device_id cxlflash_pci_table[] = {
 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, (kernel_ulong_t)&dev_corsa_vals},
 	{PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_FLASH_GT,
 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, (kernel_ulong_t)&dev_flash_gt_vals},
+<<<<<<< HEAD
 	{PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_BRIARD,
 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, (kernel_ulong_t)&dev_briard_vals},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 
@@ -3256,6 +3446,7 @@ static void cxlflash_worker_thread(struct work_struct *work)
 
 	if (atomic_dec_if_positive(&cfg->scan_host_needed) >= 0)
 		scsi_scan_host(cfg->host);
+	kref_put(&afu->mapcount, afu_unmap);
 }
 
 /**
@@ -3807,8 +3998,12 @@ static pci_ers_result_t cxlflash_pci_error_detected(struct pci_dev *pdev,
 
 	switch (state) {
 	case pci_channel_io_frozen:
+<<<<<<< HEAD
 		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET &&
 					     cfg->state != STATE_PROBING);
+=======
+		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (cfg->state == STATE_FAILTERM)
 			return PCI_ERS_RESULT_DISCONNECT;
 

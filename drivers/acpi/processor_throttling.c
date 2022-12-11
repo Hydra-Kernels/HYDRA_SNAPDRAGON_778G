@@ -914,7 +914,11 @@ static int acpi_processor_get_throttling(struct acpi_processor *pr)
 	if (!cpu_online(pr->id))
 		return -ENODEV;
 
+<<<<<<< HEAD
 	return call_on_cpu(pr->id, __acpi_processor_get_throttling, pr, false);
+=======
+	return work_on_cpu(pr->id, __acpi_processor_get_throttling, pr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int acpi_processor_get_fadt_info(struct acpi_processor *pr)
@@ -1064,6 +1068,16 @@ static long acpi_processor_throttling_fn(void *data)
 			arg->target_state, arg->force);
 }
 
+<<<<<<< HEAD
+=======
+static int call_on_cpu(int cpu, long (*fn)(void *), void *arg, bool direct)
+{
+	if (direct)
+		return fn(arg);
+	return work_on_cpu(cpu, fn, arg);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int __acpi_processor_set_throttling(struct acpi_processor *pr,
 					   int state, bool force, bool direct)
 {

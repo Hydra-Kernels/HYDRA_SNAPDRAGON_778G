@@ -64,17 +64,29 @@
 
 		timer@20200 {
 			compatible = "arm,cortex-a9-global-timer";
+<<<<<<< HEAD
 			reg = <0x20200 0x100>;
 			interrupts = <GIC_PPI 11 IRQ_TYPE_EDGE_RISING>;
 			clocks = <&periph_clk>;
+=======
+			reg = <0x0200 0x100>;
+			interrupts = <GIC_PPI 11 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&clk_periph>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		};
 
 		timer@20600 {
 			compatible = "arm,cortex-a9-twd-timer";
+<<<<<<< HEAD
 			reg = <0x20600 0x20>;
 			interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) |
 						  IRQ_TYPE_EDGE_RISING)>;
 			clocks = <&periph_clk>;
+=======
+			reg = <0x0600 0x100>;
+			interrupts = <GIC_PPI 13 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&clk_periph>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		};
 
 		watchdog@20620 {

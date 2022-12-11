@@ -663,8 +663,13 @@ static const struct chv_community *chv_communities[] = {
  */
 static DEFINE_RAW_SPINLOCK(chv_lock);
 
+<<<<<<< HEAD
 static void __iomem *chv_padreg(struct chv_pinctrl *pctrl, unsigned int offset,
 				unsigned int reg)
+=======
+static void __iomem *chv_padreg(struct chv_pinctrl *pctrl, unsigned offset,
+				unsigned reg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned int family_no = offset / MAX_FAMILY_PAD_GPIO_NO;
 	unsigned int pad_no = offset % MAX_FAMILY_PAD_GPIO_NO;
@@ -1241,7 +1246,11 @@ static int chv_gpio_get(struct gpio_chip *chip, unsigned int offset)
 	u32 ctrl0, cfg;
 
 	raw_spin_lock_irqsave(&chv_lock, flags);
+<<<<<<< HEAD
 	ctrl0 = readl(chv_padreg(pctrl, offset, CHV_PADCTRL0));
+=======
+	ctrl0 = readl(chv_padreg(pctrl, pin, CHV_PADCTRL0));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	raw_spin_unlock_irqrestore(&chv_lock, flags);
 
 	cfg = ctrl0 & CHV_PADCTRL0_GPIOCFG_MASK;
@@ -1281,7 +1290,11 @@ static int chv_gpio_get_direction(struct gpio_chip *chip, unsigned int offset)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&chv_lock, flags);
+<<<<<<< HEAD
 	ctrl0 = readl(chv_padreg(pctrl, offset, CHV_PADCTRL0));
+=======
+	ctrl0 = readl(chv_padreg(pctrl, pin, CHV_PADCTRL0));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	raw_spin_unlock_irqrestore(&chv_lock, flags);
 
 	direction = ctrl0 & CHV_PADCTRL0_GPIOCFG_MASK;
@@ -1593,6 +1606,7 @@ static int chv_gpio_probe(struct chv_pinctrl *pctrl, int irq)
 		}
 	}
 
+<<<<<<< HEAD
 	/*
 	 * The same set of machines in chv_no_valid_mask[] have incorrectly
 	 * configured GPIOs that generate spurious interrupts so we use
@@ -1619,6 +1633,16 @@ static int chv_gpio_probe(struct chv_pinctrl *pctrl, int irq)
 			dev_err(pctrl->dev, "Failed to allocate IRQ numbers\n");
 			return irq_base;
 		}
+=======
+	/* Clear all interrupts */
+	chv_writel(0xffff, pctrl->regs + CHV_INTSTAT);
+
+	ret = gpiochip_irqchip_add(chip, &chv_gpio_irqchip, 0,
+				   handle_bad_irq, IRQ_TYPE_NONE);
+	if (ret) {
+		dev_err(pctrl->dev, "failed to add IRQ chip\n");
+		goto fail;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	pctrl->irqchip.name = "chv-gpio";
@@ -1756,7 +1780,12 @@ static int chv_pinctrl_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM_SLEEP
 static int chv_pinctrl_suspend_noirq(struct device *dev)
 {
+<<<<<<< HEAD
 	struct chv_pinctrl *pctrl = dev_get_drvdata(dev);
+=======
+	struct platform_device *pdev = to_platform_device(dev);
+	struct chv_pinctrl *pctrl = platform_get_drvdata(pdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long flags;
 	int i;
 
@@ -1789,7 +1818,12 @@ static int chv_pinctrl_suspend_noirq(struct device *dev)
 
 static int chv_pinctrl_resume_noirq(struct device *dev)
 {
+<<<<<<< HEAD
 	struct chv_pinctrl *pctrl = dev_get_drvdata(dev);
+=======
+	struct platform_device *pdev = to_platform_device(dev);
+	struct chv_pinctrl *pctrl = platform_get_drvdata(pdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long flags;
 	int i;
 

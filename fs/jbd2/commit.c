@@ -121,7 +121,11 @@ static int journal_submit_commit_record(journal_t *journal,
 	struct commit_header *tmp;
 	struct buffer_head *bh;
 	int ret;
+<<<<<<< HEAD
 	struct timespec64 now;
+=======
+	struct timespec64 now = current_kernel_time64();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	*cbh = NULL;
 

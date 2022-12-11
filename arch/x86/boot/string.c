@@ -17,6 +17,7 @@
 #include <asm/asm.h>
 #include "ctype.h"
 #include "string.h"
+<<<<<<< HEAD
 
 #define KSTRTOX_OVERFLOW       (1U << 31)
 
@@ -28,6 +29,8 @@
 #undef memcpy
 #undef memset
 #undef memcmp
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 int memcmp(const void *s1, const void *s2, size_t len)
 {

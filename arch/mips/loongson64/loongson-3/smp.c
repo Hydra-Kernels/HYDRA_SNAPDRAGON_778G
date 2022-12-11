@@ -280,6 +280,7 @@ void loongson3_ipi_interrupt(struct pt_regs *regs)
 		for (i = 1; i < nr_cpu_ids; i++)
 			core0_c0count[i] = c0count;
 		__wbflush(); /* Let others see the result ASAP */
+<<<<<<< HEAD
 	}
 
 	if (irqs) {
@@ -288,6 +289,8 @@ void loongson3_ipi_interrupt(struct pt_regs *regs)
 			do_IRQ(irq-1);
 			irqs &= ~(1<<(irq-1));
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

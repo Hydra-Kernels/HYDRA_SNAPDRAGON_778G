@@ -884,7 +884,10 @@ repeat:
 	list_for_each_entry(info, &kernfs_root(kn)->supers, node) {
 		struct kernfs_node *parent;
 		struct inode *inode;
+<<<<<<< HEAD
 		struct qstr name;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * We want fsnotify_modify() on @kn but as the
@@ -892,19 +895,33 @@ repeat:
 		 * have the matching @file available.  Look up the inodes
 		 * and generate the events manually.
 		 */
+<<<<<<< HEAD
 		inode = ilookup(info->sb, kn->id.ino);
 		if (!inode)
 			continue;
 
 		name = (struct qstr)QSTR_INIT(kn->name, strlen(kn->name));
+=======
+		inode = ilookup(info->sb, kn->ino);
+		if (!inode)
+			continue;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		parent = kernfs_get_parent(kn);
 		if (parent) {
 			struct inode *p_inode;
 
+<<<<<<< HEAD
 			p_inode = ilookup(info->sb, parent->id.ino);
 			if (p_inode) {
 				fsnotify(p_inode, FS_MODIFY | FS_EVENT_ON_CHILD,
 					 inode, FSNOTIFY_EVENT_INODE, &name, 0);
+=======
+			p_inode = ilookup(info->sb, parent->ino);
+			if (p_inode) {
+				fsnotify(p_inode, FS_MODIFY | FS_EVENT_ON_CHILD,
+					 inode, FSNOTIFY_EVENT_INODE, kn->name, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				iput(p_inode);
 			}
 
@@ -912,7 +929,11 @@ repeat:
 		}
 
 		fsnotify(inode, FS_MODIFY, inode, FSNOTIFY_EVENT_INODE,
+<<<<<<< HEAD
 			 NULL, 0);
+=======
+			 kn->name, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		iput(inode);
 	}
 

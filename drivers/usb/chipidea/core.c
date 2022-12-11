@@ -1112,6 +1112,7 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(dev, "init otg fails, ret = %d\n", ret);
 			goto deinit_gadget;
+<<<<<<< HEAD
 		}
 	}
 
@@ -1121,6 +1122,8 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 		if (IS_ERR(ci->role_switch)) {
 			ret = PTR_ERR(ci->role_switch);
 			goto deinit_otg;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -1182,9 +1185,12 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 	return 0;
 
 stop:
+<<<<<<< HEAD
 	if (ci->role_switch)
 		usb_role_switch_unregister(ci->role_switch);
 deinit_otg:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ci->is_otg && ci->roles[CI_ROLE_GADGET])
 		ci_hdrc_otg_destroy(ci);
 deinit_gadget:

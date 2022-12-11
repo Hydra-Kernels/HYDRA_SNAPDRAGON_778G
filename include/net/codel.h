@@ -161,4 +161,110 @@ typedef void (*codel_skb_drop_t)(struct sk_buff *skb, void *ctx);
 typedef struct sk_buff * (*codel_skb_dequeue_t)(struct codel_vars *vars,
 						void *ctx);
 
+<<<<<<< HEAD
+=======
+static struct sk_buff *codel_dequeue(struct Qdisc *sch,
+				     struct codel_params *params,
+				     struct codel_vars *vars,
+				     struct codel_stats *stats,
+				     codel_skb_dequeue_t dequeue_func)
+{
+	struct sk_buff *skb = dequeue_func(vars, sch);
+	codel_time_t now;
+	bool drop;
+
+	if (!skb) {
+		vars->dropping = false;
+		return skb;
+	}
+	now = codel_get_time();
+	drop = codel_should_drop(skb, sch, vars, params, stats, now);
+	if (vars->dropping) {
+		if (!drop) {
+			/* sojourn time below target - leave dropping state */
+			vars->dropping = false;
+		} else if (codel_time_after_eq(now, vars->drop_next)) {
+			/* It's time for the next drop. Drop the current
+			 * packet and dequeue the next. The dequeue might
+			 * take us out of dropping state.
+			 * If not, schedule the next drop.
+			 * A large backlog might result in drop rates so high
+			 * that the next drop should happen now,
+			 * hence the while loop.
+			 */
+			while (vars->dropping &&
+			       codel_time_after_eq(now, vars->drop_next)) {
+				vars->count++; /* dont care of possible wrap
+						* since there is no more divide
+						*/
+				codel_Newton_step(vars);
+				if (params->ecn && INET_ECN_set_ce(skb)) {
+					stats->ecn_mark++;
+					vars->drop_next =
+						codel_control_law(vars->drop_next,
+								  params->interval,
+								  vars->rec_inv_sqrt);
+					goto end;
+				}
+				stats->drop_len += qdisc_pkt_len(skb);
+				qdisc_drop(skb, sch);
+				stats->drop_count++;
+				skb = dequeue_func(vars, sch);
+				if (!codel_should_drop(skb, sch,
+						       vars, params, stats, now)) {
+					/* leave dropping state */
+					vars->dropping = false;
+				} else {
+					/* and schedule the next drop */
+					vars->drop_next =
+						codel_control_law(vars->drop_next,
+								  params->interval,
+								  vars->rec_inv_sqrt);
+				}
+			}
+		}
+	} else if (drop) {
+		u32 delta;
+
+		if (params->ecn && INET_ECN_set_ce(skb)) {
+			stats->ecn_mark++;
+		} else {
+			stats->drop_len += qdisc_pkt_len(skb);
+			qdisc_drop(skb, sch);
+			stats->drop_count++;
+
+			skb = dequeue_func(vars, sch);
+			drop = codel_should_drop(skb, sch, vars, params,
+						 stats, now);
+		}
+		vars->dropping = true;
+		/* if min went above target close to when we last went below it
+		 * assume that the drop rate that controlled the queue on the
+		 * last cycle is a good starting point to control it now.
+		 */
+		delta = vars->count - vars->lastcount;
+		if (delta > 1 &&
+		    codel_time_before(now - vars->drop_next,
+				      16 * params->interval)) {
+			vars->count = delta;
+			/* we dont care if rec_inv_sqrt approximation
+			 * is not very precise :
+			 * Next Newton steps will correct it quadratically.
+			 */
+			codel_Newton_step(vars);
+		} else {
+			vars->count = 1;
+			vars->rec_inv_sqrt = ~0U >> REC_INV_SQRT_SHIFT;
+		}
+		vars->lastcount = vars->count;
+		vars->drop_next = codel_control_law(now, params->interval,
+						    vars->rec_inv_sqrt);
+	}
+end:
+	if (skb && codel_time_after(vars->ldelay, params->ce_threshold) &&
+	    INET_ECN_set_ce(skb))
+		stats->ce_mark++;
+	return skb;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif

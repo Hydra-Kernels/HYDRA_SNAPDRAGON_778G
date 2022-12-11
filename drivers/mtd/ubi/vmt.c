@@ -315,7 +315,12 @@ out_mapping:
 	ubi->volumes[vol_id] = NULL;
 	ubi->vol_count -= 1;
 	spin_unlock(&ubi->volumes_lock);
+<<<<<<< HEAD
 	ubi_eba_destroy_table(eba_tbl);
+=======
+	if (do_free)
+		kfree(vol->eba_tbl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_acc:
 	spin_lock(&ubi->volumes_lock);
 	ubi->rsvd_pebs -= vol->reserved_pebs;

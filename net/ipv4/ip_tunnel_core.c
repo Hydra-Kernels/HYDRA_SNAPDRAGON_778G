@@ -112,7 +112,11 @@ int __iptunnel_pull_header(struct sk_buff *skb, int hdr_len,
 	skb_clear_hash_if_not_l4(skb);
 	__vlan_hwaccel_clear_tag(skb);
 	skb_set_queue_mapping(skb, 0);
+<<<<<<< HEAD
 	skb_scrub_packet(skb, xnet);
+=======
+	skb->pkt_type = PACKET_HOST;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return iptunnel_pull_offloads(skb);
 }

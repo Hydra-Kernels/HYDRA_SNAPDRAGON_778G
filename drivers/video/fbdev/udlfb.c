@@ -850,6 +850,7 @@ static int dlfb_get_edid(struct dlfb_data *dlfb, char *edid, int len)
 		return 0;
 
 	for (i = 0; i < len; i++) {
+<<<<<<< HEAD
 		ret = usb_control_msg(dlfb->udev,
 				      usb_rcvctrlpipe(dlfb->udev, 0), 0x02,
 				      (0x80 | (0x02 << 5)), i << 8, 0xA1,
@@ -857,6 +858,14 @@ static int dlfb_get_edid(struct dlfb_data *dlfb, char *edid, int len)
 		if (ret < 2) {
 			dev_err(&dlfb->udev->dev,
 				"Read EDID byte %d failed: %d\n", i, ret);
+=======
+		ret = usb_control_msg(dev->udev,
+				      usb_rcvctrlpipe(dev->udev, 0), 0x02,
+				      (0x80 | (0x02 << 5)), i << 8, 0xA1,
+				      rbuf, 2, USB_CTRL_GET_TIMEOUT);
+		if (ret < 2) {
+			pr_err("Read EDID byte %d failed: %d\n", i, ret);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			i--;
 			break;
 		}
@@ -1553,7 +1562,11 @@ static int dlfb_select_std_channel(struct dlfb_data *dlfb)
 	if (!buf)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	ret = usb_control_msg(dlfb->udev, usb_sndctrlpipe(dlfb->udev, 0),
+=======
+	ret = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			NR_USB_REQUEST_CHANNEL,
 			(USB_DIR_OUT | USB_TYPE_VENDOR), 0, 0,
 			buf, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);

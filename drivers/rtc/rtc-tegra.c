@@ -4,8 +4,18 @@
  *
  * Copyright (c) 2010-2019, NVIDIA Corporation.
  */
+<<<<<<< HEAD
 
 #include <linux/clk.h>
+=======
+#include <linux/kernel.h>
+#include <linux/clk.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#include <linux/irq.h>
+#include <linux/io.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -46,12 +56,21 @@
 #define TEGRA_RTC_INTR_STATUS_SEC_ALARM0	(1<<0)
 
 struct tegra_rtc_info {
+<<<<<<< HEAD
 	struct platform_device *pdev;
 	struct rtc_device *rtc;
 	void __iomem *base; /* NULL if not initialized */
 	struct clk *clk;
 	int irq; /* alarm and periodic IRQ */
 	spinlock_t lock;
+=======
+	struct platform_device	*pdev;
+	struct rtc_device	*rtc_dev;
+	void __iomem		*rtc_base; /* NULL if not initialized. */
+	struct clk		*clk;
+	int			tegra_rtc_irq; /* alarm and periodic irq */
+	spinlock_t		tegra_rtc_lock;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*
@@ -293,6 +312,7 @@ static int tegra_rtc_probe(struct platform_device *pdev)
 	if (ret <= 0)
 		return ret;
 
+<<<<<<< HEAD
 	info->irq = ret;
 
 	info->rtc = devm_rtc_allocate_device(&pdev->dev);
@@ -302,6 +322,8 @@ static int tegra_rtc_probe(struct platform_device *pdev)
 	info->rtc->ops = &tegra_rtc_ops;
 	info->rtc->range_max = U32_MAX;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	info->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(info->clk))
 		return PTR_ERR(info->clk);
@@ -310,7 +332,11 @@ static int tegra_rtc_probe(struct platform_device *pdev)
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	/* set context info */
+=======
+	/* set context info. */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	info->pdev = pdev;
 	spin_lock_init(&info->lock);
 
@@ -323,6 +349,7 @@ static int tegra_rtc_probe(struct platform_device *pdev)
 
 	device_init_wakeup(&pdev->dev, 1);
 
+<<<<<<< HEAD
 	ret = devm_request_irq(&pdev->dev, info->irq, tegra_rtc_irq_handler,
 			       IRQF_TRIGGER_HIGH, dev_name(&pdev->dev),
 			       &pdev->dev);
@@ -334,6 +361,27 @@ static int tegra_rtc_probe(struct platform_device *pdev)
 	ret = rtc_register_device(info->rtc);
 	if (ret)
 		goto disable_clk;
+=======
+	info->rtc_dev = devm_rtc_device_register(&pdev->dev,
+				dev_name(&pdev->dev), &tegra_rtc_ops,
+				THIS_MODULE);
+	if (IS_ERR(info->rtc_dev)) {
+		ret = PTR_ERR(info->rtc_dev);
+		dev_err(&pdev->dev, "Unable to register device (err=%d).\n",
+			ret);
+		goto disable_clk;
+	}
+
+	ret = devm_request_irq(&pdev->dev, info->tegra_rtc_irq,
+			tegra_rtc_irq_handler, IRQF_TRIGGER_HIGH,
+			dev_name(&pdev->dev), &pdev->dev);
+	if (ret) {
+		dev_err(&pdev->dev,
+			"Unable to request interrupt for device (err=%d).\n",
+			ret);
+		goto disable_clk;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dev_notice(&pdev->dev, "Tegra internal Real Time Clock\n");
 
@@ -402,11 +450,18 @@ static void tegra_rtc_shutdown(struct platform_device *pdev)
 }
 
 static struct platform_driver tegra_rtc_driver = {
+<<<<<<< HEAD
 	.probe = tegra_rtc_probe,
 	.remove = tegra_rtc_remove,
 	.shutdown = tegra_rtc_shutdown,
 	.driver = {
 		.name = "tegra_rtc",
+=======
+	.remove		= tegra_rtc_remove,
+	.shutdown	= tegra_rtc_shutdown,
+	.driver		= {
+		.name	= "tegra_rtc",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.of_match_table = tegra_rtc_dt_match,
 		.pm = &tegra_rtc_pm_ops,
 	},

@@ -796,7 +796,11 @@ typedef struct xfs_agfl {
 	uuid_t		agfl_uuid;
 	__be64		agfl_lsn;
 	__be32		agfl_crc;
+<<<<<<< HEAD
 	__be32		agfl_bno[];	/* actually xfs_agfl_size(mp) */
+=======
+	__be32		agfl_bno[];	/* actually XFS_AGFL_SIZE(mp) */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __attribute__((packed)) xfs_agfl_t;
 
 #define XFS_AGFL_CRC_OFF	offsetof(struct xfs_agfl, agfl_crc)

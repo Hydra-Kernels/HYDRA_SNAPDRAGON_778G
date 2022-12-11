@@ -210,8 +210,16 @@ static void unfill_desc(struct hnae_ring *ring)
 static int hns_nic_maybe_stop_tx(
 	struct sk_buff **out_skb, int *bnum, struct hnae_ring *ring)
 {
+<<<<<<< HEAD
 	struct sk_buff *skb = *out_skb;
 	struct sk_buff *new_skb = NULL;
+=======
+	struct hns_nic_priv *priv = netdev_priv(ndev);
+	struct hnae_ring *ring = ring_data->ring;
+	struct device *dev = ring_to_dev(ring);
+	struct netdev_queue *dev_queue;
+	struct skb_frag_struct *frag;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int buf_num;
 
 	/* no. of segments (plus a header) */

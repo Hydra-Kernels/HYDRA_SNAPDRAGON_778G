@@ -746,10 +746,14 @@ static int ethoc_open(struct net_device *dev)
 		netif_start_queue(dev);
 	}
 
+<<<<<<< HEAD
 	priv->old_link = -1;
 	priv->old_duplex = -1;
 
 	phy_start(dev->phydev);
+=======
+	phy_start(priv->phy);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (netif_msg_ifup(priv)) {
 		dev_info(&dev->dev, "I/O: %08lx Memory: %08lx-%08lx\n",

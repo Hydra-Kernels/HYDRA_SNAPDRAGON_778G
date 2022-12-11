@@ -280,12 +280,37 @@ static void dce_v8_0_hpd_init(struct amdgpu_device *adev)
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		struct amdgpu_connector *amdgpu_connector = to_amdgpu_connector(connector);
 
+<<<<<<< HEAD
 		if (amdgpu_connector->hpd.hpd >= adev->mode_info.num_hpd)
 			continue;
 
 		tmp = RREG32(mmDC_HPD1_CONTROL + hpd_offsets[amdgpu_connector->hpd.hpd]);
 		tmp |= DC_HPD1_CONTROL__DC_HPD1_EN_MASK;
 		WREG32(mmDC_HPD1_CONTROL + hpd_offsets[amdgpu_connector->hpd.hpd], tmp);
+=======
+		switch (amdgpu_connector->hpd.hpd) {
+		case AMDGPU_HPD_1:
+			WREG32(mmDC_HPD1_CONTROL, tmp);
+			break;
+		case AMDGPU_HPD_2:
+			WREG32(mmDC_HPD2_CONTROL, tmp);
+			break;
+		case AMDGPU_HPD_3:
+			WREG32(mmDC_HPD3_CONTROL, tmp);
+			break;
+		case AMDGPU_HPD_4:
+			WREG32(mmDC_HPD4_CONTROL, tmp);
+			break;
+		case AMDGPU_HPD_5:
+			WREG32(mmDC_HPD5_CONTROL, tmp);
+			break;
+		case AMDGPU_HPD_6:
+			WREG32(mmDC_HPD6_CONTROL, tmp);
+			break;
+		default:
+			break;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (connector->connector_type == DRM_MODE_CONNECTOR_eDP ||
 		    connector->connector_type == DRM_MODE_CONNECTOR_LVDS) {
@@ -294,9 +319,40 @@ static void dce_v8_0_hpd_init(struct amdgpu_device *adev)
 			 * https://bugzilla.redhat.com/show_bug.cgi?id=726143
 			 * also avoid interrupt storms during dpms.
 			 */
+<<<<<<< HEAD
 			tmp = RREG32(mmDC_HPD1_INT_CONTROL + hpd_offsets[amdgpu_connector->hpd.hpd]);
 			tmp &= ~DC_HPD1_INT_CONTROL__DC_HPD1_INT_EN_MASK;
 			WREG32(mmDC_HPD1_INT_CONTROL + hpd_offsets[amdgpu_connector->hpd.hpd], tmp);
+=======
+			u32 dc_hpd_int_cntl_reg, dc_hpd_int_cntl;
+
+			switch (amdgpu_connector->hpd.hpd) {
+			case AMDGPU_HPD_1:
+				dc_hpd_int_cntl_reg = mmDC_HPD1_INT_CONTROL;
+				break;
+			case AMDGPU_HPD_2:
+				dc_hpd_int_cntl_reg = mmDC_HPD2_INT_CONTROL;
+				break;
+			case AMDGPU_HPD_3:
+				dc_hpd_int_cntl_reg = mmDC_HPD3_INT_CONTROL;
+				break;
+			case AMDGPU_HPD_4:
+				dc_hpd_int_cntl_reg = mmDC_HPD4_INT_CONTROL;
+				break;
+			case AMDGPU_HPD_5:
+				dc_hpd_int_cntl_reg = mmDC_HPD5_INT_CONTROL;
+				break;
+			case AMDGPU_HPD_6:
+				dc_hpd_int_cntl_reg = mmDC_HPD6_INT_CONTROL;
+				break;
+			default:
+				continue;
+			}
+
+			dc_hpd_int_cntl = RREG32(dc_hpd_int_cntl_reg);
+			dc_hpd_int_cntl &= ~DC_HPD1_INT_CONTROL__DC_HPD1_INT_EN_MASK;
+			WREG32(dc_hpd_int_cntl_reg, dc_hpd_int_cntl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 		}
 
@@ -964,11 +1020,16 @@ static void dce_v8_0_program_watermarks(struct amdgpu_device *adev,
 	u32 tmp, wm_mask, lb_vblank_lead_lines = 0;
 
 	if (amdgpu_crtc->base.enabled && num_heads && mode) {
+<<<<<<< HEAD
 		active_time = (u32) div_u64((u64)mode->crtc_hdisplay * 1000000,
 					    (u32)mode->clock);
 		line_time = (u32) div_u64((u64)mode->crtc_htotal * 1000000,
 					  (u32)mode->clock);
 		line_time = min(line_time, (u32)65535);
+=======
+		active_time = 1000000UL * (u32)mode->crtc_hdisplay / (u32)mode->clock;
+		line_time = min((u32) (1000000UL * (u32)mode->crtc_htotal / (u32)mode->clock), (u32)65535);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* watermark for high clocks */
 		if (adev->pm.dpm_enabled) {

@@ -392,8 +392,26 @@ static int fsg_set_halt(struct fsg_dev *fsg, struct usb_ep *ep)
 
 /* These routines may be called in process context or in_irq */
 
+<<<<<<< HEAD
 static void __raise_exception(struct fsg_common *common, enum fsg_state new_state,
 			      void *arg)
+=======
+/* Caller must hold fsg->lock */
+static void wakeup_thread(struct fsg_common *common)
+{
+	/*
+	 * Ensure the reading of thread_wakeup_needed
+	 * and the writing of bh->state are completed
+	 */
+	smp_mb();
+	/* Tell the main thread that something has happened */
+	common->thread_wakeup_needed = 1;
+	if (common->thread_task)
+		wake_up_process(common->thread_task);
+}
+
+static void raise_exception(struct fsg_common *common, enum fsg_state new_state)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned long		flags;
 
@@ -597,6 +615,7 @@ static int sleep_thread(struct fsg_common *common, bool can_freeze,
 {
 	int	rc;
 
+<<<<<<< HEAD
 	/* Wait until a signal arrives or bh is no longer busy */
 	if (can_freeze)
 		/*
@@ -611,6 +630,30 @@ static int sleep_thread(struct fsg_common *common, bool can_freeze,
 				bh && smp_load_acquire(&bh->state) >=
 					BUF_STATE_EMPTY);
 	return rc ? -EINTR : 0;
+=======
+	/* Wait until a signal arrives or we are woken up */
+	for (;;) {
+		if (can_freeze)
+			try_to_freeze();
+		set_current_state(TASK_INTERRUPTIBLE);
+		if (signal_pending(current)) {
+			rc = -EINTR;
+			break;
+		}
+		if (common->thread_wakeup_needed)
+			break;
+		schedule();
+	}
+	__set_current_state(TASK_RUNNING);
+	common->thread_wakeup_needed = 0;
+
+	/*
+	 * Ensure the writing of thread_wakeup_needed
+	 * and the reading of bh->state are completed
+	 */
+	smp_mb();
+	return rc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 
@@ -2863,14 +2906,21 @@ void fsg_common_set_inquiry_string(struct fsg_common *common, const char *vn,
 }
 EXPORT_SYMBOL_GPL(fsg_common_set_inquiry_string);
 
+<<<<<<< HEAD
 static void fsg_common_release(struct fsg_common *common)
 {
+=======
+static void fsg_common_release(struct kref *ref)
+{
+	struct fsg_common *common = container_of(ref, struct fsg_common, ref);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int i;
 
 	/* If the thread isn't already dead, tell it to exit now */
 	if (common->state != FSG_STATE_TERMINATED) {
 		raise_exception(common, FSG_STATE_EXIT);
 		wait_for_completion(&common->thread_notifier);
+		common->thread_task = NULL;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(common->luns); ++i) {
@@ -2919,11 +2969,19 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	}
 
 	if (!common->thread_task) {
+<<<<<<< HEAD
 		common->state = FSG_STATE_NORMAL;
 		common->thread_task =
 			kthread_create(fsg_main_thread, common, "file-storage");
 		if (IS_ERR(common->thread_task)) {
 			ret = PTR_ERR(common->thread_task);
+=======
+		common->state = FSG_STATE_IDLE;
+		common->thread_task =
+			kthread_create(fsg_main_thread, common, "file-storage");
+		if (IS_ERR(common->thread_task)) {
+			int ret = PTR_ERR(common->thread_task);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			common->thread_task = NULL;
 			common->state = FSG_STATE_TERMINATED;
 			return ret;

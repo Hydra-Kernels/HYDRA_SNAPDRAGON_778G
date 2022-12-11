@@ -441,7 +441,15 @@ static struct kset *ipl_kset;
 static void __ipl_run(void *unused)
 {
 	__bpon();
+<<<<<<< HEAD
 	diag308(DIAG308_LOAD_CLEAR, NULL);
+=======
+	diag308(DIAG308_IPL, NULL);
+	if (MACHINE_IS_VM)
+		__cpcmd("IPL", NULL, 0, NULL);
+	else if (ipl_info.type == IPL_TYPE_CCW)
+		reipl_ccw_dev(&ipl_info.data.ccw.dev_id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void ipl_run(struct shutdown_trigger *trigger)
@@ -667,9 +675,15 @@ static ssize_t reipl_generic_loadparm_store(struct ipl_parameter_block *ipb,
 	/* initialize loadparm with blanks */
 	memset(ipb->common.loadparm, ' ', LOADPARM_LEN);
 	/* copy and convert to ebcdic */
+<<<<<<< HEAD
 	memcpy(ipb->common.loadparm, buf, lp_len);
 	ASCEBC(ipb->common.loadparm, LOADPARM_LEN);
 	ipb->common.flags |= IPL_PB0_FLAG_LOADPARM;
+=======
+	memcpy(ipb->hdr.loadparm, buf, lp_len);
+	ASCEBC(ipb->hdr.loadparm, LOADPARM_LEN);
+	ipb->hdr.flags |= DIAG308_FLAGS_LP_VALID;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return len;
 }
 
@@ -1705,8 +1719,33 @@ void s390_reset_system(void)
 	set_prefix(0);
 
 	/* Disable lowcore protection */
+<<<<<<< HEAD
 	__ctl_clear_bit(0, 28);
 	diag_dma_ops.diag308_reset();
+=======
+	__ctl_clear_bit(0,28);
+
+	/* Set new machine check handler */
+	S390_lowcore.mcck_new_psw.mask = PSW_KERNEL_BITS | PSW_MASK_DAT;
+	S390_lowcore.mcck_new_psw.addr =
+		PSW_ADDR_AMODE | (unsigned long) s390_base_mcck_handler;
+
+	/* Set new program check handler */
+	S390_lowcore.program_new_psw.mask = PSW_KERNEL_BITS | PSW_MASK_DAT;
+	S390_lowcore.program_new_psw.addr =
+		PSW_ADDR_AMODE | (unsigned long) s390_base_pgm_handler;
+
+	/* Store status at absolute zero */
+	store_status();
+
+	/* Call function before reset */
+	if (fn_pre)
+		fn_pre();
+	do_reset_calls();
+	/* Call function after reset */
+	if (fn_post)
+		fn_post(data);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_KEXEC_FILE

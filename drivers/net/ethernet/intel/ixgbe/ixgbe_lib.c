@@ -296,11 +296,14 @@ static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
 	ixgbe_cache_ring_rss(adapter);
 }
 
+<<<<<<< HEAD
 static int ixgbe_xdp_queues(struct ixgbe_adapter *adapter)
 {
 	return adapter->xdp_prog ? nr_cpu_ids : 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define IXGBE_RSS_64Q_MASK	0x3F
 #define IXGBE_RSS_16Q_MASK	0xF
 #define IXGBE_RSS_8Q_MASK	0x7

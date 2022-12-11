@@ -806,12 +806,30 @@ static int bq24190_charger_get_health(struct bq24190_dev_info *bdi,
 	v = bdi->f_reg;
 	mutex_unlock(&bdi->f_reg_lock);
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	if (v & BQ24190_REG_F_NTC_FAULT_MASK) {
 		switch (v >> BQ24190_REG_F_NTC_FAULT_SHIFT & 0x7) {
 		case 0x1: /* TS1  Cold */
 		case 0x3: /* TS2  Cold */
 		case 0x5: /* Both Cold */
 			health = POWER_SUPPLY_HEALTH_COLD;
+=======
+	if (v & BQ24190_REG_F_BOOST_FAULT_MASK) {
+		/*
+		 * This could be over-current or over-voltage but there's
+		 * no way to tell which.  Return 'OVERVOLTAGE' since there
+		 * isn't an 'OVERCURRENT' value defined that we can return
+		 * even if it was over-current.
+		 */
+		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+	} else {
+		v &= BQ24190_REG_F_CHRG_FAULT_MASK;
+		v >>= BQ24190_REG_F_CHRG_FAULT_SHIFT;
+
+		switch (v) {
+		case 0x0: /* Normal */
+			health = POWER_SUPPLY_HEALTH_GOOD;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 			break;
 		case 0x2: /* TS1  Hot */
 		case 0x4: /* TS2  Hot */
@@ -1522,8 +1540,18 @@ static const struct power_supply_desc bq24190_battery_desc = {
 
 static int bq24190_configure_usb_otg(struct bq24190_dev_info *bdi, u8 ss_reg)
 {
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	bool otg_enabled;
 	int ret;
+=======
+	struct bq24190_dev_info *bdi = data;
+	const u8 battery_mask_ss = BQ24190_REG_SS_CHRG_STAT_MASK;
+	const u8 battery_mask_f = BQ24190_REG_F_BAT_FAULT_MASK
+				| BQ24190_REG_F_NTC_FAULT_MASK;
+	bool alert_charger = false, alert_battery = false;
+	u8 ss_reg = 0, f_reg = 0;
+	int i, ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 	otg_enabled = !!(ss_reg & BQ24190_REG_SS_VBUS_STAT_MASK);
 	ret = extcon_set_state_sync(bdi->edev, EXTCON_USB, otg_enabled);
@@ -1580,6 +1608,32 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
 		mutex_unlock(&bdi->f_reg_lock);
 	}
 
+	i = 0;
+	do {
+		ret = bq24190_read(bdi, BQ24190_REG_F, &f_reg);
+		if (ret < 0) {
+			dev_err(bdi->dev, "Can't read F reg: %d\n", ret);
+			goto out;
+		}
+	} while (f_reg && ++i < 2);
+
+	if (f_reg != bdi->f_reg) {
+		dev_info(bdi->dev,
+			"Fault: boost %d, charge %d, battery %d, ntc %d\n",
+			!!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+			!!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+			!!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+			!!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+
+		mutex_lock(&bdi->f_reg_lock);
+		if ((bdi->f_reg & battery_mask_f) != (f_reg & battery_mask_f))
+			alert_battery = true;
+		if ((bdi->f_reg & ~battery_mask_f) != (f_reg & ~battery_mask_f))
+			alert_charger = true;
+		bdi->f_reg = f_reg;
+		mutex_unlock(&bdi->f_reg_lock);
+	}
+
 	if (ss_reg != bdi->ss_reg) {
 		/*
 		 * The device is in host mode so when PG_STAT goes from 1->0
@@ -1603,12 +1657,22 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
 		bdi->ss_reg = ss_reg;
 	}
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	if (alert_charger || alert_battery) {
 		power_supply_changed(bdi->charger);
 		bq24190_configure_usb_otg(bdi, ss_reg);
 	}
 	if (alert_battery && bdi->battery)
 		power_supply_changed(bdi->battery);
+=======
+	if (alert_charger)
+		power_supply_changed(bdi->charger);
+	if (alert_battery)
+		power_supply_changed(bdi->battery);
+
+out:
+	pm_runtime_put_sync(bdi->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 	dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg, f_reg);
 }
@@ -1660,11 +1724,22 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	ret = bq24190_set_config(bdi);
 	if (ret < 0)
 		return ret;
 
 	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+=======
+	ret = bq24190_set_mode_host(bdi);
+	if (ret < 0)
+		goto out;
+
+	ret = bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+out:
+	pm_runtime_put_sync(bdi->dev);
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 }
 
 static int bq24190_get_config(struct bq24190_dev_info *bdi)
@@ -1730,8 +1805,11 @@ static int bq24190_probe(struct i2c_client *client,
 	mutex_init(&bdi->f_reg_lock);
 	bdi->f_reg = 0;
 	bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	INIT_DELAYED_WORK(&bdi->input_current_limit_work,
 			  bq24190_input_current_limit_work);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 	i2c_set_clientdata(client, bdi);
 
@@ -1740,6 +1818,7 @@ static int bq24190_probe(struct i2c_client *client,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	bdi->edev = devm_extcon_dev_allocate(dev, bq24190_usb_extcon_cable);
 	if (IS_ERR(bdi->edev))
 		return PTR_ERR(bdi->edev);
@@ -1748,13 +1827,20 @@ static int bq24190_probe(struct i2c_client *client,
 	if (ret < 0)
 		return ret;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 	pm_runtime_enable(dev);
 	pm_runtime_use_autosuspend(dev);
 	pm_runtime_set_autosuspend_delay(dev, 600);
 	ret = pm_runtime_get_sync(dev);
 	if (ret < 0) {
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
 		goto out_pmrt;
+=======
+		dev_err(dev, "Hardware init failed\n");
+		goto out1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 	}
 
 #ifdef CONFIG_SYSFS
@@ -1771,6 +1857,7 @@ static int bq24190_probe(struct i2c_client *client,
 	if (IS_ERR(bdi->charger)) {
 		dev_err(dev, "Can't register charger\n");
 		ret = PTR_ERR(bdi->charger);
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 		goto out_pmrt;
 	}
 
@@ -1791,6 +1878,33 @@ static int bq24190_probe(struct i2c_client *client,
 	if (ret < 0) {
 		dev_err(dev, "Can't get devicetree config\n");
 		goto out_charger;
+=======
+		goto out1;
+	}
+
+	battery_cfg.drv_data = bdi;
+	bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+						&battery_cfg);
+	if (IS_ERR(bdi->battery)) {
+		dev_err(dev, "Can't register battery\n");
+		ret = PTR_ERR(bdi->battery);
+		goto out2;
+	}
+
+	ret = bq24190_sysfs_create_group(bdi);
+	if (ret) {
+		dev_err(dev, "Can't create sysfs entries\n");
+		goto out3;
+	}
+
+	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
+			bq24190_irq_handler_thread,
+			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+			"bq24190-charger", bdi);
+	if (ret < 0) {
+		dev_err(dev, "Can't set up irq handler\n");
+		goto out4;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 	}
 
 	ret = bq24190_hw_init(bdi);
@@ -1825,10 +1939,23 @@ static int bq24190_probe(struct i2c_client *client,
 
 	return 0;
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 out_charger:
 	if (!IS_ERR_OR_NULL(bdi->battery))
 		power_supply_unregister(bdi->battery);
 	power_supply_unregister(bdi->charger);
+=======
+out4:
+	bq24190_sysfs_remove_group(bdi);
+out3:
+	power_supply_unregister(bdi->battery);
+out2:
+	power_supply_unregister(bdi->charger);
+out1:
+	pm_runtime_disable(dev);
+	if (bdi->gpio_int)
+		gpio_free(bdi->gpio_int);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 out_pmrt:
 	pm_runtime_put_sync(dev);
@@ -1878,6 +2005,7 @@ static __maybe_unused int bq24190_runtime_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
 
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 	if (!bdi->initialized)
 		return 0;
 
@@ -1900,8 +2028,13 @@ static __maybe_unused int bq24190_pm_suspend(struct device *dev)
 		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
 		pm_runtime_put_noidle(bdi->dev);
 	}
+=======
+	bdi->f_reg = 0;
+	bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 	bq24190_register_reset(bdi);
+<<<<<<< HEAD:drivers/power/supply/bq24190_charger.c
 
 	if (error >= 0) {
 		pm_runtime_mark_last_busy(bdi->dev);
@@ -1934,6 +2067,11 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
 		pm_runtime_mark_last_busy(bdi->dev);
 		pm_runtime_put_autosuspend(bdi->dev);
 	}
+=======
+	bq24190_set_mode_host(bdi);
+	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+	pm_runtime_put_sync(bdi->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24190_charger.c
 
 	/* Things may have changed while suspended so alert upper layer */
 	power_supply_changed(bdi->charger);

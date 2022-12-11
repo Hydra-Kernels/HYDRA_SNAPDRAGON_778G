@@ -599,6 +599,7 @@ static void tcindex_destroy(struct tcf_proto *tp, bool rtnl_held,
 
 	pr_debug("tcindex_destroy(tp %p),p %p\n", tp, p);
 
+<<<<<<< HEAD
 	if (p->perfect) {
 		for (i = 0; i < p->hash; i++) {
 			struct tcindex_filter_result *r = p->perfect + i;
@@ -631,6 +632,10 @@ static void tcindex_destroy(struct tcf_proto *tp, bool rtnl_held,
 	}
 
 	tcf_queue_work(&p->rwork, tcindex_destroy_work);
+=======
+	call_rcu(&p->rcu, __tcindex_destroy);
+	return true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 

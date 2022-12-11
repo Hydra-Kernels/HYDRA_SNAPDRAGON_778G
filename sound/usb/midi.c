@@ -2509,8 +2509,14 @@ int __snd_usbmidi_create(struct snd_card *card,
 		err = snd_usbmidi_create_endpoints_midiman(umidi, &endpoints[0]);
 	else
 		err = snd_usbmidi_create_endpoints(umidi, endpoints);
+<<<<<<< HEAD
 	if (err < 0)
 		goto exit;
+=======
+	if (err < 0) {
+		return err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	usb_autopm_get_interface_no_resume(umidi->iface);
 

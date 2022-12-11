@@ -164,6 +164,7 @@ void __reset_page_owner(struct page *page, unsigned int order)
 	if (unlikely(!page_ext))
 		return;
 	for (i = 0; i < (1 << order); i++) {
+<<<<<<< HEAD
 		__clear_bit(PAGE_EXT_OWNER_ALLOCATED, &page_ext->flags);
 #ifdef CONFIG_PAGE_EXTENSION_PAGE_FREE
 		__set_bit(PAGE_EXT_PG_FREE, &page_ext->flags);
@@ -172,6 +173,12 @@ void __reset_page_owner(struct page *page, unsigned int order)
 		page_owner->free_handle = handle;
 		page_owner->free_ts_nsec = free_ts_nsec;
 		page_ext = page_ext_next(page_ext);
+=======
+		page_ext = lookup_page_ext(page + i);
+		if (unlikely(!page_ext))
+			continue;
+		__clear_bit(PAGE_EXT_OWNER, &page_ext->flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -179,6 +186,7 @@ static inline void __set_page_owner_handle(struct page *page,
 	struct page_ext *page_ext, depot_stack_handle_t handle,
 	unsigned int order, gfp_t gfp_mask)
 {
+<<<<<<< HEAD
 	struct page_owner *page_owner;
 	int i;
 
@@ -191,6 +199,21 @@ static inline void __set_page_owner_handle(struct page *page,
 		page_owner->pid = current->pid;
 		page_owner->ts_nsec = local_clock();
 		page_owner->free_ts_nsec = 0;
+=======
+	struct page_ext *page_ext = lookup_page_ext(page);
+
+	struct stack_trace trace = {
+		.nr_entries = 0,
+		.max_entries = ARRAY_SIZE(page_ext->trace_entries),
+		.entries = &page_ext->trace_entries[0],
+		.skip = 3,
+	};
+
+	if (unlikely(!page_ext))
+		return;
+
+	save_stack_trace(&trace);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		__set_bit(PAGE_EXT_OWNER, &page_ext->flags);
 		__set_bit(PAGE_EXT_OWNER_ALLOCATED, &page_ext->flags);
@@ -206,7 +229,16 @@ noinline void __set_page_owner(struct page *page, unsigned int order,
 					gfp_t gfp_mask)
 {
 	struct page_ext *page_ext = lookup_page_ext(page);
+<<<<<<< HEAD
 	depot_stack_handle_t handle;
+=======
+	if (unlikely(!page_ext))
+		/*
+		 * The caller just returns 0 if no valid gfp
+		 * So return 0 here too.
+		 */
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(!page_ext))
 		return;

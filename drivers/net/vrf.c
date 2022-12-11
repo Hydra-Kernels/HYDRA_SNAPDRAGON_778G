@@ -64,10 +64,98 @@ static void vrf_rx_stats(struct net_device *dev, int len)
 {
 	struct pcpu_dstats *dstats = this_cpu_ptr(dev->dstats);
 
+<<<<<<< HEAD
 	u64_stats_update_begin(&dstats->syncp);
 	dstats->rx_pkts++;
 	dstats->rx_bytes += len;
 	u64_stats_update_end(&dstats->syncp);
+=======
+static int vrf_ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
+{
+	return ip_local_out(net, sk, skb);
+}
+
+static unsigned int vrf_v4_mtu(const struct dst_entry *dst)
+{
+	/* TO-DO: return max ethernet size? */
+	return dst->dev->mtu;
+}
+
+static void vrf_dst_destroy(struct dst_entry *dst)
+{
+	/* our dst lives forever - or until the device is closed */
+}
+
+static unsigned int vrf_default_advmss(const struct dst_entry *dst)
+{
+	return 65535 - 40;
+}
+
+static struct dst_ops vrf_dst_ops = {
+	.family		= AF_INET,
+	.local_out	= vrf_ip_local_out,
+	.check		= vrf_ip_check,
+	.mtu		= vrf_v4_mtu,
+	.destroy	= vrf_dst_destroy,
+	.default_advmss	= vrf_default_advmss,
+};
+
+/* neighbor handling is done with actual device; do not want
+ * to flip skb->dev for those ndisc packets. This really fails
+ * for multiple next protocols (e.g., NEXTHDR_HOP). But it is
+ * a start.
+ */
+#if IS_ENABLED(CONFIG_IPV6)
+static bool check_ipv6_frame(const struct sk_buff *skb)
+{
+	const struct ipv6hdr *ipv6h;
+	struct ipv6hdr _ipv6h;
+	bool rc = true;
+
+	ipv6h = skb_header_pointer(skb, 0, sizeof(_ipv6h), &_ipv6h);
+	if (!ipv6h)
+		goto out;
+
+	if (ipv6h->nexthdr == NEXTHDR_ICMP) {
+		const struct icmp6hdr *icmph;
+		struct icmp6hdr _icmph;
+
+		icmph = skb_header_pointer(skb, sizeof(_ipv6h),
+					   sizeof(_icmph), &_icmph);
+		if (!icmph)
+			goto out;
+
+		switch (icmph->icmp6_type) {
+		case NDISC_ROUTER_SOLICITATION:
+		case NDISC_ROUTER_ADVERTISEMENT:
+		case NDISC_NEIGHBOUR_SOLICITATION:
+		case NDISC_NEIGHBOUR_ADVERTISEMENT:
+		case NDISC_REDIRECT:
+			rc = false;
+			break;
+		}
+	}
+
+out:
+	return rc;
+}
+#else
+static bool check_ipv6_frame(const struct sk_buff *skb)
+{
+	return false;
+}
+#endif
+
+static bool is_ip_rx_frame(struct sk_buff *skb)
+{
+	switch (skb->protocol) {
+	case htons(ETH_P_IP):
+		return true;
+	case htons(ETH_P_IPV6):
+		return check_ipv6_frame(skb);
+	}
+	return false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void vrf_tx_error(struct net_device *vrf_dev, struct sk_buff *skb)
@@ -245,9 +333,23 @@ static netdev_tx_t vrf_process_v4_outbound(struct sk_buff *skb,
 {
 	struct iphdr *ip4h;
 	int ret = NET_XMIT_DROP;
+<<<<<<< HEAD
 	struct flowi4 fl4;
 	struct net *net = dev_net(vrf_dev);
 	struct rtable *rt;
+=======
+	struct flowi4 fl4 = {
+		/* needed to match OIF rule */
+		.flowi4_oif = vrf_dev->ifindex,
+		.flowi4_iif = LOOPBACK_IFINDEX,
+		.flowi4_tos = RT_TOS(ip4h->tos),
+		.flowi4_flags = FLOWI_FLAG_ANYSRC | FLOWI_FLAG_L3MDEV_SRC |
+				FLOWI_FLAG_SKIP_NH_OIF,
+		.flowi4_proto = ip4h->protocol,
+		.daddr = ip4h->daddr,
+		.saddr = ip4h->saddr,
+	};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!pskb_may_pull(skb, ETH_HLEN + sizeof(struct iphdr)))
 		goto err;
@@ -366,7 +468,11 @@ static int vrf_finish_output6(struct net *net, struct sock *sk,
 	struct neighbour *neigh;
 	int ret;
 
+<<<<<<< HEAD
 	nf_reset_ct(skb);
+=======
+	nf_reset(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	skb->protocol = htons(ETH_P_IPV6);
 	skb->dev = dev;
@@ -584,7 +690,11 @@ static int vrf_finish_output(struct net *net, struct sock *sk, struct sk_buff *s
 	bool is_v6gw = false;
 	int ret = -EINVAL;
 
+<<<<<<< HEAD
 	nf_reset_ct(skb);
+=======
+	nf_reset(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Be paranoid, rather than too clever. */
 	if (unlikely(skb_headroom(skb) < hh_len && dev->header_ops)) {
@@ -604,11 +714,20 @@ static int vrf_finish_output(struct net *net, struct sock *sk, struct sk_buff *s
 
 	rcu_read_lock_bh();
 
+<<<<<<< HEAD
 	neigh = ip_neigh_for_gw(rt, skb, &is_v6gw);
 	if (!IS_ERR(neigh)) {
 		sock_confirm_neigh(skb, neigh);
 		/* if crossing protocols, can not use the cached header */
 		ret = neigh_output(neigh, skb, is_v6gw);
+=======
+	nexthop = (__force u32)rt_nexthop(rt, ip_hdr(skb)->daddr);
+	neigh = __ipv4_neigh_lookup_noref(dev, nexthop);
+	if (unlikely(!neigh))
+		neigh = __neigh_create(&arp_tbl, &nexthop, dev, false);
+	if (!IS_ERR(neigh)) {
+		ret = dst_neigh_output(dst, neigh, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rcu_read_unlock_bh();
 		return ret;
 	}
@@ -883,9 +1002,21 @@ static int vrf_del_slave(struct net_device *dev, struct net_device *port_dev)
 static void vrf_dev_uninit(struct net_device *dev)
 {
 	struct net_vrf *vrf = netdev_priv(dev);
+<<<<<<< HEAD
 
 	vrf_rtable_release(dev, vrf);
 	vrf_rt6_release(dev, vrf);
+=======
+//	struct slave_queue *queue = &vrf->queue;
+//	struct list_head *head = &queue->all_slaves;
+//	struct slave *slave, *next;
+
+	vrf_rtable_destroy(vrf);
+	vrf_rt6_destroy(vrf);
+
+//	list_for_each_entry_safe(slave, next, head, list)
+//		vrf_del_slave(dev, slave->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	free_percpu(dev->dstats);
 	dev->dstats = NULL;
@@ -1366,11 +1497,21 @@ static int vrf_validate(struct nlattr *tb[], struct nlattr *data[],
 
 static void vrf_dellink(struct net_device *dev, struct list_head *head)
 {
+<<<<<<< HEAD
 	struct net_device *port_dev;
 	struct list_head *iter;
 
 	netdev_for_each_lower_dev(dev, port_dev, iter)
 		vrf_del_slave(dev, port_dev);
+=======
+	struct net_vrf *vrf = netdev_priv(dev);
+	struct slave_queue *queue = &vrf->queue;
+	struct list_head *all_slaves = &queue->all_slaves;
+	struct slave *slave, *next;
+
+	list_for_each_entry_safe(slave, next, all_slaves, list)
+		vrf_del_slave(dev, slave->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	unregister_netdevice_queue(dev, head);
 }
@@ -1390,11 +1531,16 @@ static int vrf_newlink(struct net *src_net, struct net_device *dev,
 	}
 
 	vrf->tb_id = nla_get_u32(data[IFLA_VRF_TABLE]);
+<<<<<<< HEAD
 	if (vrf->tb_id == RT_TABLE_UNSPEC) {
 		NL_SET_ERR_MSG_ATTR(extack, data[IFLA_VRF_TABLE],
 				    "Invalid VRF table id");
 		return -EINVAL;
 	}
+=======
+	if (vrf->tb_id == RT_TABLE_UNSPEC)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dev->priv_flags |= IFF_L3MDEV_MASTER;
 

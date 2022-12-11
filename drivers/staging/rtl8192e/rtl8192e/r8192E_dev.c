@@ -947,7 +947,11 @@ static void _rtl92e_net_update(struct net_device *dev)
 	net = &priv->rtllib->current_network;
 	rtl92e_config_rate(dev, &rate_config);
 	priv->dot11CurrentPreambleMode = PREAMBLE_AUTO;
+<<<<<<< HEAD
 	priv->basic_rate = rate_config &= 0x15f;
+=======
+	 priv->basic_rate = rate_config &= 0x15f;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rtl92e_writew(dev, BSSIDR, *(u16 *)net->bssid);
 	rtl92e_writel(dev, BSSIDR + 2, *(u32 *)(net->bssid + 2));
 
@@ -1170,7 +1174,11 @@ void  rtl92e_fill_tx_desc(struct net_device *dev, struct tx_desc *pdesc,
 {
 	struct r8192_priv *priv = rtllib_priv(dev);
 	dma_addr_t mapping;
+<<<<<<< HEAD
 	struct tx_fwinfo_8190pci *pTxFwInfo;
+=======
+	struct tx_fwinfo_8190pci *pTxFwInfo = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pTxFwInfo = (struct tx_fwinfo_8190pci *)skb->data;
 	memset(pTxFwInfo, 0, sizeof(struct tx_fwinfo_8190pci));

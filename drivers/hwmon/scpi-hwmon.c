@@ -294,6 +294,24 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int scpi_hwmon_remove(struct platform_device *pdev)
+{
+	struct scpi_sensors *scpi_sensors = platform_get_drvdata(pdev);
+
+	unregister_thermal_zones(pdev, scpi_sensors);
+
+	return 0;
+}
+
+static const struct of_device_id scpi_of_match[] = {
+	{.compatible = "arm,scpi-sensors"},
+	{},
+};
+MODULE_DEVICE_TABLE(of, scpi_of_match);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct platform_driver scpi_hwmon_platdrv = {
 	.driver = {
 		.name	= "scpi-hwmon",

@@ -199,9 +199,13 @@ ifdef INSTALL_PATH
 
 	@# Ask all targets to emit their test scripts
 	echo "#!/bin/sh" > $(ALL_SCRIPT)
+<<<<<<< HEAD
 	echo "BASE_DIR=\$$(realpath \$$(dirname \$$0))" >> $(ALL_SCRIPT)
 	echo "cd \$$BASE_DIR" >> $(ALL_SCRIPT)
 	echo ". ./kselftest/runner.sh" >> $(ALL_SCRIPT)
+=======
+	echo "cd \$$(dirname \$$0)" >> $(ALL_SCRIPT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	echo "ROOT=\$$PWD" >> $(ALL_SCRIPT)
 	echo "if [ \"\$$1\" = \"--summary\" ]; then" >> $(ALL_SCRIPT)
 	echo "  logfile=\$$BASE_DIR/output.log" >> $(ALL_SCRIPT)
@@ -212,8 +216,13 @@ ifdef INSTALL_PATH
 	@# they could be the result of a build failure and should NOT be
 	@# included in the generated runlist.
 	for TARGET in $(TARGETS); do \
+<<<<<<< HEAD
 		BUILD_TARGET=$$BUILD/$$TARGET;	\
 		[ ! -d $(INSTALL_PATH)/$$TARGET ] && echo "Skipping non-existent dir: $$TARGET" && continue; \
+=======
+		echo "echo ; echo Running tests in $$TARGET" >> $(ALL_SCRIPT); \
+		echo "echo ========================================" >> $(ALL_SCRIPT); \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		echo "[ -w /dev/kmsg ] && echo \"kselftest: Running tests in $$TARGET\" >> /dev/kmsg" >> $(ALL_SCRIPT); \
 		echo "cd $$TARGET" >> $(ALL_SCRIPT); \
 		echo -n "run_many" >> $(ALL_SCRIPT); \

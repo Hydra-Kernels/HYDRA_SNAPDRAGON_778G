@@ -315,11 +315,14 @@ static inline long plpar_set_watchpoint0(unsigned long dawr0, unsigned long dawr
 	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
 }
 
+<<<<<<< HEAD
 static inline long plpar_signal_sys_reset(long cpu)
 {
 	return plpar_hcall_norets(H_SIGNAL_SYS_RESET, cpu);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
 {
 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
@@ -334,6 +337,7 @@ static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
 	return rc;
 }
 
+<<<<<<< HEAD
 #else /* !CONFIG_PPC_PSERIES */
 
 static inline long plpar_set_ciabr(unsigned long ciabr)
@@ -348,4 +352,6 @@ static inline long plpar_pte_read_4(unsigned long flags, unsigned long ptex,
 }
 #endif /* CONFIG_PPC_PSERIES */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */

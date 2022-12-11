@@ -294,8 +294,13 @@ static int ip6_frag_reasm(struct frag_queue *fq, struct sk_buff *skb,
 	IP6CB(skb)->frag_max_size = fq->q.max_size;
 
 	/* Yes, and fold redundant checksum back. 8) */
+<<<<<<< HEAD
 	skb_postpush_rcsum(skb, skb_network_header(skb),
 			   skb_network_header_len(skb));
+=======
+	skb_postpush_rcsum(head, skb_network_header(head),
+			   skb_network_header_len(head));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcu_read_lock();
 	__IP6_INC_STATS(net, __in6_dev_stats_get(dev, skb), IPSTATS_MIB_REASMOKS);
@@ -537,6 +542,7 @@ static void ip6_frags_sysctl_unregister(void)
 
 static int __net_init ipv6_frags_init_net(struct net *net)
 {
+<<<<<<< HEAD
 	int res;
 
 	res = fqdir_init(&net->ipv6.fqdir, &ip6_frags, net);
@@ -551,6 +557,15 @@ static int __net_init ipv6_frags_init_net(struct net *net)
 	if (res < 0)
 		fqdir_exit(net->ipv6.fqdir);
 	return res;
+=======
+	net->ipv6.frags.high_thresh = IPV6_FRAG_HIGH_THRESH;
+	net->ipv6.frags.low_thresh = IPV6_FRAG_LOW_THRESH;
+	net->ipv6.frags.timeout = IPV6_FRAG_TIMEOUT;
+
+	inet_frags_init_net(&net->ipv6.frags);
+
+	return ip6_frags_ns_sysctl_register(net);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __net_exit ipv6_frags_pre_exit_net(struct net *net)

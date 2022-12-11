@@ -129,6 +129,7 @@ static int zfcp_scsi_slave_alloc(struct scsi_device *sdev)
 
 	zfcp_sdev->erp_action.port = port;
 
+<<<<<<< HEAD
 	mutex_lock(&zfcp_sysfs_port_units_mutex);
 	if (zfcp_sysfs_port_is_removing(port)) {
 		/* port is already gone */
@@ -138,6 +139,8 @@ static int zfcp_scsi_slave_alloc(struct scsi_device *sdev)
 	}
 	mutex_unlock(&zfcp_sysfs_port_units_mutex);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unit = zfcp_unit_find(port, zfcp_scsi_dev_lun(sdev));
 	if (unit)
 		put_device(&unit->dev);
@@ -234,6 +237,54 @@ struct zfcp_scsi_req_filter {
 };
 
 static void zfcp_scsi_forget_cmnd(struct zfcp_fsf_req *old_req, void *data)
+<<<<<<< HEAD
+=======
+{
+	struct zfcp_scsi_req_filter *filter =
+		(struct zfcp_scsi_req_filter *)data;
+
+	/* already aborted - prevent side-effects - or not a SCSI command */
+	if (old_req->data == NULL || old_req->fsf_command != FSF_QTCB_FCP_CMND)
+		return;
+
+	/* (tmf_scope == FCP_TMF_TGT_RESET || tmf_scope == FCP_TMF_LUN_RESET) */
+	if (old_req->qtcb->header.port_handle != filter->port_handle)
+		return;
+
+	if (filter->tmf_scope == FCP_TMF_LUN_RESET &&
+	    old_req->qtcb->header.lun_handle != filter->lun_handle)
+		return;
+
+	zfcp_dbf_scsi_nullcmnd((struct scsi_cmnd *)old_req->data, old_req);
+	old_req->data = NULL;
+}
+
+static void zfcp_scsi_forget_cmnds(struct zfcp_scsi_dev *zsdev, u8 tm_flags)
+{
+	struct zfcp_adapter *adapter = zsdev->port->adapter;
+	struct zfcp_scsi_req_filter filter = {
+		.tmf_scope = FCP_TMF_TGT_RESET,
+		.port_handle = zsdev->port->handle,
+	};
+	unsigned long flags;
+
+	if (tm_flags == FCP_TMF_LUN_RESET) {
+		filter.tmf_scope = FCP_TMF_LUN_RESET;
+		filter.lun_handle = zsdev->lun_handle;
+	}
+
+	/*
+	 * abort_lock secures against other processings - in the abort-function
+	 * and normal cmnd-handler - of (struct zfcp_fsf_req *)->data
+	 */
+	write_lock_irqsave(&adapter->abort_lock, flags);
+	zfcp_reqlist_apply_for_all(adapter->req_list, zfcp_scsi_forget_cmnd,
+				   &filter);
+	write_unlock_irqrestore(&adapter->abort_lock, flags);
+}
+
+static int zfcp_task_mgmt_function(struct scsi_cmnd *scpnt, u8 tm_flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct zfcp_scsi_req_filter *filter =
 		(struct zfcp_scsi_req_filter *)data;
@@ -300,32 +351,55 @@ static int zfcp_scsi_task_mgmt_function(struct scsi_device *sdev, u8 tm_flags)
 		if (fsf_req)
 			break;
 
+<<<<<<< HEAD
 		zfcp_dbf_scsi_devreset("wait", sdev, tm_flags, NULL);
 		zfcp_erp_wait(adapter);
 		ret = fc_block_rport(rport);
 		if (ret) {
 			zfcp_dbf_scsi_devreset("fiof", sdev, tm_flags, NULL);
+=======
+		zfcp_dbf_scsi_devreset("wait", scpnt, tm_flags, NULL);
+		zfcp_erp_wait(adapter);
+		ret = fc_block_scsi_eh(scpnt);
+		if (ret) {
+			zfcp_dbf_scsi_devreset("fiof", scpnt, tm_flags, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return ret;
 		}
 
 		if (!(atomic_read(&adapter->status) &
 		      ZFCP_STATUS_COMMON_RUNNING)) {
+<<<<<<< HEAD
 			zfcp_dbf_scsi_devreset("nres", sdev, tm_flags, NULL);
+=======
+			zfcp_dbf_scsi_devreset("nres", scpnt, tm_flags, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return SUCCESS;
 		}
 	}
 	if (!fsf_req) {
+<<<<<<< HEAD
 		zfcp_dbf_scsi_devreset("reqf", sdev, tm_flags, NULL);
+=======
+		zfcp_dbf_scsi_devreset("reqf", scpnt, tm_flags, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return FAILED;
 	}
 
 	wait_for_completion(&fsf_req->completion);
 
 	if (fsf_req->status & ZFCP_STATUS_FSFREQ_TMFUNCFAILED) {
+<<<<<<< HEAD
 		zfcp_dbf_scsi_devreset("fail", sdev, tm_flags, fsf_req);
 		retval = FAILED;
 	} else {
 		zfcp_dbf_scsi_devreset("okay", sdev, tm_flags, fsf_req);
+=======
+		zfcp_dbf_scsi_devreset("fail", scpnt, tm_flags, fsf_req);
+		retval = FAILED;
+	} else {
+		zfcp_dbf_scsi_devreset("okay", scpnt, tm_flags, fsf_req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		zfcp_scsi_forget_cmnds(zfcp_sdev, tm_flags);
 	}
 
@@ -389,6 +463,7 @@ static int zfcp_scsi_eh_host_reset_handler(struct scsi_cmnd *scpnt)
 
 	zfcp_dbf_scsi_eh("schrh_r", adapter, ~0, ret);
 	return ret;
+<<<<<<< HEAD
 }
 
 /**
@@ -414,6 +489,8 @@ static int zfcp_scsi_sysfs_host_reset(struct Scsi_Host *shost, int reset_type)
 
 	zfcp_erp_adapter_reset_sync(adapter, "scshr_y");
 	return ret;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct scsi_transport_template *zfcp_scsi_transport_template;

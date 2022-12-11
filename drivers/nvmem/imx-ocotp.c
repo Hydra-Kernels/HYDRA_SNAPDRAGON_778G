@@ -486,6 +486,7 @@ static const struct ocotp_params imx8mn_params = {
 };
 
 static const struct of_device_id imx_ocotp_dt_ids[] = {
+<<<<<<< HEAD
 	{ .compatible = "fsl,imx6q-ocotp",  .data = &imx6q_params },
 	{ .compatible = "fsl,imx6sl-ocotp", .data = &imx6sl_params },
 	{ .compatible = "fsl,imx6sx-ocotp", .data = &imx6sx_params },
@@ -497,6 +498,11 @@ static const struct of_device_id imx_ocotp_dt_ids[] = {
 	{ .compatible = "fsl,imx8mq-ocotp", .data = &imx8mq_params },
 	{ .compatible = "fsl,imx8mm-ocotp", .data = &imx8mm_params },
 	{ .compatible = "fsl,imx8mn-ocotp", .data = &imx8mn_params },
+=======
+	{ .compatible = "fsl,imx6q-ocotp",  (void *)128 },
+	{ .compatible = "fsl,imx6sl-ocotp", (void *)64 },
+	{ .compatible = "fsl,imx6sx-ocotp", (void *)128 },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ },
 };
 MODULE_DEVICE_TABLE(of, imx_ocotp_dt_ids);

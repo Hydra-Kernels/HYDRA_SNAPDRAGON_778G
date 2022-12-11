@@ -44,10 +44,15 @@ static void netdev_port_receive(struct sk_buff *skb)
 	if (unlikely(!skb))
 		return;
 
+<<<<<<< HEAD
 	if (skb->dev->type == ARPHRD_ETHER) {
 		skb_push(skb, ETH_HLEN);
 		skb_postpush_rcsum(skb, skb->data, ETH_HLEN);
 	}
+=======
+	skb_push(skb, ETH_HLEN);
+	skb_postpush_rcsum(skb, skb->data, ETH_HLEN);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ovs_vport_receive(vport, skb, skb_tunnel_info(skb));
 	return;
 error:

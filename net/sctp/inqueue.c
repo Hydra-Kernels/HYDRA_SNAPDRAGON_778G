@@ -202,7 +202,12 @@ new_skb:
 	skb_pull(chunk->skb, sizeof(*ch));
 	chunk->subh.v = NULL; /* Subheader is no longer valid.  */
 
+<<<<<<< HEAD
 	if (chunk->chunk_end + sizeof(*ch) <= skb_tail_pointer(chunk->skb)) {
+=======
+	if (chunk->chunk_end + sizeof(sctp_chunkhdr_t) <=
+	    skb_tail_pointer(chunk->skb)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* This is not a singleton */
 		chunk->singleton = 0;
 	} else if (chunk->chunk_end > skb_tail_pointer(chunk->skb)) {

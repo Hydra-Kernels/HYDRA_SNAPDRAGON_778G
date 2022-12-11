@@ -5,8 +5,11 @@
  * Based on arch/x86/kernel/cpu/intel_cacheinfo.c
  * Author: Sudeep Holla <sudeep.holla@arm.com>
  */
+<<<<<<< HEAD
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/acpi.h>
 #include <linux/bitops.h>
 #include <linux/cacheinfo.h>
@@ -221,6 +224,7 @@ static int cache_shared_cpu_map_setup(unsigned int cpu)
 	struct cacheinfo *this_leaf, *sib_leaf;
 	unsigned int index;
 	int ret = 0;
+<<<<<<< HEAD
 
 	if (this_cpu_ci->cpu_map_populated)
 		return 0;
@@ -230,6 +234,17 @@ static int cache_shared_cpu_map_setup(unsigned int cpu)
 	else if (!acpi_disabled)
 		ret = cache_setup_acpi(cpu);
 
+=======
+
+	if (this_cpu_ci->cpu_map_populated)
+		return 0;
+
+	if (of_have_populated_dt())
+		ret = cache_setup_of_node(cpu);
+	else if (!acpi_disabled)
+		/* No cache property/hierarchy support yet in ACPI */
+		ret = -ENOTSUPP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		return ret;
 

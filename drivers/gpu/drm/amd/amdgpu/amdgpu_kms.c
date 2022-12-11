@@ -489,8 +489,64 @@ static int amdgpu_info_ioctl(struct drm_device *dev, void *data, struct drm_file
 		if (ret)
 			return ret;
 
+<<<<<<< HEAD
 		ret = copy_to_user(out, &ip, min((size_t)size, sizeof(ip)));
 		return ret ? -EFAULT : 0;
+=======
+		switch (info->query_hw_ip.type) {
+		case AMDGPU_HW_IP_GFX:
+			type = AMD_IP_BLOCK_TYPE_GFX;
+			for (i = 0; i < adev->gfx.num_gfx_rings; i++)
+				ring_mask |= ((adev->gfx.gfx_ring[i].ready ? 1 : 0) << i);
+			ib_start_alignment = AMDGPU_GPU_PAGE_SIZE;
+			ib_size_alignment = 8;
+			break;
+		case AMDGPU_HW_IP_COMPUTE:
+			type = AMD_IP_BLOCK_TYPE_GFX;
+			for (i = 0; i < adev->gfx.num_compute_rings; i++)
+				ring_mask |= ((adev->gfx.compute_ring[i].ready ? 1 : 0) << i);
+			ib_start_alignment = AMDGPU_GPU_PAGE_SIZE;
+			ib_size_alignment = 8;
+			break;
+		case AMDGPU_HW_IP_DMA:
+			type = AMD_IP_BLOCK_TYPE_SDMA;
+			for (i = 0; i < adev->sdma.num_instances; i++)
+				ring_mask |= ((adev->sdma.instance[i].ring.ready ? 1 : 0) << i);
+			ib_start_alignment = AMDGPU_GPU_PAGE_SIZE;
+			ib_size_alignment = 1;
+			break;
+		case AMDGPU_HW_IP_UVD:
+			type = AMD_IP_BLOCK_TYPE_UVD;
+			ring_mask = adev->uvd.ring.ready ? 1 : 0;
+			ib_start_alignment = AMDGPU_GPU_PAGE_SIZE;
+			ib_size_alignment = 16;
+			break;
+		case AMDGPU_HW_IP_VCE:
+			type = AMD_IP_BLOCK_TYPE_VCE;
+			for (i = 0; i < AMDGPU_MAX_VCE_RINGS; i++)
+				ring_mask |= ((adev->vce.ring[i].ready ? 1 : 0) << i);
+			ib_start_alignment = AMDGPU_GPU_PAGE_SIZE;
+			ib_size_alignment = 8;
+			break;
+		default:
+			return -EINVAL;
+		}
+
+		for (i = 0; i < adev->num_ip_blocks; i++) {
+			if (adev->ip_blocks[i].type == type &&
+			    adev->ip_block_status[i].valid) {
+				ip.hw_ip_version_major = adev->ip_blocks[i].major;
+				ip.hw_ip_version_minor = adev->ip_blocks[i].minor;
+				ip.capabilities_flags = 0;
+				ip.available_rings = ring_mask;
+				ip.ib_start_alignment = ib_start_alignment;
+				ip.ib_size_alignment = ib_size_alignment;
+				break;
+			}
+		}
+		return copy_to_user(out, &ip,
+				    min((size_t)size, sizeof(ip))) ? -EFAULT : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	case AMDGPU_INFO_HW_IP_COUNT: {
 		enum amd_ip_block_type type;
@@ -543,10 +599,65 @@ static int amdgpu_info_ioctl(struct drm_device *dev, void *data, struct drm_file
 		if (info->query_fw.ip_instance != 0)
 			return -EINVAL;
 
+<<<<<<< HEAD
 		ret = amdgpu_firmware_info(&fw_info, &info->query_fw, adev);
 		if (ret)
 			return ret;
 
+=======
+		switch (info->query_fw.fw_type) {
+		case AMDGPU_INFO_FW_VCE:
+			fw_info.ver = adev->vce.fw_version;
+			fw_info.feature = adev->vce.fb_version;
+			break;
+		case AMDGPU_INFO_FW_UVD:
+			fw_info.ver = adev->uvd.fw_version;
+			fw_info.feature = 0;
+			break;
+		case AMDGPU_INFO_FW_GMC:
+			fw_info.ver = adev->mc.fw_version;
+			fw_info.feature = 0;
+			break;
+		case AMDGPU_INFO_FW_GFX_ME:
+			fw_info.ver = adev->gfx.me_fw_version;
+			fw_info.feature = adev->gfx.me_feature_version;
+			break;
+		case AMDGPU_INFO_FW_GFX_PFP:
+			fw_info.ver = adev->gfx.pfp_fw_version;
+			fw_info.feature = adev->gfx.pfp_feature_version;
+			break;
+		case AMDGPU_INFO_FW_GFX_CE:
+			fw_info.ver = adev->gfx.ce_fw_version;
+			fw_info.feature = adev->gfx.ce_feature_version;
+			break;
+		case AMDGPU_INFO_FW_GFX_RLC:
+			fw_info.ver = adev->gfx.rlc_fw_version;
+			fw_info.feature = adev->gfx.rlc_feature_version;
+			break;
+		case AMDGPU_INFO_FW_GFX_MEC:
+			if (info->query_fw.index == 0) {
+				fw_info.ver = adev->gfx.mec_fw_version;
+				fw_info.feature = adev->gfx.mec_feature_version;
+			} else if (info->query_fw.index == 1) {
+				fw_info.ver = adev->gfx.mec2_fw_version;
+				fw_info.feature = adev->gfx.mec2_feature_version;
+			} else
+				return -EINVAL;
+			break;
+		case AMDGPU_INFO_FW_SMC:
+			fw_info.ver = adev->pm.fw_version;
+			fw_info.feature = 0;
+			break;
+		case AMDGPU_INFO_FW_SDMA:
+			if (info->query_fw.index >= adev->sdma.num_instances)
+				return -EINVAL;
+			fw_info.ver = adev->sdma.instance[info->query_fw.index].fw_version;
+			fw_info.feature = adev->sdma.instance[info->query_fw.index].feature_version;
+			break;
+		default:
+			return -EINVAL;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return copy_to_user(out, &fw_info,
 				    min((size_t)size, sizeof(fw_info))) ? -EFAULT : 0;
 	}

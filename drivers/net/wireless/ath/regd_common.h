@@ -46,7 +46,10 @@ enum EnumRd {
 	ETSI5_WORLD = 0x39,
 	ETSI6_WORLD = 0x34,
 	ETSI8_WORLD = 0x3D,
+<<<<<<< HEAD
 	ETSI9_WORLD = 0x3E,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ETSI_RESERVED = 0x33,
 
 	MKK1_MKKA = 0x40,
@@ -186,7 +189,10 @@ static struct reg_dmn_pair_mapping regDomainPairs[] = {
 	{ETSI5_WORLD, CTL_ETSI, CTL_ETSI},
 	{ETSI6_WORLD, CTL_ETSI, CTL_ETSI},
 	{ETSI8_WORLD, CTL_ETSI, CTL_ETSI},
+<<<<<<< HEAD
 	{ETSI9_WORLD, CTL_ETSI, CTL_ETSI},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* XXX: For ETSI3_ETSIA, Was NO_CTL meant for the 2 GHz band ? */
 	{ETSI3_ETSIA, CTL_ETSI, CTL_ETSI},
@@ -479,7 +485,11 @@ static struct country_code_to_enum_rd allCountries[] = {
 	{CTRY_TUNISIA, ETSI3_WORLD, "TN"},
 	{CTRY_TURKEY, ETSI3_WORLD, "TR"},
 	{CTRY_UGANDA, FCC3_WORLD, "UG"},
+<<<<<<< HEAD
 	{CTRY_UKRAINE, ETSI9_WORLD, "UA"},
+=======
+	{CTRY_UKRAINE, NULL1_WORLD, "UA"},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{CTRY_UAE, NULL1_WORLD, "AE"},
 	{CTRY_UNITED_KINGDOM, ETSI1_WORLD, "GB"},
 	{CTRY_UNITED_STATES, FCC3_FCCA, "US"},

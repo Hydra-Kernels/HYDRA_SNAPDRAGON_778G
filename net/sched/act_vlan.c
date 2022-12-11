@@ -37,11 +37,15 @@ static int tcf_vlan_act(struct sk_buff *skb, const struct tc_action *a,
 	if (skb_at_tc_ingress(skb))
 		skb_push_rcsum(skb, skb->mac_len);
 
+<<<<<<< HEAD
 	action = READ_ONCE(v->tcf_action);
 
 	p = rcu_dereference_bh(v->vlan_p);
 
 	switch (p->tcfv_action) {
+=======
+	switch (v->tcfv_action) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case TCA_VLAN_ACT_POP:
 		err = skb_vlan_pop(skb);
 		if (err)
@@ -88,8 +92,19 @@ out:
 	return action;
 
 drop:
+<<<<<<< HEAD
 	qstats_drop_inc(this_cpu_ptr(v->common.cpu_qstats));
 	return TC_ACT_SHOT;
+=======
+	action = TC_ACT_SHOT;
+	v->tcf_qstats.drops++;
+unlock:
+	if (skb_at_tc_ingress(skb))
+		skb_pull_rcsum(skb, skb->mac_len);
+
+	spin_unlock(&v->tcf_lock);
+	return action;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const struct nla_policy vlan_policy[TCA_VLAN_MAX + 1] = {

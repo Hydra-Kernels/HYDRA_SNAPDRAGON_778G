@@ -295,6 +295,7 @@ do {								\
 	"4:	mov		%w0, %w6\n"			\
 	"	b		3b\n"				\
 	"	.popsection"					\
+<<<<<<< HEAD
 	_ASM_EXTABLE(0b, 4b)					\
 	_ASM_EXTABLE(1b, 4b)					\
 	: "=&r" (res), "+r" (data), "=&r" (temp), "=&r" (temp2)	\
@@ -304,6 +305,19 @@ do {								\
 	: "memory");						\
 	uaccess_disable();					\
 } while (0)
+=======
+	"	.pushsection	 __ex_table,\"a\"\n"		\
+	"	.align		3\n"				\
+	"	.quad		0b, 4b\n"			\
+	"	.quad		1b, 4b\n"			\
+	"	.popsection\n"					\
+	ALTERNATIVE("nop", SET_PSTATE_PAN(1), ARM64_HAS_PAN,	\
+		CONFIG_ARM64_PAN)				\
+	: "=&r" (res), "+r" (data), "=&r" (temp)		\
+	: "r" ((unsigned long)addr), "i" (-EAGAIN),		\
+	  "i" (-EFAULT)						\
+	: "memory")
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define __user_swp_asm(data, addr, res, temp, temp2) \
 	__user_swpX_asm(data, addr, res, temp, temp2, "")

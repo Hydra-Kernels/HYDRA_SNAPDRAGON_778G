@@ -203,8 +203,13 @@ struct fsnotify_group {
 			/* allows a group to block waiting for a userspace response */
 			struct list_head access_list;
 			wait_queue_head_t access_waitq;
+<<<<<<< HEAD
 			int flags;           /* flags from fanotify_init() */
 			int f_flags; /* event_f_flags from fanotify_init() */
+=======
+#endif /* CONFIG_FANOTIFY_ACCESS_PERMISSIONS */
+			int f_flags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			unsigned int max_marks;
 			struct user_struct *user;
 		} fanotify_data;
@@ -411,12 +416,15 @@ extern int fsnotify_add_event(struct fsnotify_group *group,
 			      struct fsnotify_event *event,
 			      int (*merge)(struct list_head *,
 					   struct fsnotify_event *));
+<<<<<<< HEAD
 /* Queue overflow event to a notification group */
 static inline void fsnotify_queue_overflow(struct fsnotify_group *group)
 {
 	fsnotify_add_event(group, group->overflow_event, NULL);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* true if the group notification queue is empty */
 extern bool fsnotify_notify_queue_is_empty(struct fsnotify_group *group);
 /* return, but do not dequeue the first event on the notification queue */

@@ -97,7 +97,17 @@ static int kdwc3_probe(struct platform_device *pdev)
 
 	pm_runtime_enable(kdwc->dev);
 
+<<<<<<< HEAD
 	error = pm_runtime_get_sync(kdwc->dev);
+=======
+	kdwc->clk = devm_clk_get(kdwc->dev, "usb");
+	if (IS_ERR(kdwc->clk)) {
+		dev_err(kdwc->dev, "unable to get usb clock\n");
+		return PTR_ERR(kdwc->clk);
+	}
+
+	error = clk_prepare_enable(kdwc->clk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (error < 0) {
 		dev_err(kdwc->dev, "pm_runtime_get_sync failed, error %d\n",
 			error);

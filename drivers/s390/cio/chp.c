@@ -452,6 +452,7 @@ int chp_update_desc(struct channel_path *chp)
 	if (rc)
 		return rc;
 
+<<<<<<< HEAD
 	/*
 	 * Fetching the following data is optional. Not all machines or
 	 * hypervisors implement the required chsc commands.
@@ -461,6 +462,13 @@ int chp_update_desc(struct channel_path *chp)
 	chsc_get_channel_measurement_chars(chp);
 
 	return 0;
+=======
+	rc = chsc_determine_fmt1_channel_path_desc(chp->chpid, &chp->desc_fmt1);
+	if (rc)
+		return rc;
+
+	return chsc_get_channel_measurement_chars(chp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

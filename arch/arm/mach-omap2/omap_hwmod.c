@@ -2422,12 +2422,21 @@ static int __init _init(struct omap_hwmod *oh, void *data)
 	}
 
 	if (np) {
+<<<<<<< HEAD
 		struct device_node *child;
 
 		parse_module_flags(oh, np);
 		child = of_get_next_child(np, NULL);
 		if (child)
 			parse_module_flags(oh, child);
+=======
+		if (of_find_property(np, "ti,no-reset-on-init", NULL))
+			oh->flags |= HWMOD_INIT_NO_RESET;
+		if (of_find_property(np, "ti,no-idle-on-init", NULL))
+			oh->flags |= HWMOD_INIT_NO_IDLE;
+		if (of_find_property(np, "ti,no-idle", NULL))
+			oh->flags |= HWMOD_NO_IDLE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	oh->_state = _HWMOD_STATE_INITIALIZED;

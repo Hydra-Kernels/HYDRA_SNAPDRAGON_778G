@@ -195,7 +195,10 @@ int gen_pool_add_owner(struct gen_pool *pool, unsigned long virt, phys_addr_t ph
 	chunk->phys_addr = phys;
 	chunk->start_addr = virt;
 	chunk->end_addr = virt + size - 1;
+<<<<<<< HEAD
 	chunk->owner = owner;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	atomic_long_set(&chunk->avail, size);
 
 	spin_lock(&pool->lock);
@@ -279,7 +282,11 @@ unsigned long gen_pool_alloc_algo_owner(struct gen_pool *pool, size_t size,
 	struct gen_pool_chunk *chunk;
 	unsigned long addr = 0;
 	int order = pool->min_alloc_order;
+<<<<<<< HEAD
 	unsigned long nbits, start_bit, end_bit, remain;
+=======
+	int nbits, start_bit, end_bit, remain;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifndef CONFIG_ARCH_HAVE_NMI_SAFE_CMPXCHG
 	BUG_ON(in_nmi());
@@ -315,8 +322,11 @@ retry:
 		addr = chunk->start_addr + ((unsigned long)start_bit << order);
 		size = nbits << order;
 		atomic_long_sub(size, &chunk->avail);
+<<<<<<< HEAD
 		if (owner)
 			*owner = chunk->owner;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	}
 	rcu_read_unlock();
@@ -507,8 +517,11 @@ void gen_pool_free_owner(struct gen_pool *pool, unsigned long addr, size_t size,
 			BUG_ON(remain);
 			size = nbits << order;
 			atomic_long_add(size, &chunk->avail);
+<<<<<<< HEAD
 			if (owner)
 				*owner = chunk->owner;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			rcu_read_unlock();
 			return;
 		}

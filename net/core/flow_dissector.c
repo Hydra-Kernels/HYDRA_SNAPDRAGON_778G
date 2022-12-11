@@ -1259,6 +1259,70 @@ ip_proto_again:
 					       &proto, &nhoff, &hlen, flags);
 		break;
 
+<<<<<<< HEAD
+=======
+		hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen, &_hdr);
+		if (!hdr)
+			goto out_bad;
+		/*
+		 * Only look inside GRE if version zero and no
+		 * routing
+		 */
+		if (hdr->flags & (GRE_VERSION | GRE_ROUTING))
+			break;
+
+		proto = hdr->proto;
+		nhoff += 4;
+		if (hdr->flags & GRE_CSUM)
+			nhoff += 4;
+		if (hdr->flags & GRE_KEY) {
+			const __be32 *keyid;
+			__be32 _keyid;
+
+			keyid = __skb_header_pointer(skb, nhoff, sizeof(_keyid),
+						     data, hlen, &_keyid);
+
+			if (!keyid)
+				goto out_bad;
+
+			if (dissector_uses_key(flow_dissector,
+					       FLOW_DISSECTOR_KEY_GRE_KEYID)) {
+				key_keyid = skb_flow_dissector_target(flow_dissector,
+								      FLOW_DISSECTOR_KEY_GRE_KEYID,
+								      target_container);
+				key_keyid->keyid = *keyid;
+			}
+			nhoff += 4;
+		}
+		if (hdr->flags & GRE_SEQ)
+			nhoff += 4;
+		if (proto == htons(ETH_P_TEB)) {
+			const struct ethhdr *eth;
+			struct ethhdr _eth;
+
+			eth = __skb_header_pointer(skb, nhoff,
+						   sizeof(_eth),
+						   data, hlen, &_eth);
+			if (!eth)
+				goto out_bad;
+			proto = eth->h_proto;
+			nhoff += sizeof(*eth);
+
+			/* Cap headers that we access via pointers at the
+			 * end of the Ethernet header as our maximum alignment
+			 * at that point is only 2 bytes.
+			 */
+			if (NET_IP_ALIGN)
+				hlen = nhoff;
+		}
+
+		key_control->flags |= FLOW_DIS_ENCAPSULATION;
+		if (flags & FLOW_DISSECTOR_F_STOP_AT_ENCAP)
+			goto out_good;
+
+		goto again;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case NEXTHDR_HOP:
 	case NEXTHDR_ROUTING:
 	case NEXTHDR_DEST: {
@@ -1551,18 +1615,30 @@ EXPORT_SYMBOL(make_flow_keys_digest);
 
 static struct flow_dissector flow_keys_dissector_symmetric __read_mostly;
 
+<<<<<<< HEAD
 u32 __skb_get_hash_symmetric(const struct sk_buff *skb)
+=======
+u32 __skb_get_hash_symmetric(struct sk_buff *skb)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct flow_keys keys;
 
 	__flow_hash_secret_init();
 
 	memset(&keys, 0, sizeof(keys));
+<<<<<<< HEAD
 	__skb_flow_dissect(NULL, skb, &flow_keys_dissector_symmetric,
 			   &keys, NULL, 0, 0, 0,
 			   FLOW_DISSECTOR_F_STOP_AT_FLOW_LABEL);
 
 	return __flow_hash_from_keys(&keys, &hashrnd);
+=======
+	__skb_flow_dissect(skb, &flow_keys_dissector_symmetric, &keys,
+			   NULL, 0, 0, 0,
+			   FLOW_DISSECTOR_F_STOP_AT_FLOW_LABEL);
+
+	return __flow_hash_from_keys(&keys, hashrnd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(__skb_get_hash_symmetric);
 
@@ -1749,7 +1825,11 @@ static const struct flow_dissector_key flow_keys_dissector_symmetric_keys[] = {
 	},
 };
 
+<<<<<<< HEAD
 static const struct flow_dissector_key flow_keys_basic_dissector_keys[] = {
+=======
+static const struct flow_dissector_key flow_keys_buf_dissector_keys[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{
 		.key_id = FLOW_DISSECTOR_KEY_CONTROL,
 		.offset = offsetof(struct flow_keys, control),
@@ -1774,10 +1854,19 @@ static int __init init_default_flow_dissectors(void)
 	skb_flow_dissector_init(&flow_keys_dissector_symmetric,
 				flow_keys_dissector_symmetric_keys,
 				ARRAY_SIZE(flow_keys_dissector_symmetric_keys));
+<<<<<<< HEAD
 	skb_flow_dissector_init(&flow_keys_basic_dissector,
 				flow_keys_basic_dissector_keys,
 				ARRAY_SIZE(flow_keys_basic_dissector_keys));
 
 	return register_pernet_subsys(&flow_dissector_pernet_ops);
 }
+=======
+	skb_flow_dissector_init(&flow_keys_buf_dissector,
+				flow_keys_buf_dissector_keys,
+				ARRAY_SIZE(flow_keys_buf_dissector_keys));
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 core_initcall(init_default_flow_dissectors);

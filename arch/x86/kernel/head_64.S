@@ -77,10 +77,45 @@ startup_64:
 	call verify_cpu
 
 	/*
+<<<<<<< HEAD
 	 * Perform pagetable fixups. Additionally, if SME is active, encrypt
 	 * the kernel and retrieve the modifier (SME encryption mask if SME
 	 * is active) to be added to the initial pgdir entry that will be
 	 * programmed into CR3.
+=======
+	 * Compute the delta between the address I am compiled to run at and the
+	 * address I am actually running at.
+	 */
+	leaq	_text(%rip), %rbp
+	subq	$_text - __START_KERNEL_map, %rbp
+
+	/* Is the address not 2M aligned? */
+	testl	$~PMD_PAGE_MASK, %ebp
+	jnz	bad_address
+
+	/*
+	 * Is the address too large?
+	 */
+	leaq	_text(%rip), %rax
+	shrq	$MAX_PHYSMEM_BITS, %rax
+	jnz	bad_address
+
+	/*
+	 * Fixup the physical addresses in the page table
+	 */
+	addq	%rbp, early_level4_pgt + (L4_START_KERNEL*8)(%rip)
+
+	addq	%rbp, level3_kernel_pgt + (510*8)(%rip)
+	addq	%rbp, level3_kernel_pgt + (511*8)(%rip)
+
+	addq	%rbp, level2_fixmap_pgt + (506*8)(%rip)
+
+	/*
+	 * Set up the identity mapping for the switchover.  These
+	 * entries should *NOT* have the global bit set!  This also
+	 * creates a bunch of nonsense entries but that is fine --
+	 * it avoids problems around wraparound.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 	leaq	_text(%rip), %rdi
 	pushq	%rsi
@@ -121,6 +156,7 @@ ENTRY(secondary_startup_64)
 	addq	$(init_top_pgt - __START_KERNEL_map), %rax
 1:
 
+<<<<<<< HEAD
 	/* Enable PAE mode, PGE and LA57 */
 	movl	$(X86_CR4_PAE | X86_CR4_PGE), %ecx
 #ifdef CONFIG_X86_5LEVEL
@@ -129,6 +165,10 @@ ENTRY(secondary_startup_64)
 	orl	$X86_CR4_LA57, %ecx
 1:
 #endif
+=======
+	/* Enable PAE and PSE, but defer PGE until kaiser_enabled is decided */
+	movl	$(X86_CR4_PAE | X86_CR4_PSE), %ecx
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	movq	%rcx, %cr4
 
 	/* Setup early boot stage 4-/5-level pagetables. */
@@ -356,14 +396,22 @@ GLOBAL(name)
  *
  * This ensures PGDs are 8k long:
  */
+<<<<<<< HEAD
 #define PTI_USER_PGD_FILL	512
+=======
+#define KAISER_USER_PGD_FILL	512
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* This ensures they are 8k-aligned: */
 #define NEXT_PGD_PAGE(name) \
 	.balign 2 * PAGE_SIZE; \
 GLOBAL(name)
 #else
 #define NEXT_PGD_PAGE(name) NEXT_PAGE(name)
+<<<<<<< HEAD
 #define PTI_USER_PGD_FILL	0
+=======
+#define KAISER_USER_PGD_FILL	0
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /* Automate the creation of 1 to 1 mapping pmd entries */
@@ -375,15 +423,23 @@ GLOBAL(name)
 	.endr
 
 	__INITDATA
+<<<<<<< HEAD
 NEXT_PGD_PAGE(early_top_pgt)
 	.fill	512,8,0
 	.fill	PTI_USER_PGD_FILL,8,0
+=======
+NEXT_PGD_PAGE(early_level4_pgt)
+	.fill	511,8,0
+	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
+	.fill	KAISER_USER_PGD_FILL,8,0
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 NEXT_PAGE(early_dynamic_pgts)
 	.fill	512*EARLY_DYNAMIC_PAGE_TABLES,8,0
 
 	.data
 
+<<<<<<< HEAD
 #if defined(CONFIG_XEN_PV) || defined(CONFIG_PVH)
 NEXT_PGD_PAGE(init_top_pgt)
 	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE_NOENC
@@ -393,6 +449,21 @@ NEXT_PGD_PAGE(init_top_pgt)
 	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
 	.quad   level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE_NOENC
 	.fill	PTI_USER_PGD_FILL,8,0
+=======
+#ifndef CONFIG_XEN
+NEXT_PGD_PAGE(init_level4_pgt)
+	.fill	512,8,0
+	.fill	KAISER_USER_PGD_FILL,8,0
+#else
+NEXT_PGD_PAGE(init_level4_pgt)
+	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+	.org    init_level4_pgt + L4_PAGE_OFFSET*8, 0
+	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+	.org    init_level4_pgt + L4_START_KERNEL*8, 0
+	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+	.quad   level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
+	.fill	KAISER_USER_PGD_FILL,8,0
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 NEXT_PAGE(level3_ident_pgt)
 	.quad	level2_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE_NOENC
@@ -418,6 +489,7 @@ NEXT_PAGE(level4_kernel_pgt)
 	.fill	511,8,0
 	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE_NOENC
 #endif
+	.fill	KAISER_USER_PGD_FILL,8,0
 
 NEXT_PAGE(level3_kernel_pgt)
 	.fill	L3_START_KERNEL,8,0

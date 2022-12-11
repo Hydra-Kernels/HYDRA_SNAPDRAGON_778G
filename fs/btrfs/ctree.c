@@ -2509,12 +2509,21 @@ read_block_for_search(struct btrfs_root *root, struct btrfs_path *p,
 	btrfs_unlock_up_safe(p, level + 1);
 	btrfs_set_path_blocking(p);
 
+<<<<<<< HEAD
 	if (p->reada != READA_NONE)
 		reada_for_search(fs_info, p, level, slot, key->objectid);
 
 	ret = -EAGAIN;
 	tmp = read_tree_block(fs_info, blocknr, gen, parent_level - 1,
 			      &first_key);
+=======
+	free_extent_buffer(tmp);
+	if (p->reada)
+		reada_for_search(root, p, level, slot, key->objectid);
+
+	ret = -EAGAIN;
+	tmp = read_tree_block(root, blocknr, gen);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!IS_ERR(tmp)) {
 		/*
 		 * If the read above didn't mark this buffer up to date,

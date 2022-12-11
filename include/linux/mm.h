@@ -1502,6 +1502,7 @@ struct zap_details {
 	struct page *single_page;		/* Locked page to be unmapped */
 };
 
+<<<<<<< HEAD
 struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			      pte_t pte, unsigned long vma_flags);
 static inline struct page *vm_normal_page(struct vm_area_struct *vma,
@@ -1509,6 +1510,12 @@ static inline struct page *vm_normal_page(struct vm_area_struct *vma,
 {
 	return _vm_normal_page(vma, addr, pte, vma->vm_flags);
 }
+=======
+struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+		pte_t pte);
+struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
+				pmd_t pmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
 				pmd_t pmd);
@@ -1744,6 +1751,16 @@ int clear_page_dirty_for_io(struct page *page);
 
 int get_cmdline(struct task_struct *task, char *buffer, int buflen);
 
+<<<<<<< HEAD
+=======
+static inline bool vma_is_anonymous(struct vm_area_struct *vma)
+{
+	return !vma->vm_ops;
+}
+
+int vma_is_stack_for_task(struct vm_area_struct *vma, struct task_struct *t);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
@@ -2694,11 +2711,19 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
 			unsigned long pfn, unsigned long size, pgprot_t);
 int vm_insert_page(struct vm_area_struct *, unsigned long addr, struct page *);
+<<<<<<< HEAD
 int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num);
 int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num);
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+=======
+int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+			unsigned long pfn);
+int vm_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
+			unsigned long pfn, pgprot_t pgprot);
+int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			unsigned long pfn);
 vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn, pgprot_t pgprot);
@@ -2754,11 +2779,15 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 #define FOLL_MIGRATION	0x400	/* wait for page to replace migration entry */
 #define FOLL_TRIED	0x800	/* a retry, previous pass started an IO */
 #define FOLL_MLOCK	0x1000	/* lock present pages */
+<<<<<<< HEAD
 #define FOLL_REMOTE	0x2000	/* we are working on non-current tsk/mm */
 #define FOLL_COW	0x4000	/* internal GUP flag */
 #define FOLL_ANON	0x8000	/* don't do file mappings */
 #define FOLL_LONGTERM	0x10000	/* mapping lifetime is indefinite: see below */
 #define FOLL_SPLIT_PMD	0x20000	/* split huge pmd before returning */
+=======
+#define FOLL_COW	0x4000	/* internal GUP flag */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * NOTE on FOLL_LONGTERM:

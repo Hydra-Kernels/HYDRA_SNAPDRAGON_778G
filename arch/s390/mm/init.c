@@ -101,8 +101,13 @@ void __init paging_init(void)
 	}
 	init_mm.context.asce = (__pa(init_mm.pgd) & PAGE_MASK) | asce_bits;
 	S390_lowcore.kernel_asce = init_mm.context.asce;
+<<<<<<< HEAD
 	S390_lowcore.user_asce = S390_lowcore.kernel_asce;
 	crst_table_init((unsigned long *) init_mm.pgd, pgd_type);
+=======
+	clear_table((unsigned long *) init_mm.pgd, pgd_type,
+		    sizeof(unsigned long)*2048);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vmem_map_init();
 	kasan_copy_shadow(init_mm.pgd);
 

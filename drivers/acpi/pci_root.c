@@ -470,6 +470,7 @@ static void negotiate_os_control(struct acpi_pci_root *root, int *no_aspm,
 	control = OSC_PCI_EXPRESS_CAPABILITY_CONTROL
 		| OSC_PCI_EXPRESS_PME_CONTROL;
 
+<<<<<<< HEAD
 	if (IS_ENABLED(CONFIG_PCIEASPM))
 		control |= OSC_PCI_EXPRESS_LTR_CONTROL;
 
@@ -479,6 +480,11 @@ static void negotiate_os_control(struct acpi_pci_root *root, int *no_aspm,
 	if (IS_ENABLED(CONFIG_HOTPLUG_PCI_SHPC))
 		control |= OSC_PCI_SHPC_NATIVE_HP_CONTROL;
 
+=======
+	if (IS_ENABLED(CONFIG_HOTPLUG_PCI_PCIE))
+		control |= OSC_PCI_EXPRESS_NATIVE_HP_CONTROL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (pci_aer_available()) {
 		if (aer_acpi_firmware_first())
 			dev_info(&device->dev,

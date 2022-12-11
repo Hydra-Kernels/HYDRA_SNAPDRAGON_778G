@@ -173,6 +173,26 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
+/*
+ * tk_clock_read - atomic clocksource read() helper
+ *
+ * This helper is necessary to use in the read paths because, while the
+ * seqlock ensures we don't return a bad value while structures are updated,
+ * it doesn't protect from potential crashes. There is the possibility that
+ * the tkr's clocksource may change between the read reference, and the
+ * clock reference passed to the read function.  This can cause crashes if
+ * the wrong clocksource is passed to the wrong read function.
+ * This isn't necessary to use when holding the timekeeper_lock or doing
+ * a read of the fast-timekeeper tkrs (which is protected by its own locking
+ * and update logic).
+ */
+static inline u64 tk_clock_read(struct tk_read_base *tkr)
+{
+	struct clocksource *clock = READ_ONCE(tkr->clock);
+
+	return clock->read(clock);
+}
+
 #ifdef CONFIG_DEBUG_TIMEKEEPING
 #define WARNING_FREQ (HZ*300) /* 5 minute rate-limiting */
 
@@ -356,7 +376,12 @@ u32 (*arch_gettimeoffset)(void) = default_arch_gettimeoffset;
 static inline u32 arch_gettimeoffset(void) { return 0; }
 #endif
 
+<<<<<<< HEAD
 static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 delta)
+=======
+static inline u64 timekeeping_delta_to_ns(struct tk_read_base *tkr,
+					  cycle_t delta)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	u64 nsec;
 
@@ -367,17 +392,30 @@ static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 de
 	return nsec + arch_gettimeoffset();
 }
 
+<<<<<<< HEAD
 static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 {
 	u64 delta;
+=======
+static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
+{
+	cycle_t delta;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	delta = timekeeping_get_delta(tkr);
 	return timekeeping_delta_to_ns(tkr, delta);
 }
 
+<<<<<<< HEAD
 static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
 {
 	u64 delta;
+=======
+static inline s64 timekeeping_cycles_to_ns(struct tk_read_base *tkr,
+					    cycle_t cycles)
+{
+	cycle_t delta;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* calculate the delta since the last update_wall_time */
 	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
@@ -544,6 +582,10 @@ u64 ktime_get_real_fast_ns(void)
 }
 EXPORT_SYMBOL_GPL(ktime_get_real_fast_ns);
 
+static struct clocksource dummy_clock = {
+	.read = dummy_clock_read,
+};
+
 /**
  * halt_fast_timekeeper - Prevent fast timekeeper from accessing clocksource.
  * @tk: Timekeeper to snapshot.
@@ -562,7 +604,10 @@ static void halt_fast_timekeeper(const struct timekeeper *tk)
 	memcpy(&tkr_dummy, tkr, sizeof(tkr_dummy));
 	cycles_at_suspend = tk_clock_read(tkr);
 	tkr_dummy.clock = &dummy_clock;
+<<<<<<< HEAD
 	tkr_dummy.base_real = tkr->base + tk->offs_real;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	update_fast_timekeeper(&tkr_dummy, &tk_fast_mono);
 
 	tkr = &tk->tkr_raw;
@@ -696,7 +741,12 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
  */
 static void timekeeping_forward_now(struct timekeeper *tk)
 {
+<<<<<<< HEAD
 	u64 cycle_now, delta;
+=======
+	cycle_t cycle_now, delta;
+	s64 nsec;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	cycle_now = tk_clock_read(&tk->tkr_mono);
 	delta = clocksource_delta(cycle_now, tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
@@ -1276,7 +1326,11 @@ static int timekeeping_inject_offset(const struct timespec64 *ts)
 	struct timespec64 tmp;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (ts->tv_nsec < 0 || ts->tv_nsec >= NSEC_PER_SEC)
+=======
+	if (!timespec_inject_offset_valid(ts))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
@@ -1702,8 +1756,34 @@ void timekeeping_resume(void)
 	 * usable source. The rtc part is handled separately in rtc core code.
 	 */
 	cycle_now = tk_clock_read(&tk->tkr_mono);
+<<<<<<< HEAD
 	nsec = clocksource_stop_suspend_timing(clock, cycle_now);
 	if (nsec > 0) {
+=======
+	if ((clock->flags & CLOCK_SOURCE_SUSPEND_NONSTOP) &&
+		cycle_now > tk->tkr_mono.cycle_last) {
+		u64 num, max = ULLONG_MAX;
+		u32 mult = clock->mult;
+		u32 shift = clock->shift;
+		s64 nsec = 0;
+
+		cycle_delta = clocksource_delta(cycle_now, tk->tkr_mono.cycle_last,
+						tk->tkr_mono.mask);
+
+		/*
+		 * "cycle_delta * mutl" may cause 64 bits overflow, if the
+		 * suspended time is too long. In that case we need do the
+		 * 64 bits math carefully
+		 */
+		do_div(max, mult);
+		if (cycle_delta > max) {
+			num = div64_u64(cycle_delta, max);
+			nsec = (((u64) max * mult) >> shift) * num;
+			cycle_delta -= num * max;
+		}
+		nsec += ((u64) cycle_delta * mult) >> shift;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ts_delta = ns_to_timespec64(nsec);
 		inject_sleeptime = true;
 	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
@@ -2009,7 +2089,11 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset,
 				    u32 shift, unsigned int *clock_set)
 {
+<<<<<<< HEAD
 	u64 interval = tk->cycle_interval << shift;
+=======
+	cycle_t interval = tk->cycle_interval << shift;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u64 snsec_per_sec;
 
 	/* If the offset is smaller than a shifted interval, do nothing */
@@ -2025,12 +2109,23 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset,
 	*clock_set |= accumulate_nsecs_to_secs(tk);
 
 	/* Accumulate raw time */
+<<<<<<< HEAD
+=======
+	tk->tkr_raw.xtime_nsec += (u64)tk->raw_time.tv_nsec << tk->tkr_raw.shift;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tk->tkr_raw.xtime_nsec += tk->raw_interval << shift;
 	snsec_per_sec = (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
 	while (tk->tkr_raw.xtime_nsec >= snsec_per_sec) {
 		tk->tkr_raw.xtime_nsec -= snsec_per_sec;
+<<<<<<< HEAD
 		tk->raw_sec++;
 	}
+=======
+		tk->raw_time.tv_sec++;
+	}
+	tk->raw_time.tv_nsec = tk->tkr_raw.xtime_nsec >> tk->tkr_raw.shift;
+	tk->tkr_raw.xtime_nsec -= (u64)tk->raw_time.tv_nsec << tk->tkr_raw.shift;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Accumulate error between NTP and clock interval */
 	tk->ntp_error += tk->ntp_tick << shift;

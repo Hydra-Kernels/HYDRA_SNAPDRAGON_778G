@@ -90,8 +90,26 @@ static struct property *dlpar_clone_property(struct property *prop,
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	memcpy(new_prop->value, prop->value, prop->length);
 	new_prop->length = prop_size;
+=======
+	new_prop->length = prop->length;
+
+	/* Convert the property to cpu endian-ness */
+	p = new_prop->value;
+	*p = be32_to_cpu(*p);
+
+	num_lmbs = *p++;
+	lmbs = (struct of_drconf_cell *)p;
+
+	for (i = 0; i < num_lmbs; i++) {
+		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
+		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
+		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
+		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	of_property_set_flag(new_prop, OF_DYNAMIC);
 	return new_prop;
@@ -823,6 +841,7 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index)
 	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
 		lmbs_to_add, drc_index);
 
+<<<<<<< HEAD
 	if (lmbs_to_add == 0)
 		return -EINVAL;
 
@@ -836,6 +855,14 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index)
 			break;
 
 		lmbs_available++;
+=======
+	lmbs = (struct of_drconf_cell *)p;
+	for (i = 0; i < num_lmbs; i++) {
+		lmbs[i].base_addr = cpu_to_be64(lmbs[i].base_addr);
+		lmbs[i].drc_index = cpu_to_be32(lmbs[i].drc_index);
+		lmbs[i].aa_index = cpu_to_be32(lmbs[i].aa_index);
+		lmbs[i].flags = cpu_to_be32(lmbs[i].flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (lmbs_available < lmbs_to_add)

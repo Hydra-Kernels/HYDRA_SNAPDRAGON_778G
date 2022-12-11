@@ -9,7 +9,14 @@
  * Copyright 2009, Johannes Berg <johannes@sipsolutions.net>
  * Copyright 2013-2014  Intel Mobile Communications GmbH
  * Copyright(c) 2016 Intel Deutschland GmbH
+<<<<<<< HEAD
  * Copyright(c) 2018-2019 Intel Corporation
+=======
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #include <linux/delay.h>

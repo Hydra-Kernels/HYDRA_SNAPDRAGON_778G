@@ -254,6 +254,10 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 #ifdef CONFIG_PARAVIRT
 	if (static_key_false(&paravirt_steal_enabled)) {
 		u64 steal;
+<<<<<<< HEAD
+=======
+		unsigned long steal_jiffies;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		steal = paravirt_steal_clock(smp_processor_id());
 		steal -= this_rq()->prev_steal_time;
@@ -261,7 +265,20 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 		account_steal_time(steal);
 		this_rq()->prev_steal_time += steal;
 
+<<<<<<< HEAD
 		return steal;
+=======
+		/*
+		 * steal is in nsecs but our caller is expecting steal
+		 * time in jiffies. Lets cast the result to jiffies
+		 * granularity and account the rest on the next rounds.
+		 */
+		steal_jiffies = nsecs_to_jiffies(steal);
+		this_rq()->prev_steal_time += jiffies_to_nsecs(steal_jiffies);
+
+		account_steal_time(jiffies_to_cputime(steal_jiffies));
+		return steal_jiffies;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 #endif
 	return 0;
@@ -632,9 +649,17 @@ void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
 	utime = curr->utime;
 
 	/*
+<<<<<<< HEAD
 	 * If either stime or utime are 0, assume all runtime is userspace.
 	 * Once a task gets some ticks, the monotonicy code at 'update:'
 	 * will ensure things converge to the observed ratio.
+	 */
+	if (stime == 0) {
+		utime = rtime;
+=======
+	 * If either stime or both stime and utime are 0, assume all runtime is
+	 * userspace. Once a task gets some ticks, the monotonicy code at
+	 * 'update' will ensure things converge to the observed ratio.
 	 */
 	if (stime == 0) {
 		utime = rtime;
@@ -643,11 +668,20 @@ void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
 
 	if (utime == 0) {
 		stime = rtime;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto update;
 	}
 
+	if (utime == 0) {
+		stime = rtime;
+		goto update;
+	}
+
+<<<<<<< HEAD
 	stime = scale_stime(stime, rtime, stime + utime);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 update:
 	/*
 	 * Make sure stime doesn't go backwards; this preserves monotonicity

@@ -40,7 +40,11 @@ const struct dst_metrics dst_default_metrics = {
 	 * We really want to avoid false sharing on this variable, and catch
 	 * any writes on it.
 	 */
+<<<<<<< HEAD
 	.refcnt = REFCOUNT_INIT(1),
+=======
+	.refcnt = ATOMIC_INIT(1),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 EXPORT_SYMBOL(dst_default_metrics);
 
@@ -204,7 +208,11 @@ u32 *dst_cow_metrics_generic(struct dst_entry *dst, unsigned long old)
 		struct dst_metrics *old_p = (struct dst_metrics *)__DST_METRICS_PTR(old);
 		unsigned long prev, new;
 
+<<<<<<< HEAD
 		refcount_set(&p->refcnt, 1);
+=======
+		atomic_set(&p->refcnt, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		memcpy(p->metrics, old_p->metrics, sizeof(p->metrics));
 
 		new = (unsigned long) p;
@@ -216,7 +224,11 @@ u32 *dst_cow_metrics_generic(struct dst_entry *dst, unsigned long old)
 			if (prev & DST_METRICS_READ_ONLY)
 				p = NULL;
 		} else if (prev & DST_METRICS_REFCOUNTED) {
+<<<<<<< HEAD
 			if (refcount_dec_and_test(&old_p->refcnt))
+=======
+			if (atomic_dec_and_test(&old_p->refcnt))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				kfree(old_p);
 		}
 	}
@@ -329,4 +341,63 @@ void metadata_dst_free_percpu(struct metadata_dst __percpu *md_dst)
 #endif
 	free_percpu(md_dst);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(metadata_dst_free_percpu);
+=======
+
+static int dst_dev_event(struct notifier_block *this, unsigned long event,
+			 void *ptr)
+{
+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+	struct dst_entry *dst, *last = NULL;
+
+	switch (event) {
+	case NETDEV_UNREGISTER_FINAL:
+	case NETDEV_DOWN:
+		mutex_lock(&dst_gc_mutex);
+		for (dst = dst_busy_list; dst; dst = dst->next) {
+			last = dst;
+			dst_ifdown(dst, dev, event != NETDEV_DOWN);
+		}
+
+		spin_lock_bh(&dst_garbage.lock);
+		dst = dst_garbage.list;
+		dst_garbage.list = NULL;
+		/* The code in dst_ifdown places a hold on the loopback device.
+		 * If the gc entry processing is set to expire after a lengthy
+		 * interval, this hold can cause netdev_wait_allrefs() to hang
+		 * out and wait for a long time -- until the the loopback
+		 * interface is released.  If we're really unlucky, it'll emit
+		 * pr_emerg messages to console too.  Reset the interval here,
+		 * so dst cleanups occur in a more timely fashion.
+		 */
+		if (dst_garbage.timer_inc > DST_GC_INC) {
+			dst_garbage.timer_inc = DST_GC_INC;
+			dst_garbage.timer_expires = DST_GC_MIN;
+			mod_delayed_work(system_wq, &dst_gc_work,
+					 dst_garbage.timer_expires);
+		}
+		spin_unlock_bh(&dst_garbage.lock);
+
+		if (last)
+			last->next = dst;
+		else
+			dst_busy_list = dst;
+		for (; dst; dst = dst->next)
+			dst_ifdown(dst, dev, event != NETDEV_DOWN);
+		mutex_unlock(&dst_gc_mutex);
+		break;
+	}
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block dst_dev_notifier = {
+	.notifier_call	= dst_dev_event,
+	.priority = -10, /* must be called after other network notifiers */
+};
+
+void __init dst_subsys_init(void)
+{
+	register_netdevice_notifier(&dst_dev_notifier);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

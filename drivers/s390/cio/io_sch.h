@@ -168,7 +168,15 @@ struct ccw_device_private {
 	} __attribute__((packed)) flags;
 	unsigned long intparm;	/* user interruption parameter */
 	struct qdio_irq *qdio_data;
+<<<<<<< HEAD
 	int async_kill_io_rc;
+=======
+	struct irb irb;		/* device status */
+	int async_kill_io_rc;
+	struct senseid senseid;	/* SenseID info */
+	struct pgid pgid[8];	/* path group IDs per chpid*/
+	struct ccw1 iccws[2];	/* ccws for SNID/SID/SPGID commands */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct work_struct todo_work;
 	enum cdev_todo todo;
 	wait_queue_head_t wait_q;

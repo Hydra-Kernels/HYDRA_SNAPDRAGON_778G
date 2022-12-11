@@ -4594,7 +4594,11 @@ smi_from_recv_msg(struct ipmi_smi *intf, struct ipmi_recv_msg *recv_msg,
 	return smi_msg;
 }
 
+<<<<<<< HEAD
 static void check_msg_timeout(struct ipmi_smi *intf, struct seq_table *ent,
+=======
+static void check_msg_timeout(ipmi_smi_t intf, struct seq_table *ent,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			      struct list_head *timeouts,
 			      unsigned long timeout_period,
 			      int slot, unsigned long *flags,
@@ -4610,7 +4614,11 @@ static void check_msg_timeout(struct ipmi_smi *intf, struct seq_table *ent,
 
 	if (timeout_period < ent->timeout) {
 		ent->timeout -= timeout_period;
+<<<<<<< HEAD
 		*need_timer = true;
+=======
+		(*waiting_msgs)++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	}
 
@@ -4675,8 +4683,13 @@ static void check_msg_timeout(struct ipmi_smi *intf, struct seq_table *ent,
 	}
 }
 
+<<<<<<< HEAD
 static bool ipmi_timeout_handler(struct ipmi_smi *intf,
 				 unsigned long timeout_period)
+=======
+static unsigned int ipmi_timeout_handler(ipmi_smi_t intf,
+					 unsigned long timeout_period)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct list_head     timeouts;
 	struct ipmi_recv_msg *msg, *msg2;

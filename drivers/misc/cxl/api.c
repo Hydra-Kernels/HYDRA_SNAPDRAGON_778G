@@ -122,6 +122,10 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev)
 
 err_ctx:
 	kfree(ctx);
+<<<<<<< HEAD
+=======
+err_dev:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ERR_PTR(rc);
 }
 EXPORT_SYMBOL_GPL(cxl_dev_context_init);
@@ -284,6 +288,10 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
 
 	if (task) {
 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
+<<<<<<< HEAD
+=======
+		ctx->glpid = get_task_pid(task->group_leader, PIDTYPE_PID);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		kernel = false;
 
 		/* acquire a reference to the task's mm */

@@ -1046,11 +1046,14 @@ void netlbl_sock_delattr(struct sock *sk)
 	case AF_INET:
 		cipso_v4_sock_delattr(sk);
 		break;
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_IPV6)
 	case AF_INET6:
 		calipso_sock_delattr(sk);
 		break;
 #endif /* IPv6 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -1253,11 +1256,14 @@ void netlbl_req_delattr(struct request_sock *req)
 	case AF_INET:
 		cipso_v4_req_delattr(req);
 		break;
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_IPV6)
 	case AF_INET6:
 		calipso_req_delattr(req);
 		break;
 #endif /* IPv6 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

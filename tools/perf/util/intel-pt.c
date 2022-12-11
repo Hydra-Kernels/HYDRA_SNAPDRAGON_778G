@@ -360,7 +360,7 @@ static int intel_pt_get_trace(struct intel_pt_buffer *b, void *data)
 	}
 
 	queue = &ptq->pt->queues.queue_array[ptq->queue_nr];
-
+next:
 	buffer = auxtrace_buffer__next(queue, buffer);
 	if (!buffer) {
 		if (old_buffer)
@@ -371,9 +371,54 @@ static int intel_pt_get_trace(struct intel_pt_buffer *b, void *data)
 
 	ptq->buffer = buffer;
 
+<<<<<<< HEAD
 	err = intel_pt_get_buffer(ptq, buffer, old_buffer, b);
 	if (err)
 		return err;
+=======
+	if (!buffer->data) {
+		int fd = perf_data_file__fd(ptq->pt->session->file);
+
+		buffer->data = auxtrace_buffer__get_data(buffer, fd);
+		if (!buffer->data)
+			return -ENOMEM;
+	}
+
+	if (ptq->pt->snapshot_mode && !buffer->consecutive && old_buffer &&
+	    intel_pt_do_fix_overlap(ptq->pt, old_buffer, buffer))
+		return -ENOMEM;
+
+	if (buffer->use_data) {
+		b->len = buffer->use_size;
+		b->buf = buffer->use_data;
+	} else {
+		b->len = buffer->size;
+		b->buf = buffer->data;
+	}
+	b->ref_timestamp = buffer->reference;
+
+	/*
+	 * If in snapshot mode and the buffer has no usable data, get next
+	 * buffer and again check overlap against old_buffer.
+	 */
+	if (ptq->pt->snapshot_mode && !b->len)
+		goto next;
+
+	if (old_buffer)
+		auxtrace_buffer__drop_data(old_buffer);
+
+	if (!old_buffer || ptq->pt->sampling_mode || (ptq->pt->snapshot_mode &&
+						      !buffer->consecutive)) {
+		b->consecutive = false;
+		b->trace_nr = buffer->buffer_nr + 1;
+	} else {
+		b->consecutive = true;
+	}
+
+	if (ptq->use_buffer_pid_tid && (ptq->pid != buffer->pid ||
+					ptq->tid != buffer->tid))
+		intel_pt_use_buffer_pid_tid(ptq, queue, buffer);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ptq->step_through_buffers)
 		ptq->stop = true;
@@ -1059,6 +1104,7 @@ static int intel_pt_setup_queue(struct intel_pt *pt,
 			ptq->cpu = queue->cpu;
 		ptq->tid = queue->tid;
 
+<<<<<<< HEAD
 		ptq->cbr_seen = UINT_MAX;
 
 		if (pt->sampling_mode && !pt->snapshot_mode &&
@@ -1068,6 +1114,16 @@ static int intel_pt_setup_queue(struct intel_pt *pt,
 		ptq->sync_switch = pt->sync_switch;
 
 		intel_pt_setup_time_range(pt, ptq);
+=======
+		if (pt->sampling_mode) {
+			if (pt->timeless_decoding)
+				ptq->step_through_buffers = true;
+			if (pt->timeless_decoding || !pt->have_sched_switch)
+				ptq->use_buffer_pid_tid = true;
+		}
+
+		ptq->sync_switch = pt->sync_switch;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (!ptq->on_heap &&
@@ -1802,6 +1858,7 @@ static int intel_pt_synth_pebs_sample(struct intel_pt_queue *ptq)
 	if (sample_type & PERF_SAMPLE_ADDR && items->has_mem_access_address)
 		sample.addr = items->mem_access_address;
 
+<<<<<<< HEAD
 	if (sample_type & PERF_SAMPLE_WEIGHT) {
 		/*
 		 * Refer kernel's setup_pebs_adaptive_sample_data() and
@@ -1814,6 +1871,10 @@ static int intel_pt_synth_pebs_sample(struct intel_pt_queue *ptq)
 			sample.weight = (u32)items->tsx_aux_info;
 		}
 	}
+=======
+	if (pt->synth_opts.last_branch)
+		intel_pt_reset_last_branch_rb(ptq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (sample_type & PERF_SAMPLE_TRANSACTION && items->has_tsx_aux_info) {
 		u64 ax = items->has_rax ? items->rax : 0;
@@ -2083,6 +2144,7 @@ static void intel_pt_enable_sync_switch(struct intel_pt *pt)
 	}
 }
 
+<<<<<<< HEAD
 /*
  * To filter against time ranges, it is only necessary to look at the next start
  * or end time.
@@ -2155,6 +2217,8 @@ static int intel_pt_time_filter(struct intel_pt_queue *ptq, u64 *ff_timestamp)
 	}
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int intel_pt_run_decoder(struct intel_pt_queue *ptq, u64 *timestamp)
 {
 	const struct intel_pt_state *state = ptq->state;

@@ -785,6 +785,15 @@ bool ci_dpm_vblank_too_short(struct radeon_device *rdev)
 	if (r600_dpm_get_vrefresh(rdev) > 120)
 		return true;
 
+<<<<<<< HEAD
+=======
+	/* disable mclk switching if the refresh is >120Hz, even if the
+        * blanking period would allow it
+        */
+	if (r600_dpm_get_vrefresh(rdev) > 120)
+		return true;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (vblank_time < switch_limit)
 		return true;
 	else

@@ -1711,7 +1711,11 @@ static struct sk_buff *add_grhead(struct sk_buff *skb, struct ifmcaddr6 *pmc,
 		if (!skb)
 			return NULL;
 	}
+<<<<<<< HEAD
 	pgr = skb_put(skb, sizeof(struct mld2_grec));
+=======
+	pgr = (struct mld2_grec *)skb_put(skb, sizeof(struct mld2_grec));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pgr->grec_type = type;
 	pgr->grec_auxwords = 0;
 	pgr->grec_nsrcs = 0;

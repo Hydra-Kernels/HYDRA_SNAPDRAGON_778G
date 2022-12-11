@@ -67,7 +67,10 @@
 #include <linux/kexec.h>
 #include <linux/bpf.h>
 #include <linux/mount.h>
+<<<<<<< HEAD
 #include <linux/userfaultfd_k.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "../lib/kstrtox.h"
 
@@ -233,7 +236,11 @@ enum sysctl_writes_mode {
 	SYSCTL_WRITES_STRICT		= 1,
 };
 
+<<<<<<< HEAD
 static enum sysctl_writes_mode sysctl_writes_strict = SYSCTL_WRITES_STRICT;
+=======
+static int sysctl_writes_strict = SYSCTL_WRITES_STRICT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int proc_do_cad_pid(struct ctl_table *table, int write,
 		  void __user *buffer, size_t *lenp, loff_t *ppos);
@@ -1573,8 +1580,13 @@ static struct ctl_table kern_table[] = {
 		.maxlen		= sizeof(unsigned int),
 		.mode		= 0644,
 		.proc_handler	= timer_migration_handler,
+<<<<<<< HEAD
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= SYSCTL_ONE,
+=======
+		.extra1		= &zero,
+		.extra2		= &one,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 #endif
 #ifdef CONFIG_BPF_SYSCALL
@@ -2312,6 +2324,28 @@ static struct ctl_table fs_table[] = {
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= SYSCTL_ONE,
 	},
+	{
+		.procname	= "pipe-user-pages-hard",
+		.data		= &pipe_user_pages_hard,
+		.maxlen		= sizeof(pipe_user_pages_hard),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "pipe-user-pages-soft",
+		.data		= &pipe_user_pages_soft,
+		.maxlen		= sizeof(pipe_user_pages_soft),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "mount-max",
+		.data		= &sysctl_mount_max,
+		.maxlen		= sizeof(unsigned int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &one,
+	},
 	{ }
 };
 
@@ -2676,16 +2710,30 @@ static int do_proc_dointvec_conv(bool *negp, unsigned long *lvalp,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int do_proc_douintvec_conv(unsigned long *lvalp,
 				  unsigned int *valp,
 				  int write, void *data)
 {
 	if (write) {
+=======
+static int do_proc_douintvec_conv(bool *negp, unsigned long *lvalp,
+				 int *valp,
+				 int write, void *data)
+{
+	if (write) {
+		if (*negp)
+			return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (*lvalp > UINT_MAX)
 			return -EINVAL;
 		*valp = *lvalp;
 	} else {
 		unsigned int val = *valp;
+<<<<<<< HEAD
+=======
+		*negp = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*lvalp = (unsigned long)val;
 	}
 	return 0;
@@ -2960,8 +3008,13 @@ int proc_dointvec(struct ctl_table *table, int write,
 int proc_douintvec(struct ctl_table *table, int write,
 		     void __user *buffer, size_t *lenp, loff_t *ppos)
 {
+<<<<<<< HEAD
 	return do_proc_douintvec(table, write, buffer, lenp, ppos,
 				 do_proc_douintvec_conv, NULL);
+=======
+	return do_proc_dointvec(table, write, buffer, lenp, ppos,
+				do_proc_douintvec_conv, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -3258,10 +3311,15 @@ static int __do_proc_doulongvec_minmax(void *data, struct ctl_table *table, int 
 			if (neg)
 				continue;
 			val = convmul * val / convdiv;
+<<<<<<< HEAD
 			if ((min && val < *min) || (max && val > *max)) {
 				err = -EINVAL;
 				break;
 			}
+=======
+			if ((min && val < *min) || (max && val > *max))
+				continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			*i = val;
 		} else {
 			val = convdiv * (*i) / convmul;

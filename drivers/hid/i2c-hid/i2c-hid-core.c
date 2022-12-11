@@ -464,6 +464,15 @@ static int i2c_hid_hwreset(struct i2c_client *client)
 	if (ret)
 		goto out_unlock;
 
+	/*
+	 * The HID over I2C specification states that if a DEVICE needs time
+	 * after the PWR_ON request, it should utilise CLOCK stretching.
+	 * However, it has been observered that the Windows driver provides a
+	 * 1ms sleep between the PWR_ON and RESET requests and that some devices
+	 * rely on this.
+	 */
+	usleep_range(1000, 5000);
+
 	i2c_hid_dbg(ihid, "resetting...\n");
 
 	ret = i2c_hid_command(client, &hid_reset_cmd, NULL, 0);
@@ -510,9 +519,15 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 		return;
 	}
 
+<<<<<<< HEAD:drivers/hid/i2c-hid/i2c-hid-core.c
 	if (ihid->quirks & I2C_HID_QUIRK_BOGUS_IRQ && ret_size == 0xffff) {
 		dev_warn_once(&ihid->client->dev, "%s: IRQ triggered but "
 			      "there's no data\n", __func__);
+=======
+	if ((ret_size > size) || (ret_size < 2)) {
+		dev_err(&ihid->client->dev, "%s: incomplete report (%d/%d)\n",
+			__func__, size, ret_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/hid/i2c-hid/i2c-hid.c
 		return;
 	}
 
@@ -1095,6 +1110,14 @@ static int i2c_hid_probe(struct i2c_client *client,
 		dev_dbg(&client->dev, "nothing at this address: %d\n", ret);
 		ret = -ENXIO;
 		goto err_regulator;
+	}
+
+	/* Make sure there is something at this address */
+	ret = i2c_smbus_read_byte(client);
+	if (ret < 0) {
+		dev_dbg(&client->dev, "nothing at this address: %d\n", ret);
+		ret = -ENXIO;
+		goto err_pm;
 	}
 
 	ret = i2c_hid_fetch_hid_descriptor(ihid);

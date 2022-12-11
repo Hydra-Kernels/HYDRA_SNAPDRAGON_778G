@@ -707,7 +707,11 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
 				op_flags = REQ_FUA;
 		}
 	} else {
+<<<<<<< HEAD
 		op = REQ_OP_READ;
+=======
+		rw = READ;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ibr = kzalloc(sizeof(struct iblock_req), GFP_KERNEL);

@@ -75,11 +75,19 @@
 
 #define SMC_inl(a, r)		readl((a) + (r))
 #define SMC_outb(v, a, r)	writeb(v, (a) + (r))
+<<<<<<< HEAD
 #define SMC_outw(lp, v, a, r)						\
 	do {								\
 		unsigned int __v = v, __smc_r = r;			\
 		if (SMC_16BIT(lp))					\
 			__SMC_outw(lp, __v, a, __smc_r);		\
+=======
+#define SMC_outw(v, a, r)						\
+	do {								\
+		unsigned int __v = v, __smc_r = r;			\
+		if (SMC_16BIT(lp))					\
+			__SMC_outw(__v, a, __smc_r);			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		else if (SMC_8BIT(lp))					\
 			SMC_outw_b(__v, a, __smc_r);			\
 		else							\
@@ -96,8 +104,12 @@
 #define SMC_IRQ_FLAGS		(-1)	/* from resource */
 
 /* We actually can't write halfwords properly if not word aligned */
+<<<<<<< HEAD
 static inline void _SMC_outw_align4(u16 val, void __iomem *ioaddr, int reg,
 				    bool use_align4_workaround)
+=======
+static inline void __SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (use_align4_workaround) {
 		unsigned int v = val << 16;
@@ -427,7 +439,11 @@ smc_pxa_dma_insw(void __iomem *ioaddr, struct smc_local *lp, int reg, int dma,
 
 #if ! SMC_CAN_USE_16BIT
 
+<<<<<<< HEAD
 #define SMC_outw(lp, x, ioaddr, reg)	SMC_outw_b(x, ioaddr, reg)
+=======
+#define SMC_outw(x, ioaddr, reg)	SMC_outw_b(x, ioaddr, reg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define SMC_inw(ioaddr, reg)		SMC_inw_b(ioaddr, reg)
 #define SMC_insw(a, r, p, l)		BUG()
 #define SMC_outsw(a, r, p, l)		BUG()

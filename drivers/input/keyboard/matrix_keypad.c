@@ -218,7 +218,11 @@ static void matrix_keypad_stop(struct input_dev *dev)
 	keypad->stopped = true;
 	spin_unlock_irq(&keypad->lock);
 
+<<<<<<< HEAD
 	flush_delayed_work(&keypad->work);
+=======
+	flush_work(&keypad->work.work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * matrix_keypad_scan() will leave IRQs enabled;
 	 * we should disable them now.

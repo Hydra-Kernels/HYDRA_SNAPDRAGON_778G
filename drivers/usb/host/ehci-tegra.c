@@ -63,6 +63,7 @@ static int tegra_reset_usb_controller(struct platform_device *pdev)
 	if (!phy_np)
 		return -ENOENT;
 
+<<<<<<< HEAD
 	/*
 	 * The 1st USB controller contains some UTMI pad registers that are
 	 * global for all the controllers on the chip. Those registers are
@@ -80,6 +81,31 @@ static int tegra_reset_usb_controller(struct platform_device *pdev)
 		 * non-legacy DT.
 		 */
 		reset_control_put(rst);
+=======
+	if (!usb1_reset_attempted) {
+		struct reset_control *usb1_reset;
+
+		usb1_reset = of_reset_control_get(phy_np, "utmi-pads");
+		if (IS_ERR(usb1_reset)) {
+			dev_warn(&pdev->dev,
+				 "can't get utmi-pads reset from the PHY\n");
+			dev_warn(&pdev->dev,
+				 "continuing, but please update your DT\n");
+		} else {
+			reset_control_assert(usb1_reset);
+			udelay(1);
+			reset_control_deassert(usb1_reset);
+		}
+
+		reset_control_put(usb1_reset);
+		usb1_reset_attempted = true;
+	}
+
+	if (!of_property_read_bool(phy_np, "nvidia,has-utmi-pad-registers")) {
+		reset_control_assert(tegra->rst);
+		udelay(1);
+		reset_control_deassert(tegra->rst);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	of_node_put(phy_np);

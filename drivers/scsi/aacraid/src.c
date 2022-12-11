@@ -154,8 +154,12 @@ static irqreturn_t aac_src_intr_message(int irq, void *dev_id)
 			handle >>= 2;
 			if (dev->msi_enabled && dev->max_msix > 1)
 				atomic_dec(&dev->rrq_outstanding[vector_no]);
+<<<<<<< HEAD
 			aac_intr_normal(dev, handle, 0, isFastResponse, NULL);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev->host_rrq[index++] = 0;
+			aac_intr_normal(dev, handle-1, 0, isFastResponse, NULL);
 			if (index == (vector_no + 1) * dev->vector_cap)
 				index = vector_no * dev->vector_cap;
 			dev->host_rrq_idx[vector_no] = index;
@@ -457,12 +461,16 @@ err_out:
 	return -1;
 
 err_blink:
+<<<<<<< HEAD
 	return (status >> 16) & 0xFF;
 }
 
 static inline u32 aac_get_vector(struct aac_dev *dev)
 {
 	return atomic_inc_return(&dev->msix_counter)%dev->max_msix;
+=======
+	return (status > 16) & 0xFF;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -483,10 +491,15 @@ static int aac_src_deliver_message(struct fib *fib)
 	unsigned long flags;
 #endif
 
+<<<<<<< HEAD
+=======
+	u16 hdr_size = le16_to_cpu(fib->hw_fib_va->header.Size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 vector_no;
 
 	atomic_inc(&q->numpending);
 
+<<<<<<< HEAD
 	native_hba = (fib->flags & FIB_CONTEXT_FLAG_NATIVE_HBA) ? 1 : 0;
 
 
@@ -532,6 +545,30 @@ static int aac_src_deliver_message(struct fib *fib)
 		} else {
 			fib->hw_fib_va->header.Handle += (vector_no << 16);
 		}
+=======
+	if (dev->msi_enabled && fib->hw_fib_va->header.Command != AifRequest &&
+	    dev->max_msix > 1) {
+		vector_no = fib->vector_no;
+		fib->hw_fib_va->header.Handle += (vector_no << 16);
+	} else {
+		vector_no = 0;
+	}
+
+	atomic_inc(&dev->rrq_outstanding[vector_no]);
+
+	if (dev->comm_interface == AAC_COMM_MESSAGE_TYPE2) {
+		/* Calculate the amount to the fibsize bits */
+		fibsize = (hdr_size + 127) / 128 - 1;
+		if (fibsize > (ALIGN32 - 1))
+			return -EMSGSIZE;
+		/* New FIB header, 32-bit */
+		address = fib->hw_fib_pa;
+		fib->hw_fib_va->header.StructType = FIB_MAGIC2;
+		fib->hw_fib_va->header.SenderFibAddress = (u32)address;
+		fib->hw_fib_va->header.u.TimeStamp = 0;
+		BUG_ON(upper_32_bits(address) != 0L);
+		address |= fibsize;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		vector_no = 0;
 	}

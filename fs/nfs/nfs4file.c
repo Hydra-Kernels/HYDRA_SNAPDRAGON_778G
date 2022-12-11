@@ -57,7 +57,11 @@ nfs4_file_open(struct inode *inode, struct file *filp)
 	parent = dget_parent(dentry);
 	dir = d_inode(parent);
 
+<<<<<<< HEAD
 	ctx = alloc_nfs_open_context(file_dentry(filp), filp->f_mode, filp);
+=======
+	ctx = alloc_nfs_open_context(file_dentry(filp), filp->f_mode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	err = PTR_ERR(ctx);
 	if (IS_ERR(ctx))
 		goto out;

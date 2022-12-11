@@ -1562,6 +1562,7 @@ xfs_qm_destroy_quotainos(
 	xfs_quotainfo_t	*qi)
 {
 	if (qi->qi_uquotaip) {
+<<<<<<< HEAD
 		xfs_irele(qi->qi_uquotaip);
 		qi->qi_uquotaip = NULL; /* paranoia */
 	}
@@ -1571,6 +1572,17 @@ xfs_qm_destroy_quotainos(
 	}
 	if (qi->qi_pquotaip) {
 		xfs_irele(qi->qi_pquotaip);
+=======
+		IRELE(qi->qi_uquotaip);
+		qi->qi_uquotaip = NULL; /* paranoia */
+	}
+	if (qi->qi_gquotaip) {
+		IRELE(qi->qi_gquotaip);
+		qi->qi_gquotaip = NULL;
+	}
+	if (qi->qi_pquotaip) {
+		IRELE(qi->qi_pquotaip);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		qi->qi_pquotaip = NULL;
 	}
 }

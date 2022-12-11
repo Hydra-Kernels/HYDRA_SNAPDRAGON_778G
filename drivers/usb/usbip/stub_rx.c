@@ -247,6 +247,7 @@ static int stub_recv_cmd_unlink(struct stub_device *sdev,
 		 * so a driver in a client host will know the failure
 		 * of the unlink request ?
 		 */
+<<<<<<< HEAD
 		for (i = priv->completed_urbs; i < priv->num_urbs; i++) {
 			ret = usb_unlink_urb(priv->urbs[i]);
 			if (ret != -EINPROGRESS)
@@ -255,6 +256,14 @@ static int stub_recv_cmd_unlink(struct stub_device *sdev,
 					i + 1, priv->num_urbs,
 					priv->seqnum, ret);
 		}
+=======
+		ret = usb_unlink_urb(priv->urb);
+		if (ret != -EINPROGRESS)
+			dev_err(&priv->urb->dev->dev,
+				"failed to unlink a urb # %lu, ret %d\n",
+				priv->seqnum, ret);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	}
 
@@ -364,10 +373,29 @@ static int get_pipe(struct stub_device *sdev, struct usbip_header *pdu)
 	}
 
 	if (usb_endpoint_xfer_isoc(epd)) {
+<<<<<<< HEAD
 		/* validate number of packets */
 		if (pdu->u.cmd_submit.number_of_packets < 0 ||
 		    pdu->u.cmd_submit.number_of_packets >
 		    USBIP_MAX_ISO_PACKETS) {
+=======
+		/* validate packet size and number of packets */
+		unsigned int maxp, packets, bytes;
+
+#define USB_EP_MAXP_MULT_SHIFT  11
+#define USB_EP_MAXP_MULT_MASK   (3 << USB_EP_MAXP_MULT_SHIFT)
+#define USB_EP_MAXP_MULT(m) \
+	(((m) & USB_EP_MAXP_MULT_MASK) >> USB_EP_MAXP_MULT_SHIFT)
+
+		maxp = usb_endpoint_maxp(epd);
+		maxp *= (USB_EP_MAXP_MULT(
+				__le16_to_cpu(epd->wMaxPacketSize)) + 1);
+		bytes = pdu->u.cmd_submit.transfer_buffer_length;
+		packets = DIV_ROUND_UP(bytes, maxp);
+
+		if (pdu->u.cmd_submit.number_of_packets < 0 ||
+		    pdu->u.cmd_submit.number_of_packets > packets) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_err(&sdev->udev->dev,
 				"CMD_SUBMIT: isoc invalid num packets %d\n",
 				pdu->u.cmd_submit.number_of_packets);
@@ -456,6 +484,7 @@ static void stub_recv_cmd_submit(struct stub_device *sdev,
 	struct stub_priv *priv;
 	struct usbip_device *ud = &sdev->ud;
 	struct usb_device *udev = sdev->udev;
+<<<<<<< HEAD
 	struct scatterlist *sgl = NULL, *sg;
 	void *buffer = NULL;
 	unsigned long long buf_len;
@@ -466,6 +495,12 @@ static void stub_recv_cmd_submit(struct stub_device *sdev,
 	int support_sg = 1;
 	int np = 0;
 	int ret, i;
+=======
+	int pipe = get_pipe(sdev, pdu);
+
+	if (pipe == -1)
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (pipe == -1)
 		return;

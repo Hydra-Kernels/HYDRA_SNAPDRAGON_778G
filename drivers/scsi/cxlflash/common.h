@@ -51,12 +51,22 @@ extern const struct file_operations cxlflash_cxl_fops;
 #define MC_RETRY_CNT	5	/* Sufficient for SCSI and certain AFU errors */
 
 /* Command management definitions */
+<<<<<<< HEAD
+=======
+#define CXLFLASH_NUM_CMDS	(2 * CXLFLASH_MAX_CMDS)	/* Must be a pow2 for
+							   alignment and more
+							   efficient array
+							   index derivation
+							 */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define CXLFLASH_MAX_CMDS               256
 #define CXLFLASH_MAX_CMDS_PER_LUN       CXLFLASH_MAX_CMDS
 
 /* RRQ for master issued cmds */
 #define NUM_RRQ_ENTRY                   CXLFLASH_MAX_CMDS
 
+<<<<<<< HEAD
 /* SQ for master issued cmds */
 #define NUM_SQ_ENTRY			CXLFLASH_MAX_CMDS
 
@@ -65,6 +75,8 @@ extern const struct file_operations cxlflash_cxl_fops;
 #define CXLFLASH_MAX_HWQS		8
 #define PRIMARY_HWQ			0
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline void check_sizes(void)
 {
@@ -177,6 +189,7 @@ static inline struct afu_cmd *sc_to_afuc(struct scsi_cmnd *sc)
 	return PTR_ALIGN(scsi_cmd_priv(sc), __alignof__(struct afu_cmd));
 }
 
+<<<<<<< HEAD
 static inline struct afu_cmd *sc_to_afuci(struct scsi_cmnd *sc)
 {
 	struct afu_cmd *afuc = sc_to_afuc(sc);
@@ -197,6 +210,13 @@ struct hwq {
 	/* Stuff requiring alignment go first. */
 	struct sisl_ioarcb sq[NUM_SQ_ENTRY];		/* 16K SQ */
 	u64 rrq_entry[NUM_RRQ_ENTRY];			/* 2K RRQ */
+=======
+	u64 rrq_entry[NUM_RRQ_ENTRY];	/* 2K RRQ */
+	/*
+	 * Command & data for AFU commands.
+	 */
+	struct afu_cmd cmd[CXLFLASH_NUM_CMDS];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Beware of alignment till here. Preferably introduce new
 	 * fields after this point
@@ -205,6 +225,12 @@ struct hwq {
 	void *ctx_cookie;
 	struct sisl_host_map __iomem *host_map;		/* MC host map */
 	struct sisl_ctrl_map __iomem *ctrl_map;		/* MC control map */
+<<<<<<< HEAD
+=======
+
+	struct kref mapcount;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ctx_hndl_t ctx_hndl;	/* master's context handle */
 	u32 index;		/* Index of this hwq */
 	int num_irqs;		/* Number of interrupts requested for context */

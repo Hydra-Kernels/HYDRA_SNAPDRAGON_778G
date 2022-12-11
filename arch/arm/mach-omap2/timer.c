@@ -148,6 +148,7 @@ static void omap_clkevt_idle(struct clock_event_device *unused)
 	if (!clockevent_gpt_hwmod)
 		return;
 
+<<<<<<< HEAD
 	omap_hwmod_idle(clockevent_gpt_hwmod);
 }
 
@@ -162,6 +163,8 @@ static void omap_clkevt_unidle(struct clock_event_device *evt)
 	__omap_dm_timer_int_enable(timer, OMAP_TIMER_INT_OVERFLOW);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const struct of_device_id omap_timer_match[] __initconst = {
 	{ .compatible = "ti,omap2420-timer", },
 	{ .compatible = "ti,omap3430-timer", },
@@ -241,9 +244,23 @@ static struct device_node * __init omap_get_timer_dt(const struct of_device_id *
 				  of_get_property(np, "ti,timer-secure", NULL)))
 			continue;
 
+<<<<<<< HEAD
 		error = omap_timer_update_dt(np);
 		WARN(error, "%s: Could not update dt: %i\n", __func__, error);
 
+=======
+		if (!of_device_is_compatible(np, "ti,omap-counter32k")) {
+			struct property *prop;
+
+			prop = kzalloc(sizeof(*prop), GFP_KERNEL);
+			if (!prop)
+				return NULL;
+			prop->name = "status";
+			prop->value = "disabled";
+			prop->length = strlen(prop->value);
+			of_add_property(np, prop);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return np;
 	}
 
@@ -577,7 +594,11 @@ void __init omap_init_time(void)
 	__omap_sync32k_timer_init(1, "timer_32k_ck", "ti,timer-alwon",
 			2, "timer_sys_ck", NULL, false);
 
+<<<<<<< HEAD
 	timer_probe();
+=======
+	clocksource_probe();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_SOC_AM43XX)
@@ -586,7 +607,11 @@ void __init omap3_secure_sync32k_timer_init(void)
 	__omap_sync32k_timer_init(12, "secure_32k_fck", "ti,timer-secure",
 			2, "timer_sys_ck", NULL, false);
 
+<<<<<<< HEAD
 	timer_probe();
+=======
+	clocksource_probe();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif /* CONFIG_ARCH_OMAP3 */
 
@@ -596,8 +621,13 @@ void __init omap3_gptimer_timer_init(void)
 {
 	__omap_sync32k_timer_init(2, "timer_sys_ck", NULL,
 			1, "timer_sys_ck", "ti,timer-alwon", true);
+<<<<<<< HEAD
 	if (of_have_populated_dt())
 		timer_probe();
+=======
+
+	clocksource_probe();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 

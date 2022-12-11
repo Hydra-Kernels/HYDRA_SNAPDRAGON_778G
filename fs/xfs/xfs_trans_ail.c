@@ -531,8 +531,12 @@ xfsaild(
 	long		tout = 0;	/* milliseconds */
 	unsigned int	noreclaim_flag;
 
+<<<<<<< HEAD
 	noreclaim_flag = memalloc_noreclaim_save();
 	set_freezable();
+=======
+	current->flags |= PF_MEMALLOC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (1) {
 		if (tout && tout <= 20)

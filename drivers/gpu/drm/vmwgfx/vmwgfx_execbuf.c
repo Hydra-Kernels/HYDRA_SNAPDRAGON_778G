@@ -2426,7 +2426,10 @@ static int vmw_cmd_dx_view_define(struct vmw_private *dev_priv,
 	view_type = vmw_view_cmd_to_type(header->id);
 	if (view_type == vmw_view_max)
 		return -EINVAL;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cmd = container_of(header, typeof(*cmd), header);
 	if (unlikely(cmd->sid == SVGA3D_INVALID_ID)) {
 		VMW_DEBUG_USER("Invalid surface id.\n");

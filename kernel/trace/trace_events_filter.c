@@ -770,10 +770,19 @@ static int regex_match_full(char *str, struct regex *r, int len)
 
 static int regex_match_front(char *str, struct regex *r, int len)
 {
+<<<<<<< HEAD
 	if (len && len < r->len)
 		return 0;
 
 	return strncmp(str, r->pattern, r->len) == 0;
+=======
+	if (len < r->len)
+		return 0;
+
+	if (strncmp(str, r->pattern, r->len) == 0)
+		return 1;
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int regex_match_middle(char *str, struct regex *r, int len)
@@ -1192,6 +1201,7 @@ static int parse_pred(const char *str, void *data,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	while (isspace(str[i]))
 		i++;
 
@@ -1316,6 +1326,17 @@ static int parse_pred(const char *str, void *data,
 
 		} else if (field->filter_type == FILTER_STATIC_STRING) {
 			pred->fn = filter_pred_string;
+=======
+	if (field->filter_type == FILTER_COMM) {
+		filter_build_regex(pred);
+		fn = filter_pred_comm;
+		pred->regex.field_len = TASK_COMM_LEN;
+	} else if (is_string_field(field)) {
+		filter_build_regex(pred);
+
+		if (field->filter_type == FILTER_STATIC_STRING) {
+			fn = filter_pred_string;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			pred->regex.field_len = field->size;
 
 		} else if (field->filter_type == FILTER_DYN_STRING)
@@ -1368,12 +1389,22 @@ static int parse_pred(const char *str, void *data,
 		pred->val = val;
 
 		if (field->filter_type == FILTER_CPU)
+<<<<<<< HEAD
 			pred->fn = filter_pred_cpu;
 		else {
 			pred->fn = select_comparison_fn(pred->op, field->size,
 							field->is_signed);
 			if (pred->op == OP_NE)
 				pred->not = 1;
+=======
+			fn = filter_pred_cpu;
+		else
+			fn = select_comparison_fn(pred->op, field->size,
+					  field->is_signed);
+		if (!fn) {
+			parse_error(ps, FILT_ERR_INVALID_OP, 0);
+			return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 	} else {
@@ -1737,6 +1768,7 @@ static int create_filter(struct trace_array *tr,
 	struct filter_parse_error *pe = NULL;
 	int err;
 
+<<<<<<< HEAD
 	/* filterp must point to NULL */
 	if (WARN_ON(*filterp))
 		*filterp = NULL;
@@ -1749,6 +1781,19 @@ static int create_filter(struct trace_array *tr,
 	if (err && set_str)
 		append_filter_err(tr, pe, *filterp);
 	create_filter_finish(pe);
+=======
+	err = create_filter_start(filter_str, set_str, &ps, &filter);
+	if (!err) {
+		err = replace_preds(call, filter, ps, false);
+		if (err && set_str)
+			append_filter_err(ps, filter);
+	}
+	if (err && !set_str) {
+		free_event_filter(filter);
+		filter = NULL;
+	}
+	create_filter_finish(ps);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return err;
 }

@@ -8,7 +8,10 @@
 #include <linux/export.h>
 #include <linux/errno.h>
 #include <linux/delay.h>
+<<<<<<< HEAD
 #include <linux/jump_label.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/facility.h>
 #include <asm/pci_insn.h>
 #include <asm/pci_debug.h>
@@ -98,6 +101,7 @@ int zpci_refresh_trans(u64 fn, u64 addr, u64 range)
 }
 
 /* Set Interruption Controls */
+<<<<<<< HEAD
 int __zpci_set_irq_ctrl(u16 ctl, u8 isc, union zpci_sic_iib *iib)
 {
 	if (!test_facility(72))
@@ -107,6 +111,15 @@ int __zpci_set_irq_ctrl(u16 ctl, u8 isc, union zpci_sic_iib *iib)
 		".insn	rsy,0xeb00000000d1,%[ctl],%[isc],%[iib]\n"
 		: : [ctl] "d" (ctl), [isc] "d" (isc << 27), [iib] "Q" (*iib));
 
+=======
+int zpci_set_irq_ctrl(u16 ctl, char *unused, u8 isc)
+{
+	if (!test_facility(72))
+		return -EIO;
+	asm volatile (
+		"	.insn	rsy,0xeb00000000d1,%[ctl],%[isc],%[u]\n"
+		: : [ctl] "d" (ctl), [isc] "d" (isc << 27), [u] "Q" (*unused));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

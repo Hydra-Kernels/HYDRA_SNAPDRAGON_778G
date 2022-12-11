@@ -281,8 +281,13 @@ void sta_info_free(struct ieee80211_local *local, struct sta_info *sta)
 static int sta_info_hash_add(struct ieee80211_local *local,
 			     struct sta_info *sta)
 {
+<<<<<<< HEAD
 	return rhltable_insert(&local->sta_hash, &sta->hash_node,
 			       sta_rht_params);
+=======
+	return rhashtable_insert_fast(&local->sta_hash, &sta->hash_node,
+				      sta_rht_params);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void sta_deliver_ps_frames(struct work_struct *wk)
@@ -363,6 +368,7 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
 	sta->sta.max_rx_aggregation_subframes =
 		local->hw.max_rx_aggregation_subframes;
 
+<<<<<<< HEAD
 	/* Extended Key ID needs to install keys for keyid 0 and 1 Rx-only.
 	 * The Tx path starts to use a key as soon as the key slot ptk_idx
 	 * references to is not NULL. To not use the initial Rx-only key
@@ -372,6 +378,8 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
 	BUILD_BUG_ON(ARRAY_SIZE(sta->ptk) <= INVALID_PTK_KEYIDX);
 	sta->ptk_idx = INVALID_PTK_KEYIDX;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sta->local = local;
 	sta->sdata = sdata;
 	sta->rx_stats.last_rx = jiffies;
@@ -620,10 +628,20 @@ static int sta_info_insert_finish(struct sta_info *sta) __acquires(RCU)
 {
 	struct ieee80211_local *local = sta->local;
 	struct ieee80211_sub_if_data *sdata = sta->sdata;
+<<<<<<< HEAD
 	struct station_info *sinfo = NULL;
+=======
+	struct station_info *sinfo;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err = 0;
 
 	lockdep_assert_held(&local->sta_mtx);
+
+	sinfo = kzalloc(sizeof(struct station_info), GFP_KERNEL);
+	if (!sinfo) {
+		err = -ENOMEM;
+		goto out_err;
+	}
 
 	/* check if STA exists already */
 	if (sta_info_get_bss(sdata, sta->sta.addr)) {
@@ -1081,7 +1099,11 @@ static void __sta_info_destroy_part2(struct sta_info *sta)
 
 	sinfo = kzalloc(sizeof(*sinfo), GFP_KERNEL);
 	if (sinfo)
+<<<<<<< HEAD
 		sta_set_sinfo(sta, sinfo, true);
+=======
+		sta_set_sinfo(sta, sinfo);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cfg80211_del_sta_sinfo(sdata->dev, sta->sta.addr, sinfo, GFP_KERNEL);
 	kfree(sinfo);
 

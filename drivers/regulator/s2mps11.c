@@ -404,7 +404,11 @@ static const struct regulator_ops s2mps11_buck_ops = {
 	.enable_mask	= S2MPS11_ENABLE_MASK			\
 }
 
+<<<<<<< HEAD
 #define regulator_desc_s2mps11_buck67810(num, min, step, min_sel, voltages) {	\
+=======
+#define regulator_desc_s2mps11_buck67810(num, min, step) {	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.name		= "BUCK"#num,				\
 	.id		= S2MPS11_BUCK##num,			\
 	.ops		= &s2mps11_buck_ops,			\
@@ -481,6 +485,7 @@ static const struct regulator_desc s2mps11_regulators[] = {
 	regulator_desc_s2mps11_buck1_4(3),
 	regulator_desc_s2mps11_buck1_4(4),
 	regulator_desc_s2mps11_buck5,
+<<<<<<< HEAD
 	regulator_desc_s2mps11_buck67810(6, MIN_650_MV, STEP_6_25_MV, 8,
 					 S2MPS11_BUCK12346_N_VOLTAGES),
 	regulator_desc_s2mps11_buck67810(7, MIN_750_MV, STEP_12_5_MV, 0,
@@ -490,6 +495,13 @@ static const struct regulator_desc s2mps11_regulators[] = {
 	regulator_desc_s2mps11_buck9,
 	regulator_desc_s2mps11_buck67810(10, MIN_750_MV, STEP_12_5_MV, 0,
 					 S2MPS11_BUCK7810_N_VOLTAGES),
+=======
+	regulator_desc_s2mps11_buck67810(6, MIN_600_MV, STEP_6_25_MV),
+	regulator_desc_s2mps11_buck67810(7, MIN_600_MV, STEP_6_25_MV),
+	regulator_desc_s2mps11_buck67810(8, MIN_600_MV, STEP_6_25_MV),
+	regulator_desc_s2mps11_buck9,
+	regulator_desc_s2mps11_buck67810(10, MIN_750_MV, STEP_12_5_MV),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static const struct regulator_ops s2mps14_reg_ops;

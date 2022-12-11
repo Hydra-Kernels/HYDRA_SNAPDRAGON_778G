@@ -37,6 +37,7 @@
 #include <asm/tlbflush.h>
 #include <asm/mce.h>
 #include <asm/vm86.h>
+<<<<<<< HEAD
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 #include <asm/prctl.h>
@@ -44,6 +45,9 @@
 #include <asm/proto.h>
 
 #include "process.h"
+=======
+#include <asm/spec-ctrl.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * per-CPU TSS segments. Threads are completely 'soft' on Linux,
@@ -52,7 +56,11 @@
  * section. Since TSS's are completely CPU-local, we want them
  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
  */
+<<<<<<< HEAD
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
+=======
+__visible DEFINE_PER_CPU_SHARED_ALIGNED_USER_MAPPED(struct tss_struct, cpu_tss) = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.x86_tss = {
 		/*
 		 * .sp0 is only used when entering ring 0 from a lower
@@ -190,6 +198,7 @@ int set_tsc_mode(unsigned int val)
 	return 0;
 }
 
+<<<<<<< HEAD
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
 
 static void set_cpuid_faulting(bool on)
@@ -275,6 +284,13 @@ static inline void switch_to_bitmap(struct thread_struct *prev,
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 
+=======
+static inline void switch_to_bitmap(struct tss_struct *tss,
+				    struct thread_struct *prev,
+				    struct thread_struct *next,
+				    unsigned long tifp, unsigned long tifn)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (tifn & _TIF_IO_BITMAP) {
 		/*
 		 * Copy the relevant range of the IO bitmap.
@@ -282,11 +298,14 @@ static inline void switch_to_bitmap(struct thread_struct *prev,
 		 */
 		memcpy(tss->io_bitmap, next->io_bitmap_ptr,
 		       max(prev->io_bitmap_max, next->io_bitmap_max));
+<<<<<<< HEAD
 		/*
 		 * Make sure that the TSS limit is correct for the CPU
 		 * to notice the IO bitmap.
 		 */
 		refresh_tss_limit();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else if (tifp & _TIF_IO_BITMAP) {
 		/*
 		 * Clear any possible leftover bits:
@@ -413,6 +432,7 @@ static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
 	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
 }
 
+<<<<<<< HEAD
 /*
  * Update the MSRs managing speculation control, during context switch.
  *
@@ -488,6 +508,34 @@ void speculation_ctrl_update_current(void)
 }
 
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
+=======
+static __always_inline void intel_set_ssb_state(unsigned long tifn)
+{
+	u64 msr = x86_spec_ctrl_base | ssbd_tif_to_spec_ctrl(tifn);
+
+	wrmsrl(MSR_IA32_SPEC_CTRL, msr);
+}
+
+static __always_inline void __speculative_store_bypass_update(unsigned long tifn)
+{
+	if (static_cpu_has(X86_FEATURE_VIRT_SSBD))
+		amd_set_ssb_virt_state(tifn);
+	else if (static_cpu_has(X86_FEATURE_LS_CFG_SSBD))
+		amd_set_core_ssb_state(tifn);
+	else
+		intel_set_ssb_state(tifn);
+}
+
+void speculative_store_bypass_update(unsigned long tif)
+{
+	preempt_disable();
+	__speculative_store_bypass_update(tif);
+	preempt_enable();
+}
+
+void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+		      struct tss_struct *tss)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct thread_struct *prev, *next;
 	unsigned long tifp, tifn;
@@ -497,7 +545,11 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 	tifn = READ_ONCE(task_thread_info(next_p)->flags);
 	tifp = READ_ONCE(task_thread_info(prev_p)->flags);
+<<<<<<< HEAD
 	switch_to_bitmap(prev, next, tifp, tifn);
+=======
+	switch_to_bitmap(tss, prev, next, tifp, tifn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	propagate_user_return_notify(prev_p, next_p);
 
@@ -513,6 +565,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	}
 
 	if ((tifp ^ tifn) & _TIF_NOTSC)
+<<<<<<< HEAD
 		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
 
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
@@ -527,6 +580,12 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 		/* Enforce MSR update to ensure consistent state */
 		__speculation_ctrl_update(~tifn, tifn);
 	}
+=======
+		cr4_toggle_bits(X86_CR4_TSD);
+
+	if ((tifp ^ tifn) & _TIF_SSBD)
+		__speculative_store_bypass_update(tifn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

@@ -138,6 +138,7 @@ SECTIONS
 
 #ifdef CONFIG_PPC64
 	. = ALIGN(8);
+<<<<<<< HEAD
 	__stf_entry_barrier_fixup : AT(ADDR(__stf_entry_barrier_fixup) - LOAD_OFFSET) {
 		__start___stf_entry_barrier_fixup = .;
 		*(__stf_entry_barrier_fixup)
@@ -166,11 +167,14 @@ SECTIONS
 	}
 
 	. = ALIGN(8);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__rfi_flush_fixup : AT(ADDR(__rfi_flush_fixup) - LOAD_OFFSET) {
 		__start___rfi_flush_fixup = .;
 		*(__rfi_flush_fixup)
 		__stop___rfi_flush_fixup = .;
 	}
+<<<<<<< HEAD
 #endif /* CONFIG_PPC64 */
 
 #ifdef CONFIG_PPC_BARRIER_NOSPEC
@@ -190,6 +194,10 @@ SECTIONS
 		__stop__btb_flush_fixup = .;
 	}
 #endif
+=======
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	EXCEPTION_TABLE(0)
 
 	NOTES :kernel :notes

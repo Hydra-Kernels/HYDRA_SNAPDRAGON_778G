@@ -420,6 +420,7 @@ static int set_sync_ep_implicit_fb_quirk(struct snd_usb_substream *subs,
 		if (altsd->bInterfaceClass == USB_CLASS_AUDIO)
 			return 0;
 
+<<<<<<< HEAD
 		/* MicroBook II */
 		ep = 0x84;
 		ifnum = 0;
@@ -435,6 +436,22 @@ static int set_sync_ep_implicit_fb_quirk(struct snd_usb_substream *subs,
 	case USB_ID(0x0582, 0x01d8): /* BOSS Katana */
 		/* BOSS Katana amplifiers do not need quirks */
 		return 0;
+=======
+		if (!iface || iface->num_altsetting == 0)
+			return -EINVAL;
+
+		alts = &iface->altsetting[1];
+		goto add_sync_ep;
+	case USB_ID(0x1397, 0x0002):
+		ep = 0x81;
+		iface = usb_ifnum_to_if(dev, 1);
+
+		if (!iface || iface->num_altsetting == 0)
+			return -EINVAL;
+
+		alts = &iface->altsetting[1];
+		goto add_sync_ep;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (attr == USB_ENDPOINT_SYNC_ASYNC &&

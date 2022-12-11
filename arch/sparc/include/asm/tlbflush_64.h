@@ -9,7 +9,11 @@
 #define TLB_BATCH_NR	192
 
 struct tlb_batch {
+<<<<<<< HEAD
 	unsigned int hugepage_shift;
+=======
+	bool huge;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct mm_struct *mm;
 	unsigned long tlb_nr;
 	unsigned long active;
@@ -18,8 +22,12 @@ struct tlb_batch {
 
 void flush_tsb_kernel_range(unsigned long start, unsigned long end);
 void flush_tsb_user(struct tlb_batch *tb);
+<<<<<<< HEAD
 void flush_tsb_user_page(struct mm_struct *mm, unsigned long vaddr,
 			 unsigned int hugepage_shift);
+=======
+void flush_tsb_user_page(struct mm_struct *mm, unsigned long vaddr, bool huge);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* TLB flush operations. */
 

@@ -306,8 +306,12 @@
 
 	palmas_sys_nirq_pins: pinmux_palmas_sys_nirq_pins {
 		pinctrl-single,pins = <
+<<<<<<< HEAD
 			/* sys_nirq1 is pulled down as the SoC is inverting it for GIC */
 			OMAP5_IOPAD(0x068, PIN_INPUT_PULLUP | MUX_MODE0)
+=======
+			OMAP5_IOPAD(0x068, PIN_INPUT_PULLUP | MUX_MODE0) /* sys_nirq1 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		>;
 	};
 
@@ -381,6 +385,7 @@
 		interrupt-controller;
 		#interrupt-cells = <2>;
 		ti,system-power-controller;
+<<<<<<< HEAD
 		ti,mux-pad1 = <0xa1>;
 		ti,mux-pad2 = <0x1b>;
 		pinctrl-names = "default";
@@ -391,6 +396,10 @@
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
+=======
+		pinctrl-names = "default";
+		pinctrl-0 = <&palmas_sys_nirq_pins &palmas_msecure_pins>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		extcon_usb3: palmas_usb {
 			compatible = "ti,palmas-usb-vid";
@@ -413,6 +422,7 @@
 			ti,backup-battery-charge-high-current;
 		};
 
+<<<<<<< HEAD
 		gpadc: gpadc {
 			compatible = "ti,palmas-gpadc";
 			interrupts = <18 0
@@ -423,6 +433,8 @@
 			ti,channel3-current-microamp = <10>;
 		};
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		palmas_pmic {
 			compatible = "ti,palmas-pmic";
 			interrupt-parent = <&palmas>;

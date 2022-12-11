@@ -5451,9 +5451,19 @@ static struct ceph_msg *get_reply(struct ceph_connection *con,
 	int data_len = le32_to_cpu(hdr->data_len);
 	u64 tid = le64_to_cpu(hdr->tid);
 
+<<<<<<< HEAD
 	down_read(&osdc->lock);
 	if (!osd_registered(osd)) {
 		dout("%s osd%d unknown, skipping\n", __func__, osd->o_osd);
+=======
+	tid = le64_to_cpu(hdr->tid);
+	mutex_lock(&osdc->request_mutex);
+	req = __lookup_request(osdc, tid);
+	if (!req) {
+		dout("%s osd%d tid %llu unknown, skipping\n", __func__,
+		     osd->o_osd, tid);
+		m = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*skip = 1;
 		goto out_unlock_osdc;
 	}

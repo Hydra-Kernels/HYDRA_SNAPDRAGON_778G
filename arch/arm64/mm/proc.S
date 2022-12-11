@@ -13,9 +13,16 @@
 #include <asm/asm-offsets.h>
 #include <asm/hwcap.h>
 #include <asm/pgtable.h>
+<<<<<<< HEAD
 #include <asm/pgtable-hwdef.h>
 #include <asm/cpufeature.h>
 #include <asm/alternative.h>
+=======
+#include <asm/cpufeature.h>
+#include <asm/alternative.h>
+
+#include "proc-macros.S"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_ARM64_64K_PAGES
 #define TCR_TG_FLAGS	TCR_TG0_64K | TCR_TG1_64K
@@ -184,12 +191,17 @@ alternative_endif
 	ubfx	x11, x11, #1, #1
 	msr	oslar_el1, x11
 	reset_pmuserenr_el0 x0			// Disable PMU access from EL0
+<<<<<<< HEAD
 	reset_amuserenr_el0 x0			// Disable AMU access from EL0
 
 alternative_if ARM64_HAS_RAS_EXTN
 	msr_s	SYS_DISR_EL1, xzr
 alternative_else_nop_endif
 
+=======
+	mov	x0, x12
+	dsb	nsh		// Make sure local tlb invalidation completed
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	isb
 	ret
 ENDPROC(cpu_do_resume)
@@ -219,9 +231,23 @@ alternative_else_nop_endif
 	bfi	x2, x1, #48, #16		// set the ASID
 	msr	ttbr1_el1, x2			// in TTBR1 (since TCR.A1 is set)
 	isb
+<<<<<<< HEAD
 	msr	ttbr0_el1, x3			// now update TTBR0
 	isb
 	b	post_ttbr_update_workaround	// Back to C code...
+=======
+alternative_if_not ARM64_WORKAROUND_CAVIUM_27456
+	ret
+	nop
+	nop
+	nop
+alternative_else
+	ic	iallu
+	dsb	nsh
+	isb
+	ret
+alternative_endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ENDPROC(cpu_do_switch_mm)
 
 	.pushsection ".idmap.text", "awx"
@@ -477,8 +503,11 @@ ENTRY(__cpu_setup)
 	isb					// Unmask debug exceptions now,
 	enable_dbg				// since this is per-cpu
 	reset_pmuserenr_el0 x0			// Disable PMU access from EL0
+<<<<<<< HEAD
 	reset_amuserenr_el0 x0			// Disable AMU access from EL0
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Memory region attributes for LPAE:
 	 *
@@ -533,9 +562,23 @@ ENTRY(__cpu_setup)
 	 */
 	mrs	x9, ID_AA64MMFR1_EL1
 	and	x9, x9, #0xf
+<<<<<<< HEAD
 	cbz	x9, 1f
 	orr	x10, x10, #TCR_HA		// hardware Access flag update
 1:
+=======
+	cbz	x9, 2f
+	cmp	x9, #2
+	b.lt	1f
+#ifdef CONFIG_ARM64_ERRATUM_1024718
+	/* Disable hardware DBM on Cortex-A55 r0p0, r0p1 & r1p0 */
+	cpu_midr_match MIDR_CORTEX_A55, MIDR_CPU_VAR_REV(0, 0), MIDR_CPU_VAR_REV(1, 0), x1, x2, x3, x4
+	cbnz	x1, 1f
+#endif
+	orr	x10, x10, #TCR_HD		// hardware Dirty flag update
+1:	orr	x10, x10, #TCR_HA		// hardware Access flag update
+2:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif	/* CONFIG_ARM64_HW_AFDBM */
 	msr	tcr_el1, x10
 	ret					// return to head.S

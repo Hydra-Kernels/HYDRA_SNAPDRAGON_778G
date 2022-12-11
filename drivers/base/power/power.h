@@ -29,11 +29,19 @@ extern u64 pm_runtime_active_time(struct device *dev);
 #define WAKE_IRQ_DEDICATED_MASK		(WAKE_IRQ_DEDICATED_ALLOCATED | \
 					 WAKE_IRQ_DEDICATED_MANAGED)
 
+#define WAKE_IRQ_DEDICATED_ALLOCATED	BIT(0)
+#define WAKE_IRQ_DEDICATED_MANAGED	BIT(1)
+#define WAKE_IRQ_DEDICATED_MASK		(WAKE_IRQ_DEDICATED_ALLOCATED | \
+					 WAKE_IRQ_DEDICATED_MANAGED)
+
 struct wake_irq {
 	struct device *dev;
 	unsigned int status;
 	int irq;
+<<<<<<< HEAD
 	const char *name;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
@@ -89,6 +97,15 @@ static inline void pm_runtime_remove(struct device *dev) {}
 
 static inline int dpm_sysfs_add(struct device *dev) { return 0; }
 static inline void dpm_sysfs_remove(struct device *dev) {}
+
+static inline void dev_pm_enable_wake_irq_check(struct device *dev,
+						bool can_change_status)
+{
+}
+
+static inline void dev_pm_disable_wake_irq_check(struct device *dev)
+{
+}
 
 #endif
 

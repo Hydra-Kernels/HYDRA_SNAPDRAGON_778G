@@ -647,6 +647,7 @@ static int bpf_fill_super(struct super_block *sb, struct fs_context *fc)
 
 static int bpf_get_tree(struct fs_context *fc)
 {
+<<<<<<< HEAD
 	return get_tree_nodev(fc, bpf_fill_super);
 }
 
@@ -677,6 +678,9 @@ static int bpf_init_fs_context(struct fs_context *fc)
 	fc->fs_private = opts;
 	fc->ops = &bpf_context_ops;
 	return 0;
+=======
+	return mount_nodev(type, flags, data, bpf_fill_super);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct file_system_type bpf_fs_type = {

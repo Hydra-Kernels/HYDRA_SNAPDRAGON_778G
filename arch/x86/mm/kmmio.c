@@ -173,7 +173,11 @@ static int clear_page_presence(struct kmmio_fault_page *f, bool clear)
 		return -1;
 	}
 
+<<<<<<< HEAD
 	__flush_tlb_one_kernel(f->addr);
+=======
+	__flush_tlb_one(f->addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -12,9 +12,16 @@ user_get(const struct xattr_handler *handler, struct dentry *unused,
 	 struct inode *inode, const char *name, void *buffer, size_t size,
 	 int flags)
 {
+<<<<<<< HEAD
 	if (!reiserfs_xattrs_user(inode->i_sb))
 		return -EOPNOTSUPP;
 	return reiserfs_xattr_get(inode, xattr_full_name(handler, name),
+=======
+	if (!reiserfs_xattrs_user(dentry->d_sb))
+		return -EOPNOTSUPP;
+	return reiserfs_xattr_get(d_inode(dentry),
+				  xattr_full_name(handler, name),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  buffer, size);
 }
 
@@ -23,9 +30,15 @@ user_set(const struct xattr_handler *handler, struct dentry *unused,
 	 struct inode *inode, const char *name, const void *buffer,
 	 size_t size, int flags)
 {
+<<<<<<< HEAD
 	if (!reiserfs_xattrs_user(inode->i_sb))
 		return -EOPNOTSUPP;
 	return reiserfs_xattr_set(inode,
+=======
+	if (!reiserfs_xattrs_user(dentry->d_sb))
+		return -EOPNOTSUPP;
+	return reiserfs_xattr_set(d_inode(dentry),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  xattr_full_name(handler, name),
 				  buffer, size, flags);
 }

@@ -146,9 +146,12 @@ extern void __of_detach_node_sysfs(struct device_node *np);
 extern void __of_sysfs_remove_bin_file(struct device_node *np,
 				       struct property *prop);
 
+<<<<<<< HEAD
 /* illegal phandle value (set when unresolved) */
 #define OF_PHANDLE_ILLEGAL	0xdeadbeef
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* iterators for transactions, used for overlays */
 /* forward iterator */
 #define for_each_transaction_entry(_oft, _te) \

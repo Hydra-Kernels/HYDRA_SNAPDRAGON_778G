@@ -206,13 +206,18 @@ xen_single_call(unsigned int call,
 	__HYPERCALL_DECLS;
 	__HYPERCALL_5ARG(a1, a2, a3, a4, a5);
 
+<<<<<<< HEAD
 	if (call >= PAGE_SIZE / sizeof(hypercall_page[0]))
 		return -EINVAL;
 
+=======
+	stac();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	asm volatile(CALL_NOSPEC
 		     : __HYPERCALL_5PARAM
 		     : [thunk_target] "a" (&hypercall_page[call])
 		     : __HYPERCALL_CLOBBER5);
+	clac();
 
 	return (long)__res;
 }

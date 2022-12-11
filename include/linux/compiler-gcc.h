@@ -46,6 +46,7 @@
 })
 
 /*
+<<<<<<< HEAD
  * A trick to suppress uninitialized variable warning without generating any
  * code
  */
@@ -55,6 +56,140 @@
 #define __noretpoline __attribute__((__indirect_branch__("keep")))
 #endif
 
+=======
+ * Feature detection for gnu_inline (gnu89 extern inline semantics). Either
+ * __GNUC_STDC_INLINE__ is defined (not using gnu89 extern inline semantics,
+ * and we opt in to the gnu89 semantics), or __GNUC_STDC_INLINE__ is not
+ * defined so the gnu89 semantics are the default.
+ */
+#ifdef __GNUC_STDC_INLINE__
+# define __gnu_inline	__attribute__((gnu_inline))
+#else
+# define __gnu_inline
+#endif
+
+/*
+ * Force always-inline if the user requests it so via the .config,
+ * or if gcc is too old.
+ * GCC does not warn about unused static inline functions for
+ * -Wunused-function.  This turns out to avoid the need for complex #ifdef
+ * directives.  Suppress the warning in clang as well by using "unused"
+ * function attribute, which is redundant but not harmful for gcc.
+ * Prefer gnu_inline, so that extern inline functions do not emit an
+ * externally visible function. This makes extern inline behave as per gnu89
+ * semantics rather than c99. This prevents multiple symbol definition errors
+ * of extern inline functions at link time.
+ * A lot of inline functions can cause havoc with function tracing.
+ */
+#if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) ||		\
+    !defined(CONFIG_OPTIMIZE_INLINING) || (__GNUC__ < 4)
+#define inline \
+	inline __attribute__((always_inline, unused)) notrace __gnu_inline
+#else
+#define inline inline		__attribute__((unused)) notrace __gnu_inline
+#endif
+
+#define __inline__ inline
+#define __inline inline
+#define __always_inline	inline __attribute__((always_inline))
+#define  noinline	__attribute__((noinline))
+
+#define __deprecated	__attribute__((deprecated))
+#define __packed	__attribute__((packed))
+#define __weak		__attribute__((weak))
+#define __alias(symbol)	__attribute__((alias(#symbol)))
+
+/*
+ * it doesn't make sense on ARM (currently the only user of __naked)
+ * to trace naked functions because then mcount is called without
+ * stack and frame pointer being set up and there is no chance to
+ * restore the lr register to the value before mcount was called.
+ *
+ * The asm() bodies of naked functions often depend on standard calling
+ * conventions, therefore they must be noinline and noclone.
+ *
+ * GCC 4.[56] currently fail to enforce this, so we must do so ourselves.
+ * See GCC PR44290.
+ */
+#define __naked		__attribute__((naked)) noinline __noclone notrace
+
+#define __noreturn	__attribute__((noreturn))
+
+/*
+ * From the GCC manual:
+ *
+ * Many functions have no effects except the return value and their
+ * return value depends only on the parameters and/or global
+ * variables.  Such a function can be subject to common subexpression
+ * elimination and loop optimization just as an arithmetic operator
+ * would be.
+ * [...]
+ */
+#define __pure			__attribute__((pure))
+#define __aligned(x)		__attribute__((aligned(x)))
+#define __printf(a, b)		__attribute__((format(printf, a, b)))
+#define __scanf(a, b)		__attribute__((format(scanf, a, b)))
+#define __attribute_const__	__attribute__((__const__))
+#define __maybe_unused		__attribute__((unused))
+#define __always_unused		__attribute__((unused))
+
+/* gcc version specific checks */
+
+#if GCC_VERSION < 30200
+# error Sorry, your compiler is too old - please upgrade it.
+#endif
+
+#if GCC_VERSION < 30300
+# define __used			__attribute__((__unused__))
+#else
+# define __used			__attribute__((__used__))
+#endif
+
+#ifdef CONFIG_GCOV_KERNEL
+# if GCC_VERSION < 30400
+#   error "GCOV profiling support for gcc versions below 3.4 not included"
+# endif /* __GNUC_MINOR__ */
+#endif /* CONFIG_GCOV_KERNEL */
+
+#if GCC_VERSION >= 30400
+#define __must_check		__attribute__((warn_unused_result))
+#endif
+
+#if GCC_VERSION >= 40000
+
+/* GCC 4.1.[01] miscompiles __weak */
+#ifdef __KERNEL__
+# if GCC_VERSION >= 40100 &&  GCC_VERSION <= 40101
+#  error Your version of gcc miscompiles the __weak directive
+# endif
+#endif
+
+#define __used			__attribute__((__used__))
+#define __compiler_offsetof(a, b)					\
+	__builtin_offsetof(a, b)
+
+#if GCC_VERSION >= 40100 && GCC_VERSION < 40600
+# define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
+#endif
+
+#if GCC_VERSION >= 40300
+/* Mark functions as cold. gcc will assume any path leading to a call
+ * to them will be unlikely.  This means a lot of manual unlikely()s
+ * are unnecessary now for any paths leading to the usual suspects
+ * like BUG(), printk(), panic() etc. [but let's keep them for now for
+ * older compilers]
+ *
+ * Early snapshots of gcc 4.3 don't support this and we can't detect this
+ * in the preprocessor, but we can live with this because they're unreleased.
+ * Maketime probing would be overkill here.
+ *
+ * gcc also has a __attribute__((__hot__)) to move hot functions into
+ * a special section, but I don't see any sense in this right now in
+ * the kernel context
+ */
+#define __cold			__attribute__((__cold__))
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 
 #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
@@ -87,12 +222,45 @@
 		__builtin_unreachable();	\
 	} while (0)
 
+<<<<<<< HEAD
 #if defined(RANDSTRUCT_PLUGIN) && !defined(__CHECKER__)
 #define __randomize_layout __attribute__((randomize_layout))
 #define __no_randomize_layout __attribute__((no_randomize_layout))
 /* This anon struct can add padding, so only enable it under randstruct. */
 #define randomized_struct_fields_start	struct {
 #define randomized_struct_fields_end	} __randomize_layout;
+=======
+/* Mark a function definition as prohibited from being cloned. */
+#define __noclone	__attribute__((__noclone__, __optimize__("no-tracer")))
+
+#endif /* GCC_VERSION >= 40500 */
+
+#if GCC_VERSION >= 40600
+/*
+ * When used with Link Time Optimization, gcc can optimize away C functions or
+ * variables which are referenced only from assembly code.  __visible tells the
+ * optimizer that something else uses this function or variable, thus preventing
+ * this.
+ */
+#define __visible	__attribute__((externally_visible))
+#endif
+
+
+#if GCC_VERSION >= 40900 && !defined(__CHECKER__)
+/*
+ * __assume_aligned(n, k): Tell the optimizer that the returned
+ * pointer can be assumed to be k modulo n. The second argument is
+ * optional (default 0), so we use a variadic macro to make the
+ * shorthand.
+ *
+ * Beware: Do not apply this to functions which may return
+ * ERR_PTRs. Also, it is probably unwise to apply it to functions
+ * returning extra information in the low bits (but in that case the
+ * compiler should see some alignment anyway, when the return value is
+ * massaged by 'flags = ptr & 3; ptr &= ~3;').
+ */
+#define __assume_aligned(a, ...) __attribute__((__assume_aligned__(a, ## __VA_ARGS__)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /*

@@ -2405,7 +2405,11 @@ static int bttv_s_fmt_vid_cap(struct file *file, void *priv,
 
 	f->fmt.pix.field = field;
 
+<<<<<<< HEAD
 	/* update our state information */
+=======
+	/* update our state informations */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fh->fmt              = fmt;
 	fh->cap.field        = f->fmt.pix.field;
 	fh->cap.last         = V4L2_FIELD_NONE;

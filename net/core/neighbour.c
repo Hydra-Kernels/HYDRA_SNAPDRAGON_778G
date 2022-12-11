@@ -51,10 +51,16 @@ do {						\
 
 #define PNEIGH_HASHMASK		0xF
 
+<<<<<<< HEAD
 static void neigh_timer_handler(struct timer_list *t);
 static void __neigh_notify(struct neighbour *n, int type, int flags,
 			   u32 pid);
 static void neigh_update_notify(struct neighbour *neigh, u32 nlmsg_pid);
+=======
+static void neigh_timer_handler(unsigned long arg);
+static void __neigh_notify(struct neighbour *n, int type, int flags);
+static void neigh_update_notify(struct neighbour *neigh);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int pneigh_ifdown_and_unlock(struct neigh_table *tbl,
 				    struct net_device *dev);
 
@@ -355,7 +361,11 @@ static int __neigh_ifdown(struct neigh_table *tbl, struct net_device *dev,
 			  bool skip_perm)
 {
 	write_lock_bh(&tbl->lock);
+<<<<<<< HEAD
 	neigh_flush_dev(tbl, dev, skip_perm);
+=======
+	neigh_flush_dev(tbl, dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pneigh_ifdown_and_unlock(tbl, dev);
 
 	del_timer_sync(&tbl->proxy_timer);
@@ -1307,12 +1317,15 @@ static int __neigh_update(struct neighbour *neigh, const u8 *lladdr,
 		lladdr = neigh->ha;
 	}
 
+<<<<<<< HEAD
 	/* Update confirmed timestamp for neighbour entry after we
 	 * received ARP packet even if it doesn't change IP to MAC binding.
 	 */
 	if (new & NUD_CONNECTED)
 		neigh->confirmed = jiffies;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* If entry was valid and address is not changed,
 	   do not change entry state, if new one is STALE.
 	 */
@@ -1334,12 +1347,24 @@ static int __neigh_update(struct neighbour *neigh, const u8 *lladdr,
 		}
 	}
 
+<<<<<<< HEAD
 	/* Update timestamp only once we know we will make a change to the
 	 * neighbour entry. Otherwise we risk to move the locktime window with
 	 * noop updates and ignore relevant ARP updates.
 	 */
 	if (new != old || lladdr != neigh->ha)
 		neigh->updated = jiffies;
+=======
+	/* Update timestamps only once we know we will make a change to the
+	 * neighbour entry. Otherwise we risk to move the locktime window with
+	 * noop updates and ignore relevant ARP updates.
+	 */
+	if (new != old || lladdr != neigh->ha) {
+		if (new & NUD_CONNECTED)
+			neigh->confirmed = jiffies;
+		neigh->updated = jiffies;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (new != old) {
 		neigh_del_timer(neigh);
@@ -2580,8 +2605,26 @@ static int neigh_dump_table(struct neigh_table *tbl, struct sk_buff *skb,
 	struct neigh_hash_table *nht;
 	unsigned int flags = NLM_F_MULTI;
 
+<<<<<<< HEAD
 	if (filter->dev_idx || filter->master_idx)
 		flags |= NLM_F_DUMP_FILTERED;
+=======
+	err = nlmsg_parse(nlh, sizeof(struct ndmsg), tb, NDA_MAX, NULL);
+	if (!err) {
+		if (tb[NDA_IFINDEX]) {
+			if (nla_len(tb[NDA_IFINDEX]) != sizeof(u32))
+				return -EINVAL;
+			filter_idx = nla_get_u32(tb[NDA_IFINDEX]);
+		}
+		if (tb[NDA_MASTER]) {
+			if (nla_len(tb[NDA_MASTER]) != sizeof(u32))
+				return -EINVAL;
+			filter_master_idx = nla_get_u32(tb[NDA_MASTER]);
+		}
+		if (filter_idx || filter_master_idx)
+			flags |= NLM_F_DUMP_FILTERED;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcu_read_lock_bh();
 	nht = rcu_dereference_bh(tbl->nht);
@@ -3017,6 +3060,7 @@ int neigh_xmit(int index, struct net_device *dev,
 		if (!tbl)
 			goto out;
 		rcu_read_lock_bh();
+<<<<<<< HEAD
 		if (index == NEIGH_ARP_TABLE) {
 			u32 key = *((u32 *)addr);
 
@@ -3024,6 +3068,9 @@ int neigh_xmit(int index, struct net_device *dev,
 		} else {
 			neigh = __neigh_lookup_noref(tbl, addr, dev);
 		}
+=======
+		neigh = __neigh_lookup_noref(tbl, addr, dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!neigh)
 			neigh = __neigh_create(tbl, addr, dev, false);
 		err = PTR_ERR(neigh);

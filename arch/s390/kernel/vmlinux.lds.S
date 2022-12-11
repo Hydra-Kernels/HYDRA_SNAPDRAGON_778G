@@ -33,9 +33,19 @@ SECTIONS
 {
 	. = 0x100000;
 	.text : {
+<<<<<<< HEAD
 		_stext = .;		/* Start of text section */
 		_text = .;		/* Text and read-only data */
+=======
+		/* Text and read-only data */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		HEAD_TEXT
+		/*
+		 * E.g. perf doesn't like symbols starting at address zero,
+		 * therefore skip the initial PSW and channel program located
+		 * at address zero and let _text start at 0x200.
+		 */
+	_text = 0x200;
 		TEXT_TEXT
 		SCHED_TEXT
 		CPUIDLE_TEXT
@@ -135,8 +145,11 @@ SECTIONS
 		__nospec_return_end = . ;
 	}
 
+<<<<<<< HEAD
 	BOOT_DATA
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* early.c uses stsi, which requires page aligned data. */
 	. = ALIGN(PAGE_SIZE);
 	INIT_DATA_SECTION(0x100)

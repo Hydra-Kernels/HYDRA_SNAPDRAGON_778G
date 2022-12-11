@@ -235,9 +235,13 @@ void uncore_perf_event_update(struct intel_uncore_box *box, struct perf_event *e
 	u64 prev_count, new_count, delta;
 	int shift;
 
+<<<<<<< HEAD:arch/x86/events/intel/uncore.c
 	if (uncore_pmc_freerunning(event->hw.idx))
 		shift = 64 - uncore_freerunning_bits(box, event);
 	else if (uncore_pmc_fixed(event->hw.idx))
+=======
+	if (event->hw.idx == UNCORE_PMC_IDX_FIXED)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_uncore.c
 		shift = 64 - uncore_fixed_ctr_bits(box);
 	else
 		shift = 64 - uncore_perf_ctr_bits(box);

@@ -229,6 +229,7 @@ static bool kvm_request_needs_ipi(struct kvm_vcpu *vcpu, unsigned req)
 	 */
 	return mode == IN_GUEST_MODE;
 }
+EXPORT_SYMBOL_GPL(vcpu_put);
 
 static void ack_flush(void *_completed)
 {
@@ -707,12 +708,17 @@ static struct kvm *kvm_create_vm(unsigned long type)
 		return ERR_PTR(-ENOMEM);
 
 	spin_lock_init(&kvm->mmu_lock);
+<<<<<<< HEAD
 	mmgrab(current->mm);
+=======
+	atomic_inc(&current->mm->mm_count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kvm->mm = current->mm;
 	kvm_eventfd_init(kvm);
 	mutex_init(&kvm->lock);
 	mutex_init(&kvm->irq_lock);
 	mutex_init(&kvm->slots_lock);
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&kvm->devices);
 
 	BUILD_BUG_ON(KVM_MEM_SLOTS_NUM > SHRT_MAX);
@@ -740,6 +746,11 @@ static struct kvm *kvm_create_vm(unsigned long type)
 			goto out_err_no_arch_destroy_vm;
 	}
 
+=======
+	atomic_set(&kvm->users_count, 1);
+	INIT_LIST_HEAD(&kvm->devices);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	r = kvm_arch_init_vm(kvm, type);
 	if (r)
 		goto out_err_no_arch_destroy_vm;
@@ -752,6 +763,29 @@ static struct kvm *kvm_create_vm(unsigned long type)
 	INIT_HLIST_HEAD(&kvm->irq_ack_notifier_list);
 #endif
 
+<<<<<<< HEAD
+=======
+	BUILD_BUG_ON(KVM_MEM_SLOTS_NUM > SHRT_MAX);
+
+	r = -ENOMEM;
+	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
+		kvm->memslots[i] = kvm_alloc_memslots();
+		if (!kvm->memslots[i])
+			goto out_err_no_srcu;
+	}
+
+	if (init_srcu_struct(&kvm->srcu))
+		goto out_err_no_srcu;
+	if (init_srcu_struct(&kvm->irq_srcu))
+		goto out_err_no_irq_srcu;
+	for (i = 0; i < KVM_NR_BUSES; i++) {
+		kvm->buses[i] = kzalloc(sizeof(struct kvm_io_bus),
+					GFP_KERNEL);
+		if (!kvm->buses[i])
+			goto out_err;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	r = kvm_init_mmu_notifier(kvm);
 	if (r)
 		goto out_err_no_mmu_notifier;
@@ -822,10 +856,15 @@ static void kvm_destroy_vm(struct kvm *kvm)
 
 	kvm_free_irq_routing(kvm);
 	for (i = 0; i < KVM_NR_BUSES; i++) {
+<<<<<<< HEAD
 		struct kvm_io_bus *bus = kvm_get_bus(kvm, i);
 
 		if (bus)
 			kvm_io_bus_destroy(bus);
+=======
+		if (kvm->buses[i])
+			kvm_io_bus_destroy(kvm->buses[i]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		kvm->buses[i] = NULL;
 	}
 	kvm_coalesced_mmio_free(kvm);
@@ -1156,6 +1195,24 @@ int __kvm_set_memory_region(struct kvm *kvm,
 
 	kvm_free_memslot(kvm, &old, &new);
 	kvfree(old_memslots);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * IOMMU mapping:  New slots need to be mapped.  Old slots need to be
+	 * un-mapped and re-mapped if their base changes.  Since base change
+	 * unmapping is handled above with slot deletion, mapping alone is
+	 * needed here.  Anything else the iommu might care about for existing
+	 * slots (size changes, userspace addr changes and read-only flag
+	 * changes) is disallowed above, so any other attribute changes getting
+	 * here can be skipped.
+	 */
+	if (as_id == 0 && (change == KVM_MR_CREATE || change == KVM_MR_MOVE)) {
+		r = kvm_iommu_map_pages(kvm, &new);
+		return r;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 out_slots:
@@ -2463,6 +2520,9 @@ static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
 	if (val > halt_poll_ns)
 		val = halt_poll_ns;
 
+	if (val > halt_poll_ns)
+		val = halt_poll_ns;
+
 	vcpu->halt_poll_ns = val;
 out:
 	trace_kvm_halt_poll_ns_grow(vcpu->vcpu_id, val, old);
@@ -3521,8 +3581,11 @@ static long kvm_vm_ioctl(struct file *filp,
 		if (copy_from_user(&routing, argp, sizeof(routing)))
 			goto out;
 		r = -EINVAL;
+<<<<<<< HEAD
 		if (!kvm_arch_can_set_irq_routing(kvm))
 			goto out;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (routing.nr > KVM_MAX_IRQ_ROUTES)
 			goto out;
 		if (routing.flags)
@@ -4042,6 +4105,13 @@ int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
 	if (!bus)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	bus = kvm->buses[bus_idx];
+	if (!bus)
+		return -ENOMEM;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* exclude ioeventfd which is limited by maximum fd */
 	if (bus->dev_count - bus->ioeventfd_count > NR_IOBUS_DEVS - 1)
 		return -ENOSPC;
@@ -4074,15 +4144,24 @@ int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
 }
 
 /* Caller must hold slots_lock. */
-int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
-			      struct kvm_io_device *dev)
+void kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
+			       struct kvm_io_device *dev)
 {
+<<<<<<< HEAD
 	int i, j;
 	struct kvm_io_bus *new_bus, *bus;
 
 	bus = kvm_get_bus(kvm, bus_idx);
 	if (!bus)
 		return 0;
+=======
+	int i;
+	struct kvm_io_bus *new_bus, *bus;
+
+	bus = kvm->buses[bus_idx];
+	if (!bus)
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < bus->dev_count; i++)
 		if (bus->range[i].dev == dev) {
@@ -4090,6 +4169,7 @@ int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
 		}
 
 	if (i == bus->dev_count)
+<<<<<<< HEAD
 		return 0;
 
 	new_bus = kmalloc(struct_size(bus, range, bus->dev_count - 1),
@@ -4107,11 +4187,31 @@ int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
 			kvm_iodevice_destructor(bus->range[j].dev);
 		}
 	}
+=======
+		return;
 
+	new_bus = kmalloc(sizeof(*bus) + ((bus->dev_count - 1) *
+			  sizeof(struct kvm_io_range)), GFP_KERNEL);
+	if (!new_bus)  {
+		pr_err("kvm: failed to shrink bus, removing it completely\n");
+		goto broken;
+	}
+
+	memcpy(new_bus, bus, sizeof(*bus) + i * sizeof(struct kvm_io_range));
+	new_bus->dev_count--;
+	memcpy(new_bus->range + i, bus->range + i + 1,
+	       (new_bus->dev_count - i) * sizeof(struct kvm_io_range));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+broken:
 	rcu_assign_pointer(kvm->buses[bus_idx], new_bus);
 	synchronize_srcu_expedited(&kvm->srcu);
 	kfree(bus);
+<<<<<<< HEAD
 	return new_bus ? 0 : -ENOMEM;
+=======
+	return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct kvm_io_device *kvm_io_bus_get_dev(struct kvm *kvm, enum kvm_bus bus_idx,

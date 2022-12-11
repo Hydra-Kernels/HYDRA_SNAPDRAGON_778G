@@ -575,6 +575,7 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
 {
 	struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
 	struct device *dev = get_device(&vp_dev->vdev.dev);
+<<<<<<< HEAD
 
 	/*
 	 * Device is marked broken on surprise removal so that virtio upper
@@ -584,6 +585,8 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
 		virtio_break_device(&vp_dev->vdev);
 
 	pci_disable_sriov(pci_dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	unregister_virtio_device(&vp_dev->vdev);
 
@@ -594,6 +597,7 @@ static void virtio_pci_remove(struct pci_dev *pci_dev)
 
 	pci_disable_device(pci_dev);
 	put_device(dev);
+<<<<<<< HEAD
 }
 
 static int virtio_pci_sriov_configure(struct pci_dev *pci_dev, int num_vfs)
@@ -621,6 +625,8 @@ static int virtio_pci_sriov_configure(struct pci_dev *pci_dev, int num_vfs)
 		return ret;
 
 	return num_vfs;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct pci_driver virtio_pci_driver = {

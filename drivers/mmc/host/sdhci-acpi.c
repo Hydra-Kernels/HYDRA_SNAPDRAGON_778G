@@ -30,9 +30,13 @@
 
 #ifdef CONFIG_X86
 #include <asm/cpu_device_id.h>
+<<<<<<< HEAD
 #include <asm/intel-family.h>
 #include <asm/iosf_mbi.h>
 #include <linux/pci.h>
+=======
+#include <asm/iosf_mbi.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #include "sdhci.h"
@@ -230,6 +234,109 @@ static const struct sdhci_acpi_chip sdhci_acpi_chip_int = {
 };
 
 #ifdef CONFIG_X86
+<<<<<<< HEAD
+=======
+
+static bool sdhci_acpi_byt(void)
+{
+	static const struct x86_cpu_id byt[] = {
+		{ X86_VENDOR_INTEL, 6, 0x37 },
+		{}
+	};
+
+	return x86_match_cpu(byt);
+}
+
+#define BYT_IOSF_SCCEP			0x63
+#define BYT_IOSF_OCP_NETCTRL0		0x1078
+#define BYT_IOSF_OCP_TIMEOUT_BASE	GENMASK(10, 8)
+
+static void sdhci_acpi_byt_setting(struct device *dev)
+{
+	u32 val = 0;
+
+	if (!sdhci_acpi_byt())
+		return;
+
+	if (iosf_mbi_read(BYT_IOSF_SCCEP, 0x06, BYT_IOSF_OCP_NETCTRL0,
+			  &val)) {
+		dev_err(dev, "%s read error\n", __func__);
+		return;
+	}
+
+	if (!(val & BYT_IOSF_OCP_TIMEOUT_BASE))
+		return;
+
+	val &= ~BYT_IOSF_OCP_TIMEOUT_BASE;
+
+	if (iosf_mbi_write(BYT_IOSF_SCCEP, 0x07, BYT_IOSF_OCP_NETCTRL0,
+			   val)) {
+		dev_err(dev, "%s write error\n", __func__);
+		return;
+	}
+
+	dev_dbg(dev, "%s completed\n", __func__);
+}
+
+static bool sdhci_acpi_byt_defer(struct device *dev)
+{
+	if (!sdhci_acpi_byt())
+		return false;
+
+	if (!iosf_mbi_available())
+		return true;
+
+	sdhci_acpi_byt_setting(dev);
+
+	return false;
+}
+
+#else
+
+static inline void sdhci_acpi_byt_setting(struct device *dev)
+{
+}
+
+static inline bool sdhci_acpi_byt_defer(struct device *dev)
+{
+	return false;
+}
+
+#endif
+
+static int bxt_get_cd(struct mmc_host *mmc)
+{
+	int gpio_cd = mmc_gpio_get_cd(mmc);
+	struct sdhci_host *host = mmc_priv(mmc);
+	unsigned long flags;
+	int ret = 0;
+
+	if (!gpio_cd)
+		return 0;
+
+	pm_runtime_get_sync(mmc->parent);
+
+	spin_lock_irqsave(&host->lock, flags);
+
+	if (host->flags & SDHCI_DEVICE_DEAD)
+		goto out;
+
+	ret = !!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT);
+out:
+	spin_unlock_irqrestore(&host->lock, flags);
+
+	pm_runtime_mark_last_busy(mmc->parent);
+	pm_runtime_put_autosuspend(mmc->parent);
+
+	return ret;
+}
+
+static int sdhci_acpi_emmc_probe_slot(struct platform_device *pdev,
+				      const char *hid, const char *uid)
+{
+	struct sdhci_acpi_host *c = platform_get_drvdata(pdev);
+	struct sdhci_host *host;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static bool sdhci_acpi_byt(void)
 {
@@ -415,6 +522,9 @@ static int intel_setup_host(struct platform_device *pdev)
 	if (!(intel_host->hs_caps & INTEL_DSM_HS_CAPS_SDR104))
 		c->host->mmc->caps &= ~MMC_CAP_UHS_SDR104;
 
+	if (hid && !strcmp(hid, "80865ACA"))
+		host->mmc_host_ops.get_cd = bxt_get_cd;
+
 	return 0;
 }
 
@@ -422,7 +532,12 @@ static const struct sdhci_acpi_slot sdhci_acpi_slot_int_emmc = {
 	.chip    = &sdhci_acpi_chip_int,
 	.caps    = MMC_CAP_8_BIT_DATA | MMC_CAP_NONREMOVABLE |
 		   MMC_CAP_HW_RESET | MMC_CAP_1_8V_DDR |
+<<<<<<< HEAD
 		   MMC_CAP_CMD_DURING_TFR | MMC_CAP_WAIT_WHILE_BUSY,
+=======
+		   MMC_CAP_WAIT_WHILE_BUSY,
+	.caps2   = MMC_CAP2_HC_ERASE_SZ,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.flags   = SDHCI_ACPI_RUNTIME_PM,
 	.quirks  = SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC |
 		   SDHCI_QUIRK_NO_LED,
@@ -455,6 +570,7 @@ static const struct sdhci_acpi_slot sdhci_acpi_slot_int_sd = {
 		   SDHCI_QUIRK_NO_LED,
 	.quirks2 = SDHCI_QUIRK2_CARD_ON_NEEDS_BUS_ON |
 		   SDHCI_QUIRK2_STOP_WITH_TC,
+<<<<<<< HEAD
 	.caps    = MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_AGGRESSIVE_PM,
 	.probe_slot	= intel_probe_slot,
 	.setup_host	= intel_setup_host,
@@ -710,6 +826,10 @@ static const struct sdhci_acpi_slot sdhci_acpi_slot_amd_emmc = {
 	.quirks2	= SDHCI_QUIRK2_BROKEN_64_BIT_DMA,
 	.probe_slot     = sdhci_acpi_emmc_amd_probe_slot,
 	.priv_size	= sizeof(struct amd_sdhci_host),
+=======
+	.caps    = MMC_CAP_WAIT_WHILE_BUSY,
+	.probe_slot	= sdhci_acpi_sd_probe_slot,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct sdhci_acpi_uid_slot {
@@ -790,6 +910,9 @@ static int sdhci_acpi_probe(struct platform_device *pdev)
 	device = ACPI_COMPANION(dev);
 	if (!device)
 		return -ENODEV;
+
+	if (sdhci_acpi_byt_defer(dev))
+		return -EPROBE_DEFER;
 
 	hid = acpi_device_hid(device);
 	uid = acpi_device_uid(device);
@@ -986,7 +1109,11 @@ static int sdhci_acpi_runtime_resume(struct device *dev)
 
 	sdhci_acpi_byt_setting(&c->pdev->dev);
 
+<<<<<<< HEAD
 	return sdhci_runtime_resume_host(c->host, 0);
+=======
+	return sdhci_runtime_resume_host(c->host);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #endif

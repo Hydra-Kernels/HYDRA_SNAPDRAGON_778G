@@ -310,9 +310,15 @@ static int create_image(int platform_mode)
 	restore_processor_state();
 	trace_suspend_resume(TPS("machine_suspend"), PM_EVENT_HIBERNATE, false);
 	if (error)
+<<<<<<< HEAD
 		pr_err("Error %d creating hibernation image\n", error);
 
 	if (!in_suspend) {
+=======
+		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
+			error);
+	if (!in_suspend)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		events_check_enabled = false;
 		clear_free_pages();
 	}

@@ -288,10 +288,16 @@ do {									\
 			break;						\
 									\
 		mutex_unlock(&(ca)->set->bucket_lock);			\
+<<<<<<< HEAD
 		if (kthread_should_stop() ||				\
 		    test_bit(CACHE_SET_IO_DISABLE, &ca->set->flags)) {	\
 			set_current_state(TASK_RUNNING);		\
 			goto out;					\
+=======
+		if (kthread_should_stop()) {				\
+			set_current_state(TASK_RUNNING);		\
+			return 0;					\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}							\
 									\
 		schedule();						\

@@ -540,6 +540,15 @@ struct rpc_clnt *rpc_create(struct rpc_create_args *args)
 		}
 	}
 
+	if (args->bc_xprt) {
+		WARN_ON(args->protocol != XPRT_TRANSPORT_BC_TCP);
+		xprt = args->bc_xprt->xpt_bc_xprt;
+		if (xprt) {
+			xprt_get(xprt);
+			return rpc_create_xprt(args, xprt);
+		}
+	}
+
 	if (args->flags & RPC_CLNT_CREATE_INFINITE_SLOTS)
 		xprtargs.flags |= XPRT_CREATE_INFINITE_SLOTS;
 	if (args->flags & RPC_CLNT_CREATE_NO_IDLE_TIMEOUT)

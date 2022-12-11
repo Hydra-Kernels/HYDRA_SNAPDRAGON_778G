@@ -43,6 +43,7 @@ MODULE_PARM_DESC(static_hdmi_pcm, "Don't restrict PCM parameters per ELD info");
 #define is_skylake(codec) ((codec)->core.vendor_id == 0x80862809)
 #define is_broxton(codec) ((codec)->core.vendor_id == 0x8086280a)
 #define is_kabylake(codec) ((codec)->core.vendor_id == 0x8086280b)
+<<<<<<< HEAD
 #define is_geminilake(codec) (((codec)->core.vendor_id == 0x8086280d) || \
 				((codec)->core.vendor_id == 0x80862800))
 #define is_cannonlake(codec) ((codec)->core.vendor_id == 0x8086280c)
@@ -53,6 +54,12 @@ MODULE_PARM_DESC(static_hdmi_pcm, "Don't restrict PCM parameters per ELD info");
 				|| is_kabylake(codec) || is_geminilake(codec) \
 				|| is_cannonlake(codec) || is_icelake(codec) \
 				|| is_tigerlake(codec))
+=======
+#define is_haswell_plus(codec) (is_haswell(codec) || is_broadwell(codec) \
+				|| is_skylake(codec) || is_broxton(codec) \
+				|| is_kabylake(codec))
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define is_valleyview(codec) ((codec)->core.vendor_id == 0x80862882)
 #define is_cherryview(codec) ((codec)->core.vendor_id == 0x80862883)
 #define is_valleyview_plus(codec) (is_valleyview(codec) || is_cherryview(codec))
@@ -373,8 +380,16 @@ static int hdmi_eld_ctl_get(struct snd_kcontrol *kcontrol,
 	}
 
 	eld = &per_pin->sink_eld;
+<<<<<<< HEAD
 	if (eld->eld_size > ARRAY_SIZE(ucontrol->value.bytes.data) ||
 	    eld->eld_size > ELD_MAX_SIZE) {
+=======
+
+	mutex_lock(&per_pin->lock);
+	if (eld->eld_size > ARRAY_SIZE(ucontrol->value.bytes.data) ||
+	    eld->eld_size > ELD_MAX_SIZE) {
+		mutex_unlock(&per_pin->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		snd_BUG();
 		err = -EINVAL;
 		goto unlock;
@@ -778,12 +793,16 @@ static void check_presence_and_report(struct hda_codec *codec, hda_nid_t nid,
 static void jack_callback(struct hda_codec *codec,
 			  struct hda_jack_callback *jack)
 {
+<<<<<<< HEAD
 	/* stop polling when notification is enabled */
 	if (codec_has_acomp(codec))
 		return;
 
 	/* hda_jack don't support DP MST */
 	check_presence_and_report(codec, jack->nid, 0);
+=======
+	check_presence_and_report(codec, jack->nid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void hdmi_intrinsic_event(struct hda_codec *codec, unsigned int res)
@@ -2723,6 +2742,7 @@ static int intel_pin2port(void *audio_ptr, int pin_nid)
 	struct hdmi_spec *spec = codec->spec;
 	int base_nid, i;
 
+<<<<<<< HEAD
 	if (!spec->port_num) {
 		base_nid = intel_base_nid(codec);
 		if (WARN_ON(pin_nid < base_nid || pin_nid >= base_nid + 3))
@@ -2770,6 +2790,12 @@ static void intel_pin_eld_notify(void *audio_ptr, int port, int pipe)
 	pin_nid = intel_port2pin(codec, port);
 	if (!pin_nid)
 		return;
+=======
+	/* we assume only from port-B to port-D */
+	if (port < 1 || port > 3)
+		return;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* skip notification during system suspend (but not in runtime PM);
 	 * the state will be updated at resume
 	 */
@@ -4211,6 +4237,7 @@ HDA_CODEC_ENTRY(0x80862800, "Geminilake HDMI",	patch_i915_glk_hdmi),
 HDA_CODEC_ENTRY(0x80862801, "Bearlake HDMI",	patch_generic_hdmi),
 HDA_CODEC_ENTRY(0x80862802, "Cantiga HDMI",	patch_generic_hdmi),
 HDA_CODEC_ENTRY(0x80862803, "Eaglelake HDMI",	patch_generic_hdmi),
+<<<<<<< HEAD
 HDA_CODEC_ENTRY(0x80862804, "IbexPeak HDMI",	patch_i915_cpt_hdmi),
 HDA_CODEC_ENTRY(0x80862805, "CougarPoint HDMI",	patch_i915_cpt_hdmi),
 HDA_CODEC_ENTRY(0x80862806, "PantherPoint HDMI", patch_i915_cpt_hdmi),
@@ -4225,6 +4252,16 @@ HDA_CODEC_ENTRY(0x8086280f, "Icelake HDMI",	patch_i915_icl_hdmi),
 HDA_CODEC_ENTRY(0x80862812, "Tigerlake HDMI",	patch_i915_tgl_hdmi),
 HDA_CODEC_ENTRY(0x80862816, "Rocketlake HDMI",	patch_i915_tgl_hdmi),
 HDA_CODEC_ENTRY(0x8086281a, "Jasperlake HDMI",	patch_i915_icl_hdmi),
+=======
+HDA_CODEC_ENTRY(0x80862804, "IbexPeak HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x80862805, "CougarPoint HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x80862806, "PantherPoint HDMI", patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x80862807, "Haswell HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x80862808, "Broadwell HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x80862809, "Skylake HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x8086280a, "Broxton HDMI",	patch_generic_hdmi),
+HDA_CODEC_ENTRY(0x8086280b, "Kabylake HDMI",	patch_generic_hdmi),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 HDA_CODEC_ENTRY(0x80862880, "CedarTrail HDMI",	patch_generic_hdmi),
 HDA_CODEC_ENTRY(0x80862882, "Valleyview2 HDMI",	patch_i915_byt_hdmi),
 HDA_CODEC_ENTRY(0x80862883, "Braswell HDMI",	patch_i915_byt_hdmi),

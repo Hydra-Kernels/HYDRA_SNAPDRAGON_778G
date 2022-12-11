@@ -1258,8 +1258,11 @@ static void tty_driver_remove_tty(struct tty_driver *driver, struct tty_struct *
 static int tty_reopen(struct tty_struct *tty)
 {
 	struct tty_driver *driver = tty->driver;
+<<<<<<< HEAD
 	struct tty_ldisc *ld;
 	int retval = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (driver->type == TTY_DRIVER_TYPE_PTY &&
 	    driver->subtype == PTY_TYPE_MASTER)
@@ -2028,14 +2031,58 @@ retry_open:
 		return -ENOMEM;
 
 	tty = tty_open_current_tty(device, filp);
+<<<<<<< HEAD
 	if (!tty)
 		tty = tty_open_by_driver(device, inode, filp);
+=======
+	if (!tty) {
+		mutex_lock(&tty_mutex);
+		driver = tty_lookup_driver(device, filp, &noctty, &index);
+		if (IS_ERR(driver)) {
+			retval = PTR_ERR(driver);
+			goto err_unlock;
+		}
+
+		/* check whether we're reopening an existing tty */
+		tty = tty_driver_lookup_tty(driver, inode, index);
+		if (IS_ERR(tty)) {
+			retval = PTR_ERR(tty);
+			goto err_unlock;
+		}
+
+		if (tty) {
+			mutex_unlock(&tty_mutex);
+			retval = tty_lock_interruptible(tty);
+			tty_kref_put(tty);  /* drop kref from tty_driver_lookup_tty() */
+			if (retval) {
+				if (retval == -EINTR)
+					retval = -ERESTARTSYS;
+				goto err_unref;
+			}
+			retval = tty_reopen(tty);
+			if (retval < 0) {
+				tty_unlock(tty);
+				tty = ERR_PTR(retval);
+			}
+		} else { /* Returns with the tty_lock held for now */
+			tty = tty_init_dev(driver, index);
+			mutex_unlock(&tty_mutex);
+		}
+
+		tty_driver_kref_put(driver);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (IS_ERR(tty)) {
 		tty_free_file(filp);
 		retval = PTR_ERR(tty);
 		if (retval != -EAGAIN || signal_pending(current))
+<<<<<<< HEAD
 			return retval;
+=======
+			goto err_file;
+		tty_free_file(filp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		schedule();
 		goto retry_open;
 	}
@@ -2081,6 +2128,18 @@ retry_open:
 		tty_open_proc_set_tty(filp, tty);
 	tty_unlock(tty);
 	return 0;
+<<<<<<< HEAD
+=======
+err_unlock:
+	mutex_unlock(&tty_mutex);
+err_unref:
+	/* after locks to avoid deadlock */
+	if (!IS_ERR_OR_NULL(driver))
+		tty_driver_kref_put(driver);
+err_file:
+	tty_free_file(filp);
+	return retval;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 
@@ -2353,8 +2412,11 @@ static int tiocgetd(struct tty_struct *tty, int __user *p)
 	int ret;
 
 	ld = tty_ldisc_ref_wait(tty);
+<<<<<<< HEAD
 	if (!ld)
 		return -EIO;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = put_user(ld->ops->num, p);
 	tty_ldisc_deref(ld);
 	return ret;

@@ -224,6 +224,7 @@ static int i40e_add_del_fdir_udpv4(struct i40e_vsi *vsi,
 				 "Filter deleted for PCTYPE %d loc = %d\n",
 				 fd_data->pctype, fd_data->fd_id);
 	}
+<<<<<<< HEAD
 
 	if (add)
 		pf->fd_udp4_filter_cnt++;
@@ -231,6 +232,12 @@ static int i40e_add_del_fdir_udpv4(struct i40e_vsi *vsi,
 		pf->fd_udp4_filter_cnt--;
 
 	return 0;
+=======
+	if (err)
+		kfree(raw_packet);
+
+	return err ? -EOPNOTSUPP : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define I40E_TCPIP_DUMMY_PACKET_LEN 54
@@ -298,6 +305,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
 				 fd_data->pctype, fd_data->fd_id);
 	}
 
+<<<<<<< HEAD
 	if (add) {
 		pf->fd_tcp4_filter_cnt++;
 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
@@ -309,6 +317,12 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
 	}
 
 	return 0;
+=======
+	if (err)
+		kfree(raw_packet);
+
+	return err ? -EOPNOTSUPP : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define I40E_SCTPIP_DUMMY_PACKET_LEN 46
@@ -451,12 +465,19 @@ static int i40e_add_del_fdir_ipv4(struct i40e_vsi *vsi,
 		}
 	}
 
+<<<<<<< HEAD
 	if (add)
 		pf->fd_ip4_filter_cnt++;
 	else
 		pf->fd_ip4_filter_cnt--;
 
 	return 0;
+=======
+	if (err)
+		kfree(raw_packet);
+
+	return err ? -EOPNOTSUPP : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -602,12 +623,16 @@ static void i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
 					    struct i40e_tx_buffer *tx_buffer)
 {
 	if (tx_buffer->skb) {
+<<<<<<< HEAD
 		if (tx_buffer->tx_flags & I40E_TX_FLAGS_FD_SB)
 			kfree(tx_buffer->raw_buf);
 		else if (ring_is_xdp(ring))
 			xdp_return_frame(tx_buffer->xdpf);
 		else
 			dev_kfree_skb_any(tx_buffer->skb);
+=======
+		dev_kfree_skb_any(tx_buffer->skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (dma_unmap_len(tx_buffer, len))
 			dma_unmap_single(ring->dev,
 					 dma_unmap_addr(tx_buffer, dma),
@@ -620,6 +645,12 @@ static void i40e_unmap_and_free_tx_resource(struct i40e_ring *ring,
 			       DMA_TO_DEVICE);
 	}
 
+<<<<<<< HEAD
+=======
+	if (tx_buffer->tx_flags & I40E_TX_FLAGS_FD_SB)
+		kfree(tx_buffer->raw_buf);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tx_buffer->next_to_watch = NULL;
 	tx_buffer->skb = NULL;
 	dma_unmap_len_set(tx_buffer, len, 0);
@@ -1725,7 +1756,11 @@ checksum_fail:
  *
  * Returns a hash type to be used by skb_set_hash
  **/
+<<<<<<< HEAD
 static inline int i40e_ptype_to_htype(u8 ptype)
+=======
+static inline enum pkt_hash_types i40e_ptype_to_htype(u8 ptype)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
 
@@ -1746,8 +1781,37 @@ static inline int i40e_ptype_to_htype(u8 ptype)
  * i40e_rx_hash - set the hash value in the skb
  * @ring: descriptor ring
  * @rx_desc: specific descriptor
+<<<<<<< HEAD
  * @skb: skb currently being received and modified
  * @rx_ptype: Rx packet type
+=======
+ **/
+static inline void i40e_rx_hash(struct i40e_ring *ring,
+				union i40e_rx_desc *rx_desc,
+				struct sk_buff *skb,
+				u8 rx_ptype)
+{
+	u32 hash;
+	const __le64 rss_mask  =
+		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
+			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
+
+	if (ring->netdev->features & NETIF_F_RXHASH)
+		return;
+
+	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
+		hash = le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
+		skb_set_hash(skb, hash, i40e_ptype_to_htype(rx_ptype));
+	}
+}
+
+/**
+ * i40e_clean_rx_irq_ps - Reclaim resources after receive; packet split
+ * @rx_ring:  rx ring to clean
+ * @budget:   how many cleans we're allowed
+ *
+ * Returns true if there's any budget left (e.g. the clean is finished)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  **/
 static inline void i40e_rx_hash(struct i40e_ring *ring,
 				union i40e_rx_desc *rx_desc,
@@ -1762,10 +1826,180 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
 	if (!(ring->netdev->features & NETIF_F_RXHASH))
 		return;
 
+<<<<<<< HEAD
 	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
 		hash = le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
 		skb_set_hash(skb, hash, i40e_ptype_to_htype(rx_ptype));
 	}
+=======
+	do {
+		struct i40e_rx_buffer *rx_bi;
+		struct sk_buff *skb;
+		u16 vlan_tag;
+		/* return some buffers to hardware, one at a time is too slow */
+		if (cleaned_count >= I40E_RX_BUFFER_WRITE) {
+			i40e_alloc_rx_buffers_ps(rx_ring, cleaned_count);
+			cleaned_count = 0;
+		}
+
+		i = rx_ring->next_to_clean;
+		rx_desc = I40E_RX_DESC(rx_ring, i);
+		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+		rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+			I40E_RXD_QW1_STATUS_SHIFT;
+
+		if (!(rx_status & BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
+			break;
+
+		/* This memory barrier is needed to keep us from reading
+		 * any other fields out of the rx_desc until we know the
+		 * DD bit is set.
+		 */
+		dma_rmb();
+		if (i40e_rx_is_programming_status(qword)) {
+			i40e_clean_programming_status(rx_ring, rx_desc);
+			I40E_RX_INCREMENT(rx_ring, i);
+			continue;
+		}
+		rx_bi = &rx_ring->rx_bi[i];
+		skb = rx_bi->skb;
+		if (likely(!skb)) {
+			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+							rx_ring->rx_hdr_len);
+			if (!skb) {
+				rx_ring->rx_stats.alloc_buff_failed++;
+				break;
+			}
+
+			/* initialize queue mapping */
+			skb_record_rx_queue(skb, rx_ring->queue_index);
+			/* we are reusing so sync this buffer for CPU use */
+			dma_sync_single_range_for_cpu(rx_ring->dev,
+						      rx_bi->dma,
+						      0,
+						      rx_ring->rx_hdr_len,
+						      DMA_FROM_DEVICE);
+		}
+		rx_packet_len = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+				I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+		rx_header_len = (qword & I40E_RXD_QW1_LENGTH_HBUF_MASK) >>
+				I40E_RXD_QW1_LENGTH_HBUF_SHIFT;
+		rx_sph = (qword & I40E_RXD_QW1_LENGTH_SPH_MASK) >>
+			 I40E_RXD_QW1_LENGTH_SPH_SHIFT;
+
+		rx_error = (qword & I40E_RXD_QW1_ERROR_MASK) >>
+			   I40E_RXD_QW1_ERROR_SHIFT;
+		rx_hbo = rx_error & BIT(I40E_RX_DESC_ERROR_HBO_SHIFT);
+		rx_error &= ~BIT(I40E_RX_DESC_ERROR_HBO_SHIFT);
+
+		rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
+			   I40E_RXD_QW1_PTYPE_SHIFT;
+		prefetch(rx_bi->page);
+		rx_bi->skb = NULL;
+		cleaned_count++;
+		if (rx_hbo || rx_sph) {
+			int len;
+
+			if (rx_hbo)
+				len = I40E_RX_HDR_SIZE;
+			else
+				len = rx_header_len;
+			memcpy(__skb_put(skb, len), rx_bi->hdr_buf, len);
+		} else if (skb->len == 0) {
+			int len;
+
+			len = (rx_packet_len > skb_headlen(skb) ?
+				skb_headlen(skb) : rx_packet_len);
+			memcpy(__skb_put(skb, len),
+			       rx_bi->page + rx_bi->page_offset,
+			       len);
+			rx_bi->page_offset += len;
+			rx_packet_len -= len;
+		}
+
+		/* Get the rest of the data if this was a header split */
+		if (rx_packet_len) {
+			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
+					   rx_bi->page,
+					   rx_bi->page_offset,
+					   rx_packet_len);
+
+			skb->len += rx_packet_len;
+			skb->data_len += rx_packet_len;
+			skb->truesize += rx_packet_len;
+
+			if ((page_count(rx_bi->page) == 1) &&
+			    (page_to_nid(rx_bi->page) == current_node))
+				get_page(rx_bi->page);
+			else
+				rx_bi->page = NULL;
+
+			dma_unmap_page(rx_ring->dev,
+				       rx_bi->page_dma,
+				       PAGE_SIZE / 2,
+				       DMA_FROM_DEVICE);
+			rx_bi->page_dma = 0;
+		}
+		I40E_RX_INCREMENT(rx_ring, i);
+
+		if (unlikely(
+		    !(rx_status & BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)))) {
+			struct i40e_rx_buffer *next_buffer;
+
+			next_buffer = &rx_ring->rx_bi[i];
+			next_buffer->skb = skb;
+			rx_ring->rx_stats.non_eop_descs++;
+			continue;
+		}
+
+		/* ERR_MASK will only have valid bits if EOP set */
+		if (unlikely(rx_error & BIT(I40E_RX_DESC_ERROR_RXE_SHIFT))) {
+			dev_kfree_skb_any(skb);
+			continue;
+		}
+
+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
+
+		if (unlikely(rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK)) {
+			i40e_ptp_rx_hwtstamp(vsi->back, skb, (rx_status &
+					   I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+					   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT);
+			rx_ring->last_rx_timestamp = jiffies;
+		}
+
+		/* probably a little skewed due to removing CRC */
+		total_rx_bytes += skb->len;
+		total_rx_packets++;
+
+		skb->protocol = eth_type_trans(skb, rx_ring->netdev);
+
+		i40e_rx_checksum(vsi, skb, rx_status, rx_error, rx_ptype);
+
+		vlan_tag = rx_status & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)
+			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
+			 : 0;
+#ifdef I40E_FCOE
+		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
+			dev_kfree_skb_any(skb);
+			continue;
+		}
+#endif
+		skb_mark_napi_id(skb, &rx_ring->q_vector->napi);
+		i40e_receive_skb(rx_ring, skb, vlan_tag);
+
+		rx_desc->wb.qword1.status_error_len = 0;
+
+	} while (likely(total_rx_packets < budget));
+
+	u64_stats_update_begin(&rx_ring->syncp);
+	rx_ring->stats.packets += total_rx_packets;
+	rx_ring->stats.bytes += total_rx_bytes;
+	u64_stats_update_end(&rx_ring->syncp);
+	rx_ring->q_vector->rx.total_packets += total_rx_packets;
+	rx_ring->q_vector->rx.total_bytes += total_rx_bytes;
+
+	return total_rx_packets;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1844,9 +2078,19 @@ static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb,
 		return true;
 	}
 
+<<<<<<< HEAD
 	/* if eth_skb_pad returns an error the skb was freed */
 	if (eth_skb_pad(skb))
 		return true;
+=======
+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
+		if (unlikely(rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK)) {
+			i40e_ptp_rx_hwtstamp(vsi->back, skb, (rx_status &
+					   I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+					   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT);
+			rx_ring->last_rx_timestamp = jiffies;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return false;
 }

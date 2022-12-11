@@ -802,6 +802,7 @@ hashlimit_mt_v1(const struct sk_buff *skb, struct xt_action_param *par)
 	struct hashlimit_cfg3 cfg = {};
 	int ret;
 
+<<<<<<< HEAD
 	ret = cfg_copy(&cfg, (void *)&info->cfg, 1);
 	if (ret)
 		return ret;
@@ -853,6 +854,13 @@ static int hashlimit_mt_check_common(const struct xt_mtchk_param *par,
 		cfg->max = HASHLIMIT_MAX_SIZE;
 		pr_info_ratelimited("max too large, truncated to %u\n", cfg->max);
 	}
+=======
+	if (info->cfg.gc_interval == 0 || info->cfg.expire == 0)
+		return -EINVAL;
+	ret = xt_check_proc_name(info->name, sizeof(info->name));
+	if (ret)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (par->family == NFPROTO_IPV4) {
 		if (cfg->srcmask > 32 || cfg->dstmask > 32)
 			return -EINVAL;

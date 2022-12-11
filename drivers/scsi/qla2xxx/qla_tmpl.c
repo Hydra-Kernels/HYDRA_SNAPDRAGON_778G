@@ -330,6 +330,12 @@ qla27xx_fwdt_entry_t263(struct scsi_qla_host *vha,
 		for (i = 0; i < vha->hw->max_req_queues; i++) {
 			struct req_que *req = vha->hw->req_q_map[i];
 
+<<<<<<< HEAD
+=======
+			if (!test_bit(i, vha->hw->req_qid_map))
+				continue;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (req || !buf) {
 				length = req ?
 				    req->length : REQUEST_ENTRY_CNT_24XX;
@@ -344,6 +350,12 @@ qla27xx_fwdt_entry_t263(struct scsi_qla_host *vha,
 		for (i = 0; i < vha->hw->max_rsp_queues; i++) {
 			struct rsp_que *rsp = vha->hw->rsp_q_map[i];
 
+<<<<<<< HEAD
+=======
+			if (!test_bit(i, vha->hw->rsp_qid_map))
+				continue;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (rsp || !buf) {
 				length = rsp ?
 				    rsp->length : RESPONSE_ENTRY_CNT_MQ;
@@ -628,6 +640,12 @@ qla27xx_fwdt_entry_t274(struct scsi_qla_host *vha,
 		for (i = 0; i < vha->hw->max_req_queues; i++) {
 			struct req_que *req = vha->hw->req_q_map[i];
 
+<<<<<<< HEAD
+=======
+			if (!test_bit(i, vha->hw->req_qid_map))
+				continue;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (req || !buf) {
 				qla27xx_insert16(i, buf, len);
 				qla27xx_insert16(1, buf, len);
@@ -640,6 +658,12 @@ qla27xx_fwdt_entry_t274(struct scsi_qla_host *vha,
 		for (i = 0; i < vha->hw->max_rsp_queues; i++) {
 			struct rsp_que *rsp = vha->hw->rsp_q_map[i];
 
+<<<<<<< HEAD
+=======
+			if (!test_bit(i, vha->hw->rsp_qid_map))
+				continue;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (rsp || !buf) {
 				qla27xx_insert16(i, buf, len);
 				qla27xx_insert16(1, buf, len);

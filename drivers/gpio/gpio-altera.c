@@ -278,12 +278,17 @@ static int altera_gpio_probe(struct platform_device *pdev)
 	}
 	altera_gc->interrupt_trigger = reg;
 
+<<<<<<< HEAD
 	altera_gc->irq_chip.name = "altera-gpio";
 	altera_gc->irq_chip.irq_mask     = altera_gpio_irq_mask;
 	altera_gc->irq_chip.irq_unmask   = altera_gpio_irq_unmask;
 	altera_gc->irq_chip.irq_set_type = altera_gpio_irq_set_type;
 	altera_gc->irq_chip.irq_startup  = altera_gpio_irq_startup;
 	altera_gc->irq_chip.irq_shutdown = altera_gpio_irq_mask;
+=======
+	ret = gpiochip_irqchip_add(&altera_gc->mmchip.gc, &altera_irq_chip, 0,
+		handle_bad_irq, IRQ_TYPE_NONE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	girq = &altera_gc->mmchip.gc.irq;
 	girq->chip = &altera_gc->irq_chip;

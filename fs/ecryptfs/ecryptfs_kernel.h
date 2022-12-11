@@ -112,13 +112,21 @@ static inline struct ecryptfs_auth_tok *
 ecryptfs_get_key_payload_data(struct key *key)
 {
 	struct ecryptfs_auth_tok *auth_tok;
+<<<<<<< HEAD
 	struct user_key_payload *ukp;
+=======
+	const struct user_key_payload *ukp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	auth_tok = ecryptfs_get_encrypted_key_payload_data(key);
 	if (auth_tok)
 		return auth_tok;
 
+<<<<<<< HEAD
 	ukp = user_key_payload_locked(key);
+=======
+	ukp = user_key_payload(key);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!ukp)
 		return ERR_PTR(-EKEYREVOKED);
 

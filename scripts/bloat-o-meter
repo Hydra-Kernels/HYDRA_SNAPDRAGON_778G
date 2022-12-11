@@ -74,6 +74,7 @@ def calc(oldfile, newfile, format):
     delta.reverse()
     return grow, shrink, add, remove, up, down, delta, old, new, otot, ntot
 
+<<<<<<< HEAD
 def print_result(symboltype, symbolformat, argc):
     grow, shrink, add, remove, up, down, delta, old, new, otot, ntot = \
     calc(sys.argv[argc - 1], sys.argv[argc], symbolformat)
@@ -100,3 +101,10 @@ elif sys.argv[1] == "-t":
     print_result("Function", "tT", 3)
 else:
     print_result("Function", "tTdDbBrR", 2)
+=======
+print("add/remove: %s/%s grow/shrink: %s/%s up/down: %s/%s (%s)" % \
+      (add, remove, grow, shrink, up, -down, up-down))
+print("%-40s %7s %7s %+7s" % ("function", "old", "new", "delta"))
+for d, n in delta:
+    if d: print("%-40s %7s %7s %+7d" % (n, old.get(n,"-"), new.get(n,"-"), d))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

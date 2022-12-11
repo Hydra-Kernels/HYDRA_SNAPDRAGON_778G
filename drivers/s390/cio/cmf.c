@@ -1118,10 +1118,16 @@ int ccw_set_cmf(struct ccw_device *cdev, int enable)
  * enable_cmf() - switch on the channel measurement for a specific device
  *  @cdev:	The ccw device to be enabled
  *
+<<<<<<< HEAD
  *  Enable channel measurements for @cdev. If this is called on a device
  *  for which channel measurement is already enabled a reset of the
  *  measurement data is triggered.
  *  Returns: %0 for success or a negative error value.
+=======
+ *  Returns %0 for success or a negative error value.
+ *  Note: If this is called on a device for which channel measurement is already
+ *	  enabled a reset of the measurement data is triggered.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *  Context:
  *    non-atomic
  */

@@ -33,6 +33,7 @@ static struct cpuidle_driver powernv_idle_driver = {
 	.owner            = THIS_MODULE,
 };
 
+<<<<<<< HEAD
 static int max_idle_state __read_mostly;
 static struct cpuidle_state *cpuidle_state_table __read_mostly;
 
@@ -67,6 +68,34 @@ static u64 get_snooze_timeout(struct cpuidle_device *dev,
 
 	return default_snooze_timeout;
 }
+=======
+static int max_idle_state;
+static struct cpuidle_state *cpuidle_state_table;
+static u64 default_snooze_timeout;
+static bool snooze_timeout_en;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+static u64 get_snooze_timeout(struct cpuidle_device *dev,
+			      struct cpuidle_driver *drv,
+			      int index)
+{
+	int i;
+
+	if (unlikely(!snooze_timeout_en))
+		return default_snooze_timeout;
+
+	for (i = index + 1; i < drv->state_count; i++) {
+		struct cpuidle_state *s = &drv->states[i];
+		struct cpuidle_state_usage *su = &dev->states_usage[i];
+
+		if (s->disabled || su->disable)
+			continue;
+
+		return s->target_residency * tb_ticks_per_usec;
+	}
+
+	return default_snooze_timeout;
+}
 
 static int snooze_loop(struct cpuidle_device *dev,
 			struct cpuidle_driver *drv,
@@ -76,8 +105,11 @@ static int snooze_loop(struct cpuidle_device *dev,
 
 	set_thread_flag(TIF_POLLING_NRFLAG);
 
+<<<<<<< HEAD
 	local_irq_enable();
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	snooze_exit_time = get_tb() + get_snooze_timeout(dev, drv, index);
 	ppc64_runlatch_off();
 	HMT_very_low();

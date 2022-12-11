@@ -502,6 +502,7 @@ static inline void mmu_notifier_range_init(struct mmu_notifier_range *range,
 	___pmd;								\
 })
 
+<<<<<<< HEAD
 #define pudp_huge_clear_flush_notify(__vma, __haddr, __pud)		\
 ({									\
 	unsigned long ___haddr = __haddr & HPAGE_PUD_MASK;		\
@@ -515,6 +516,8 @@ static inline void mmu_notifier_range_init(struct mmu_notifier_range *range,
 	___pud;								\
 })
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * set_pte_at_notify() sets the pte _after_ running the notifier.
  * This is safe to start by updating the secondary MMUs, because the primary MMU
@@ -628,7 +631,10 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
 #define pmdp_clear_young_notify pmdp_test_and_clear_young
 #define	ptep_clear_flush_notify ptep_clear_flush
 #define pmdp_huge_clear_flush_notify pmdp_huge_clear_flush
+<<<<<<< HEAD
 #define pudp_huge_clear_flush_notify pudp_huge_clear_flush
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define set_pte_at_notify set_pte_at
 
 static inline void mmu_notifier_synchronize(void)

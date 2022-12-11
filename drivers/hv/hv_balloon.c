@@ -671,6 +671,7 @@ static struct notifier_block hv_memory_nb = {
 /* Check if the particular page is backed and can be onlined and online it. */
 static void hv_page_online_one(struct hv_hotadd_state *has, struct page *pg)
 {
+<<<<<<< HEAD
 	if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
 		if (!PageOffline(pg))
 			__SetPageOffline(pg);
@@ -679,13 +680,42 @@ static void hv_page_online_one(struct hv_hotadd_state *has, struct page *pg)
 	if (PageOffline(pg))
 		__ClearPageOffline(pg);
 
+=======
+	unsigned long cur_start_pgp;
+	unsigned long cur_end_pgp;
+	struct hv_hotadd_gap *gap;
+
+	cur_start_pgp = (unsigned long)pfn_to_page(has->covered_start_pfn);
+	cur_end_pgp = (unsigned long)pfn_to_page(has->covered_end_pfn);
+
+	/* The page is not backed. */
+	if (((unsigned long)pg < cur_start_pgp) ||
+	    ((unsigned long)pg >= cur_end_pgp))
+		return;
+
+	/* Check for gaps. */
+	list_for_each_entry(gap, &has->gap_list, list) {
+		cur_start_pgp = (unsigned long)
+			pfn_to_page(gap->start_pfn);
+		cur_end_pgp = (unsigned long)
+			pfn_to_page(gap->end_pfn);
+		if (((unsigned long)pg >= cur_start_pgp) &&
+		    ((unsigned long)pg < cur_end_pgp)) {
+			return;
+		}
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* This frame is currently backed; online the page. */
 	__online_page_set_limits(pg);
 	__online_page_increment_counters(pg);
 	__online_page_free(pg);
+<<<<<<< HEAD
 
 	lockdep_assert_held(&dm_device.ha_lock);
 	dm_device.num_pages_onlined++;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void hv_bring_pgs_online(struct hv_hotadd_state *has,
@@ -693,7 +723,10 @@ static void hv_bring_pgs_online(struct hv_hotadd_state *has,
 {
 	int i;
 
+<<<<<<< HEAD
 	pr_debug("Online %lu pages starting at pfn 0x%lx\n", size, start_pfn);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for (i = 0; i < size; i++)
 		hv_page_online_one(has, pfn_to_page(start_pfn + i));
 }
@@ -772,6 +805,7 @@ static void hv_online_page(struct page *pg, unsigned int order)
 	unsigned long flags;
 	unsigned long pfn = page_to_pfn(pg);
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&dm_device.ha_lock, flags);
 	list_for_each_entry(has, &dm_device.ha_region_list, list) {
 		/* The page belongs to a different HAS. */
@@ -780,6 +814,20 @@ static void hv_online_page(struct page *pg, unsigned int order)
 			continue;
 
 		hv_bring_pgs_online(has, pfn, 1UL << order);
+=======
+	list_for_each(cur, &dm_device.ha_region_list) {
+		has = list_entry(cur, struct hv_hotadd_state, list);
+		cur_start_pgp = (unsigned long)
+			pfn_to_page(has->start_pfn);
+		cur_end_pgp = (unsigned long)pfn_to_page(has->end_pfn);
+
+		/* The page belongs to a different HAS. */
+		if (((unsigned long)pg < cur_start_pgp) ||
+		    ((unsigned long)pg >= cur_end_pgp))
+			continue;
+
+		hv_page_online_one(has, pg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	}
 	spin_unlock_irqrestore(&dm_device.ha_lock, flags);
@@ -808,10 +856,15 @@ static int pfn_covered(unsigned long start_pfn, unsigned long pfn_cnt)
 		 */
 		if (has->covered_end_pfn != start_pfn) {
 			gap = kzalloc(sizeof(struct hv_hotadd_gap), GFP_ATOMIC);
+<<<<<<< HEAD
 			if (!gap) {
 				ret = -ENOMEM;
 				break;
 			}
+=======
+			if (!gap)
+				return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			INIT_LIST_HEAD(&gap->list);
 			gap->start_pfn = has->covered_end_pfn;
@@ -837,12 +890,20 @@ static int pfn_covered(unsigned long start_pfn, unsigned long pfn_cnt)
 			has->end_pfn += new_inc;
 		}
 
+<<<<<<< HEAD
 		ret = 1;
 		break;
+=======
+		return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	spin_unlock_irqrestore(&dm_device.ha_lock, flags);
 
+<<<<<<< HEAD
 	return ret;
+=======
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static unsigned long handle_pg_range(unsigned long pg_start,
@@ -884,6 +945,7 @@ static unsigned long handle_pg_range(unsigned long pg_start,
 			pfn_cnt -= pgs_ol;
 			/*
 			 * Check if the corresponding memory block is already
+<<<<<<< HEAD
 			 * online. It is possible to observe struct pages still
 			 * being uninitialized here so check section instead.
 			 * In case the section is online we need to bring the
@@ -892,6 +954,14 @@ static unsigned long handle_pg_range(unsigned long pg_start,
 			 */
 			if (start_pfn > has->start_pfn &&
 			    online_section_nr(pfn_to_section_nr(start_pfn)))
+=======
+			 * online by checking its last previously backed page.
+			 * In case it is we need to bring rest (which was not
+			 * backed previously) online too.
+			 */
+			if (start_pfn > has->start_pfn &&
+			    !PageReserved(pfn_to_page(start_pfn - 1)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				hv_bring_pgs_online(has, start_pfn, pgs_ol);
 
 		}
@@ -935,7 +1005,10 @@ static unsigned long process_hot_add(unsigned long pg_start,
 {
 	struct hv_hotadd_state *ha_region = NULL;
 	int covered;
+<<<<<<< HEAD
 	unsigned long flags;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (pfn_cnt == 0)
 		return 0;
@@ -1715,9 +1788,15 @@ probe_error:
 static int balloon_remove(struct hv_device *dev)
 {
 	struct hv_dynmem_device *dm = hv_get_drvdata(dev);
+<<<<<<< HEAD
 	struct hv_hotadd_state *has, *tmp;
 	struct hv_hotadd_gap *gap, *tmp_gap;
 	unsigned long flags;
+=======
+	struct list_head *cur, *tmp;
+	struct hv_hotadd_state *has;
+	struct hv_hotadd_gap *gap, *tmp_gap;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (dm->num_pages_ballooned != 0)
 		pr_warn("Ballooned pages: %d\n", dm->num_pages_ballooned);
@@ -1731,8 +1810,13 @@ static int balloon_remove(struct hv_device *dev)
 	unregister_memory_notifier(&hv_memory_nb);
 	restore_online_page_callback(&hv_online_page);
 #endif
+<<<<<<< HEAD
 	spin_lock_irqsave(&dm_device.ha_lock, flags);
 	list_for_each_entry_safe(has, tmp, &dm->ha_region_list, list) {
+=======
+	list_for_each_safe(cur, tmp, &dm->ha_region_list) {
+		has = list_entry(cur, struct hv_hotadd_state, list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		list_for_each_entry_safe(gap, tmp_gap, &has->gap_list, list) {
 			list_del(&gap->list);
 			kfree(gap);

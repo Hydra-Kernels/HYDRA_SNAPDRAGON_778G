@@ -7,7 +7,118 @@
 #ifndef WILC_WLAN_IF_H
 #define WILC_WLAN_IF_H
 
+<<<<<<< HEAD
 #include <linux/netdevice.h>
+=======
+#include <linux/semaphore.h>
+#include "linux_wlan_common.h"
+#include <linux/netdevice.h>
+
+/********************************************
+ *
+ *      Debug Flags
+ *
+ ********************************************/
+
+#define N_INIT			0x00000001
+#define N_ERR			0x00000002
+#define N_TXQ			0x00000004
+#define N_INTR			0x00000008
+#define N_RXQ			0x00000010
+
+/********************************************
+ *
+ *      Host Interface Defines
+ *
+ ********************************************/
+
+#define HIF_SDIO		(0)
+#define HIF_SPI			BIT(0)
+#define HIF_SDIO_GPIO_IRQ	BIT(2)
+
+/********************************************
+ *
+ *      Tx/Rx Buffer Size Defines
+ *
+ ********************************************/
+
+#define CE_TX_BUFFER_SIZE	(64 * 1024)
+#define CE_RX_BUFFER_SIZE	(384 * 1024)
+
+/********************************************
+ *
+ *      Wlan Interface Defines
+ *
+ ********************************************/
+
+typedef struct {
+	u32 read_write:		1;
+	u32 function:		3;
+	u32 raw:		1;
+	u32 address:		17;
+	u32 data:		8;
+} sdio_cmd52_t;
+
+typedef struct {
+	/* struct { */
+	u32 read_write:		1;
+	u32 function:		3;
+	u32 block_mode:		1;
+	u32 increment:		1;
+	u32 address:		17;
+	u32 count:		9;
+	/* } bit; */
+	u8 *buffer;
+	u32 block_size;
+} sdio_cmd53_t;
+
+typedef struct {
+	int io_type;
+	int (*io_init)(void *);
+	void (*io_deinit)(void *);
+	union {
+		struct {
+			int (*sdio_cmd52)(sdio_cmd52_t *);
+			int (*sdio_cmd53)(sdio_cmd53_t *);
+			int (*sdio_set_max_speed)(void);
+			int (*sdio_set_default_speed)(void);
+		} sdio;
+		struct {
+			int (*spi_max_speed)(void);
+			int (*spi_tx)(u8 *, u32);
+			int (*spi_rx)(u8 *, u32);
+			int (*spi_trx)(u8 *, u8 *, u32);
+		} spi;
+	} u;
+} wilc_wlan_io_func_t;
+
+#define WILC_MAC_INDICATE_STATUS	0x1
+#define WILC_MAC_STATUS_INIT		-1
+#define WILC_MAC_STATUS_READY		0
+#define WILC_MAC_STATUS_CONNECT		1
+
+#define WILC_MAC_INDICATE_SCAN		0x2
+
+typedef struct {
+	void *os_private;
+} wilc_wlan_os_context_t;
+
+typedef struct {
+	wilc_wlan_os_context_t os_context;
+	wilc_wlan_io_func_t io_func;
+} wilc_wlan_inp_t;
+
+struct tx_complete_data {
+	int size;
+	void *buff;
+	u8 *pBssid;
+	struct sk_buff *skb;
+};
+
+typedef void (*wilc_tx_complete_func_t)(void *, int);
+
+#define WILC_TX_ERR_NO_BUF	(-2)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /********************************************
  *

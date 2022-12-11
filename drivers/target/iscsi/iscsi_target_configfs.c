@@ -1467,6 +1467,38 @@ static int lio_tpg_check_prot_fabric_only(
  * This function calls iscsit_inc_session_usage_count() on the
  * struct iscsi_session in question.
  */
+<<<<<<< HEAD
+=======
+static int lio_tpg_shutdown_session(struct se_session *se_sess)
+{
+	struct iscsi_session *sess = se_sess->fabric_sess_ptr;
+	struct se_portal_group *se_tpg = &sess->tpg->tpg_se_tpg;
+
+	spin_lock_bh(&se_tpg->session_lock);
+	spin_lock(&sess->conn_lock);
+	if (atomic_read(&sess->session_fall_back_to_erl0) ||
+	    atomic_read(&sess->session_logout) ||
+	    (sess->time2retain_timer_flags & ISCSI_TF_EXPIRED)) {
+		spin_unlock(&sess->conn_lock);
+		spin_unlock_bh(&se_tpg->session_lock);
+		return 0;
+	}
+	atomic_set(&sess->session_reinstatement, 1);
+	atomic_set(&sess->session_fall_back_to_erl0, 1);
+	spin_unlock(&sess->conn_lock);
+
+	iscsit_stop_time2retain_timer(sess);
+	spin_unlock_bh(&se_tpg->session_lock);
+
+	iscsit_stop_session(sess, 1, 1);
+	return 1;
+}
+
+/*
+ * Calls iscsit_dec_session_usage_count() as inverse of
+ * lio_tpg_shutdown_session()
+ */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void lio_tpg_close_session(struct se_session *se_sess)
 {
 	struct iscsi_session *sess = se_sess->fabric_sess_ptr;

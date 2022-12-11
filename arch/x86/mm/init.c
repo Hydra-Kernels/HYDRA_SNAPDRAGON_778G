@@ -3,10 +3,16 @@
 #include <linux/ioport.h>
 #include <linux/swap.h>
 #include <linux/memblock.h>
+<<<<<<< HEAD
 #include <linux/swapfile.h>
 #include <linux/swapops.h>
 #include <linux/kmemleak.h>
 #include <linux/sched/task.h>
+=======
+#include <linux/bootmem.h>	/* for max_low_pfn */
+#include <linux/swapfile.h>
+#include <linux/swapops.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <asm/set_memory.h>
 #include <asm/e820/api.h>
@@ -187,8 +193,12 @@ static void __init probe_page_size_mask(void)
 		cr4_set_bits_and_update_boot(X86_CR4_PSE);
 
 	/* Enable PGE if available */
+<<<<<<< HEAD
 	__supported_pte_mask &= ~_PAGE_GLOBAL;
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
+=======
+	if (cpu_has_pge && !kaiser_enabled) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		cr4_set_bits_and_update_boot(X86_CR4_PGE);
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
@@ -750,9 +760,13 @@ void __init poking_init(void)
  */
 int devmem_is_allowed(unsigned long pagenr)
 {
+<<<<<<< HEAD
 	if (region_intersects(PFN_PHYS(pagenr), PAGE_SIZE,
 				IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE)
 			!= REGION_DISJOINT) {
+=======
+	if (page_is_ram(pagenr)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * For disallowed memory regions in the low 1MB range,
 		 * request that the page be shown as all zeros.
@@ -949,9 +963,15 @@ void __init zone_sizes_init(void)
 	free_area_init_nodes(max_zone_pfns);
 }
 
+<<<<<<< HEAD
 __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.loaded_mm = &init_mm,
 	.next_asid = 1,
+=======
+DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = {
+	.active_mm = &init_mm,
+	.state = 0,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.cr4 = ~0UL,	/* fail hard if we screw up cr4 shadow initialization */
 };
 EXPORT_PER_CPU_SYMBOL(cpu_tlbstate);
@@ -972,9 +992,15 @@ unsigned long max_swapfile_size(void)
 
 	pages = generic_max_swapfile_size();
 
+<<<<<<< HEAD
 	if (boot_cpu_has_bug(X86_BUG_L1TF) && l1tf_mitigation != L1TF_MITIGATION_OFF) {
 		/* Limit the swap file size to MAX_PA/2 for L1TF workaround */
 		unsigned long long l1tf_limit = l1tf_pfn_limit();
+=======
+	if (boot_cpu_has_bug(X86_BUG_L1TF)) {
+		/* Limit the swap file size to MAX_PA/2 for L1TF workaround */
+		unsigned long l1tf_limit = l1tf_pfn_limit() + 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * We encode swap offsets also with 3 bits below those for pfn
 		 * which makes the usable limit higher.
@@ -982,7 +1008,11 @@ unsigned long max_swapfile_size(void)
 #if CONFIG_PGTABLE_LEVELS > 2
 		l1tf_limit <<= PAGE_SHIFT - SWP_OFFSET_FIRST_BIT;
 #endif
+<<<<<<< HEAD
 		pages = min_t(unsigned long long, l1tf_limit, pages);
+=======
+		pages = min_t(unsigned long, l1tf_limit, pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return pages;
 }

@@ -57,7 +57,11 @@ ucs2_utf8size(const ucs2_char_t *src)
 	unsigned long i;
 	unsigned long j = 0;
 
+<<<<<<< HEAD
 	for (i = 0; src[i]; i++) {
+=======
+	for (i = 0; i < ucs2_strlen(src); i++) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		u16 c = src[i];
 
 		if (c >= 0x800)
@@ -112,5 +116,8 @@ ucs2_as_utf8(u8 *dest, const ucs2_char_t *src, unsigned long maxlength)
 	return j;
 }
 EXPORT_SYMBOL(ucs2_as_utf8);
+<<<<<<< HEAD
 
 MODULE_LICENSE("GPL v2");
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

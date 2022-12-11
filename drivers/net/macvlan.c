@@ -1231,6 +1231,18 @@ static void macvlan_port_destroy(struct net_device *dev)
 	 * but we need to cancel it and purge left skbs if any.
 	 */
 	cancel_work_sync(&port->bc_work);
+<<<<<<< HEAD
+=======
+
+	while ((skb = __skb_dequeue(&port->bc_queue))) {
+		const struct macvlan_dev *src = MACVLAN_SKB_CB(skb)->src;
+
+		if (src)
+			dev_put(src->dev);
+
+		kfree_skb(skb);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while ((skb = __skb_dequeue(&port->bc_queue))) {
 		const struct macvlan_dev *src = MACVLAN_SKB_CB(skb)->src;

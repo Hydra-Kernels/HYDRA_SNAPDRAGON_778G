@@ -190,7 +190,47 @@ static void edac_pci_workq_function(struct work_struct *work_req)
 	else
 		delay = msecs_to_jiffies(msec);
 
+<<<<<<< HEAD
 	edac_queue_work(&pci->work, delay);
+=======
+	INIT_DELAYED_WORK(&pci->work, edac_pci_workq_function);
+	queue_delayed_work(edac_workqueue, &pci->work,
+			msecs_to_jiffies(edac_pci_get_poll_msec()));
+}
+
+/*
+ * edac_pci_workq_teardown()
+ * 	stop the workq processing on this edac_pci instance
+ */
+static void edac_pci_workq_teardown(struct edac_pci_ctl_info *pci)
+{
+	edac_dbg(0, "\n");
+
+	pci->op_state = OP_OFFLINE;
+
+	cancel_delayed_work_sync(&pci->work);
+	flush_workqueue(edac_workqueue);
+}
+
+/*
+ * edac_pci_reset_delay_period
+ *
+ *	called with a new period value for the workq period
+ *	a) stop current workq timer
+ *	b) restart workq timer with new value
+ */
+void edac_pci_reset_delay_period(struct edac_pci_ctl_info *pci,
+				 unsigned long value)
+{
+	edac_dbg(0, "\n");
+
+	edac_pci_workq_teardown(pci);
+
+	/* need to lock for the setup */
+	mutex_lock(&edac_pci_ctls_mutex);
+
+	edac_pci_workq_setup(pci, value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_unlock(&edac_pci_ctls_mutex);
 }

@@ -1631,6 +1631,7 @@ retry:
 		return 0;
 
 	spin_lock(&hugetlb_lock);
+<<<<<<< HEAD
 	if (!PageHuge(page)) {
 		rc = 0;
 		goto out;
@@ -1676,6 +1677,16 @@ retry:
 		h->max_huge_pages--;
 		update_and_free_page(h, head);
 		rc = 0;
+=======
+	if (PageHuge(page) && !page_count(page)) {
+		struct page *head = compound_head(page);
+		struct hstate *h = page_hstate(head);
+		int nid = page_to_nid(head);
+		list_del(&head->lru);
+		h->free_huge_pages--;
+		h->free_huge_pages_node[nid]--;
+		update_and_free_page(h, head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 out:
 	spin_unlock(&hugetlb_lock);
@@ -1687,8 +1698,11 @@ out:
  * make specified memory blocks removable from the system.
  * Note that this will dissolve a free gigantic hugepage completely, if any
  * part of it lies within the given range.
+<<<<<<< HEAD
  * Also note that if dissolve_free_huge_page() returns with an error, all
  * free hugepages that were dissolved before that error are lost.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 int dissolve_free_huge_pages(unsigned long start_pfn, unsigned long end_pfn)
 {
@@ -1699,11 +1713,56 @@ int dissolve_free_huge_pages(unsigned long start_pfn, unsigned long end_pfn)
 	if (!hugepages_supported())
 		return rc;
 
+<<<<<<< HEAD
 	for (pfn = start_pfn; pfn < end_pfn; pfn += 1 << minimum_order) {
 		page = pfn_to_page(pfn);
 		rc = dissolve_free_huge_page(page);
 		if (rc)
 			break;
+=======
+	for (pfn = start_pfn; pfn < end_pfn; pfn += 1 << minimum_order)
+		dissolve_free_huge_page(pfn_to_page(pfn));
+}
+
+/*
+ * There are 3 ways this can get called:
+ * 1. With vma+addr: we use the VMA's memory policy
+ * 2. With !vma, but nid=NUMA_NO_NODE:  We try to allocate a huge
+ *    page from any node, and let the buddy allocator itself figure
+ *    it out.
+ * 3. With !vma, but nid!=NUMA_NO_NODE.  We allocate a huge page
+ *    strictly from 'nid'
+ */
+static struct page *__hugetlb_alloc_buddy_huge_page(struct hstate *h,
+		struct vm_area_struct *vma, unsigned long addr, int nid)
+{
+	int order = huge_page_order(h);
+	gfp_t gfp = htlb_alloc_mask(h)|__GFP_COMP|__GFP_REPEAT|__GFP_NOWARN;
+	unsigned int cpuset_mems_cookie;
+
+	/*
+	 * We need a VMA to get a memory policy.  If we do not
+	 * have one, we use the 'nid' argument.
+	 *
+	 * The mempolicy stuff below has some non-inlined bits
+	 * and calls ->vm_ops.  That makes it hard to optimize at
+	 * compile-time, even when NUMA is off and it does
+	 * nothing.  This helps the compiler optimize it out.
+	 */
+	if (!IS_ENABLED(CONFIG_NUMA) || !vma) {
+		/*
+		 * If a specific node is requested, make sure to
+		 * get memory from there, but only when a node
+		 * is explicitly specified.
+		 */
+		if (nid != NUMA_NO_NODE)
+			gfp |= __GFP_THISNODE;
+		/*
+		 * Make sure to call something that can handle
+		 * nid=NUMA_NO_NODE
+		 */
+		return alloc_pages_node(nid, gfp, order);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return rc;
@@ -2546,8 +2605,15 @@ static int set_max_huge_pages(struct hstate *h, unsigned long count, int nid,
 		/* yield cpu to avoid soft lockup */
 		cond_resched();
 
+<<<<<<< HEAD
 		ret = alloc_pool_huge_page(h, nodes_allowed,
 						node_alloc_noretry);
+=======
+		if (hstate_is_gigantic(h))
+			ret = alloc_fresh_gigantic_page(h, nodes_allowed);
+		else
+			ret = alloc_fresh_huge_page(h, nodes_allowed);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_lock(&hugetlb_lock);
 		if (!ret)
 			goto out;

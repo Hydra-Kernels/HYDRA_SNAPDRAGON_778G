@@ -151,10 +151,18 @@ struct dino_device
 #endif
 };
 
+<<<<<<< HEAD
 static inline struct dino_device *DINO_DEV(struct pci_hba_data *hba)
 {
 	return container_of(hba, struct dino_device, hba);
 }
+=======
+/* Looks nice and keeps the compiler happy */
+#define DINO_DEV(d) ({				\
+	void *__pdata = d;			\
+	BUG_ON(!__pdata);			\
+	(struct dino_device *)__pdata; })
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Check if PCI device is behind a Card-mode Dino. */
 static int pci_dev_is_behind_card_dino(struct pci_dev *dev)

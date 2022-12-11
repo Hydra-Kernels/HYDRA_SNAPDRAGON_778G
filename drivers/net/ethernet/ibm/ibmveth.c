@@ -1227,6 +1227,7 @@ static void ibmveth_rx_mss_helper(struct sk_buff *skb, u16 mss, int lrg_pkt)
 	}
 }
 
+<<<<<<< HEAD
 static void ibmveth_rx_csum_helper(struct sk_buff *skb,
 				   struct ibmveth_adapter *adapter)
 {
@@ -1292,6 +1293,8 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
 	}
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int ibmveth_poll(struct napi_struct *napi, int budget)
 {
 	struct ibmveth_adapter *adapter =
@@ -1299,6 +1302,10 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
 	struct net_device *netdev = adapter->netdev;
 	int frames_processed = 0;
 	unsigned long lpar_rc;
+<<<<<<< HEAD
+=======
+	struct iphdr *iph;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 mss = 0;
 
 	while (frames_processed < budget) {
@@ -1317,7 +1324,10 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
 			int offset = ibmveth_rxq_frame_offset(adapter);
 			int csum_good = ibmveth_rxq_csum_good(adapter);
 			int lrg_pkt = ibmveth_rxq_large_packet(adapter);
+<<<<<<< HEAD
 			__sum16 iph_check = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			skb = ibmveth_rxq_get_buffer(adapter);
 
@@ -1371,7 +1381,26 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
 
 			if (csum_good) {
 				skb->ip_summed = CHECKSUM_UNNECESSARY;
+<<<<<<< HEAD
 				ibmveth_rx_csum_helper(skb, adapter);
+=======
+				if (be16_to_cpu(skb->protocol) == ETH_P_IP) {
+					iph = (struct iphdr *)skb->data;
+
+					/* If the IP checksum is not offloaded and if the packet
+					 *  is large send, the checksum must be rebuilt.
+					 */
+					if (iph->check == 0xffff) {
+						iph->check = 0;
+						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+					}
+				}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+			}
+
+			if (length > netdev->mtu + ETH_HLEN) {
+				ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+				adapter->rx_large_packets++;
 			}
 
 			napi_gro_receive(napi, skb);	/* send it up */

@@ -226,10 +226,13 @@ struct x86_emulate_ops {
 
 	unsigned (*get_hflags)(struct x86_emulate_ctxt *ctxt);
 	void (*set_hflags)(struct x86_emulate_ctxt *ctxt, unsigned hflags);
+<<<<<<< HEAD
 	int (*pre_leave_smm)(struct x86_emulate_ctxt *ctxt,
 			     const char *smstate);
 	void (*post_leave_smm)(struct x86_emulate_ctxt *ctxt);
 	int (*set_xcr)(struct x86_emulate_ctxt *ctxt, u32 index, u64 xcr);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 typedef u32 __attribute__((vector_size(16))) sse128_t;

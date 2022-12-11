@@ -137,6 +137,7 @@ int __ip6_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 	ipv6_hdr(skb)->payload_len = htons(len);
 	IP6CB(skb)->nhoff = offsetof(struct ipv6hdr, nexthdr);
 
+<<<<<<< HEAD
 	/* if egress device is enslaved to an L3 master device pass the
 	 * skb to its handler for processing
 	 */
@@ -144,6 +145,8 @@ int __ip6_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 	if (unlikely(!skb))
 		return 0;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb->protocol = htons(ETH_P_IPV6);
 
 	return nf_hook(NFPROTO_IPV6, NF_INET_LOCAL_OUT,

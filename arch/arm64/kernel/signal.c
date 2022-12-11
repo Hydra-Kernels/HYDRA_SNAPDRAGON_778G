@@ -504,8 +504,11 @@ static int restore_sigframe(struct pt_regs *regs,
 	forget_syscall(regs);
 
 	err |= !valid_user_regs(&regs->user_regs, current);
+<<<<<<< HEAD
 	if (err == 0)
 		err = parse_user_sigframe(&user, sf);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (err == 0) {
 		if (!user.fpsimd)

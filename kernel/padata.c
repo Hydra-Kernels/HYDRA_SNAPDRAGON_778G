@@ -184,6 +184,7 @@ static struct padata_priv *padata_find_next(struct parallel_data *pd,
 	reorder = &next_queue->reorder;
 
 	spin_lock(&reorder->lock);
+<<<<<<< HEAD
 	if (list_empty(&reorder->list)) {
 		spin_unlock(&reorder->lock);
 		return NULL;
@@ -205,7 +206,21 @@ static struct padata_priv *padata_find_next(struct parallel_data *pd,
 		atomic_dec(&pd->reorder_objects);
 		++pd->processed;
 		pd->cpu = cpumask_next_wrap(cpu, pd->cpumask.pcpu, -1, false);
+=======
+	if (!list_empty(&reorder->list)) {
+		padata = list_entry(reorder->list.next,
+				    struct padata_priv, list);
+
+		list_del_init(&padata->list);
+		atomic_dec(&pd->reorder_objects);
+
+		pd->processed++;
+
+		spin_unlock(&reorder->lock);
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
+	spin_unlock(&reorder->lock);
 
 	spin_unlock(&reorder->lock);
 	return padata;
@@ -378,8 +393,16 @@ static int pd_setup_cpumasks(struct parallel_data *pd,
 	if (!alloc_cpumask_var(&pd->cpumask.cbcpu, GFP_KERNEL))
 		goto free_pcpu_mask;
 
+<<<<<<< HEAD
 	cpumask_copy(pd->cpumask.pcpu, pcpumask);
 	cpumask_copy(pd->cpumask.cbcpu, cbcpumask);
+=======
+	cpumask_and(pd->cpumask.pcpu, pcpumask, cpu_online_mask);
+	if (!alloc_cpumask_var(&pd->cpumask.cbcpu, GFP_KERNEL)) {
+		free_cpumask_var(pd->cpumask.pcpu);
+		return -ENOMEM;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

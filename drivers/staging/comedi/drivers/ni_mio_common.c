@@ -2751,12 +2751,23 @@ static int ni_ao_arm(struct comedi_device *dev,
 	static const int timeout = 1000;
 
 	/*
+<<<<<<< HEAD
 	 * Prevent ao from doing things like trying to allocate the ao dma
 	 * channel multiple times.
 	 */
 	if (!devpriv->ao_needs_arming) {
 		dev_dbg(dev->class_dev, "%s: device does not need arming!\n",
 			__func__);
+=======
+	 * Require trig_num == cmd->start_arg when cmd->start_src == TRIG_INT.
+	 * For backwards compatibility, also allow trig_num == 0 when
+	 * cmd->start_src != TRIG_INT (i.e. when cmd->start_src == TRIG_EXT);
+	 * in that case, the internal trigger is being used as a pre-trigger
+	 * before the external trigger.
+	 */
+	if (!(trig_num == cmd->start_arg ||
+	      (trig_num == 0 && cmd->start_src != TRIG_INT)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 

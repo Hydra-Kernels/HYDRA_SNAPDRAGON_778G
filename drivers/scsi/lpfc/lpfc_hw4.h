@@ -1435,6 +1435,7 @@ struct lpfc_mbx_wq_create {
 #define lpfc_mbx_wq_create_page_size_MASK	0x000000FF
 #define lpfc_mbx_wq_create_page_size_WORD	word1
 #define LPFC_WQ_PAGE_SIZE_4096	0x1
+<<<<<<< HEAD
 #define lpfc_mbx_wq_create_dpp_req_SHIFT	15
 #define lpfc_mbx_wq_create_dpp_req_MASK		0x00000001
 #define lpfc_mbx_wq_create_dpp_req_WORD		word1
@@ -1444,6 +1445,8 @@ struct lpfc_mbx_wq_create {
 #define lpfc_mbx_wq_create_toe_SHIFT		13
 #define lpfc_mbx_wq_create_toe_MASK		0x00000001
 #define lpfc_mbx_wq_create_toe_WORD		word1
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define lpfc_mbx_wq_create_wqe_size_SHIFT	8
 #define lpfc_mbx_wq_create_wqe_size_MASK	0x0000000F
 #define lpfc_mbx_wq_create_wqe_size_WORD	word1
@@ -1539,6 +1542,7 @@ struct rq_context {
 #define lpfc_rq_context_page_size_MASK	0x000000FF
 #define lpfc_rq_context_page_size_WORD	word0
 #define	LPFC_RQ_PAGE_SIZE_4096	0x1
+<<<<<<< HEAD
 	uint32_t word1;
 #define lpfc_rq_context_data_size_SHIFT	16		/* Version 2 Only */
 #define lpfc_rq_context_data_size_MASK	0x0000FFFF
@@ -1546,6 +1550,9 @@ struct rq_context {
 #define lpfc_rq_context_hdr_size_SHIFT	0		/* Version 2 Only */
 #define lpfc_rq_context_hdr_size_MASK	0x0000FFFF
 #define lpfc_rq_context_hdr_size_WORD	word1
+=======
+	uint32_t reserved1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	uint32_t word2;
 #define lpfc_rq_context_cq_id_SHIFT	16
 #define lpfc_rq_context_cq_id_MASK	0x000003FF

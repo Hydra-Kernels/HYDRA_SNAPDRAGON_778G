@@ -139,6 +139,18 @@ nvkm_timer_alarm(struct nvkm_timer *tmr, u32 nsec, struct nvkm_alarm *alarm)
 		}
 	}
 	spin_unlock_irqrestore(&tmr->lock, flags);
+<<<<<<< HEAD
+=======
+}
+
+void
+nvkm_timer_alarm_cancel(struct nvkm_timer *tmr, struct nvkm_alarm *alarm)
+{
+	unsigned long flags;
+	spin_lock_irqsave(&tmr->lock, flags);
+	list_del_init(&alarm->head);
+	spin_unlock_irqrestore(&tmr->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void

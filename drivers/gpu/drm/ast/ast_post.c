@@ -382,10 +382,15 @@ void ast_post_gpu(struct drm_device *dev)
 	ast_set_def_ext_reg(dev);
 
 	if (ast->config_mode == ast_use_p2a) {
+<<<<<<< HEAD
 		if (ast->chip == AST2500)
 			ast_post_chip_2500(dev);
 		else if (ast->chip == AST2300 || ast->chip == AST2400)
 			ast_post_chip_2300(dev);
+=======
+		if (ast->chip == AST2300 || ast->chip == AST2400)
+			ast_init_dram_2300(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		else
 			ast_init_dram_reg(dev);
 

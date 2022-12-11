@@ -121,7 +121,11 @@ static int xenvif_poll(struct napi_struct *napi, int budget)
 	work_done = xenvif_tx_action(queue, budget);
 
 	if (work_done < budget) {
+<<<<<<< HEAD
 		napi_complete_done(napi, work_done);
+=======
+		napi_complete(napi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* If the queue is rate-limited, it shall be
 		 * rescheduled in the timer callback.
 		 */

@@ -4,7 +4,10 @@
 #ifdef __KERNEL__
 
 #include <asm/feature-fixups.h>
+<<<<<<< HEAD
 #include <asm/asm-const.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifndef __ASSEMBLY__
 extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;

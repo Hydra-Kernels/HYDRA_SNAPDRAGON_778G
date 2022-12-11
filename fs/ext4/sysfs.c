@@ -239,6 +239,7 @@ ATTRIBUTE_GROUPS(ext4);
 EXT4_ATTR_FEATURE(lazy_itable_init);
 EXT4_ATTR_FEATURE(batched_discard);
 EXT4_ATTR_FEATURE(meta_bg_resize);
+<<<<<<< HEAD
 #ifdef CONFIG_FS_ENCRYPTION
 EXT4_ATTR_FEATURE(encryption);
 EXT4_ATTR_FEATURE(test_dummy_encryption_v2);
@@ -248,6 +249,10 @@ EXT4_ATTR_FEATURE(casefold);
 #endif
 #ifdef CONFIG_FS_VERITY
 EXT4_ATTR_FEATURE(verity);
+=======
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+EXT4_ATTR_FEATURE(encryption);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 EXT4_ATTR_FEATURE(metadata_csum_seed);
 
@@ -255,6 +260,7 @@ static struct attribute *ext4_feat_attrs[] = {
 	ATTR_LIST(lazy_itable_init),
 	ATTR_LIST(batched_discard),
 	ATTR_LIST(meta_bg_resize),
+<<<<<<< HEAD
 #ifdef CONFIG_FS_ENCRYPTION
 	ATTR_LIST(encryption),
 	ATTR_LIST(test_dummy_encryption_v2),
@@ -264,6 +270,10 @@ static struct attribute *ext4_feat_attrs[] = {
 #endif
 #ifdef CONFIG_FS_VERITY
 	ATTR_LIST(verity),
+=======
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+	ATTR_LIST(encryption),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	ATTR_LIST(metadata_csum_seed),
 	NULL,

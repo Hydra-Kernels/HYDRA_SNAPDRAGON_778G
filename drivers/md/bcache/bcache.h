@@ -451,7 +451,11 @@ struct cache {
 	 * until a gc finishes - otherwise we could pointlessly burn a ton of
 	 * cpu
 	 */
+<<<<<<< HEAD
 	unsigned int		invalidate_needs_gc;
+=======
+	unsigned		invalidate_needs_gc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	bool			discard; /* Get rid of? */
 
@@ -1006,11 +1010,18 @@ void bcache_write_super(struct cache_set *c);
 
 int bch_flash_dev_create(struct cache_set *c, uint64_t size);
 
+<<<<<<< HEAD
 int bch_cached_dev_attach(struct cached_dev *dc, struct cache_set *c,
 			  uint8_t *set_uuid);
 void bch_cached_dev_detach(struct cached_dev *dc);
 int bch_cached_dev_run(struct cached_dev *dc);
 void bcache_device_stop(struct bcache_device *d);
+=======
+int bch_cached_dev_attach(struct cached_dev *, struct cache_set *, uint8_t *);
+void bch_cached_dev_detach(struct cached_dev *);
+void bch_cached_dev_run(struct cached_dev *);
+void bcache_device_stop(struct bcache_device *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 void bch_cache_set_unregister(struct cache_set *c);
 void bch_cache_set_stop(struct cache_set *c);

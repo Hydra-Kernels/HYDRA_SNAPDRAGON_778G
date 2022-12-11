@@ -2272,6 +2272,7 @@ static int usba_udc_probe(struct platform_device *pdev)
 	}
 	udc->irq = irq;
 
+<<<<<<< HEAD
 	if (udc->vbus_pin) {
 		irq_set_status_flags(gpiod_to_irq(udc->vbus_pin), IRQ_NOAUTOEN);
 		ret = devm_request_threaded_irq(&pdev->dev,
@@ -2283,6 +2284,25 @@ static int usba_udc_probe(struct platform_device *pdev)
 			dev_warn(&udc->pdev->dev,
 				 "failed to request vbus irq; "
 				 "assuming always on\n");
+=======
+	if (gpio_is_valid(udc->vbus_pin)) {
+		if (!devm_gpio_request(&pdev->dev, udc->vbus_pin, "atmel_usba_udc")) {
+			irq_set_status_flags(gpio_to_irq(udc->vbus_pin),
+					IRQ_NOAUTOEN);
+			ret = devm_request_threaded_irq(&pdev->dev,
+					gpio_to_irq(udc->vbus_pin), NULL,
+					usba_vbus_irq_thread, USBA_VBUS_IRQFLAGS,
+					"atmel_usba_udc", udc);
+			if (ret) {
+				udc->vbus_pin = -ENODEV;
+				dev_warn(&udc->pdev->dev,
+					 "failed to request vbus irq; "
+					 "assuming always on\n");
+			}
+		} else {
+			/* gpio_request fail so use -EINVAL for gpio_is_valid */
+			udc->vbus_pin = -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 

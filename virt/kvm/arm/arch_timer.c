@@ -124,8 +124,12 @@ static u64 kvm_timer_compute_delta(struct arch_timer_context *timer_ctx)
 {
 	u64 cval, now;
 
+<<<<<<< HEAD
 	cval = timer_ctx->cnt_cval;
 	now = kvm_phys_timer_read() - timer_ctx->cntvoff;
+=======
+	vcpu = container_of(work, struct kvm_vcpu, arch.timer_cpu.expired);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (now < cval) {
 		u64 ns;
@@ -140,6 +144,7 @@ static u64 kvm_timer_compute_delta(struct arch_timer_context *timer_ctx)
 	return 0;
 }
 
+<<<<<<< HEAD
 static bool kvm_timer_irq_can_fire(struct arch_timer_context *timer_ctx)
 {
 	WARN_ON(timer_ctx && timer_ctx->loaded);
@@ -173,12 +178,39 @@ static u64 kvm_timer_earliest_exp(struct kvm_vcpu *vcpu)
 }
 
 static enum hrtimer_restart kvm_bg_timer_expire(struct hrtimer *hrt)
+=======
+static u64 kvm_timer_compute_delta(struct kvm_vcpu *vcpu)
+{
+	cycle_t cval, now;
+
+	cval = vcpu->arch.timer_cpu.cntv_cval;
+	now = kvm_phys_timer_read() - vcpu->kvm->arch.timer.cntvoff;
+
+	if (now < cval) {
+		u64 ns;
+
+		ns = cyclecounter_cyc2ns(timecounter->cc,
+					 cval - now,
+					 timecounter->mask,
+					 &timecounter->frac);
+		return ns;
+	}
+
+	return 0;
+}
+
+static enum hrtimer_restart kvm_timer_expire(struct hrtimer *hrt)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct arch_timer_cpu *timer;
 	struct kvm_vcpu *vcpu;
 	u64 ns;
 
+<<<<<<< HEAD
 	timer = container_of(hrt, struct arch_timer_cpu, bg_timer);
+=======
+	timer = container_of(hrt, struct arch_timer_cpu, timer);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vcpu = container_of(timer, struct kvm_vcpu, arch.timer_cpu);
 
 	/*
@@ -186,13 +218,21 @@ static enum hrtimer_restart kvm_bg_timer_expire(struct hrtimer *hrt)
 	 * PoV (NTP on the host may have forced it to expire
 	 * early). If we should have slept longer, restart it.
 	 */
+<<<<<<< HEAD
 	ns = kvm_timer_earliest_exp(vcpu);
+=======
+	ns = kvm_timer_compute_delta(vcpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(ns)) {
 		hrtimer_forward_now(hrt, ns_to_ktime(ns));
 		return HRTIMER_RESTART;
 	}
 
+<<<<<<< HEAD
 	kvm_vcpu_wake_up(vcpu);
+=======
+	queue_work(wqueue, &timer->expired);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return HRTIMER_NORESTART;
 }
 
@@ -276,7 +316,11 @@ bool kvm_timer_is_pending(struct kvm_vcpu *vcpu)
 /*
  * Reflect the timer output level into the kvm_run structure
  */
+<<<<<<< HEAD
 void kvm_timer_update_run(struct kvm_vcpu *vcpu)
+=======
+static int kvm_timer_update_state(struct kvm_vcpu *vcpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct arch_timer_context *vtimer = vcpu_vtimer(vcpu);
 	struct arch_timer_context *ptimer = vcpu_ptimer(vcpu);
@@ -326,6 +370,7 @@ static void timer_emulate(struct arch_timer_context *ctx)
 	 * scheduled for the future.  If the timer cannot fire at all,
 	 * then we also don't need a soft timer.
 	 */
+<<<<<<< HEAD
 	if (!kvm_timer_irq_can_fire(ctx)) {
 		soft_timer_cancel(&ctx->hrtimer);
 		return;
@@ -376,6 +421,15 @@ static void timer_save_state(struct arch_timer_context *ctx)
 	ctx->loaded = false;
 out:
 	local_irq_restore(flags);
+=======
+	if (!vgic_initialized(vcpu->kvm))
+		return -ENODEV;
+
+	if (kvm_timer_should_fire(vcpu) != timer->irq.level)
+		kvm_timer_update_irq(vcpu, !timer->irq.level);
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -385,8 +439,12 @@ out:
  */
 static void kvm_timer_blocking(struct kvm_vcpu *vcpu)
 {
+<<<<<<< HEAD
 	struct arch_timer_cpu *timer = vcpu_timer(vcpu);
 	struct timer_map map;
+=======
+	struct arch_timer_cpu *timer = &vcpu->arch.timer_cpu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	get_timer_map(vcpu, &map);
 
@@ -399,11 +457,16 @@ static void kvm_timer_blocking(struct kvm_vcpu *vcpu)
 	    !kvm_timer_irq_can_fire(map.emul_ptimer))
 		return;
 
+<<<<<<< HEAD
 	/*
 	 * At least one guest time will expire. Schedule a background timer.
 	 * Set the earliest expiration time among the guest timers.
 	 */
 	soft_timer_start(&timer->bg_timer, kvm_timer_earliest_exp(vcpu));
+=======
+	/*  The timer has not yet expired, schedule a background timer */
+	timer_arm(timer, kvm_timer_compute_delta(vcpu));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void kvm_timer_unblocking(struct kvm_vcpu *vcpu)
@@ -419,6 +482,7 @@ static void timer_restore_state(struct arch_timer_context *ctx)
 	enum kvm_arch_timers index = arch_timer_ctx_index(ctx);
 	unsigned long flags;
 
+<<<<<<< HEAD
 	if (!timer->enabled)
 		return;
 
@@ -453,6 +517,10 @@ static void set_cntvoff(u64 cntvoff)
 {
 	u32 low = lower_32_bits(cntvoff);
 	u32 high = upper_32_bits(cntvoff);
+=======
+	if (kvm_timer_update_state(vcpu))
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Since kvm_call_hyp doesn't fully support the ARM PCS especially on

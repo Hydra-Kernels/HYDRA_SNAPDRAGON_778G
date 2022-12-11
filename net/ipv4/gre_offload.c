@@ -223,7 +223,10 @@ static struct sk_buff *gre_gro_receive(struct list_head *head,
 	skb_gro_postpull_rcsum(skb, greh, grehlen);
 
 	pp = call_gro_receive(ptype->callbacks.gro_receive, head, skb);
+<<<<<<< HEAD
 	flush = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_unlock:
 	rcu_read_unlock();

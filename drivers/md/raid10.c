@@ -1117,6 +1117,34 @@ static void raid10_unplug(struct blk_plug_cb *cb, bool from_schedule)
 static void regular_request_wait(struct mddev *mddev, struct r10conf *conf,
 				 struct bio *bio, sector_t sectors)
 {
+<<<<<<< HEAD
+=======
+	struct r10conf *conf = mddev->private;
+	struct r10bio *r10_bio;
+	struct bio *read_bio;
+	int i;
+	const int rw = bio_data_dir(bio);
+	const unsigned long do_sync = (bio->bi_rw & REQ_SYNC);
+	const unsigned long do_fua = (bio->bi_rw & REQ_FUA);
+	const unsigned long do_discard = (bio->bi_rw
+					  & (REQ_DISCARD | REQ_SECURE));
+	const unsigned long do_same = (bio->bi_rw & REQ_WRITE_SAME);
+	unsigned long flags;
+	struct md_rdev *blocked_rdev;
+	struct blk_plug_cb *cb;
+	struct raid10_plug_cb *plug = NULL;
+	int sectors_handled;
+	int max_sectors;
+	int sectors;
+
+	md_write_start(mddev, bio);
+
+	/*
+	 * Register the new request and wait if the reconstruction
+	 * thread has put up a bar for new requests.
+	 * Continue immediately if no resync is active currently.
+	 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	wait_barrier(conf);
 	while (test_bit(MD_RECOVERY_RESHAPE, &mddev->recovery) &&
 	    bio->bi_iter.bi_sector < conf->reshape_progress &&
@@ -1489,10 +1517,115 @@ retry_write:
 	md_bitmap_startwrite(mddev->bitmap, r10_bio->sector, r10_bio->sectors, 0);
 
 	for (i = 0; i < conf->copies; i++) {
+<<<<<<< HEAD
 		if (r10_bio->devs[i].bio)
 			raid10_write_one_disk(mddev, r10_bio, bio, false, i);
 		if (r10_bio->devs[i].repl_bio)
 			raid10_write_one_disk(mddev, r10_bio, bio, true, i);
+=======
+		struct bio *mbio;
+		int d = r10_bio->devs[i].devnum;
+		if (r10_bio->devs[i].bio) {
+			struct md_rdev *rdev = conf->mirrors[d].rdev;
+			mbio = bio_clone_mddev(bio, GFP_NOIO, mddev);
+			bio_trim(mbio, r10_bio->sector - bio->bi_iter.bi_sector,
+				 max_sectors);
+			r10_bio->devs[i].bio = mbio;
+
+			mbio->bi_iter.bi_sector	= (r10_bio->devs[i].addr+
+					   choose_data_offset(r10_bio,
+							      rdev));
+			mbio->bi_bdev = rdev->bdev;
+			mbio->bi_end_io	= raid10_end_write_request;
+			mbio->bi_rw =
+				WRITE | do_sync | do_fua | do_discard | do_same;
+			mbio->bi_private = r10_bio;
+
+			atomic_inc(&r10_bio->remaining);
+
+			cb = blk_check_plugged(raid10_unplug, mddev,
+					       sizeof(*plug));
+			if (cb)
+				plug = container_of(cb, struct raid10_plug_cb,
+						    cb);
+			else
+				plug = NULL;
+			spin_lock_irqsave(&conf->device_lock, flags);
+			if (plug) {
+				bio_list_add(&plug->pending, mbio);
+				plug->pending_cnt++;
+			} else {
+				bio_list_add(&conf->pending_bio_list, mbio);
+				conf->pending_count++;
+			}
+			spin_unlock_irqrestore(&conf->device_lock, flags);
+			if (!plug)
+				md_wakeup_thread(mddev->thread);
+		}
+
+		if (r10_bio->devs[i].repl_bio) {
+			struct md_rdev *rdev = conf->mirrors[d].replacement;
+			if (rdev == NULL) {
+				/* Replacement just got moved to main 'rdev' */
+				smp_mb();
+				rdev = conf->mirrors[d].rdev;
+			}
+			mbio = bio_clone_mddev(bio, GFP_NOIO, mddev);
+			bio_trim(mbio, r10_bio->sector - bio->bi_iter.bi_sector,
+				 max_sectors);
+			r10_bio->devs[i].repl_bio = mbio;
+
+			mbio->bi_iter.bi_sector	= (r10_bio->devs[i].addr +
+					   choose_data_offset(
+						   r10_bio, rdev));
+			mbio->bi_bdev = rdev->bdev;
+			mbio->bi_end_io	= raid10_end_write_request;
+			mbio->bi_rw =
+				WRITE | do_sync | do_fua | do_discard | do_same;
+			mbio->bi_private = r10_bio;
+
+			atomic_inc(&r10_bio->remaining);
+
+			cb = blk_check_plugged(raid10_unplug, mddev,
+					       sizeof(*plug));
+			if (cb)
+				plug = container_of(cb, struct raid10_plug_cb,
+						    cb);
+			else
+				plug = NULL;
+			spin_lock_irqsave(&conf->device_lock, flags);
+			if (plug) {
+				bio_list_add(&plug->pending, mbio);
+				plug->pending_cnt++;
+			} else {
+				bio_list_add(&conf->pending_bio_list, mbio);
+				conf->pending_count++;
+			}
+			spin_unlock_irqrestore(&conf->device_lock, flags);
+			if (!plug)
+				md_wakeup_thread(mddev->thread);
+		}
+	}
+
+	/* Don't remove the bias on 'remaining' (one_write_done) until
+	 * after checking if we need to go around again.
+	 */
+
+	if (sectors_handled < bio_sectors(bio)) {
+		one_write_done(r10_bio);
+		/* We need another r10_bio.  It has already been counted
+		 * in bio->bi_phys_segments.
+		 */
+		r10_bio = mempool_alloc(conf->r10bio_pool, GFP_NOIO);
+
+		r10_bio->master_bio = bio;
+		r10_bio->sectors = bio_sectors(bio) - sectors_handled;
+
+		r10_bio->mddev = mddev;
+		r10_bio->sector = bio->bi_iter.bi_sector + sectors_handled;
+		r10_bio->state = 0;
+		goto retry_write;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	one_write_done(r10_bio);
 }
@@ -1533,6 +1666,7 @@ static bool raid10_make_request(struct mddev *mddev, struct bio *bio)
 	if (!md_write_start(mddev, bio))
 		return false;
 
+<<<<<<< HEAD
 	/*
 	 * If this request crosses a chunk boundary, we need to split
 	 * it.
@@ -1546,6 +1680,48 @@ static bool raid10_make_request(struct mddev *mddev, struct bio *bio)
 			(bio->bi_iter.bi_sector &
 			 (chunk_sects - 1));
 	__make_request(mddev, bio, sectors);
+=======
+	do {
+
+		/*
+		 * If this request crosses a chunk boundary, we need to split
+		 * it.
+		 */
+		if (unlikely((bio->bi_iter.bi_sector & chunk_mask) +
+			     bio_sectors(bio) > chunk_sects
+			     && (conf->geo.near_copies < conf->geo.raid_disks
+				 || conf->prev.near_copies <
+				 conf->prev.raid_disks))) {
+			split = bio_split(bio, chunk_sects -
+					  (bio->bi_iter.bi_sector &
+					   (chunk_sects - 1)),
+					  GFP_NOIO, fs_bio_set);
+			bio_chain(split, bio);
+		} else {
+			split = bio;
+		}
+
+		/*
+		 * If a bio is splitted, the first part of bio will pass
+		 * barrier but the bio is queued in current->bio_list (see
+		 * generic_make_request). If there is a raise_barrier() called
+		 * here, the second part of bio can't pass barrier. But since
+		 * the first part bio isn't dispatched to underlaying disks
+		 * yet, the barrier is never released, hence raise_barrier will
+		 * alays wait. We have a deadlock.
+		 * Note, this only happens in read path. For write path, the
+		 * first part of bio is dispatched in a schedule() call
+		 * (because of blk plug) or offloaded to raid10d.
+		 * Quitting from the function immediately can change the bio
+		 * order queued in bio_list and avoid the deadlock.
+		 */
+		__make_request(mddev, split);
+		if (split != bio && bio_data_dir(bio) == READ) {
+			generic_make_request(bio);
+			break;
+		}
+	} while (split != bio);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* In case raid10d snuck in to freeze_array */
 	wake_up(&conf->wait_barrier);
@@ -2724,7 +2900,11 @@ static void raid10d(struct md_thread *thread)
 	    !test_bit(MD_SB_CHANGE_PENDING, &mddev->sb_flags)) {
 		LIST_HEAD(tmp);
 		spin_lock_irqsave(&conf->device_lock, flags);
+<<<<<<< HEAD
 		if (!test_bit(MD_SB_CHANGE_PENDING, &mddev->sb_flags)) {
+=======
+		if (!test_bit(MD_CHANGE_PENDING, &mddev->flags)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			while (!list_empty(&conf->bio_end_io_list)) {
 				list_move(conf->bio_end_io_list.prev, &tmp);
 				conf->nr_queued--;

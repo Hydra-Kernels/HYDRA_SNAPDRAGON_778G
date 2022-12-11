@@ -1425,7 +1425,11 @@ u64 qib_sps_ints(void);
  * dma_addr wrappers - all 0's invalid for hw
  */
 int qib_map_page(struct pci_dev *d, struct page *p, dma_addr_t *daddr);
+<<<<<<< HEAD
 struct pci_dev *qib_get_pci_dev(struct rvt_dev_info *rdi);
+=======
+const char *qib_get_unit_name(int unit);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Flush write combining store buffers (if present) and perform a write

@@ -3,6 +3,7 @@
 # S/390 character devices
 #
 
+<<<<<<< HEAD
 ifdef CONFIG_FUNCTION_TRACER
 # Do not trace early setup code
 CFLAGS_REMOVE_sclp_early_core.o	= $(CC_FLAGS_FTRACE)
@@ -15,6 +16,8 @@ KASAN_SANITIZE_sclp_early_core.o	:= n
 
 CFLAGS_sclp_early_core.o		+= -D__NO_FORTIFY
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 CFLAGS_REMOVE_sclp_early_core.o	+= $(CC_FLAGS_EXPOLINE)
 
 obj-y += ctrlchar.o keyboard.o defkeymap.o sclp.o sclp_rw.o sclp_quiesce.o \

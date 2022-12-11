@@ -48,8 +48,15 @@ static int bpf_array_alloc_percpu(struct bpf_array *array)
 /* Called from syscall */
 int array_map_alloc_check(union bpf_attr *attr)
 {
+<<<<<<< HEAD
 	bool percpu = attr->map_type == BPF_MAP_TYPE_PERCPU_ARRAY;
 	int numa_node = bpf_map_attr_numa_node(attr);
+=======
+	u32 elem_size, array_size, index_mask, max_entries;
+	bool unpriv = !capable(CAP_SYS_ADMIN);
+	struct bpf_array *array;
+	u64 mask64;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* check sanity of attributes */
 	if (attr->max_entries == 0 || attr->key_size != 4 ||
@@ -81,6 +88,16 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 	elem_size = round_up(attr->value_size, 8);
 
 	max_entries = attr->max_entries;
+<<<<<<< HEAD
+
+	/* On 32 bit archs roundup_pow_of_two() with max_entries that has
+	 * upper most bit set in u32 space is undefined behavior due to
+	 * resulting 1U << 32, so do it manually here in u64 space.
+	 */
+	mask64 = fls_long(max_entries - 1);
+	mask64 = 1ULL << mask64;
+	mask64 -= 1;
+=======
 
 	/* On 32 bit archs roundup_pow_of_two() with max_entries that has
 	 * upper most bit set in u32 space is undefined behavior due to
@@ -100,6 +117,27 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 		if (max_entries < attr->max_entries)
 			return ERR_PTR(-E2BIG);
 	}
+
+	/* check round_up into zero and u32 overflow */
+	if (elem_size == 0 ||
+	    max_entries > (U32_MAX - PAGE_SIZE - sizeof(*array)) / elem_size)
+		return ERR_PTR(-ENOMEM);
+
+	array_size = sizeof(*array) + max_entries * elem_size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	index_mask = mask64;
+	if (unpriv) {
+		/* round up array size to nearest power of 2,
+		 * since cpu will speculate within index_mask limits
+		 */
+		max_entries = index_mask + 1;
+		/* Check for overflows. */
+		if (max_entries < attr->max_entries)
+			return ERR_PTR(-E2BIG);
+	}
+	array->index_mask = index_mask;
+	array->map.unpriv_array = unpriv;
 
 	array_size = sizeof(*array);
 	if (percpu)
@@ -149,6 +187,7 @@ static void *array_map_lookup_elem(struct bpf_map *map, void *key)
 		return NULL;
 
 	return array->value + array->elem_size * (index & array->index_mask);
+<<<<<<< HEAD
 }
 
 static int array_map_direct_value_addr(const struct bpf_map *map, u64 *imm,
@@ -247,6 +286,8 @@ int bpf_percpu_array_copy(struct bpf_map *map, void *key, void *value)
 	}
 	rcu_read_unlock();
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Called from syscall */
@@ -288,6 +329,7 @@ static int array_map_update_elem(struct bpf_map *map, void *key, void *value,
 		/* all elements already exist */
 		return -EEXIST;
 
+<<<<<<< HEAD
 	if (unlikely((map_flags & BPF_F_LOCK) &&
 		     !map_value_has_spin_lock(map)))
 		return -EINVAL;
@@ -341,6 +383,11 @@ int bpf_percpu_array_update(struct bpf_map *map, void *key, void *value,
 		off += size;
 	}
 	rcu_read_unlock();
+=======
+	memcpy(array->value +
+	       array->elem_size * (index & array->index_mask),
+	       value, map->value_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

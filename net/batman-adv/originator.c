@@ -228,6 +228,7 @@ err:
 }
 
 /**
+<<<<<<< HEAD
  * batadv_neigh_ifinfo_release() - release neigh_ifinfo from lists and queue for
  *  free after rcu grace period
  * @ref: kref pointer of the neigh_ifinfo
@@ -240,17 +241,33 @@ static void batadv_neigh_ifinfo_release(struct kref *ref)
 
 	if (neigh_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
 		batadv_hardif_put(neigh_ifinfo->if_outgoing);
+=======
+ * batadv_neigh_ifinfo_release - release neigh_ifinfo from lists and queue for
+ *  free after rcu grace period
+ * @neigh_ifinfo: the neigh_ifinfo object to release
+ */
+static void
+batadv_neigh_ifinfo_release(struct batadv_neigh_ifinfo *neigh_ifinfo)
+{
+	if (neigh_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
+		batadv_hardif_free_ref(neigh_ifinfo->if_outgoing);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kfree_rcu(neigh_ifinfo, rcu);
 }
 
 /**
+<<<<<<< HEAD
  * batadv_neigh_ifinfo_put() - decrement the refcounter and possibly release
+=======
+ * batadv_neigh_ifinfo_free_ref - decrement the refcounter and possibly release
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *  the neigh_ifinfo
  * @neigh_ifinfo: the neigh_ifinfo object to release
  */
 void batadv_neigh_ifinfo_put(struct batadv_neigh_ifinfo *neigh_ifinfo)
 {
+<<<<<<< HEAD
 	kref_put(&neigh_ifinfo->refcount, batadv_neigh_ifinfo_release);
 }
 
@@ -290,10 +307,23 @@ void batadv_hardif_neigh_put(struct batadv_hardif_neigh_node *hardif_neigh)
  * @ref: kref pointer of the neigh_node
  */
 static void batadv_neigh_node_release(struct kref *ref)
+=======
+	if (atomic_dec_and_test(&neigh_ifinfo->refcount))
+		batadv_neigh_ifinfo_release(neigh_ifinfo);
+}
+
+/**
+ * batadv_neigh_node_free_rcu - free the neigh_node
+ * batadv_neigh_node_release - release neigh_node from lists and queue for
+ *  free after rcu grace period
+ * @neigh_node: neigh neighbor to free
+ */
+static void batadv_neigh_node_release(struct batadv_neigh_node *neigh_node)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct hlist_node *node_tmp;
-	struct batadv_neigh_node *neigh_node;
 	struct batadv_neigh_ifinfo *neigh_ifinfo;
+<<<<<<< HEAD
 
 	neigh_node = container_of(ref, struct batadv_neigh_node, refcount);
 
@@ -321,6 +351,32 @@ void batadv_neigh_node_put(struct batadv_neigh_node *neigh_node)
 
 /**
  * batadv_orig_router_get() - router to the originator depending on iface
+=======
+
+	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
+				  &neigh_node->ifinfo_list, list) {
+		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
+	}
+
+	batadv_hardif_free_ref(neigh_node->if_incoming);
+
+	kfree_rcu(neigh_node, rcu);
+}
+
+/**
+ * batadv_neigh_node_free_ref - decrement the neighbors refcounter
+ *  and possibly release it
+ * @neigh_node: neigh neighbor to free
+ */
+void batadv_neigh_node_free_ref(struct batadv_neigh_node *neigh_node)
+{
+	if (atomic_dec_and_test(&neigh_node->refcount))
+		batadv_neigh_node_release(neigh_node);
+}
+
+/**
+ * batadv_orig_node_get_router - router to the originator depending on iface
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @orig_node: the orig node for the router
  * @if_outgoing: the interface where the payload packet has been received or
  *  the OGM should be sent to
@@ -711,6 +767,7 @@ out:
 }
 
 /**
+<<<<<<< HEAD
  * batadv_neigh_node_get_or_create() - retrieve or create a neigh node object
  * @orig_node: originator object representing the neighbour
  * @hard_iface: the interface where the neighbour is connected to
@@ -852,39 +909,68 @@ int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb)
  * @ref: kref pointer of the orig_ifinfo
  */
 static void batadv_orig_ifinfo_release(struct kref *ref)
+=======
+ * batadv_orig_ifinfo_release - release orig_ifinfo from lists and queue for
+ *  free after rcu grace period
+ * @orig_ifinfo: the orig_ifinfo object to release
+ */
+static void batadv_orig_ifinfo_release(struct batadv_orig_ifinfo *orig_ifinfo)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
-	struct batadv_orig_ifinfo *orig_ifinfo;
 	struct batadv_neigh_node *router;
 
+<<<<<<< HEAD
 	orig_ifinfo = container_of(ref, struct batadv_orig_ifinfo, refcount);
 
 	if (orig_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
 		batadv_hardif_put(orig_ifinfo->if_outgoing);
+=======
+	if (orig_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
+		batadv_hardif_free_ref(orig_ifinfo->if_outgoing);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* this is the last reference to this object */
 	router = rcu_dereference_protected(orig_ifinfo->router, true);
 	if (router)
+<<<<<<< HEAD
 		batadv_neigh_node_put(router);
+=======
+		batadv_neigh_node_free_ref(router);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kfree_rcu(orig_ifinfo, rcu);
 }
 
 /**
+<<<<<<< HEAD
  * batadv_orig_ifinfo_put() - decrement the refcounter and possibly release
+=======
+ * batadv_orig_ifinfo_free_ref - decrement the refcounter and possibly release
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *  the orig_ifinfo
  * @orig_ifinfo: the orig_ifinfo object to release
  */
 void batadv_orig_ifinfo_put(struct batadv_orig_ifinfo *orig_ifinfo)
 {
+<<<<<<< HEAD
 	kref_put(&orig_ifinfo->refcount, batadv_orig_ifinfo_release);
 }
 
 /**
  * batadv_orig_node_free_rcu() - free the orig_node
+=======
+	if (atomic_dec_and_test(&orig_ifinfo->refcount))
+		batadv_orig_ifinfo_release(orig_ifinfo);
+}
+
+/**
+ * batadv_orig_node_free_rcu - free the orig_node
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @rcu: rcu pointer of the orig_node
  */
 static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
 {
+<<<<<<< HEAD
 	struct batadv_orig_node *orig_node;
 
 	orig_node = container_of(rcu, struct batadv_orig_node, rcu);
@@ -910,9 +996,13 @@ static void batadv_orig_node_release(struct kref *ref)
 	struct batadv_orig_ifinfo *orig_ifinfo;
 	struct batadv_orig_node_vlan *vlan;
 	struct batadv_orig_ifinfo *last_candidate;
+=======
+	struct batadv_orig_node *orig_node;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	orig_node = container_of(ref, struct batadv_orig_node, refcount);
 
+<<<<<<< HEAD
 	spin_lock_bh(&orig_node->neigh_list_lock);
 
 	/* for all neighbors towards this originator ... */
@@ -950,11 +1040,60 @@ static void batadv_orig_node_release(struct kref *ref)
 
 /**
  * batadv_orig_node_put() - decrement the orig node refcounter and possibly
+=======
+	batadv_mcast_purge_orig(orig_node);
+
+	batadv_frag_purge_orig(orig_node, NULL);
+
+	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
+		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
+
+	kfree(orig_node->tt_buff);
+	kfree(orig_node);
+}
+
+/**
+ * batadv_orig_node_release - release orig_node from lists and queue for
+ *  free after rcu grace period
+ * @orig_node: the orig node to free
+ */
+static void batadv_orig_node_release(struct batadv_orig_node *orig_node)
+{
+	struct hlist_node *node_tmp;
+	struct batadv_neigh_node *neigh_node;
+	struct batadv_orig_ifinfo *orig_ifinfo;
+
+	spin_lock_bh(&orig_node->neigh_list_lock);
+
+	/* for all neighbors towards this originator ... */
+	hlist_for_each_entry_safe(neigh_node, node_tmp,
+				  &orig_node->neigh_list, list) {
+		hlist_del_rcu(&neigh_node->list);
+		batadv_neigh_node_free_ref(neigh_node);
+	}
+
+	hlist_for_each_entry_safe(orig_ifinfo, node_tmp,
+				  &orig_node->ifinfo_list, list) {
+		hlist_del_rcu(&orig_ifinfo->list);
+		batadv_orig_ifinfo_free_ref(orig_ifinfo);
+	}
+	spin_unlock_bh(&orig_node->neigh_list_lock);
+
+	/* Free nc_nodes */
+	batadv_nc_purge_orig(orig_node->bat_priv, orig_node, NULL);
+
+	call_rcu(&orig_node->rcu, batadv_orig_node_free_rcu);
+}
+
+/**
+ * batadv_orig_node_free_ref - decrement the orig node refcounter and possibly
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *  release it
  * @orig_node: the orig node to free
  */
 void batadv_orig_node_put(struct batadv_orig_node *orig_node)
 {
+<<<<<<< HEAD
 	kref_put(&orig_node->refcount, batadv_orig_node_release);
 }
 
@@ -962,6 +1101,12 @@ void batadv_orig_node_put(struct batadv_orig_node *orig_node)
  * batadv_originator_free() - Free all originator structures
  * @bat_priv: the bat priv with all the soft interface information
  */
+=======
+	if (atomic_dec_and_test(&orig_node->refcount))
+		batadv_orig_node_release(orig_node);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void batadv_originator_free(struct batadv_priv *bat_priv)
 {
 	struct batadv_hashtable *hash = bat_priv->orig_hash;

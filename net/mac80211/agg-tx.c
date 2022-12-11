@@ -8,8 +8,16 @@
  * Copyright 2006-2007	Jiri Benc <jbenc@suse.cz>
  * Copyright 2007, Michael Wu <flamingice@sourmilk.net>
  * Copyright 2007-2010, Intel Corporation
+<<<<<<< HEAD
  * Copyright(c) 2015-2017 Intel Deutschland GmbH
  * Copyright (C) 2018 - 2019 Intel Corporation
+=======
+ * Copyright(c) 2015 Intel Deutschland GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #include <linux/ieee80211.h>
@@ -526,7 +534,12 @@ void ieee80211_tx_ba_session_handle_start(struct sta_info *sta, int tid)
 	/* send AddBA request */
 	ieee80211_send_addba_request(sdata, sta->sta.addr, tid,
 				     tid_tx->dialog_token, params.ssn,
+<<<<<<< HEAD
 				     buf_size, tid_tx->timeout);
+=======
+				     IEEE80211_MAX_AMPDU_BUF,
+				     tid_tx->timeout);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

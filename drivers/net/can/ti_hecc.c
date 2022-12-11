@@ -582,7 +582,87 @@ static unsigned int ti_hecc_mailbox_read(struct can_rx_offload *offload,
 
 	hecc_write(priv, HECC_CANRMP, mbx_mask);
 
+<<<<<<< HEAD
 	return ret;
+=======
+	stats->rx_bytes += cf->can_dlc;
+	can_led_event(priv->ndev, CAN_LED_EVENT_RX);
+	netif_receive_skb(skb);
+	stats->rx_packets++;
+
+	return 0;
+}
+
+/*
+ * ti_hecc_rx_poll - HECC receive pkts
+ *
+ * The receive mailboxes start from highest numbered mailbox till last xmit
+ * mailbox. On CAN frame reception the hardware places the data into highest
+ * numbered mailbox that matches the CAN ID filter. Since all receive mailboxes
+ * have same filtering (ALL CAN frames) packets will arrive in the highest
+ * available RX mailbox and we need to ensure in-order packet reception.
+ *
+ * To ensure the packets are received in the right order we logically divide
+ * the RX mailboxes into main and buffer mailboxes. Packets are received as per
+ * mailbox priotity (higher to lower) in the main bank and once it is full we
+ * disable further reception into main mailboxes. While the main mailboxes are
+ * processed in NAPI, further packets are received in buffer mailboxes.
+ *
+ * We maintain a RX next mailbox counter to process packets and once all main
+ * mailboxe packets are passed to the upper stack we enable all of them but
+ * continue to process packets received in buffer mailboxes. With each packet
+ * received from buffer mailbox we enable it immediately so as to handle the
+ * overflow from higher mailboxes.
+ */
+static int ti_hecc_rx_poll(struct napi_struct *napi, int quota)
+{
+	struct net_device *ndev = napi->dev;
+	struct ti_hecc_priv *priv = netdev_priv(ndev);
+	u32 num_pkts = 0;
+	u32 mbx_mask;
+	unsigned long pending_pkts, flags;
+
+	if (!netif_running(ndev))
+		return 0;
+
+	while ((pending_pkts = hecc_read(priv, HECC_CANRMP)) &&
+		num_pkts < quota) {
+		mbx_mask = BIT(priv->rx_next); /* next rx mailbox to process */
+		if (mbx_mask & pending_pkts) {
+			if (ti_hecc_rx_pkt(priv, priv->rx_next) < 0)
+				return num_pkts;
+			++num_pkts;
+		} else if (priv->rx_next > HECC_RX_BUFFER_MBOX) {
+			break; /* pkt not received yet */
+		}
+		--priv->rx_next;
+		if (priv->rx_next == HECC_RX_BUFFER_MBOX) {
+			/* enable high bank mailboxes */
+			spin_lock_irqsave(&priv->mbx_lock, flags);
+			mbx_mask = hecc_read(priv, HECC_CANME);
+			mbx_mask |= HECC_RX_HIGH_MBOX_MASK;
+			hecc_write(priv, HECC_CANME, mbx_mask);
+			spin_unlock_irqrestore(&priv->mbx_lock, flags);
+		} else if (priv->rx_next == HECC_MAX_TX_MBOX - 1) {
+			priv->rx_next = HECC_RX_FIRST_MBOX;
+			break;
+		}
+	}
+
+	/* Enable packet interrupt if all pkts are handled */
+	if (hecc_read(priv, HECC_CANRMP) == 0) {
+		napi_complete(napi);
+		/* Re-enable RX mailbox interrupts */
+		mbx_mask = hecc_read(priv, HECC_CANMIM);
+		mbx_mask |= HECC_TX_MBOX_MASK;
+		hecc_write(priv, HECC_CANMIM, mbx_mask);
+	} else {
+		/* repoll is done only if whole budget is used */
+		num_pkts = quota;
+	}
+
+	return num_pkts;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int ti_hecc_error(struct net_device *ndev, int int_status,
@@ -939,6 +1019,7 @@ static int ti_hecc_probe(struct platform_device *pdev)
 	err = clk_prepare_enable(priv->clk);
 	if (err) {
 		dev_err(&pdev->dev, "clk_prepare_enable() failed\n");
+<<<<<<< HEAD
 		goto probe_exit_release_clk;
 	}
 
@@ -949,6 +1030,9 @@ static int ti_hecc_probe(struct platform_device *pdev)
 	if (err) {
 		dev_err(&pdev->dev, "can_rx_offload_add_timestamp() failed\n");
 		goto probe_exit_disable_clk;
+=======
+		goto probe_exit_clk;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	err = register_candev(ndev);

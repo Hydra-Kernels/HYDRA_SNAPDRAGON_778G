@@ -1688,7 +1688,11 @@ void dasd_int_handler(struct ccw_device *cdev, unsigned long intparm,
 		switch (PTR_ERR(irb)) {
 		case -EIO:
 			if (cqr && cqr->status == DASD_CQR_CLEAR_PENDING) {
+<<<<<<< HEAD
 				device = cqr->startdev;
+=======
+				device = (struct dasd_device *) cqr->startdev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				cqr->status = DASD_CQR_CLEARED;
 				dasd_device_clear_timer(device);
 				wake_up(&dasd_flush_wq);
@@ -3297,6 +3301,41 @@ static int dasd_alloc_queue(struct dasd_block *block)
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * Allocate and initialize request queue.
+ */
+static void dasd_setup_queue(struct dasd_block *block)
+{
+	int max;
+
+	if (block->base->features & DASD_FEATURE_USERAW) {
+		/*
+		 * the max_blocks value for raw_track access is 256
+		 * it is higher than the native ECKD value because we
+		 * only need one ccw per track
+		 * so the max_hw_sectors are
+		 * 2048 x 512B = 1024kB = 16 tracks
+		 */
+		max = 2048;
+	} else {
+		max = block->base->discipline->max_blocks << block->s2b_shift;
+	}
+	queue_flag_set_unlocked(QUEUE_FLAG_NONROT, block->request_queue);
+	block->request_queue->limits.max_dev_sectors = max;
+	blk_queue_logical_block_size(block->request_queue,
+				     block->bp_block);
+	blk_queue_max_hw_sectors(block->request_queue, max);
+	blk_queue_max_segments(block->request_queue, -1L);
+	/* with page sized segments we can translate each segement into
+	 * one idaw/tidaw
+	 */
+	blk_queue_max_segment_size(block->request_queue, PAGE_SIZE);
+	blk_queue_segment_boundary(block->request_queue, PAGE_SIZE - 1);
+}
+
+/*
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Deactivate and free request queue.
  */
 static void dasd_free_queue(struct dasd_block *block)

@@ -487,6 +487,36 @@ enum {
 	 * - scatter elements (16 bytes each)
 	 */
 	MLX5_MAX_SGE_RD	= (512 - 16 - 16) / 16
+<<<<<<< HEAD
+=======
+};
+
+struct mlx5_inbox_hdr {
+	__be16		opcode;
+	u8		rsvd[4];
+	__be16		opmod;
+};
+
+struct mlx5_outbox_hdr {
+	u8		status;
+	u8		rsvd[3];
+	__be32		syndrome;
+};
+
+struct mlx5_cmd_query_adapter_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	u8			rsvd[8];
+};
+
+struct mlx5_cmd_query_adapter_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd0[24];
+	u8			intapin;
+	u8			rsvd1[13];
+	__be16			vsd_vendor_id;
+	u8			vsd[208];
+	u8			vsd_psid[16];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 enum mlx5_odp_transport_cap_bits {
@@ -908,12 +938,15 @@ enum {
 	/* cqe->rss_hash_type[7:6] - L4 destination selected for hash
 	 * (00 = none, 01 = TCP. 10 = UDP, 11 = IPSEC.SPI
 	 */
+<<<<<<< HEAD
 };
 
 enum {
 	MLX5_CQE_ROCE_L3_HEADER_TYPE_GRH	= 0x0,
 	MLX5_CQE_ROCE_L3_HEADER_TYPE_IPV6	= 0x1,
 	MLX5_CQE_ROCE_L3_HEADER_TYPE_IPV4	= 0x2,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 enum {

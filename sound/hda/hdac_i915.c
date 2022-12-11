@@ -105,6 +105,36 @@ static const struct drm_audio_component_audio_ops i915_init_ops = {
 	.master_bind = i915_master_bind
 };
 
+<<<<<<< HEAD
+=======
+static int hdac_component_master_match(struct device *dev, void *data)
+{
+	/* i915 is the only supported component */
+	return !strcmp(dev->driver->name, "i915");
+}
+
+/**
+ * snd_hdac_i915_register_notifier - Register i915 audio component ops
+ * @aops: i915 audio component ops
+ *
+ * This function is supposed to be used only by a HD-audio controller
+ * driver that needs the interaction with i915 graphics.
+ *
+ * This function sets the given ops to be called by the i915 graphics driver.
+ *
+ * Returns zero for success or a negative error code.
+ */
+int snd_hdac_i915_register_notifier(const struct i915_audio_component_audio_ops *aops)
+{
+	if (!hdac_acomp)
+		return -ENODEV;
+
+	hdac_acomp->audio_ops = aops;
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_hdac_i915_register_notifier);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * snd_hdac_i915_init - Initialize i915 audio component
  * @bus: HDA core bus
@@ -149,5 +179,52 @@ int snd_hdac_i915_init(struct hdac_bus *bus)
 		return -ENODEV;
 	}
 	return 0;
+<<<<<<< HEAD
 }
 EXPORT_SYMBOL_GPL(snd_hdac_i915_init);
+=======
+out_master_del:
+	component_master_del(dev, &hdac_component_master_ops);
+out_err:
+	kfree(acomp);
+	bus->audio_component = NULL;
+	hdac_acomp = NULL;
+	dev_info(dev, "failed to add i915 component master (%d)\n", ret);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(snd_hdac_i915_init);
+
+/**
+ * snd_hdac_i915_exit - Finalize i915 audio component
+ * @bus: HDA core bus
+ *
+ * This function is supposed to be used only by a HD-audio controller
+ * driver that needs the interaction with i915 graphics.
+ *
+ * This function releases the i915 audio component that has been used.
+ *
+ * Returns zero for success or a negative error code.
+ */
+int snd_hdac_i915_exit(struct hdac_bus *bus)
+{
+	struct device *dev = bus->dev;
+	struct i915_audio_component *acomp = bus->audio_component;
+
+	if (!acomp)
+		return 0;
+
+	WARN_ON(bus->i915_power_refcount);
+	if (bus->i915_power_refcount > 0 && acomp->ops)
+		acomp->ops->put_power(acomp->dev);
+
+	component_master_del(dev, &hdac_component_master_ops);
+
+	kfree(acomp);
+	bus->audio_component = NULL;
+	hdac_acomp = NULL;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_hdac_i915_exit);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

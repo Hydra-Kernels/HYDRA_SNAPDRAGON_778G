@@ -1483,10 +1483,21 @@ static int fsl_ssi_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (fsl_ssi_is_ac97(ssi)) {
 		memcpy(&ssi->cpu_dai_drv, &fsl_ssi_ac97_dai,
 		       sizeof(fsl_ssi_ac97_dai));
 		fsl_ac97_data = ssi;
+=======
+	ssi_private->use_dma = !of_property_read_bool(np,
+			"fsl,fiq-stream-filter");
+
+	if (fsl_ssi_is_ac97(ssi_private)) {
+		memcpy(&ssi_private->cpu_dai_drv, &fsl_ssi_ac97_dai,
+				sizeof(fsl_ssi_ac97_dai));
+
+		fsl_ac97_data = ssi_private;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		memcpy(&ssi->cpu_dai_drv, &fsl_ssi_dai_template,
 		       sizeof(fsl_ssi_dai_template));
@@ -1562,17 +1573,29 @@ static int fsl_ssi_probe(struct platform_device *pdev)
 			return ret;
 	}
 
+<<<<<<< HEAD
 	if (fsl_ssi_is_ac97(ssi)) {
 		mutex_init(&ssi->ac97_reg_lock);
 		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
 		if (ret) {
 			dev_err(dev, "failed to set AC'97 ops\n");
+=======
+	if (fsl_ssi_is_ac97(ssi_private)) {
+		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
+		if (ret) {
+			dev_err(&pdev->dev, "could not set AC'97 ops\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto error_ac97_ops;
 		}
 	}
 
+<<<<<<< HEAD
 	ret = devm_snd_soc_register_component(dev, &fsl_ssi_component,
 					      &ssi->cpu_dai_drv, 1);
+=======
+	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_ssi_component,
+					      &ssi_private->cpu_dai_drv, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret) {
 		dev_err(dev, "failed to register DAI: %d\n", ret);
 		goto error_asoc_register;
@@ -1619,6 +1642,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
 error_sound_card:
 	fsl_ssi_debugfs_remove(&ssi->dbg_stats);
 error_asoc_register:
+<<<<<<< HEAD
 	if (fsl_ssi_is_ac97(ssi))
 		snd_soc_set_ac97_ops(NULL);
 error_ac97_ops:
@@ -1627,6 +1651,14 @@ error_ac97_ops:
 
 	if (ssi->soc->imx)
 		fsl_ssi_imx_clean(pdev, ssi);
+=======
+	if (fsl_ssi_is_ac97(ssi_private))
+		snd_soc_set_ac97_ops(NULL);
+
+error_ac97_ops:
+	if (ssi_private->soc->imx)
+		fsl_ssi_imx_clean(pdev, ssi_private);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

@@ -155,7 +155,11 @@ static void pscsi_tape_read_blocksize(struct se_device *dev,
 	/*
 	 * If MODE_SENSE still returns zero, set the default value to 1024.
 	 */
+<<<<<<< HEAD
 	sdev->sector_size = get_unaligned_be24(&buf[9]);
+=======
+	sdev->sector_size = (buf[9] << 16) | (buf[10] << 8) | (buf[11]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_free:
 	if (!sdev->sector_size)
 		sdev->sector_size = 1024;

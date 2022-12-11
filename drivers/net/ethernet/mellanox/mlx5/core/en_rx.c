@@ -994,9 +994,15 @@ static inline void mlx5e_build_rx_skb(struct mlx5_cqe64 *cqe,
 		/* Subtract one since we already counted this as one
 		 * "regular" packet in mlx5e_complete_rx_cqe()
 		 */
+<<<<<<< HEAD
 		stats->packets += lro_num_seg - 1;
 		stats->lro_packets++;
 		stats->lro_bytes += cqe_bcnt;
+=======
+		rq->stats.packets += lro_num_seg - 1;
+		rq->stats.lro_packets++;
+		rq->stats.lro_bytes += cqe_bcnt;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (unlikely(mlx5e_rx_hw_stamp(rq->tstamp)))

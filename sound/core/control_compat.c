@@ -301,12 +301,21 @@ static int ctl_elem_read_user(struct snd_card *card,
 		goto error;
 
 	err = snd_power_wait(card, SNDRV_CTL_POWER_D0);
+<<<<<<< HEAD
 	if (err < 0)
 		goto error;
 	err = snd_ctl_elem_read(card, data);
 	if (err < 0)
 		goto error;
 	err = copy_ctl_value_to_user(userdata, valuep, data, type, count);
+=======
+	if (err >= 0)
+		err = snd_ctl_elem_read(card, data);
+	snd_power_unlock(card);
+	if (err >= 0)
+		err = copy_ctl_value_to_user(userdata, valuep, data,
+					     type, count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  error:
 	kfree(data);
 	return err;
@@ -329,12 +338,21 @@ static int ctl_elem_write_user(struct snd_ctl_file *file,
 		goto error;
 
 	err = snd_power_wait(card, SNDRV_CTL_POWER_D0);
+<<<<<<< HEAD
 	if (err < 0)
 		goto error;
 	err = snd_ctl_elem_write(card, file, data);
 	if (err < 0)
 		goto error;
 	err = copy_ctl_value_to_user(userdata, valuep, data, type, count);
+=======
+	if (err >= 0)
+		err = snd_ctl_elem_write(card, file, data);
+	snd_power_unlock(card);
+	if (err >= 0)
+		err = copy_ctl_value_to_user(userdata, valuep, data,
+					     type, count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  error:
 	kfree(data);
 	return err;

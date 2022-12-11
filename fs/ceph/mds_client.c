@@ -454,7 +454,11 @@ static int parse_reply_info_extra(void **p, void *end,
 	if (op == CEPH_MDS_OP_GETFILELOCK)
 		return parse_reply_info_filelock(p, end, info, features);
 	else if (op == CEPH_MDS_OP_READDIR || op == CEPH_MDS_OP_LSSNAP)
+<<<<<<< HEAD
 		return parse_reply_info_readdir(p, end, info, features);
+=======
+		return parse_reply_info_dir(p, end, info, features);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	else if (op == CEPH_MDS_OP_CREATE)
 		return parse_reply_info_create(p, end, info, features);
 	else
@@ -1765,7 +1769,11 @@ static int trim_caps_cb(struct inode *inode, struct ceph_cap *cap, void *arg)
 	if (oissued) {
 		/* we aren't the only cap.. just remove us */
 		__ceph_remove_cap(cap, true);
+<<<<<<< HEAD
 		(*remaining)--;
+=======
+		session->s_trim_caps--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		struct dentry *dentry;
 		/* try dropping referring dentries */
@@ -1777,7 +1785,11 @@ static int trim_caps_cb(struct inode *inode, struct ceph_cap *cap, void *arg)
 			d_prune_aliases(inode);
 			count = atomic_read(&inode->i_count);
 			if (count == 1)
+<<<<<<< HEAD
 				(*remaining)--;
+=======
+				session->s_trim_caps--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dout("trim_caps_cb %p cap %p pruned, count now %d\n",
 			     inode, cap, count);
 		} else {
@@ -2206,11 +2218,17 @@ static int build_dentry_path(struct dentry *dentry, struct inode *dir,
 			     bool *pfreepath, bool parent_locked)
 {
 	char *path;
+	struct inode *dir;
 
 	rcu_read_lock();
+<<<<<<< HEAD
 	if (!dir)
 		dir = d_inode_rcu(dentry->d_parent);
 	if (dir && parent_locked && ceph_snap(dir) == CEPH_NOSNAP) {
+=======
+	dir = d_inode_rcu(dentry->d_parent);
+	if (dir && ceph_snap(dir) == CEPH_NOSNAP) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*pino = ceph_ino(dir);
 		rcu_read_unlock();
 		*ppath = dentry->d_name.name;

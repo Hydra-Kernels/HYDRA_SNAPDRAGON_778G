@@ -397,7 +397,11 @@ struct iser_reg_resources {
 struct iser_fr_desc {
 	struct list_head		  list;
 	struct iser_reg_resources	  rsc;
+<<<<<<< HEAD
 	bool				  sig_protected;
+=======
+	struct iser_pi_context		 *pi_ctx;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct list_head                  all_list;
 };
 

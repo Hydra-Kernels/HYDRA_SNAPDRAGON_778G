@@ -77,7 +77,11 @@ static int pnv_smp_kick_cpu(int nr)
 	 * If we already started or OPAL is not supported, we just
 	 * kick the CPU via the PACA
 	 */
+<<<<<<< HEAD
 	if (paca_ptrs[nr]->cpu_start || !firmware_has_feature(FW_FEATURE_OPAL))
+=======
+	if (paca[nr].cpu_start || !firmware_has_feature(FW_FEATURE_OPAL))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto kick;
 
 	/*

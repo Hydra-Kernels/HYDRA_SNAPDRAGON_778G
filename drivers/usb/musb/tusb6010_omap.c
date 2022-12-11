@@ -192,12 +192,18 @@ static int tusb_omap_dma_program(struct dma_channel *channel, u16 packet_sz,
 	u32				dma_remaining;
 	u16				csr;
 	u32				psize;
+<<<<<<< HEAD
 	struct tusb_dma_data		*dma_data;
 	struct dma_async_tx_descriptor	*dma_desc;
 	struct dma_slave_config		dma_cfg;
 	enum dma_transfer_direction	dma_dir;
 	u32				port_window;
 	int				ret;
+=======
+	int				ch;
+	s8				dmareq;
+	s8				sync_dev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(dma_addr & 0x1) || (len < 32) || (len > packet_sz))
 		return false;

@@ -22,6 +22,7 @@
 
 /* Macros for consistency checks of the GICC subtable of MADT */
 
+<<<<<<< HEAD
 /*
  * MADT GICC minimum length refers to the MADT GICC structure table length as
  * defined in the earliest ACPI version supported on arm64, ie ACPI 5.1.
@@ -41,6 +42,11 @@
 
 #define ACPI_MADT_GICC_SPE  (offsetof(struct acpi_madt_generic_interrupt, \
 	spe_interrupt) + sizeof(u16))
+=======
+#define BAD_MADT_GICC_ENTRY(entry, end)					\
+	(!(entry) || (entry)->header.length != ACPI_MADT_GICC_LENGTH ||	\
+	(unsigned long)(entry) + ACPI_MADT_GICC_LENGTH > (end))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Basic configuration for ACPI */
 #ifdef	CONFIG_ACPI

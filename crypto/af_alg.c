@@ -129,15 +129,30 @@ EXPORT_SYMBOL_GPL(af_alg_release);
 void af_alg_release_parent(struct sock *sk)
 {
 	struct alg_sock *ask = alg_sk(sk);
+<<<<<<< HEAD
 	unsigned int nokey = atomic_read(&ask->nokey_refcnt);
+=======
+	unsigned int nokey = ask->nokey_refcnt;
+	bool last = nokey && !ask->refcnt;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sk = ask->parent;
 	ask = alg_sk(sk);
 
+<<<<<<< HEAD
 	if (nokey)
 		atomic_dec(&ask->nokey_refcnt);
 
 	if (atomic_dec_and_test(&ask->refcnt))
+=======
+	lock_sock(sk);
+	ask->nokey_refcnt -= nokey;
+	if (!last)
+		last = !--ask->refcnt;
+	release_sock(sk);
+
+	if (last)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sock_put(sk);
 }
 EXPORT_SYMBOL_GPL(af_alg_release_parent);
@@ -166,6 +181,10 @@ static int alg_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
 	if ((sa->salg_feat & ~allowed) || (sa->salg_mask & ~allowed))
 		return -EINVAL;
 
+	/* If caller uses non-allowed flag, return error. */
+	if ((sa->salg_feat & ~allowed) || (sa->salg_mask & ~allowed))
+		return -EINVAL;
+
 	sa->salg_type[sizeof(sa->salg_type) - 1] = 0;
 	sa->salg_name[addr_len - sizeof(*sa) - 1] = 0;
 
@@ -186,7 +205,11 @@ static int alg_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
 
 	err = -EBUSY;
 	lock_sock(sk);
+<<<<<<< HEAD
 	if (atomic_read(&ask->refcnt))
+=======
+	if (ask->refcnt | ask->nokey_refcnt)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto unlock;
 
 	swap(ask->type, type);
@@ -235,7 +258,11 @@ static int alg_setsockopt(struct socket *sock, int level, int optname,
 	int err = -EBUSY;
 
 	lock_sock(sk);
+<<<<<<< HEAD
 	if (atomic_read(&ask->refcnt) != atomic_read(&ask->nokey_refcnt))
+=======
+	if (ask->refcnt)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto unlock;
 
 	type = ask->type;
@@ -300,14 +327,23 @@ int af_alg_accept(struct sock *sk, struct socket *newsock, bool kern)
 	if (err)
 		goto unlock;
 
+<<<<<<< HEAD
 	if (atomic_inc_return_relaxed(&ask->refcnt) == 1)
 		sock_hold(sk);
 	if (nokey) {
 		atomic_inc(&ask->nokey_refcnt);
 		atomic_set(&alg_sk(sk2)->nokey_refcnt, 1);
 	}
+=======
+	sk2->sk_family = PF_ALG;
+
+	if (nokey || !ask->refcnt++)
+		sock_hold(sk);
+	ask->nokey_refcnt += nokey;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	alg_sk(sk2)->parent = sk;
 	alg_sk(sk2)->type = type;
+	alg_sk(sk2)->nokey_refcnt = nokey;
 
 	newsock->ops = type->ops;
 	newsock->state = SS_CONNECTED;

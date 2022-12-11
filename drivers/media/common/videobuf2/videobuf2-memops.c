@@ -48,7 +48,11 @@ struct frame_vector *vb2_create_framevec(unsigned long start,
 	vec = frame_vector_create(nr);
 	if (!vec)
 		return ERR_PTR(-ENOMEM);
+<<<<<<< HEAD:drivers/media/common/videobuf2/videobuf2-memops.c
 	ret = get_vaddr_frames(start & PAGE_MASK, nr, flags, vec);
+=======
+	ret = get_vaddr_frames(start & PAGE_MASK, nr, write, true, vec);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/media/v4l2-core/videobuf2-memops.c
 	if (ret < 0)
 		goto out_destroy;
 	/* We accept only complete set of PFNs */

@@ -487,8 +487,11 @@ xfs_bmbt_write_verify(
 
 const struct xfs_buf_ops xfs_bmbt_buf_ops = {
 	.name = "xfs_bmbt",
+<<<<<<< HEAD
 	.magic = { cpu_to_be32(XFS_BMAP_MAGIC),
 		   cpu_to_be32(XFS_BMAP_CRC_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_bmbt_read_verify,
 	.verify_write = xfs_bmbt_write_verify,
 	.verify_struct = xfs_bmbt_verify,

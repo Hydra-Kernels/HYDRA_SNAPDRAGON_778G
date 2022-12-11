@@ -363,7 +363,11 @@ static inline int nlm_privileged_requester(const struct svc_rqst *rqstp)
 static inline int nlm_compare_locks(const struct file_lock *fl1,
 				    const struct file_lock *fl2)
 {
+<<<<<<< HEAD
 	return locks_inode(fl1->fl_file) == locks_inode(fl2->fl_file)
+=======
+	return file_inode(fl1->fl_file) == file_inode(fl2->fl_file)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	     && fl1->fl_pid   == fl2->fl_pid
 	     && fl1->fl_owner == fl2->fl_owner
 	     && fl1->fl_start == fl2->fl_start

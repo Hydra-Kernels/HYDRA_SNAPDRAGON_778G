@@ -457,6 +457,7 @@ static int rcar_du_encoders_init_one(struct rcar_du_device *rcdu,
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	ret = rcar_du_encoder_init(rcdu, output, entity);
 	if (ret && ret != -EPROBE_DEFER && ret != -ENOLINK)
 		dev_warn(rcdu->dev,
@@ -464,6 +465,49 @@ static int rcar_du_encoders_init_one(struct rcar_du_device *rcdu,
 			 entity, output, ret);
 
 	of_node_put(entity);
+=======
+	of_node_put(entity_ep_node);
+
+	if (encoder) {
+		/*
+		 * If an encoder has been found, get its type based on its
+		 * compatible string.
+		 */
+		unsigned int i;
+
+		for (i = 0; i < ARRAY_SIZE(encoders); ++i) {
+			if (of_device_is_compatible(encoder,
+						    encoders[i].compatible)) {
+				enc_type = encoders[i].type;
+				break;
+			}
+		}
+
+		if (i == ARRAY_SIZE(encoders)) {
+			dev_warn(rcdu->dev,
+				 "unknown encoder type for %s, skipping\n",
+				 encoder->full_name);
+			of_node_put(encoder);
+			of_node_put(connector);
+			return -EINVAL;
+		}
+	} else {
+		/*
+		 * If no encoder has been found the entity must be the
+		 * connector.
+		 */
+		connector = entity;
+	}
+
+	ret = rcar_du_encoder_init(rcdu, enc_type, output, encoder, connector);
+	if (ret && ret != -EPROBE_DEFER)
+		dev_warn(rcdu->dev,
+			 "failed to initialize encoder %s on output %u (%d), skipping\n",
+			 of_node_full_name(encoder), output, ret);
+
+	of_node_put(encoder);
+	of_node_put(connector);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }
@@ -656,11 +700,18 @@ int rcar_du_modeset_init(struct rcar_du_device *rcdu)
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	/*
 	 * Initialize vertical blanking interrupts handling. Start with vblank
 	 * disabled for all CRTCs.
 	 */
 	ret = drm_vblank_init(dev, rcdu->num_crtcs);
+=======
+	/* Initialize vertical blanking interrupts handling. Start with vblank
+	* disabled for all CRTCs.
+	*/
+	ret = drm_vblank_init(dev, (1 << rcdu->info->num_crtcs) - 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret < 0)
 		return ret;
 

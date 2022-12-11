@@ -3388,11 +3388,14 @@ lpfc_online(struct lpfc_hba *phba)
 		}
 	}
 	lpfc_destroy_vport_work_array(phba, vports);
+<<<<<<< HEAD
 
 	if (phba->cfg_xri_rebalancing)
 		lpfc_create_multixri_pools(phba);
 
 	lpfc_cpuhp_add(phba);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	lpfc_unblock_mgmt_io(phba);
 	return 0;
@@ -10686,6 +10689,7 @@ lpfc_cpu_affinity_check(struct lpfc_hba *phba, int vectors)
 	 * first present cpu, and assign the eq index to ensure at
 	 * least one EQ is assigned.
 	 */
+<<<<<<< HEAD
 	for (idx = 0; idx <  phba->cfg_irq_chann; idx++) {
 		/* Get a CPU mask for all CPUs affinitized to this vector */
 		maskp = pci_irq_get_affinity(phba->pcidev, idx);
@@ -10701,6 +10705,69 @@ lpfc_cpu_affinity_check(struct lpfc_hba *phba, int vectors)
 				cpup->eq = idx;
 				cpup->irq = pci_irq_vector(phba->pcidev, idx);
 				cpup->flag |= LPFC_CPU_FIRST_IRQ;
+=======
+	for (i = min_phys_id; i <= max_phys_id; i++) {
+		/*
+		 * If there are no io channels already mapped to
+		 * this phys_id, just round robin thru the io_channels.
+		 * Setup chann[] for round robin.
+		 */
+		for (idx = 0; idx < phba->cfg_fcp_io_channel; idx++)
+			chann[idx] = idx;
+
+		saved_chann = 0;
+		used_chann = 0;
+
+		/*
+		 * First build a list of IO channels already assigned
+		 * to this phys_id before reassigning the same IO
+		 * channels to the remaining CPUs.
+		 */
+		cpup = phba->sli4_hba.cpu_map;
+		cpu = first_cpu;
+		cpup += cpu;
+		for (idx = 0; idx < phba->sli4_hba.num_present_cpu;
+		     idx++) {
+			if (cpup->phys_id == i) {
+				/*
+				 * Save any IO channels that are
+				 * already mapped to this phys_id.
+				 */
+				if (cpup->irq != LPFC_VECTOR_MAP_EMPTY) {
+					if (saved_chann <=
+					    LPFC_FCP_IO_CHAN_MAX) {
+						chann[saved_chann] =
+							cpup->channel_id;
+						saved_chann++;
+					}
+					goto out;
+				}
+
+				/* See if we are using round-robin */
+				if (saved_chann == 0)
+					saved_chann =
+						phba->cfg_fcp_io_channel;
+
+				/* Associate next IO channel with CPU */
+				cpup->channel_id = chann[used_chann];
+				num_io_channel++;
+				used_chann++;
+				if (used_chann == saved_chann)
+					used_chann = 0;
+
+				lpfc_printf_log(phba, KERN_INFO, LOG_INIT,
+						"3331 Set IO_CHANN "
+						"CPU %d channel %d\n",
+						idx, cpup->channel_id);
+			}
+out:
+			cpu++;
+			if (cpu >= phba->sli4_hba.num_present_cpu) {
+				cpup = phba->sli4_hba.cpu_map;
+				cpu = 0;
+			} else {
+				cpup++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 			break;
 		}

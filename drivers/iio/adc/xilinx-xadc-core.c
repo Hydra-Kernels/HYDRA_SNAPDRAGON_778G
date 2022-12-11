@@ -1261,7 +1261,7 @@ static int xadc_probe(struct platform_device *pdev)
 
 	ret = clk_prepare_enable(xadc->clk);
 	if (ret)
-		goto err_free_samplerate_trigger;
+		goto err_clk_disable_unprepare;
 
 	/*
 	 * Make sure not to exceed the maximum samplerate since otherwise the
@@ -1343,8 +1343,12 @@ static int xadc_probe(struct platform_device *pdev)
 	return 0;
 
 err_free_irq:
+<<<<<<< HEAD
 	free_irq(xadc->irq, indio_dev);
 	cancel_delayed_work_sync(&xadc->zynq_unmask_work);
+=======
+	free_irq(irq, indio_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_clk_disable_unprepare:
 	clk_disable_unprepare(xadc->clk);
 err_free_samplerate_trigger:

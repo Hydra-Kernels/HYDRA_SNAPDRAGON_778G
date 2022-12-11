@@ -379,6 +379,8 @@ void hv_process_channel_removal(struct vmbus_channel *channel)
 	BUG_ON(!mutex_is_locked(&vmbus_connection.channel_mutex));
 	BUG_ON(!channel->rescind);
 
+	BUG_ON(!channel->rescind);
+
 	if (channel->target_cpu != get_cpu()) {
 		put_cpu();
 		smp_call_function_single(channel->target_cpu,
@@ -711,6 +713,7 @@ static void init_vp_index(struct vmbus_channel *channel, u16 dev_type)
 
 	cur_cpu = -1;
 
+<<<<<<< HEAD
 	if (primary->affinity_policy == HV_LOCALIZED) {
 		/*
 		 * Normally Hyper-V host doesn't create more subchannels
@@ -722,6 +725,17 @@ static void init_vp_index(struct vmbus_channel *channel, u16 dev_type)
 				  cpumask_of_node(primary->numa_node)))
 			cpumask_clear(&primary->alloced_cpus_in_node);
 	}
+=======
+	/*
+	 * Normally Hyper-V host doesn't create more subchannels than there
+	 * are VCPUs on the node but it is possible when not all present VCPUs
+	 * on the node are initialized by guest. Clear the alloced_cpus_in_node
+	 * to start over.
+	 */
+	if (cpumask_equal(&primary->alloced_cpus_in_node,
+			  cpumask_of_node(primary->numa_node)))
+		cpumask_clear(&primary->alloced_cpus_in_node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (true) {
 		cur_cpu = cpumask_next(cur_cpu, available_mask);
@@ -846,6 +860,40 @@ completed:
 	}
 }
 
+static void vmbus_wait_for_unload(void)
+{
+	int cpu = smp_processor_id();
+	void *page_addr = hv_context.synic_message_page[cpu];
+	struct hv_message *msg = (struct hv_message *)page_addr +
+				  VMBUS_MESSAGE_SINT;
+	struct vmbus_channel_message_header *hdr;
+	bool unloaded = false;
+
+	while (1) {
+		if (msg->header.message_type == HVMSG_NONE) {
+			mdelay(10);
+			continue;
+		}
+
+		hdr = (struct vmbus_channel_message_header *)msg->u.payload;
+		if (hdr->msgtype == CHANNELMSG_UNLOAD_RESPONSE)
+			unloaded = true;
+
+		msg->header.message_type = HVMSG_NONE;
+		/*
+		 * header.message_type needs to be written before we do
+		 * wrmsrl() below.
+		 */
+		mb();
+
+		if (msg->header.message_flags.msg_pending)
+			wrmsrl(HV_X64_MSR_EOM, 0);
+
+		if (unloaded)
+			break;
+	}
+}
+
 /*
  * vmbus_unload_response - Handler for the unload response.
  */
@@ -879,6 +927,7 @@ void vmbus_initiate_unload(bool crash)
 	 * vmbus_initiate_unload() is also called on crash and the crash can be
 	 * happening in an interrupt context, where scheduling is impossible.
 	 */
+<<<<<<< HEAD
 	if (!crash)
 		wait_for_completion(&vmbus_connection.unload_event);
 	else
@@ -944,6 +993,12 @@ find_primary_channel_by_offer(const struct vmbus_channel_offer_channel *offer)
 	mutex_unlock(&vmbus_connection.channel_mutex);
 
 	return channel;
+=======
+	if (!in_interrupt())
+		wait_for_completion(&vmbus_connection.unload_event);
+	else
+		vmbus_wait_for_unload();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

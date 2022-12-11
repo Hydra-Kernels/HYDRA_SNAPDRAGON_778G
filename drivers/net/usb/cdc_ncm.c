@@ -775,7 +775,11 @@ int cdc_ncm_bind_common(struct usbnet *dev, struct usb_interface *intf, u8 data_
 	int err;
 	u8 iface_no;
 	struct usb_cdc_parsed_header hdr;
+<<<<<<< HEAD
 	__le16 curr_ntb_format;
+=======
+	u16 curr_ntb_format;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
@@ -843,6 +847,7 @@ int cdc_ncm_bind_common(struct usbnet *dev, struct usb_interface *intf, u8 data_
 
 	iface_no = ctx->data->cur_altsetting->desc.bInterfaceNumber;
 
+<<<<<<< HEAD
 	/* Device-specific flags */
 	ctx->drvflags = drvflags;
 
@@ -855,6 +860,13 @@ int cdc_ncm_bind_common(struct usbnet *dev, struct usb_interface *intf, u8 data_
 	if (!(ctx->drvflags & CDC_MBIM_FLAG_AVOID_ALTSETTING_TOGGLE))
 		usb_set_interface(dev->udev, iface_no, data_altsetting);
 
+=======
+	/* Reset data interface. Some devices will not reset properly
+	 * unless they are configured first.  Toggle the altsetting to
+	 * force a reset
+	 */
+	usb_set_interface(dev->udev, iface_no, data_altsetting);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	temp = usb_set_interface(dev->udev, iface_no, 0);
 	if (temp) {
 		dev_dbg(&intf->dev, "set interface failed\n");
@@ -879,6 +891,12 @@ int cdc_ncm_bind_common(struct usbnet *dev, struct usb_interface *intf, u8 data_
 		goto error2;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Device-specific flags */
+	ctx->drvflags = drvflags;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Some Huawei devices have been observed to come out of reset in NDP32 mode.
 	 * Let's check if this is the case, and set the device to NDP16 mode again if
@@ -892,7 +910,11 @@ int cdc_ncm_bind_common(struct usbnet *dev, struct usb_interface *intf, u8 data_
 			goto error2;
 		}
 
+<<<<<<< HEAD
 		if (curr_ntb_format == cpu_to_le16(USB_CDC_NCM_NTB32_FORMAT)) {
+=======
+		if (curr_ntb_format == USB_CDC_NCM_NTB32_FORMAT) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_info(&intf->dev, "resetting NTB format to 16-bit");
 			err = usbnet_write_cmd(dev, USB_CDC_SET_NTB_FORMAT,
 					       USB_TYPE_CLASS | USB_DIR_OUT
@@ -1126,10 +1148,14 @@ cdc_ncm_fill_tx_frame(struct usbnet *dev, struct sk_buff *skb, __le32 sign)
 	 * accordingly. Otherwise, we should check here.
 	 */
 	if (ctx->drvflags & CDC_NCM_FLAG_NDP_TO_END)
+<<<<<<< HEAD
 		delayed_ndp_size = ctx->max_ndp_size +
 			max_t(u32,
 			      ctx->tx_ndp_modulus,
 			      ctx->tx_modulus + ctx->tx_remainder) - 1;
+=======
+		delayed_ndp_size = ALIGN(ctx->max_ndp_size, ctx->tx_ndp_modulus);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	else
 		delayed_ndp_size = 0;
 
@@ -1290,7 +1316,11 @@ cdc_ncm_fill_tx_frame(struct usbnet *dev, struct sk_buff *skb, __le32 sign)
 	/* If requested, put NDP at end of frame. */
 	if (ctx->drvflags & CDC_NCM_FLAG_NDP_TO_END) {
 		nth16 = (struct usb_cdc_ncm_nth16 *)skb_out->data;
+<<<<<<< HEAD
 		cdc_ncm_align_tail(skb_out, ctx->tx_ndp_modulus, 0, ctx->tx_curr_size - ctx->max_ndp_size);
+=======
+		cdc_ncm_align_tail(skb_out, ctx->tx_ndp_modulus, 0, ctx->tx_max - ctx->max_ndp_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		nth16->wNdpIndex = cpu_to_le16(skb_out->len);
 		skb_put_data(skb_out, ctx->delayed_ndp16, ctx->max_ndp_size);
 
@@ -1309,12 +1339,20 @@ cdc_ncm_fill_tx_frame(struct usbnet *dev, struct sk_buff *skb, __le32 sign)
 	 */
 	if (!(dev->driver_info->flags & FLAG_SEND_ZLP) &&
 	    skb_out->len > ctx->min_tx_pkt) {
+<<<<<<< HEAD
 		padding_count = ctx->tx_curr_size - skb_out->len;
 		if (!WARN_ON(padding_count > ctx->tx_curr_size))
 			skb_put_zero(skb_out, padding_count);
 	} else if (skb_out->len < ctx->tx_curr_size &&
 		   (skb_out->len % dev->maxpacket) == 0) {
 		skb_put_u8(skb_out, 0);	/* force short packet */
+=======
+		padding_count = ctx->tx_max - skb_out->len;
+		memset(skb_put(skb_out, padding_count), 0, padding_count);
+	} else if (skb_out->len < ctx->tx_max &&
+		   (skb_out->len % dev->maxpacket) == 0) {
+		*skb_put(skb_out, 1) = 0;	/* force short packet */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* set final frame length */
@@ -1662,7 +1700,11 @@ static void cdc_ncm_status(struct usbnet *dev, struct urb *urb)
 static const struct driver_info cdc_ncm_info = {
 	.description = "CDC NCM",
 	.flags = FLAG_POINTTOPOINT | FLAG_NO_SETINT | FLAG_MULTI_PACKET
+<<<<<<< HEAD
 			| FLAG_LINK_INTR | FLAG_ETHER,
+=======
+			| FLAG_LINK_INTR,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.bind = cdc_ncm_bind,
 	.unbind = cdc_ncm_unbind,
 	.manage_power = usbnet_manage_power,

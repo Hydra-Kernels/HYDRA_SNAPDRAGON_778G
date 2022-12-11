@@ -1286,6 +1286,13 @@ retry:
 			timeo = MAX_SCHEDULE_TIMEOUT;
 			ret = netlink_attachskb(sock, nc, &timeo, NULL);
 			if (ret == 1) {
+<<<<<<< HEAD
+=======
+				sock = NULL;
+				goto retry;
+			}
+			if (ret) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				sock = NULL;
 				goto retry;
 			}

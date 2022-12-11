@@ -975,8 +975,12 @@ static void mos7720_bulk_out_data_callback(struct urb *urb)
 		tty_port_tty_wakeup(&mos7720_port->port->port);
 }
 
+<<<<<<< HEAD
 static int mos77xx_calc_num_ports(struct usb_serial *serial,
 					struct usb_serial_endpoints *epds)
+=======
+static int mos77xx_calc_num_ports(struct usb_serial *serial)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	u16 product = le16_to_cpu(serial->dev->descriptor.idProduct);
 
@@ -1252,8 +1256,12 @@ static int mos7720_write(struct tty_struct *tty, struct usb_serial_port *port,
 	if (urb->transfer_buffer == NULL) {
 		urb->transfer_buffer = kmalloc(URB_TRANSFER_BUFFER_SIZE,
 					       GFP_ATOMIC);
+<<<<<<< HEAD
 		if (!urb->transfer_buffer) {
 			bytes_sent = -ENOMEM;
+=======
+		if (!urb->transfer_buffer)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto exit;
 		}
 	}
@@ -1836,20 +1844,51 @@ static int mos7720_startup(struct usb_serial *serial)
 	u16 product;
 	int ret_val;
 
+	if (serial->num_bulk_in < 2 || serial->num_bulk_out < 2) {
+		dev_err(&serial->interface->dev, "missing bulk endpoints\n");
+		return -ENODEV;
+	}
+
 	product = le16_to_cpu(serial->dev->descriptor.idProduct);
 	dev = serial->dev;
 
 	if (product == MOSCHIP_DEVICE_ID_7715) {
+<<<<<<< HEAD
 		struct urb *urb = serial->port[0]->interrupt_in_urb;
 
 		urb->complete = mos7715_interrupt_callback;
+=======
+		struct usb_serial_port *tmp = serial->port[0];
+		serial->port[0] = serial->port[1];
+		serial->port[1] = tmp;
+		serial->port[0]->interrupt_in_urb = tmp->interrupt_in_urb;
+		serial->port[0]->interrupt_in_buffer = tmp->interrupt_in_buffer;
+		serial->port[0]->interrupt_in_endpointAddress =
+			tmp->interrupt_in_endpointAddress;
+		serial->port[1]->interrupt_in_urb = NULL;
+		serial->port[1]->interrupt_in_buffer = NULL;
+
+		if (serial->port[0]->interrupt_in_urb) {
+			struct urb *urb = serial->port[0]->interrupt_in_urb;
+
+			urb->complete = mos7715_interrupt_callback;
+		}
+	}
+
+	/* setting configuration feature to one */
+	usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+			(__u8)0x03, 0x00, 0x01, 0x00, NULL, 0x00, 5000);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_USB_SERIAL_MOS7715_PARPORT
 		ret_val = mos7715_parport_init(serial);
 		if (ret_val < 0)
 			return ret_val;
 #endif
+<<<<<<< HEAD
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* start the interrupt urb */
 	ret_val = usb_submit_urb(serial->port[0]->interrupt_in_urb, GFP_KERNEL);
 	if (ret_val) {

@@ -2888,7 +2888,13 @@ out_acl:
 	if (bmval2 & FATTR4_WORD2_SUPPATTR_EXCLCREAT) {
 		u32 supp[3];
 
+<<<<<<< HEAD
 		memcpy(supp, nfsd_suppattrs[minorversion], sizeof(supp));
+=======
+		supp[0] = nfsd_suppattrs0(minorversion);
+		supp[1] = nfsd_suppattrs1(minorversion);
+		supp[2] = nfsd_suppattrs2(minorversion);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		supp[0] &= NFSD_SUPPATTR_EXCLCREAT_WORD0;
 		supp[1] &= NFSD_SUPPATTR_EXCLCREAT_WORD1;
 		supp[2] &= NFSD_SUPPATTR_EXCLCREAT_WORD2;
@@ -4186,7 +4192,14 @@ nfsd4_encode_layoutget(struct nfsd4_compoundres *resp, __be32 nfserr,
 	*p++ = cpu_to_be32(lgp->lg_layout_type);
 
 	ops = nfsd4_layout_ops[lgp->lg_layout_type];
+<<<<<<< HEAD
 	return ops->encode_layoutget(xdr, lgp);
+=======
+	nfserr = ops->encode_layoutget(xdr, lgp);
+out:
+	kfree(lgp->lg_content);
+	return nfserr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static __be32

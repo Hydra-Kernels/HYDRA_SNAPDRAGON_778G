@@ -35,6 +35,7 @@ struct __ip6_tnl_parm {
 	__be32			i_key;
 	__be32			o_key;
 
+<<<<<<< HEAD
 	__u32			fwmark;
 	__u32			index;	/* ERSPAN type II index */
 	__u8			erspan_ver;	/* ERSPAN version */
@@ -42,6 +43,8 @@ struct __ip6_tnl_parm {
 	__u16			hwid;	/* hwid */
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* IPv6 tunnel */
 struct ip6_tnl {
 	struct ip6_tnl __rcu *next;	/* next tunnel in list */
@@ -50,7 +53,10 @@ struct ip6_tnl {
 	struct __ip6_tnl_parm parms;	/* tunnel configuration parameters */
 	struct flowi fl;	/* flowi template for xmit */
 	struct dst_cache dst_cache;	/* cached dst */
+<<<<<<< HEAD
 	struct gro_cells gro_cells;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	int err_count;
 	unsigned long err_time;

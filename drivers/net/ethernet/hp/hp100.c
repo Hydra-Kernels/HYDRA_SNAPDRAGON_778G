@@ -182,7 +182,11 @@ static const char *hp100_isa_tbl[] = {
 };
 #endif
 
+<<<<<<< HEAD
 static const struct eisa_device_id hp100_eisa_tbl[] = {
+=======
+static struct eisa_device_id hp100_eisa_tbl[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ "HWPF180" }, /* HP J2577 rev A */
 	{ "HWP1920" }, /* HP 27248B */
 	{ "HWP1940" }, /* HP J2577 */

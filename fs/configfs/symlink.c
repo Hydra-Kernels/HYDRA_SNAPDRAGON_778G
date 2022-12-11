@@ -85,7 +85,33 @@ static int create_link(struct config_item *parent_item,
 	int ret;
 
 	if (!configfs_dirent_is_ready(target_sd))
+<<<<<<< HEAD
 		return -ENOENT;
+=======
+		goto out;
+	ret = -ENOMEM;
+	sl = kmalloc(sizeof(struct configfs_symlink), GFP_KERNEL);
+	if (sl) {
+		spin_lock(&configfs_dirent_lock);
+		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
+			spin_unlock(&configfs_dirent_lock);
+			kfree(sl);
+			return -ENOENT;
+		}
+		sl->sl_target = config_item_get(item);
+		list_add(&sl->sl_list, &target_sd->s_links);
+		spin_unlock(&configfs_dirent_lock);
+		ret = configfs_create_link(sl, parent_item->ci_dentry,
+					   dentry);
+		if (ret) {
+			spin_lock(&configfs_dirent_lock);
+			list_del_init(&sl->sl_list);
+			spin_unlock(&configfs_dirent_lock);
+			config_item_put(item);
+			kfree(sl);
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	body = kzalloc(PAGE_SIZE, GFP_KERNEL);
 	if (!body)

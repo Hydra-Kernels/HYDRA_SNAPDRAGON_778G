@@ -17,7 +17,11 @@ struct shmem_inode_info {
 	unsigned long		flags;
 	unsigned long		alloced;	/* data pages alloced to file */
 	unsigned long		swapped;	/* subtotal assigned to swap */
+<<<<<<< HEAD
 	struct list_head        shrinklist;     /* shrinkable hpage inodes */
+=======
+	struct shared_policy	policy;		/* NUMA memory alloc policy */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct list_head	swaplist;	/* chain of maybes on swap */
 	struct shared_policy	policy;		/* NUMA memory alloc policy */
 	struct simple_xattrs	xattrs;		/* list of xattrs */

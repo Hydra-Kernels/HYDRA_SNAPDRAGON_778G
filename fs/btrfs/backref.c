@@ -1701,7 +1701,11 @@ char *btrfs_ref_to_path(struct btrfs_root *fs_root, struct btrfs_path *path,
 		/* make sure we can use eb after releasing the path */
 		if (eb != eb_in) {
 			if (!path->skip_locking)
+<<<<<<< HEAD
 				btrfs_set_lock_blocking_read(eb);
+=======
+				btrfs_set_lock_blocking_rw(eb, BTRFS_READ_LOCK);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			path->nodes[0] = NULL;
 			path->locks[0] = 0;
 		}

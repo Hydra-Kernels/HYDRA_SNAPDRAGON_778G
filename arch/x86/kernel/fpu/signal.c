@@ -335,10 +335,50 @@ static int __fpu__restore_sig(void __user *buf, void __user *buf_fx, int size)
 	 * reconstructed later.
 	 */
 	if (ia32_fxstate) {
+<<<<<<< HEAD
 		ret = __copy_from_user(&env, buf, sizeof(env));
 		if (ret)
 			goto out;
 		envp = &env;
+=======
+		/*
+		 * For 32-bit frames with fxstate, copy the user state to the
+		 * thread's fpu state, reconstruct fxstate from the fsave
+		 * header. Sanitize the copied state etc.
+		 */
+		struct fpu *fpu = &tsk->thread.fpu;
+		struct user_i387_ia32_struct env;
+		int err = 0;
+
+		/*
+		 * Drop the current fpu which clears fpu->fpstate_active. This ensures
+		 * that any context-switch during the copy of the new state,
+		 * avoids the intermediate state from getting restored/saved.
+		 * Thus avoiding the new restored state from getting corrupted.
+		 * We will be ready to restore/save the state only after
+		 * fpu->fpstate_active is again set.
+		 */
+		fpu__drop(fpu);
+
+		if (__copy_from_user(&fpu->state.xsave, buf_fx, state_size) ||
+		    __copy_from_user(&env, buf, sizeof(env)) ||
+		    (state_size > offsetof(struct xregs_state, header) &&
+		     fpu->state.xsave.header.xcomp_bv)) {
+			fpstate_init(&fpu->state);
+			err = -1;
+		} else {
+			sanitize_restored_xstate(tsk, &env, xfeatures, fx_only);
+		}
+
+		fpu->fpstate_active = 1;
+		if (use_eager_fpu()) {
+			preempt_disable();
+			fpu__restore(fpu);
+			preempt_enable();
+		}
+
+		return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		/*
 		 * Attempt to restore the FPU registers directly from user

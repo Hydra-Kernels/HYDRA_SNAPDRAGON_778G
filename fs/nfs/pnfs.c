@@ -539,6 +539,7 @@ static bool
 pnfs_cache_lseg_for_layoutreturn(struct pnfs_layout_hdr *lo,
 		struct pnfs_layout_segment *lseg)
 {
+<<<<<<< HEAD
 	if (test_and_clear_bit(NFS_LSEG_LAYOUTRETURN, &lseg->pls_flags) &&
 	    pnfs_layout_is_valid(lo)) {
 		pnfs_set_plh_return_info(lo, lseg->pls_range.iomode, 0);
@@ -546,6 +547,41 @@ pnfs_cache_lseg_for_layoutreturn(struct pnfs_layout_hdr *lo,
 		return true;
 	}
 	return false;
+=======
+	/* Serialise LAYOUTGET/LAYOUTRETURN */
+	if (atomic_read(&lo->plh_outstanding) != 0)
+		return false;
+	if (test_and_set_bit(NFS_LAYOUT_RETURN, &lo->plh_flags))
+		return false;
+	lo->plh_return_iomode = 0;
+	pnfs_get_layout_hdr(lo);
+	clear_bit(NFS_LAYOUT_RETURN_BEFORE_CLOSE, &lo->plh_flags);
+	return true;
+}
+
+static void pnfs_layoutreturn_before_put_lseg(struct pnfs_layout_segment *lseg,
+		struct pnfs_layout_hdr *lo, struct inode *inode)
+{
+	lo = lseg->pls_layout;
+	inode = lo->plh_inode;
+
+	spin_lock(&inode->i_lock);
+	if (pnfs_layout_need_return(lo, lseg)) {
+		nfs4_stateid stateid;
+		enum pnfs_iomode iomode;
+		bool send;
+
+		stateid = lo->plh_stateid;
+		iomode = lo->plh_return_iomode;
+		send = pnfs_prepare_layoutreturn(lo);
+		spin_unlock(&inode->i_lock);
+		if (send) {
+			/* Send an async layoutreturn so we dont deadlock */
+			pnfs_send_layoutreturn(lo, stateid, iomode, false);
+		}
+	} else
+		spin_unlock(&inode->i_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void
@@ -1942,9 +1978,13 @@ pnfs_update_layout(struct inode *ino,
 	}
 
 lookup_again:
+<<<<<<< HEAD
 	lseg = ERR_PTR(nfs4_client_recover_expired_lease(clp));
 	if (IS_ERR(lseg))
 		goto out;
+=======
+	nfs4_client_recover_expired_lease(clp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	first = false;
 	spin_lock(&ino->i_lock);
 	lo = pnfs_find_alloc_layout(ino, ctx, gfp_flags);

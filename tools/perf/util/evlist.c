@@ -990,10 +990,31 @@ out_delete_threads:
 void __perf_evlist__set_sample_bit(struct evlist *evlist,
 				   enum perf_event_sample_format bit)
 {
+<<<<<<< HEAD
 	struct evsel *evsel;
 
 	evlist__for_each_entry(evlist, evsel)
 		__perf_evsel__set_sample_bit(evsel, bit);
+=======
+	/*
+	 * Allow for the possibility that one or another of the maps isn't being
+	 * changed i.e. don't put it.  Note we are assuming the maps that are
+	 * being applied are brand new and evlist is taking ownership of the
+	 * original reference count of 1.  If that is not the case it is up to
+	 * the caller to increase the reference count.
+	 */
+	if (cpus != evlist->cpus) {
+		cpu_map__put(evlist->cpus);
+		evlist->cpus = cpu_map__get(cpus);
+	}
+
+	if (threads != evlist->threads) {
+		thread_map__put(evlist->threads);
+		evlist->threads = thread_map__get(threads);
+	}
+
+	perf_evlist__propagate_maps(evlist);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void __perf_evlist__reset_sample_bit(struct evlist *evlist,

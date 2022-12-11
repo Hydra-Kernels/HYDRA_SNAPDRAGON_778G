@@ -471,7 +471,13 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 	newtp = tcp_sk(newsk);
 	oldtp = tcp_sk(sk);
 
+<<<<<<< HEAD
 	smc_check_reset_syn_req(oldtp, req, newtp);
+=======
+		newtp->rcv_wup = newtp->copied_seq =
+		newtp->rcv_nxt = treq->rcv_isn + 1;
+		newtp->segs_in = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Now setup tcp_sock */
 	newtp->pred_flags = 0;
@@ -487,8 +493,16 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 	WRITE_ONCE(newtp->snd_nxt, seq);
 	newtp->snd_up = seq;
 
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&newtp->tsq_node);
 	INIT_LIST_HEAD(&newtp->tsorted_sent_queue);
+=======
+		newtp->srtt_us = 0;
+		newtp->mdev_us = jiffies_to_usecs(TCP_TIMEOUT_INIT);
+		newtp->rtt_min[0].rtt = ~0U;
+		newicsk->icsk_rto = TCP_TIMEOUT_INIT;
+		newicsk->icsk_ack.lrcvtime = tcp_time_stamp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	tcp_init_wl(newtp, treq->rcv_isn);
 
@@ -506,6 +520,7 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 		inet_csk_reset_keepalive_timer(newsk,
 					       keepalive_time_when(newtp));
 
+<<<<<<< HEAD
 	newtp->rx_opt.tstamp_ok = ireq->tstamp_ok;
 	newtp->rx_opt.sack_ok = ireq->sack_ok;
 	newtp->window_clamp = req->rsk_window_clamp;
@@ -518,6 +533,59 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 	} else {
 		newtp->rx_opt.snd_wscale = newtp->rx_opt.rcv_wscale = 0;
 		newtp->window_clamp = min(newtp->window_clamp, 65535U);
+=======
+		newtp->urg_data = 0;
+
+		if (sock_flag(newsk, SOCK_KEEPOPEN))
+			inet_csk_reset_keepalive_timer(newsk,
+						       keepalive_time_when(newtp));
+
+		newtp->rx_opt.tstamp_ok = ireq->tstamp_ok;
+		if ((newtp->rx_opt.sack_ok = ireq->sack_ok) != 0) {
+			if (sysctl_tcp_fack)
+				tcp_enable_fack(newtp);
+		}
+		newtp->window_clamp = req->rsk_window_clamp;
+		newtp->rcv_ssthresh = req->rsk_rcv_wnd;
+		newtp->rcv_wnd = req->rsk_rcv_wnd;
+		newtp->rx_opt.wscale_ok = ireq->wscale_ok;
+		if (newtp->rx_opt.wscale_ok) {
+			newtp->rx_opt.snd_wscale = ireq->snd_wscale;
+			newtp->rx_opt.rcv_wscale = ireq->rcv_wscale;
+		} else {
+			newtp->rx_opt.snd_wscale = newtp->rx_opt.rcv_wscale = 0;
+			newtp->window_clamp = min(newtp->window_clamp, 65535U);
+		}
+		newtp->snd_wnd = (ntohs(tcp_hdr(skb)->window) <<
+				  newtp->rx_opt.snd_wscale);
+		newtp->max_window = newtp->snd_wnd;
+
+		if (newtp->rx_opt.tstamp_ok) {
+			newtp->rx_opt.ts_recent = req->ts_recent;
+			newtp->rx_opt.ts_recent_stamp = get_seconds();
+			newtp->tcp_header_len = sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED;
+		} else {
+			newtp->rx_opt.ts_recent_stamp = 0;
+			newtp->tcp_header_len = sizeof(struct tcphdr);
+		}
+		newtp->tsoffset = 0;
+#ifdef CONFIG_TCP_MD5SIG
+		newtp->md5sig_info = NULL;	/*XXX*/
+		if (newtp->af_specific->md5_lookup(sk, newsk))
+			newtp->tcp_header_len += TCPOLEN_MD5SIG_ALIGNED;
+#endif
+		if (skb->len >= TCP_MSS_DEFAULT + newtp->tcp_header_len)
+			newicsk->icsk_ack.last_seg_size = skb->len - newtp->tcp_header_len;
+		newtp->rx_opt.mss_clamp = req->mss;
+		tcp_ecn_openreq_child(newtp, req);
+		newtp->fastopen_req = NULL;
+		newtp->fastopen_rsk = NULL;
+		newtp->syn_data_acked = 0;
+		newtp->rack.mstamp.v64 = 0;
+		newtp->rack.advanced = 0;
+
+		TCP_INC_STATS_BH(sock_net(sk), TCP_MIB_PASSIVEOPENS);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	newtp->snd_wnd = ntohs(tcp_hdr(skb)->window) << newtp->rx_opt.snd_wscale;
 	newtp->max_window = newtp->snd_wnd;
@@ -824,10 +892,14 @@ int tcp_child_process(struct sock *parent, struct sock *child,
 	int ret = 0;
 	int state = child->sk_state;
 
+<<<<<<< HEAD
 	/* record NAPI ID of child */
 	sk_mark_napi_id(child, skb);
 
 	tcp_segs_in(tcp_sk(child), skb);
+=======
+	tcp_sk(child)->segs_in += max_t(u16, 1, skb_shinfo(skb)->gso_segs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sock_owned_by_user(child)) {
 		ret = tcp_rcv_state_process(child, skb);
 		/* Wakeup parent, send SIGIO */

@@ -196,17 +196,45 @@ struct l2tp_session *l2tp_tunnel_get_session(struct l2tp_tunnel *tunnel,
 
 void l2tp_tunnel_free(struct l2tp_tunnel *tunnel);
 
+<<<<<<< HEAD
 struct l2tp_session *l2tp_session_get(const struct net *net, u32 session_id);
 struct l2tp_session *l2tp_session_get_nth(struct l2tp_tunnel *tunnel, int nth);
 struct l2tp_session *l2tp_session_get_by_ifname(const struct net *net,
 						const char *ifname);
+=======
+	sock_hold(sk);
+	tunnel = (struct l2tp_tunnel *)(sk->sk_user_data);
+	if (tunnel == NULL) {
+		sock_put(sk);
+		goto out;
+	}
+
+	BUG_ON(tunnel->magic != L2TP_TUNNEL_MAGIC);
+
+out:
+	return tunnel;
+}
+
+struct l2tp_session *l2tp_session_find(struct net *net,
+				       struct l2tp_tunnel *tunnel,
+				       u32 session_id);
+struct l2tp_session *l2tp_session_get_nth(struct l2tp_tunnel *tunnel, int nth,
+					  bool do_ref);
+struct l2tp_session *l2tp_session_find_by_ifname(struct net *net, char *ifname);
+struct l2tp_tunnel *l2tp_tunnel_find(struct net *net, u32 tunnel_id);
+struct l2tp_tunnel *l2tp_tunnel_find_nth(struct net *net, int nth);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id,
 		       u32 peer_tunnel_id, struct l2tp_tunnel_cfg *cfg,
 		       struct l2tp_tunnel **tunnelp);
+<<<<<<< HEAD
 int l2tp_tunnel_register(struct l2tp_tunnel *tunnel, struct net *net,
 			 struct l2tp_tunnel_cfg *cfg);
 
+=======
+void l2tp_tunnel_closeall(struct l2tp_tunnel *tunnel);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void l2tp_tunnel_delete(struct l2tp_tunnel *tunnel);
 struct l2tp_session *l2tp_session_create(int priv_size,
 					 struct l2tp_tunnel *tunnel,
@@ -231,6 +259,7 @@ int l2tp_nl_register_ops(enum l2tp_pwtype pw_type,
 			 const struct l2tp_nl_cmd_ops *ops);
 void l2tp_nl_unregister_ops(enum l2tp_pwtype pw_type);
 int l2tp_ioctl(struct sock *sk, int cmd, unsigned long arg);
+<<<<<<< HEAD
 
 static inline void l2tp_tunnel_inc_refcount(struct l2tp_tunnel *tunnel)
 {
@@ -242,6 +271,8 @@ static inline void l2tp_tunnel_dec_refcount(struct l2tp_tunnel *tunnel)
 	if (refcount_dec_and_test(&tunnel->ref_count))
 		l2tp_tunnel_free(tunnel);
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Session reference counts. Incremented when code obtains a reference
  * to a session.

@@ -1228,8 +1228,27 @@ static int digi_port_init(struct usb_serial_port *port, unsigned port_num)
 
 static int digi_startup(struct usb_serial *serial)
 {
+	struct device *dev = &serial->interface->dev;
 	struct digi_serial *serial_priv;
 	int ret;
+	int i;
+
+	/* check whether the device has the expected number of endpoints */
+	if (serial->num_port_pointers < serial->type->num_ports + 1) {
+		dev_err(dev, "OOB endpoints missing\n");
+		return -ENODEV;
+	}
+
+	for (i = 0; i < serial->type->num_ports + 1 ; i++) {
+		if (!serial->port[i]->read_urb) {
+			dev_err(dev, "bulk-in endpoint missing\n");
+			return -ENODEV;
+		}
+		if (!serial->port[i]->write_urb) {
+			dev_err(dev, "bulk-out endpoint missing\n");
+			return -ENODEV;
+		}
+	}
 
 	serial_priv = kzalloc(sizeof(*serial_priv), GFP_KERNEL);
 	if (!serial_priv)
@@ -1358,16 +1377,40 @@ static int digi_read_inb_callback(struct urb *urb)
 	struct usb_serial_port *port = urb->context;
 	struct digi_port *priv = usb_get_serial_port_data(port);
 	unsigned char *buf = urb->transfer_buffer;
+<<<<<<< HEAD
 	unsigned long flags;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int opcode;
 	int len;
 	int port_status;
 	unsigned char *data;
+<<<<<<< HEAD
 	int tty_flag, throttled;
+=======
+	int flag, throttled;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* short/multiple packet check */
 	if (urb->actual_length < 2) {
 		dev_warn(&port->dev, "short packet received\n");
+<<<<<<< HEAD
+=======
+		return -1;
+	}
+
+	opcode = buf[0];
+	len = buf[1];
+
+	if (urb->actual_length != len + 2) {
+		dev_err(&port->dev, "malformed packet received: port=%d, opcode=%d, len=%d, actual_length=%u\n",
+			priv->dp_port_num, opcode, len, urb->actual_length);
+		return -1;
+	}
+
+	if (opcode == DIGI_CMD_RECEIVE_DATA && len < 1) {
+		dev_err(&port->dev, "malformed data packet received\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -1;
 	}
 

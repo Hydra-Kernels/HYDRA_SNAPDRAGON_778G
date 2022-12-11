@@ -573,6 +573,25 @@ static inline void early_memtest(phys_addr_t start, phys_addr_t end)
 }
 #endif
 
+<<<<<<< HEAD
+=======
+extern unsigned long memblock_reserved_memory_within(phys_addr_t start_addr,
+		phys_addr_t end_addr);
+#else
+static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
+{
+	return 0;
+}
+
+static inline unsigned long memblock_reserved_memory_within(phys_addr_t start_addr,
+		phys_addr_t end_addr)
+{
+	return 0;
+}
+
+#endif /* CONFIG_HAVE_MEMBLOCK */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* __KERNEL__ */
 
 #endif /* _LINUX_MEMBLOCK_H */

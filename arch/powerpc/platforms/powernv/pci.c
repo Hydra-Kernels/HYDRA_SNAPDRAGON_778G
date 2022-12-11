@@ -334,7 +334,19 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
 			be64_to_cpu(data->dma1ErrorLog0),
 			be64_to_cpu(data->dma1ErrorLog1));
 
+<<<<<<< HEAD
 	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_P7IOC_NUM_PEST_REGS);
+=======
+	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
+		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
+		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
+			continue;
+
+		pr_info("PE[%3d] A/B: %016llx %016llx\n",
+			i, be64_to_cpu(data->pestA[i]),
+			be64_to_cpu(data->pestB[i]));
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
@@ -796,6 +808,88 @@ struct pci_ops pnv_pci_ops = {
 	.write = pnv_pci_write_config,
 };
 
+<<<<<<< HEAD
+=======
+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
+{
+	__be64 *tmp = ((__be64 *)tbl->it_base);
+	int  level = tbl->it_indirect_levels;
+	const long shift = ilog2(tbl->it_level_size);
+	unsigned long mask = (tbl->it_level_size - 1) << (level * shift);
+
+	while (level) {
+		int n = (idx & mask) >> (level * shift);
+		unsigned long tce = be64_to_cpu(tmp[n]);
+
+		tmp = __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
+		idx &= ~mask;
+		mask >>= shift;
+		--level;
+	}
+
+	return tmp + idx;
+}
+
+int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+		unsigned long uaddr, enum dma_data_direction direction,
+		struct dma_attrs *attrs)
+{
+	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
+	long i;
+
+	if (proto_tce & TCE_PCI_WRITE)
+		proto_tce |= TCE_PCI_READ;
+
+	for (i = 0; i < npages; i++) {
+		unsigned long newtce = proto_tce |
+			((rpn + i) << tbl->it_page_shift);
+		unsigned long idx = index - tbl->it_offset + i;
+
+		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
+	}
+
+	return 0;
+}
+
+#ifdef CONFIG_IOMMU_API
+int pnv_tce_xchg(struct iommu_table *tbl, long index,
+		unsigned long *hpa, enum dma_data_direction *direction)
+{
+	u64 proto_tce = iommu_direction_to_tce_perm(*direction);
+	unsigned long newtce = *hpa | proto_tce, oldtce;
+	unsigned long idx = index - tbl->it_offset;
+
+	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
+
+	if (newtce & TCE_PCI_WRITE)
+		newtce |= TCE_PCI_READ;
+
+	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
+	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+	*direction = iommu_tce_direction(oldtce);
+
+	return 0;
+}
+#endif
+
+void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+{
+	long i;
+
+	for (i = 0; i < npages; i++) {
+		unsigned long idx = index - tbl->it_offset + i;
+
+		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
+	}
+}
+
+unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+{
+	return *(pnv_tce(tbl, index - tbl->it_offset));
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct iommu_table *pnv_pci_table_alloc(int nid)
 {
 	struct iommu_table *tbl;
@@ -839,6 +933,7 @@ void pnv_pci_dma_bus_setup(struct pci_bus *bus)
 	}
 }
 
+<<<<<<< HEAD
 struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
 {
 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
@@ -901,6 +996,8 @@ out:
 }
 EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void pnv_pci_shutdown(void)
 {
 	struct pci_controller *hose;

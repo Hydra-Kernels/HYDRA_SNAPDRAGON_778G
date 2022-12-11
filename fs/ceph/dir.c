@@ -282,9 +282,15 @@ out:
 			err = ret;
 		dput(last);
 		/* last_name no longer match cache index */
+<<<<<<< HEAD
 		if (dfi->readdir_cache_idx >= 0) {
 			dfi->readdir_cache_idx = -1;
 			dfi->dir_release_count = 0;
+=======
+		if (fi->readdir_cache_idx >= 0) {
+			fi->readdir_cache_idx = -1;
+			fi->dir_release_count = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 	return err;

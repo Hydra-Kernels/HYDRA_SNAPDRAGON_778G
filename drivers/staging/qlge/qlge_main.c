@@ -1653,7 +1653,11 @@ static void ql_process_mac_rx_skb(struct ql_adapter *qdev,
 				    dma_unmap_len(sbq_desc, maplen),
 				    PCI_DMA_FROMDEVICE);
 
+<<<<<<< HEAD:drivers/staging/qlge/qlge_main.c
 	skb_put_data(new_skb, skb->data, length);
+=======
+	memcpy(skb_put(new_skb, length), skb->data, length);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/ethernet/qlogic/qlge/qlge_main.c
 
 	pci_dma_sync_single_for_device(qdev->pdev,
 				       dma_unmap_addr(sbq_desc, mapaddr),

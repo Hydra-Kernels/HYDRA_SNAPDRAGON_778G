@@ -1454,7 +1454,11 @@ static void setup_special_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc,
 	rtlpriv->ra.is_special_data = true;
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
+<<<<<<< HEAD
 					rtlpriv, type);
+=======
+					rtlpriv, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rtl_lps_leave(hw);
 	ppsc->last_delaylps_stamp_jiffies = jiffies;
 }
@@ -2140,6 +2144,7 @@ void rtl_watchdog_wq_callback(void *data)
 									false;
 		}
 
+<<<<<<< HEAD
 		/* PS is controlled by coex. */
 		if (rtlpriv->cfg->ops->get_btc_status() &&
 		    rtlpriv->btcoexist.btc_ops->btc_is_bt_ctrl_lps(rtlpriv))
@@ -2154,6 +2159,14 @@ void rtl_watchdog_wq_callback(void *data)
 
 label_lps_done:
 		;
+=======
+		if (((rtlpriv->link_info.num_rx_inperiod +
+		      rtlpriv->link_info.num_tx_inperiod) > 8) ||
+		    (rtlpriv->link_info.num_rx_inperiod > 2))
+			rtl_lps_leave(hw);
+		else
+			rtl_lps_enter(hw);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	for (tid = 0; tid <= 7; tid++)

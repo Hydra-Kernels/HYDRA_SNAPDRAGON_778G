@@ -217,6 +217,7 @@ struct perf_session *perf_session__new(struct perf_data *data,
 			 * set session attributes that are present in perf.data
 			 * but not in pipe-mode.
 			 */
+<<<<<<< HEAD
 			if (!data->is_pipe) {
 				perf_session__set_id_hdr_size(session);
 				perf_session__set_comm_exec(session);
@@ -230,6 +231,12 @@ struct perf_session *perf_session__new(struct perf_data *data,
 			if (ret)
 				goto out_delete;
 			}
+=======
+			if (!file->is_pipe) {
+				perf_session__set_id_hdr_size(session);
+				perf_session__set_comm_exec(session);
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	} else  {
 		session->machines.host.env = &perf_env;
@@ -251,7 +258,11 @@ struct perf_session *perf_session__new(struct perf_data *data,
 	 * In pipe-mode, evlist is empty until PERF_RECORD_HEADER_ATTR is
 	 * processed, so perf_evlist__sample_id_all is not meaningful here.
 	 */
+<<<<<<< HEAD
 	if ((!data || !data->is_pipe) && tool && tool->ordering_requires_timestamps &&
+=======
+	if ((!file || !file->is_pipe) && tool && tool->ordering_requires_timestamps &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    tool->ordered_events && !perf_evlist__sample_id_all(session->evlist)) {
 		dump_printf("WARNING: No sample_id_all support, falling back to unordered processing\n");
 		tool->ordered_events = false;

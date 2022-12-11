@@ -207,6 +207,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
 	hdr = (const struct common_firmware_header *)adev->uvd.fw->data;
 	family_id = le32_to_cpu(hdr->ucode_version) & 0xff;
 
+<<<<<<< HEAD
 	if (adev->asic_type < CHIP_VEGA20) {
 		unsigned version_major, version_minor;
 
@@ -245,6 +246,20 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
 		adev->uvd.max_handles = AMDGPU_MAX_UVD_HANDLES;
 
 		adev->uvd.fw_version = le32_to_cpu(hdr->ucode_version);
+=======
+	adev->uvd.fw_version = ((version_major << 24) | (version_minor << 16) |
+				(family_id << 8));
+
+	bo_size = AMDGPU_GPU_PAGE_ALIGN(le32_to_cpu(hdr->ucode_size_bytes) + 8)
+		 +  AMDGPU_UVD_STACK_SIZE + AMDGPU_UVD_HEAP_SIZE;
+	r = amdgpu_bo_create(adev, bo_size, PAGE_SIZE, true,
+			     AMDGPU_GEM_DOMAIN_VRAM,
+			     AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED,
+			     NULL, NULL, &adev->uvd.vcpu_bo);
+	if (r) {
+		dev_err(adev->dev, "(%d) failed to allocate UVD bo\n", r);
+		return r;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	bo_size = AMDGPU_UVD_STACK_SIZE + AMDGPU_UVD_HEAP_SIZE
@@ -392,6 +407,7 @@ int amdgpu_uvd_resume(struct amdgpu_device *adev)
 		size = amdgpu_bo_size(adev->uvd.inst[i].vcpu_bo);
 		ptr = adev->uvd.inst[i].cpu_addr;
 
+<<<<<<< HEAD
 		if (adev->uvd.inst[i].saved_bo != NULL) {
 			memcpy_toio(ptr, adev->uvd.inst[i].saved_bo, size);
 			kvfree(adev->uvd.inst[i].saved_bo);
@@ -399,6 +415,16 @@ int amdgpu_uvd_resume(struct amdgpu_device *adev)
 		} else {
 			const struct common_firmware_header *hdr;
 			unsigned offset;
+=======
+	cancel_delayed_work_sync(&adev->uvd.idle_work);
+
+	size = amdgpu_bo_size(adev->uvd.vcpu_bo);
+	size -= le32_to_cpu(hdr->ucode_size_bytes);
+	ptr = adev->uvd.cpu_addr;
+	ptr += le32_to_cpu(hdr->ucode_size_bytes);
+
+	memset(ptr, 0, size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			hdr = (const struct common_firmware_header *)adev->uvd.fw->data;
 			if (adev->firmware.load_type != AMDGPU_FW_LOAD_PSP) {

@@ -47,7 +47,11 @@ struct mlx5_core_cq {
 	struct completion	free;
 	unsigned		vector;
 	unsigned int		irqn;
+<<<<<<< HEAD
 	void (*comp)(struct mlx5_core_cq *cq, struct mlx5_eqe *eqe);
+=======
+	void (*comp)		(struct mlx5_core_cq *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	void (*event)		(struct mlx5_core_cq *, enum mlx5_event);
 	u32			cons_index;
 	unsigned		arm_sn;

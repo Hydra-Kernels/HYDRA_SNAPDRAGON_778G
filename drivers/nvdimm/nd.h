@@ -346,8 +346,12 @@ static inline struct device *nd_dax_create(struct nd_region *nd_region)
 
 int nd_region_to_nstype(struct nd_region *nd_region);
 int nd_region_register_namespaces(struct nd_region *nd_region, int *err);
+<<<<<<< HEAD
 u64 nd_region_interleave_set_cookie(struct nd_region *nd_region,
 		struct nd_namespace_index *nsindex);
+=======
+u64 nd_region_interleave_set_cookie(struct nd_region *nd_region);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 u64 nd_region_interleave_set_altcookie(struct nd_region *nd_region);
 void nvdimm_bus_lock(struct device *dev);
 void nvdimm_bus_unlock(struct device *dev);

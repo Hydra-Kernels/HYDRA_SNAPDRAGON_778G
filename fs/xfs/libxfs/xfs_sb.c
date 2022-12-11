@@ -662,6 +662,32 @@ xfs_sb_to_disk(
 	}
 }
 
+<<<<<<< HEAD
+=======
+static int
+xfs_sb_verify(
+	struct xfs_buf	*bp,
+	bool		check_version)
+{
+	struct xfs_mount *mp = bp->b_target->bt_mount;
+	struct xfs_sb	sb;
+
+	/*
+	 * Use call variant which doesn't convert quota flags from disk 
+	 * format, because xfs_mount_validate_sb checks the on-disk flags.
+	 */
+	__xfs_sb_from_disk(&sb, XFS_BUF_TO_SBP(bp), false);
+
+	/*
+	 * Only check the in progress field for the primary superblock as
+	 * mkfs.xfs doesn't clear it from secondary superblocks.
+	 */
+	return xfs_mount_validate_sb(mp, &sb,
+				     bp->b_maps[0].bm_bn == XFS_SB_DADDR,
+				     check_version);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * If the superblock has the CRC feature bit set or the CRC field is non-null,
  * check that the CRC is valid.  We check the CRC field is non-null because a
@@ -776,14 +802,20 @@ out_error:
 
 const struct xfs_buf_ops xfs_sb_buf_ops = {
 	.name = "xfs_sb",
+<<<<<<< HEAD
 	.magic = { cpu_to_be32(XFS_SB_MAGIC), cpu_to_be32(XFS_SB_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_sb_read_verify,
 	.verify_write = xfs_sb_write_verify,
 };
 
 const struct xfs_buf_ops xfs_sb_quiet_buf_ops = {
 	.name = "xfs_sb_quiet",
+<<<<<<< HEAD
 	.magic = { cpu_to_be32(XFS_SB_MAGIC), cpu_to_be32(XFS_SB_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_sb_quiet_read_verify,
 	.verify_write = xfs_sb_write_verify,
 };

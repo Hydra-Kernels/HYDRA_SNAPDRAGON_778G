@@ -774,8 +774,12 @@ static int eth_link_query_port(struct ib_device *ibdev, u8 port,
 					   IB_WIDTH_4X : IB_WIDTH_1X;
 	props->active_speed	=  (((u8 *)mailbox->buf)[5] == 0x20 /*56Gb*/) ?
 					   IB_SPEED_FDR : IB_SPEED_QDR;
+<<<<<<< HEAD
 	props->port_cap_flags	= IB_PORT_CM_SUP;
 	props->ip_gids = true;
+=======
+	props->port_cap_flags	= IB_PORT_CM_SUP | IB_PORT_IP_BASED_GIDS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	props->gid_tbl_len	= mdev->dev->caps.gid_table_len[port];
 	props->max_msg_sz	= mdev->dev->caps.max_msg_sz;
 	if (mdev->dev->caps.pkey_table_len[port])
@@ -1145,6 +1149,77 @@ static void mlx4_ib_dealloc_ucontext(struct ib_ucontext *ibcontext)
 
 static void mlx4_ib_disassociate_ucontext(struct ib_ucontext *ibcontext)
 {
+<<<<<<< HEAD
+=======
+	int i;
+	int ret = 0;
+	struct vm_area_struct *vma;
+	struct mlx4_ib_ucontext *context = to_mucontext(ibcontext);
+	struct task_struct *owning_process  = NULL;
+	struct mm_struct   *owning_mm       = NULL;
+
+	owning_process = get_pid_task(ibcontext->tgid, PIDTYPE_PID);
+	if (!owning_process)
+		return;
+
+	owning_mm = get_task_mm(owning_process);
+	if (!owning_mm) {
+		pr_info("no mm, disassociate ucontext is pending task termination\n");
+		while (1) {
+			/* make sure that task is dead before returning, it may
+			 * prevent a rare case of module down in parallel to a
+			 * call to mlx4_ib_vma_close.
+			 */
+			put_task_struct(owning_process);
+			msleep(1);
+			owning_process = get_pid_task(ibcontext->tgid,
+						      PIDTYPE_PID);
+			if (!owning_process ||
+			    owning_process->state == TASK_DEAD) {
+				pr_info("disassociate ucontext done, task was terminated\n");
+				/* in case task was dead need to release the task struct */
+				if (owning_process)
+					put_task_struct(owning_process);
+				return;
+			}
+		}
+	}
+
+	/* need to protect from a race on closing the vma as part of
+	 * mlx4_ib_vma_close().
+	 */
+	down_write(&owning_mm->mmap_sem);
+	for (i = 0; i < HW_BAR_COUNT; i++) {
+		vma = context->hw_bar_info[i].vma;
+		if (!vma)
+			continue;
+
+		ret = zap_vma_ptes(context->hw_bar_info[i].vma,
+				   context->hw_bar_info[i].vma->vm_start,
+				   PAGE_SIZE);
+		if (ret) {
+			pr_err("Error: zap_vma_ptes failed for index=%d, ret=%d\n", i, ret);
+			BUG_ON(1);
+		}
+
+		context->hw_bar_info[i].vma->vm_flags &=
+			~(VM_SHARED | VM_MAYSHARE);
+		/* context going to be destroyed, should not access ops any more */
+		context->hw_bar_info[i].vma->vm_ops = NULL;
+	}
+
+	up_write(&owning_mm->mmap_sem);
+	mmput(owning_mm);
+	put_task_struct(owning_process);
+}
+
+static void mlx4_ib_set_vma_data(struct vm_area_struct *vma,
+				 struct mlx4_ib_vma_private_data *vma_private_data)
+{
+	vma_private_data->vma = vma;
+	vma->vm_private_data = vma_private_data;
+	vma->vm_ops =  &mlx4_ib_vm_ops;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int mlx4_ib_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
@@ -2846,6 +2921,23 @@ static void *mlx4_ib_add(struct mlx4_dev *dev)
 			bitmap_fill(ibdev->ib_uc_qpns_bitmap,
 				    ibdev->steer_qpn_count);
 		}
+<<<<<<< HEAD
+=======
+
+		if (dev->caps.flags2 & MLX4_DEV_CAP_FLAG2_DMFS_IPOIB) {
+			bitmap_zero(ibdev->ib_uc_qpns_bitmap,
+				    ibdev->steer_qpn_count);
+			err = mlx4_FLOW_STEERING_IB_UC_QP_RANGE(
+					dev, ibdev->steer_qpn_base,
+					ibdev->steer_qpn_base +
+					ibdev->steer_qpn_count - 1);
+			if (err)
+				goto err_steer_free_bitmap;
+		} else {
+			bitmap_fill(ibdev->ib_uc_qpns_bitmap,
+				    ibdev->steer_qpn_count);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	for (j = 1; j <= ibdev->dev->caps.num_ports; j++)
@@ -3025,11 +3117,14 @@ static void mlx4_ib_remove(struct mlx4_dev *dev, void *ibdev_ptr)
 		ibdev->iboe.nb.notifier_call = NULL;
 	}
 
+<<<<<<< HEAD
 	mlx4_ib_close_sriov(ibdev);
 	mlx4_ib_mad_cleanup(ibdev);
 	ib_unregister_device(&ibdev->ib_dev);
 	mlx4_ib_diag_cleanup(ibdev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mlx4_qp_release_range(dev, ibdev->steer_qpn_base,
 			      ibdev->steer_qpn_count);
 	kfree(ibdev->ib_uc_qpns_bitmap);

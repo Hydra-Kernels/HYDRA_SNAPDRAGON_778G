@@ -191,8 +191,14 @@ struct usb_stream *usb_stream_new(struct usb_stream_kernel *sk,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	sk->s = alloc_pages_exact(read_size,
 				  GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN);
+=======
+	pg = get_order(read_size);
+	sk->s = (void *) __get_free_pages(GFP_KERNEL|__GFP_COMP|__GFP_ZERO|
+					  __GFP_NOWARN, pg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sk->s) {
 		pr_warn("us122l: couldn't allocate read buffer\n");
 		goto out;
@@ -210,8 +216,14 @@ struct usb_stream *usb_stream_new(struct usb_stream_kernel *sk,
 
 	sk->s->write_size = write_size;
 
+<<<<<<< HEAD
 	sk->write_page = alloc_pages_exact(write_size,
 					   GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN);
+=======
+	sk->write_page =
+		(void *)__get_free_pages(GFP_KERNEL|__GFP_COMP|__GFP_ZERO|
+					 __GFP_NOWARN, pg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sk->write_page) {
 		pr_warn("us122l: couldn't allocate write buffer\n");
 		usb_stream_free(sk);

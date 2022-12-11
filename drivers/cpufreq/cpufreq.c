@@ -750,7 +750,15 @@ static ssize_t store_##file_name					\
 	unsigned long val;						\
 	int ret;							\
 									\
+<<<<<<< HEAD
 	ret = sscanf(buf, "%lu", &val);					\
+=======
+	memcpy(&new_policy, policy, sizeof(*policy));			\
+	new_policy.min = policy->user_policy.min;			\
+	new_policy.max = policy->user_policy.max;			\
+									\
+	ret = sscanf(buf, "%u", &new_policy.object);			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != 1)							\
 		return -EINVAL;						\
 									\
@@ -1420,6 +1428,7 @@ static int cpufreq_online(unsigned int cpu)
 	if (new_policy) {
 		for_each_cpu(j, policy->related_cpus) {
 			per_cpu(cpufreq_cpu_data, j) = policy;
+<<<<<<< HEAD
 			add_cpu_dev_symlink(policy, j);
 		}
 
@@ -1458,6 +1467,12 @@ static int cpufreq_online(unsigned int cpu)
 
 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 				CPUFREQ_CREATE_POLICY, policy);
+=======
+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+	} else {
+		policy->min = policy->user_policy.min;
+		policy->max = policy->user_policy.max;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (cpufreq_driver->get && has_target()) {

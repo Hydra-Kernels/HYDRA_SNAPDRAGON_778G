@@ -8,8 +8,21 @@
 #include <asm/cmdline.h>
 
 #include <linux/sched.h>
+<<<<<<< HEAD
 #include <linux/sched/task.h>
 #include <linux/init.h>
+=======
+#include <linux/init.h>
+
+/*
+ * Initialize the TS bit in CR0 according to the style of context-switches
+ * we are using:
+ */
+static void fpu__init_cpu_ctx_switch(void)
+{
+	clts();
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Initialize the registers found in all CPUs, CR0 and CR4:
@@ -61,6 +74,7 @@ static bool fpu__probe_without_cpuid(void)
 	cr0 &= ~(X86_CR0_TS | X86_CR0_EM);
 	write_cr0(cr0);
 
+<<<<<<< HEAD
 	asm volatile("fninit ; fnstsw %0 ; fnstcw %1" : "+m" (fsw), "+m" (fcw));
 
 	pr_info("x86/fpu: Probing for FPU: FSW=0x%04hx FCW=0x%04hx\n", fsw, fcw);
@@ -76,6 +90,16 @@ static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
 			setup_force_cpu_cap(X86_FEATURE_FPU);
 		else
 			setup_clear_cpu_cap(X86_FEATURE_FPU);
+=======
+	if (!test_bit(X86_FEATURE_FPU, (unsigned long *)cpu_caps_cleared)) {
+		asm volatile("fninit ; fnstsw %0 ; fnstcw %1"
+			     : "+m" (fsw), "+m" (fcw));
+
+		if (fsw == 0 && (fcw & 0x103f) == 0x003f)
+			set_cpu_cap(c, X86_FEATURE_FPU);
+		else
+			clear_cpu_cap(c, X86_FEATURE_FPU);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 #ifndef CONFIG_MATH_EMULATION
@@ -236,6 +260,7 @@ static void __init fpu__init_system_ctx_switch(void)
 	on_boot_cpu = 0;
 }
 
+<<<<<<< HEAD
 /*
  * We parse fpu parameters early because fpu__init_system() is executed
  * before parse_early_param().
@@ -260,12 +285,36 @@ static void __init fpu__init_parse_early_param(void)
 
 	if (cmdline_find_option_bool(boot_command_line, "noxsave"))
 		setup_clear_cpu_cap(X86_FEATURE_XSAVE);
+=======
+	WARN_ON_FPU(current->thread.fpu.fpstate_active);
+	current_thread_info()->status = 0;
+}
+
+/*
+ * We parse fpu parameters early because fpu__init_system() is executed
+ * before parse_early_param().
+ */
+static void __init fpu__init_parse_early_param(void)
+{
+	if (cmdline_find_option_bool(boot_command_line, "no387"))
+		setup_clear_cpu_cap(X86_FEATURE_FPU);
+
+	if (cmdline_find_option_bool(boot_command_line, "nofxsr")) {
+		setup_clear_cpu_cap(X86_FEATURE_FXSR);
+		setup_clear_cpu_cap(X86_FEATURE_FXSR_OPT);
+		setup_clear_cpu_cap(X86_FEATURE_XMM);
+	}
+
+	if (cmdline_find_option_bool(boot_command_line, "noxsave"))
+		fpu__xstate_clear_all_cpu_caps();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (cmdline_find_option_bool(boot_command_line, "noxsaveopt"))
 		setup_clear_cpu_cap(X86_FEATURE_XSAVEOPT);
 
 	if (cmdline_find_option_bool(boot_command_line, "noxsaves"))
 		setup_clear_cpu_cap(X86_FEATURE_XSAVES);
+<<<<<<< HEAD
 
 	arglen = cmdline_find_option(boot_command_line, "clearcpuid", arg, sizeof(arg));
 	if (arglen <= 0)
@@ -287,6 +336,8 @@ static void __init fpu__init_parse_early_param(void)
 		}
 	} while (res == 2);
 	pr_cont("\n");
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

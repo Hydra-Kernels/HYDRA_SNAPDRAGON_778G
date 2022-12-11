@@ -156,6 +156,7 @@ static inline void init_msa_upper(void)
 	_init_msa_upper();
 }
 
+<<<<<<< HEAD
 #ifndef TOOLCHAIN_SUPPORTS_MSA
 /*
  * Define assembler macros using .word for the c[ft]cmsa instructions in order
@@ -173,6 +174,9 @@ _ASM_MACRO_2R(ctcmsa, cd, rs,
 #define _ASM_SET_MSA ".set\tfp=64\n\t"				\
 		     ".set\tmsa\n\t"
 #endif
+=======
+#ifdef TOOLCHAIN_SUPPORTS_MSA
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define __BUILD_MSA_CTL_REG(name, cs)				\
 static inline unsigned int read_msa_##name(void)		\

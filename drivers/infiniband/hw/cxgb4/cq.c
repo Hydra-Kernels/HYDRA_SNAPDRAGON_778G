@@ -164,7 +164,11 @@ static int create_cq(struct c4iw_rdev *rdev, struct t4_cq *cq,
 				      &cq->bar2_qid,
 				      user ? &cq->bar2_pa : NULL);
 	if (user && !cq->bar2_pa) {
+<<<<<<< HEAD
 		pr_warn("%s: cqid %u not in BAR2 range\n",
+=======
+		pr_warn(MOD "%s: cqid %u not in BAR2 range.\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			pci_name(rdev->lldi.pdev), cq->cqid);
 		ret = -EINVAL;
 		goto err4;
@@ -658,9 +662,21 @@ static int poll_cq(struct t4_wq *wq, struct t4_cq *cq, struct t4_cqe *cqe,
 		 * then we complete this with T4_ERR_MSN and mark the wq in
 		 * error.
 		 */
+<<<<<<< HEAD
 		if (unlikely(!CQE_STATUS(hw_cqe) &&
 			     CQE_WRID_MSN(hw_cqe) != wq->rq.msn)) {
 			t4_set_wq_in_error(wq, 0);
+=======
+
+		if (t4_rq_empty(wq)) {
+			t4_set_wq_in_error(wq);
+			ret = -EAGAIN;
+			goto skip_cqe;
+		}
+		if (unlikely(!CQE_STATUS(hw_cqe) &&
+			     CQE_WRID_MSN(hw_cqe) != wq->rq.msn)) {
+			t4_set_wq_in_error(wq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			hw_cqe->header |= cpu_to_be32(CQE_STATUS_V(T4_ERR_MSN));
 		}
 		goto proc_cqe;

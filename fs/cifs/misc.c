@@ -103,7 +103,10 @@ sesInfoFree(struct cifs_ses *buf_to_free)
 	kfree(buf_to_free->user_name);
 	kfree(buf_to_free->domainName);
 	kzfree(buf_to_free->auth_key.response);
+<<<<<<< HEAD
 	kfree(buf_to_free->iface_list);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kzfree(buf_to_free);
 }
 
@@ -111,6 +114,7 @@ struct cifs_tcon *
 tconInfoAlloc(void)
 {
 	struct cifs_tcon *ret_buf;
+<<<<<<< HEAD
 
 	ret_buf = kzalloc(sizeof(*ret_buf), GFP_KERNEL);
 	if (!ret_buf)
@@ -119,6 +123,19 @@ tconInfoAlloc(void)
 	if (!ret_buf->crfid.fid) {
 		kfree(ret_buf);
 		return NULL;
+=======
+	ret_buf = kzalloc(sizeof(struct cifs_tcon), GFP_KERNEL);
+	if (ret_buf) {
+		atomic_inc(&tconInfoAllocCount);
+		ret_buf->tidStatus = CifsNew;
+		++ret_buf->tc_count;
+		INIT_LIST_HEAD(&ret_buf->openFileList);
+		INIT_LIST_HEAD(&ret_buf->tcon_list);
+		spin_lock_init(&ret_buf->open_file_lock);
+#ifdef CONFIG_CIFS_STATS
+		spin_lock_init(&ret_buf->stat_lock);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	atomic_inc(&tconInfoAllocCount);
@@ -145,10 +162,13 @@ tconInfoFree(struct cifs_tcon *buf_to_free)
 	atomic_dec(&tconInfoAllocCount);
 	kfree(buf_to_free->nativeFileSystem);
 	kzfree(buf_to_free->password);
+<<<<<<< HEAD
 	kfree(buf_to_free->crfid.fid);
 #ifdef CONFIG_CIFS_DFS_UPCALL
 	kfree(buf_to_free->dfs_path);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(buf_to_free);
 }
 
@@ -665,6 +685,7 @@ cifs_add_pending_open(struct cifs_fid *fid, struct tcon_link *tlink,
 	spin_lock(&tlink_tcon(tlink)->open_file_lock);
 	cifs_add_pending_open_locked(fid, tlink, open);
 	spin_unlock(&tlink_tcon(open->tlink)->open_file_lock);
+<<<<<<< HEAD
 }
 
 /* parses DFS refferal V3 structure
@@ -1021,4 +1042,6 @@ int copy_path_name(char *dst, const char *src)
 	/* we count the trailing nul */
 	name_len++;
 	return name_len;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

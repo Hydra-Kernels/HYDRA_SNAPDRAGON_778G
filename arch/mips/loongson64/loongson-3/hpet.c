@@ -242,9 +242,13 @@ void __init setup_hpet_timer(void)
 	cd->cpumask = cpumask_of(cpu);
 	clockevent_set_clock(cd, HPET_FREQ);
 	cd->max_delta_ns = clockevent_delta2ns(0x7fffffff, cd);
+<<<<<<< HEAD
 	cd->max_delta_ticks = 0x7fffffff;
 	cd->min_delta_ns = clockevent_delta2ns(HPET_MIN_PROG_DELTA, cd);
 	cd->min_delta_ticks = HPET_MIN_PROG_DELTA;
+=======
+	cd->min_delta_ns = clockevent_delta2ns(HPET_MIN_PROG_DELTA, cd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	clockevents_register_device(cd);
 	setup_irq(HPET_T0_IRQ, &hpet_irq);

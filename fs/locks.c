@@ -1832,7 +1832,12 @@ static int
 generic_add_lease(struct file *filp, long arg, struct file_lock **flp, void **priv)
 {
 	struct file_lock *fl, *my_fl = NULL, *lease;
+<<<<<<< HEAD
 	struct inode *inode = locks_inode(filp);
+=======
+	struct dentry *dentry = filp->f_path.dentry;
+	struct inode *inode = file_inode(filp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct file_lock_context *ctx;
 	bool is_deleg = (*flp)->fl_flags & FL_DELEG;
 	int error;
@@ -2488,7 +2493,11 @@ int fcntl_setlk(unsigned int fd, struct file *filp, unsigned int cmd,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	error = flock_to_posix_lock(filp, file_lock, flock);
+=======
+	error = flock_to_posix_lock(filp, file_lock, &flock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (error)
 		goto out;
 
@@ -2619,7 +2628,11 @@ int fcntl_setlk64(unsigned int fd, struct file *filp, unsigned int cmd,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	error = flock64_to_posix_lock(filp, file_lock, flock);
+=======
+	error = flock64_to_posix_lock(filp, file_lock, &flock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (error)
 		goto out;
 

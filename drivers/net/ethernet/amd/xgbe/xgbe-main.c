@@ -476,6 +476,28 @@ static int __init xgbe_mod_init(void)
 		goto err_pci_init;
 
 	return 0;
+<<<<<<< HEAD
+=======
+}
+
+#ifdef CONFIG_PM_SLEEP
+static int xgbe_suspend(struct device *dev)
+{
+	struct net_device *netdev = dev_get_drvdata(dev);
+	struct xgbe_prv_data *pdata = netdev_priv(netdev);
+	int ret = 0;
+
+	DBGPR("-->xgbe_suspend\n");
+
+	if (netif_running(netdev))
+		ret = xgbe_powerdown(netdev, XGMAC_DRIVER_CONTEXT);
+
+	pdata->lpm_ctrl = XMDIO_READ(pdata, MDIO_MMD_PCS, MDIO_CTRL1);
+	pdata->lpm_ctrl |= MDIO_CTRL1_LPOWER;
+	XMDIO_WRITE(pdata, MDIO_MMD_PCS, MDIO_CTRL1, pdata->lpm_ctrl);
+
+	DBGPR("<--xgbe_suspend\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 err_pci_init:
 	xgbe_platform_exit();
@@ -492,6 +514,10 @@ static void __exit xgbe_mod_exit(void)
 
 	unregister_netdevice_notifier(&xgbe_netdev_notifier);
 }
+<<<<<<< HEAD
+=======
+#endif /* CONFIG_PM_SLEEP */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 module_init(xgbe_mod_init);
 module_exit(xgbe_mod_exit);

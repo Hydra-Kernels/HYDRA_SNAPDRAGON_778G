@@ -93,7 +93,12 @@ static void perf_top__update_print_entries(struct perf_top *top)
 	top->print_entries = top->winsize.ws_row - HEADER_LINE_NR;
 }
 
+<<<<<<< HEAD
 static void winch_sig(int sig __maybe_unused)
+=======
+static void perf_top__sig_winch(int sig __maybe_unused,
+				siginfo_t *info __maybe_unused, void *arg __maybe_unused)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	resize = 1;
 }
@@ -513,8 +518,17 @@ static bool perf_top__handle_keypress(struct perf_top *top, int c)
 		case 'e':
 			prompt_integer(&top->print_entries, "Enter display entries (lines)");
 			if (top->print_entries == 0) {
+<<<<<<< HEAD
 				perf_top__resize(top);
 				signal(SIGWINCH, winch_sig);
+=======
+				struct sigaction act = {
+					.sa_sigaction = perf_top__sig_winch,
+					.sa_flags     = SA_SIGINFO,
+				};
+				perf_top__resize(top);
+				sigaction(SIGWINCH, &act, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			} else {
 				signal(SIGWINCH, SIG_DFL);
 			}
@@ -1319,8 +1333,13 @@ static int __cmd_top(struct perf_top *top)
 
 		perf_top__mmap_read(top);
 
+<<<<<<< HEAD
 		if (opts->overwrite || (hits == top->samples))
 			ret = evlist__poll(top->evlist, 100);
+=======
+		if (hits == top->samples)
+			ret = perf_evlist__poll(top->evlist, 100);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (resize) {
 			perf_top__resize(top);

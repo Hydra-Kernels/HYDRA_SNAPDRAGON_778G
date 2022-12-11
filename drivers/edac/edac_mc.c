@@ -582,8 +582,54 @@ static void edac_mc_workq_function(struct work_struct *work_req)
 
 	mutex_unlock(&mem_ctls_mutex);
 
+<<<<<<< HEAD
 	/* Queue ourselves again. */
 	edac_queue_work(&mci->work, msecs_to_jiffies(edac_mc_get_poll_msec()));
+=======
+	/* Reschedule */
+	queue_delayed_work(edac_workqueue, &mci->work,
+			msecs_to_jiffies(edac_mc_get_poll_msec()));
+}
+
+/*
+ * edac_mc_workq_setup
+ *	initialize a workq item for this mci
+ *	passing in the new delay period in msec
+ *
+ *	locking model:
+ *
+ *		called with the mem_ctls_mutex held
+ */
+static void edac_mc_workq_setup(struct mem_ctl_info *mci, unsigned msec,
+				bool init)
+{
+	edac_dbg(0, "\n");
+
+	/* if this instance is not in the POLL state, then simply return */
+	if (mci->op_state != OP_RUNNING_POLL)
+		return;
+
+	if (init)
+		INIT_DELAYED_WORK(&mci->work, edac_mc_workq_function);
+
+	mod_delayed_work(edac_workqueue, &mci->work, msecs_to_jiffies(msec));
+}
+
+/*
+ * edac_mc_workq_teardown
+ *	stop the workq processing on this mci
+ *
+ *	locking model:
+ *
+ *		called WITHOUT lock held
+ */
+static void edac_mc_workq_teardown(struct mem_ctl_info *mci)
+{
+	mci->op_state = OP_OFFLINE;
+
+	cancel_delayed_work_sync(&mci->work);
+	flush_workqueue(edac_workqueue);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

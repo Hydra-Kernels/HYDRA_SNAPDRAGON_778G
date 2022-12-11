@@ -772,8 +772,12 @@ static inline void nicvf_set_rxtstamp(struct nicvf *nic, struct sk_buff *skb)
 
 static void nicvf_rcv_pkt_handler(struct net_device *netdev,
 				  struct napi_struct *napi,
+<<<<<<< HEAD
 				  struct cqe_rx_t *cqe_rx,
 				  struct snd_queue *sq, struct rcv_queue *rq)
+=======
+				  struct cqe_rx_t *cqe_rx)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct sk_buff *skb = NULL;
 	struct nicvf *nic = netdev_priv(netdev);
@@ -790,10 +794,21 @@ static void nicvf_rcv_pkt_handler(struct net_device *netdev,
 	}
 
 	/* Check for errors */
+<<<<<<< HEAD
 	if (cqe_rx->err_level || cqe_rx->err_opcode) {
 		err = nicvf_check_cqe_rx_errs(nic, cqe_rx);
 		if (err && !cqe_rx->rb_cnt)
 			return;
+=======
+	err = nicvf_check_cqe_rx_errs(nic, cqe_rx);
+	if (err && !cqe_rx->rb_cnt)
+		return;
+
+	skb = nicvf_get_rcv_skb(nic, cqe_rx);
+	if (!skb) {
+		netdev_dbg(nic->netdev, "Packet not received\n");
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* For XDP, ignore pkts spanning multiple pages */
@@ -888,7 +903,11 @@ loop:
 
 		switch (cq_desc->cqe_type) {
 		case CQE_TYPE_RX:
+<<<<<<< HEAD
 			nicvf_rcv_pkt_handler(netdev, napi, cq_desc, sq, rq);
+=======
+			nicvf_rcv_pkt_handler(netdev, napi, cq_desc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			work_done++;
 		break;
 		case CQE_TYPE_SEND:
@@ -1693,6 +1712,7 @@ void nicvf_update_stats(struct nicvf *nic)
 	stats->tx_mcast_frames = GET_TX_STATS(TX_MCAST);
 	stats->tx_drops = GET_TX_STATS(TX_DROP);
 
+<<<<<<< HEAD
 	/* On T88 pass 2.0, the dummy SQE added for TSO notification
 	 * via CQE has 'dont_send' set. Hence HW drops the pkt pointed
 	 * pointed by dummy SQE and results in tx_drops counter being
@@ -1714,6 +1734,17 @@ void nicvf_update_stats(struct nicvf *nic)
 			   stats->rx_mcast_frames;
 	stats->rx_drops = stats->rx_drop_red +
 			  stats->rx_drop_overrun;
+=======
+	drv_stats->tx_frames_ok = stats->tx_ucast_frames_ok +
+				  stats->tx_bcast_frames_ok +
+				  stats->tx_mcast_frames_ok;
+	drv_stats->rx_frames_ok = stats->rx_ucast_frames +
+				  stats->rx_bcast_frames +
+				  stats->rx_mcast_frames;
+	drv_stats->rx_drops = stats->rx_drop_red +
+			      stats->rx_drop_overrun;
+	drv_stats->tx_drops = stats->tx_drops;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Update RQ and SQ stats */
 	for (qidx = 0; qidx < qs->rq_cnt; qidx++)

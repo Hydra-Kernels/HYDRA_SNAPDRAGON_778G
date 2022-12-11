@@ -636,7 +636,11 @@ out_err:
 static int cps_pm_online_cpu(unsigned int cpu)
 {
 	enum cps_pm_state state;
+<<<<<<< HEAD
 	unsigned core = cpu_core(&cpu_data[cpu]);
+=======
+	unsigned core = cpu_data[cpu].core;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	void *entry_fn, *core_rc;
 
 	for (state = CPS_PM_NC_WAIT; state < CPS_PM_STATE_COUNT; state++) {

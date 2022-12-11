@@ -296,6 +296,58 @@ static bool tipc_update_nametbl(struct net *net, struct distr_item *i,
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * tipc_named_add_backlog - add a failed name table update to the backlog
+ *
+ */
+static void tipc_named_add_backlog(struct net *net, struct distr_item *i,
+				   u32 type, u32 node)
+{
+	struct distr_queue_item *e;
+	struct tipc_net *tn = net_generic(net, tipc_net_id);
+	unsigned long now = get_jiffies_64();
+
+	e = kzalloc(sizeof(*e), GFP_ATOMIC);
+	if (!e)
+		return;
+	e->dtype = type;
+	e->node = node;
+	e->expires = now + msecs_to_jiffies(sysctl_tipc_named_timeout);
+	memcpy(e, i, sizeof(*i));
+	list_add_tail(&e->next, &tn->dist_queue);
+}
+
+/**
+ * tipc_named_process_backlog - try to process any pending name table updates
+ * from the network.
+ */
+void tipc_named_process_backlog(struct net *net)
+{
+	struct distr_queue_item *e, *tmp;
+	struct tipc_net *tn = net_generic(net, tipc_net_id);
+	char addr[16];
+	unsigned long now = get_jiffies_64();
+
+	list_for_each_entry_safe(e, tmp, &tn->dist_queue, next) {
+		if (time_after(e->expires, now)) {
+			if (!tipc_update_nametbl(net, &e->i, e->node, e->dtype))
+				continue;
+		} else {
+			tipc_addr_string_fill(addr, e->node);
+			pr_warn_ratelimited("Dropping name table update (%d) of {%u, %u, %u} from %s key=%u\n",
+					    e->dtype, ntohl(e->i.type),
+					    ntohl(e->i.lower),
+					    ntohl(e->i.upper),
+					    addr, ntohl(e->i.key));
+		}
+		list_del(&e->next);
+		kfree(e);
+	}
+}
+
+/**
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * tipc_named_rcv - process name table update messages sent by another node
  */
 void tipc_named_rcv(struct net *net, struct sk_buff_head *inputq)
@@ -317,7 +369,12 @@ void tipc_named_rcv(struct net *net, struct sk_buff_head *inputq)
 		count = msg_data_sz(msg) / ITEM_SIZE;
 		node = msg_orignode(msg);
 		while (count--) {
+<<<<<<< HEAD
 			tipc_update_nametbl(net, item, node, mtype);
+=======
+			if (!tipc_update_nametbl(net, item, node, mtype))
+				tipc_named_add_backlog(net, item, mtype, node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			item++;
 		}
 		kfree_skb(skb);

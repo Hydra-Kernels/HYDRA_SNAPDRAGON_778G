@@ -44,6 +44,8 @@ struct crypto_skcipher {
 	unsigned int reqsize;
 	unsigned int keysize;
 
+	bool has_setkey;
+
 	struct crypto_tfm base;
 };
 
@@ -405,6 +407,7 @@ static inline int crypto_skcipher_setkey(struct crypto_skcipher *tfm,
 	return tfm->setkey(tfm, key, keylen);
 }
 
+<<<<<<< HEAD
 static inline int crypto_sync_skcipher_setkey(struct crypto_sync_skcipher *tfm,
 					 const u8 *key, unsigned int keylen)
 {
@@ -415,6 +418,11 @@ static inline unsigned int crypto_skcipher_default_keysize(
 	struct crypto_skcipher *tfm)
 {
 	return tfm->keysize;
+=======
+static inline bool crypto_skcipher_has_setkey(struct crypto_skcipher *tfm)
+{
+	return tfm->has_setkey;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

@@ -41,13 +41,20 @@
 
 /** register definition **/
 /* FFSR - 0x300 */
+<<<<<<< HEAD
 #define FFSR_FT_STOPPED_BIT	1
+=======
+#define FFSR_FT_STOPPED		BIT(1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* FFCR - 0x304 */
 #define FFCR_FON_MAN_BIT	6
 #define FFCR_FON_MAN		BIT(6)
 #define FFCR_STOP_FI		BIT(12)
+<<<<<<< HEAD
 
 DEFINE_CORESIGHT_DEVLIST(tpiu_devs, "tpiu");
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * @base:	memory mapped base address for this component.
@@ -88,9 +95,15 @@ static void tpiu_disable_hw(struct tpiu_drvdata *drvdata)
 	/* Generate manual flush */
 	writel_relaxed(FFCR_STOP_FI | FFCR_FON_MAN, drvdata->base + TPIU_FFCR);
 	/* Wait for flush to complete */
+<<<<<<< HEAD
 	coresight_timeout(drvdata->base, TPIU_FFCR, FFCR_FON_MAN_BIT, 0);
 	/* Wait for formatter to stop */
 	coresight_timeout(drvdata->base, TPIU_FFSR, FFSR_FT_STOPPED_BIT, 1);
+=======
+	coresight_timeout(drvdata->base, TPIU_FFCR, FFCR_FON_MAN, 0);
+	/* Wait for formatter to stop */
+	coresight_timeout(drvdata->base, TPIU_FFSR, FFSR_FT_STOPPED, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	CS_LOCK(drvdata->base);
 }

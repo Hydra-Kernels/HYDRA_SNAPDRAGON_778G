@@ -133,8 +133,13 @@ int ceph_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 	if (new_mode != old_mode) {
 		newattrs.ia_ctime = current_time(inode);
 		newattrs.ia_mode = new_mode;
+<<<<<<< HEAD
 		newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
 		ret = __ceph_setattr(inode, &newattrs);
+=======
+		newattrs.ia_valid = ATTR_MODE;
+		ret = __ceph_setattr(dentry, &newattrs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret)
 			goto out_free;
 	}
@@ -144,8 +149,13 @@ int ceph_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 		if (new_mode != old_mode) {
 			newattrs.ia_ctime = old_ctime;
 			newattrs.ia_mode = old_mode;
+<<<<<<< HEAD
 			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
 			__ceph_setattr(inode, &newattrs);
+=======
+			newattrs.ia_valid = ATTR_MODE;
+			__ceph_setattr(dentry, &newattrs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		goto out_free;
 	}

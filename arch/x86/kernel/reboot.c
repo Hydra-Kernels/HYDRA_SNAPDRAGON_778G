@@ -121,7 +121,11 @@ void __noreturn machine_real_restart(unsigned int type)
 	write_cr3(real_mode_header->trampoline_pgd);
 
 	/* Exiting long mode will fail if CR4.PCIDE is set. */
+<<<<<<< HEAD
 	if (boot_cpu_has(X86_FEATURE_PCID))
+=======
+	if (static_cpu_has(X86_FEATURE_PCID))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		cr4_clear_bits(X86_CR4_PCIDE);
 #endif
 

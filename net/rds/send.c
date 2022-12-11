@@ -503,12 +503,14 @@ void rds_rdma_send_complete(struct rds_message *rm, int status)
 	struct rm_rdma_op *ro;
 	struct rds_notifier *notifier;
 	unsigned long flags;
+	unsigned int notify = 0;
 
 	spin_lock_irqsave(&rm->m_rs_lock, flags);
 
+	notify =  rm->rdma.op_notify | rm->data.op_notify;
 	ro = &rm->rdma;
 	if (test_bit(RDS_MSG_ON_SOCK, &rm->m_flags) &&
-	    ro->op_active && ro->op_notify && ro->op_notifier) {
+	    ro->op_active && notify && ro->op_notifier) {
 		notifier = ro->op_notifier;
 		rs = rm->m_rs;
 		sock_hold(rds_rs_to_sk(rs));
@@ -1313,7 +1315,11 @@ int rds_sendmsg(struct socket *sock, struct msghdr *msg, size_t payload_len)
 	rm->m_conn_path = cpath;
 
 	/* Parse any control messages the user may have included. */
+<<<<<<< HEAD
 	ret = rds_cmsg_send(rs, rm, msg, &allocated_mr, &vct);
+=======
+	ret = rds_cmsg_send(rs, rm, msg, &allocated_mr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret) {
 		/* Trigger connection so that its ready for the next retry */
 		if (ret ==  -EAGAIN)

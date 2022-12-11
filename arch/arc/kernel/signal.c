@@ -148,13 +148,18 @@ static int restore_usr_regs(struct pt_regs *regs, struct rt_sigframe __user *sf)
 	err |= __copy_from_user(&uregs.scratch,
 				&(sf->uc.uc_mcontext.regs.scratch),
 				sizeof(sf->uc.uc_mcontext.regs.scratch));
+	if (err)
+		return err;
 
+<<<<<<< HEAD
 	if (is_isa_arcv2())
 		err |= restore_arcv2_regs(&(sf->uc.uc_mcontext), regs);
 
 	if (err)
 		return -EFAULT;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	set_current_blocked(&set);
 	regs->bta	= uregs.scratch.bta;
 	regs->lp_start	= uregs.scratch.lp_start;

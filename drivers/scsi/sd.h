@@ -172,6 +172,44 @@ static inline int scsi_medium_access_command(struct scsi_cmnd *scmd)
 }
 
 static inline sector_t logical_to_sectors(struct scsi_device *sdev, sector_t blocks)
+<<<<<<< HEAD
+=======
+{
+	return blocks << (ilog2(sdev->sector_size) - 9);
+}
+
+static inline unsigned int logical_to_bytes(struct scsi_device *sdev, sector_t blocks)
+{
+	return blocks * sdev->sector_size;
+}
+
+/*
+ * A DIF-capable target device can be formatted with different
+ * protection schemes.  Currently 0 through 3 are defined:
+ *
+ * Type 0 is regular (unprotected) I/O
+ *
+ * Type 1 defines the contents of the guard and reference tags
+ *
+ * Type 2 defines the contents of the guard and reference tags and
+ * uses 32-byte commands to seed the latter
+ *
+ * Type 3 defines the contents of the guard tag only
+ */
+
+enum sd_dif_target_protection_types {
+	SD_DIF_TYPE0_PROTECTION = 0x0,
+	SD_DIF_TYPE1_PROTECTION = 0x1,
+	SD_DIF_TYPE2_PROTECTION = 0x2,
+	SD_DIF_TYPE3_PROTECTION = 0x3,
+};
+
+/*
+ * Look up the DIX operation based on whether the command is read or
+ * write and whether dix and dif are enabled.
+ */
+static inline unsigned int sd_prot_op(bool write, bool dix, bool dif)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return blocks << (ilog2(sdev->sector_size) - 9);
 }

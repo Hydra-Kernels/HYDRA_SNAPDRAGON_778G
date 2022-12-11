@@ -1571,14 +1571,20 @@ static void arm_smmu_write_strtab_ent(struct arm_smmu_master *master, u32 sid,
 			ste_live = true;
 			break;
 		case STRTAB_STE_0_CFG_ABORT:
+<<<<<<< HEAD
 			BUG_ON(!disable_bypass);
 			break;
+=======
+			if (disable_bypass)
+				break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		default:
 			BUG(); /* STE corruption */
 		}
 	}
 
 	/* Nuke the existing STE_0 value, as we're going to rewrite it */
+<<<<<<< HEAD
 	val = STRTAB_STE_0_V;
 
 	/* Bypass/fault */
@@ -1587,6 +1593,9 @@ static void arm_smmu_write_strtab_ent(struct arm_smmu_master *master, u32 sid,
 			val |= FIELD_PREP(STRTAB_STE_0_CFG, STRTAB_STE_0_CFG_ABORT);
 		else
 			val |= FIELD_PREP(STRTAB_STE_0_CFG, STRTAB_STE_0_CFG_BYPASS);
+=======
+	val = ste->valid ? STRTAB_STE_0_V : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		dst[0] = cpu_to_le64(val);
 		dst[1] = cpu_to_le64(FIELD_PREP(STRTAB_STE_1_SHCFG,
@@ -1609,12 +1618,18 @@ static void arm_smmu_write_strtab_ent(struct arm_smmu_master *master, u32 sid,
 			 FIELD_PREP(STRTAB_STE_1_S1CSH, ARM_SMMU_SH_ISH) |
 			 FIELD_PREP(STRTAB_STE_1_STRW, STRTAB_STE_1_STRW_NSEL1));
 
+<<<<<<< HEAD
 		if (smmu->features & ARM_SMMU_FEAT_STALLS &&
 		   !(smmu->features & ARM_SMMU_FEAT_STALL_FORCE))
 			dst[1] |= cpu_to_le64(STRTAB_STE_1_S1STALLD);
 
 		val |= (s1_cfg->cdptr_dma & STRTAB_STE_0_S1CTXPTR_MASK) |
 			FIELD_PREP(STRTAB_STE_0_CFG, STRTAB_STE_0_CFG_S1_TRANS);
+=======
+		val |= (ste->s1_cfg->cdptr_dma & STRTAB_STE_0_S1CTXPTR_MASK
+		        << STRTAB_STE_0_S1CTXPTR_SHIFT) |
+			STRTAB_STE_0_CFG_S1_TRANS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (s2_cfg) {
@@ -2252,18 +2267,42 @@ static int arm_smmu_domain_finalise(struct iommu_domain *domain)
 	if (!pgtbl_ops)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	domain->pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
 	domain->geometry.aperture_end = (1UL << pgtbl_cfg.ias) - 1;
 	domain->geometry.force_aperture = true;
 
 	ret = finalise_stage_fn(smmu_domain, &pgtbl_cfg);
 	if (ret < 0) {
+=======
+	arm_smmu_ops.pgsize_bitmap = pgtbl_cfg.pgsize_bitmap;
+
+	ret = finalise_stage_fn(smmu_domain, &pgtbl_cfg);
+	if (IS_ERR_VALUE(ret)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		free_io_pgtable_ops(pgtbl_ops);
 		return ret;
 	}
 
 	smmu_domain->pgtbl_ops = pgtbl_ops;
 	return 0;
+<<<<<<< HEAD
+=======
+}
+
+static struct arm_smmu_group *arm_smmu_group_get(struct device *dev)
+{
+	struct iommu_group *group;
+	struct arm_smmu_group *smmu_group;
+
+	group = iommu_group_get(dev);
+	if (!group)
+		return NULL;
+
+	smmu_group = iommu_group_get_iommudata(group);
+	iommu_group_put(group);
+	return smmu_group;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static __le64 *arm_smmu_get_step_for_sid(struct arm_smmu_device *smmu, u32 sid)
@@ -2723,8 +2762,12 @@ static struct iommu_ops arm_smmu_ops = {
 	.attach_dev		= arm_smmu_attach_dev,
 	.map			= arm_smmu_map,
 	.unmap			= arm_smmu_unmap,
+<<<<<<< HEAD
 	.flush_iotlb_all	= arm_smmu_flush_iotlb_all,
 	.iotlb_sync		= arm_smmu_iotlb_sync,
+=======
+	.map_sg			= default_iommu_map_sg,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.iova_to_phys		= arm_smmu_iova_to_phys,
 	.add_device		= arm_smmu_add_device,
 	.remove_device		= arm_smmu_remove_device,

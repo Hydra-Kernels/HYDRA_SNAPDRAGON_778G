@@ -247,6 +247,7 @@ static int xen_blkif_disconnect(struct xen_blkif *blkif)
 	unsigned int j, r;
 	bool busy = false;
 
+<<<<<<< HEAD
 	for (r = 0; r < blkif->nr_rings; r++) {
 		struct xen_blkif_ring *ring = &blkif->rings[r];
 		unsigned int i = 0;
@@ -304,6 +305,11 @@ static int xen_blkif_disconnect(struct xen_blkif *blkif)
 		BUG_ON(ring->persistent_gnt_c != 0);
 		WARN_ON(i != (XEN_BLKIF_REQS_PER_PAGE * blkif->nr_ring_pages));
 		ring->active = false;
+=======
+	if (blkif->xenblkd) {
+		kthread_stop(blkif->xenblkd);
+		wake_up(&blkif->shutdown_wq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	if (busy)
 		return -EBUSY;

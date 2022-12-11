@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 # SPDX-License-Identifier: GPL-2.0
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ifndef CROSS_COMPILE
 uname_M := $(shell uname -m 2>/dev/null || echo not)
 ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)

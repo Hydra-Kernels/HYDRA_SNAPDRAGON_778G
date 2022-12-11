@@ -92,7 +92,11 @@ static struct list_head *cuse_conntbl_head(dev_t devt)
 
 static ssize_t cuse_read_iter(struct kiocb *kiocb, struct iov_iter *to)
 {
+<<<<<<< HEAD
 	struct fuse_io_priv io = FUSE_IO_PRIV_SYNC(kiocb);
+=======
+	struct fuse_io_priv io = FUSE_IO_PRIV_SYNC(kiocb->ki_filp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	loff_t pos = 0;
 
 	return fuse_direct_io(&io, to, &pos, FUSE_DIO_CUSE);
@@ -100,7 +104,11 @@ static ssize_t cuse_read_iter(struct kiocb *kiocb, struct iov_iter *to)
 
 static ssize_t cuse_write_iter(struct kiocb *kiocb, struct iov_iter *from)
 {
+<<<<<<< HEAD
 	struct fuse_io_priv io = FUSE_IO_PRIV_SYNC(kiocb);
+=======
+	struct fuse_io_priv io = FUSE_IO_PRIV_SYNC(kiocb->ki_filp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	loff_t pos = 0;
 	/*
 	 * No locking or generic_write_checks(), the server is

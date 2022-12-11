@@ -941,7 +941,26 @@ int qed_spq_completion(struct qed_hwfn *p_hwfn,
 	list_for_each_entry_safe(p_ent, tmp, &p_spq->completion_pending, list) {
 		if (p_ent->elem.hdr.echo == echo) {
 			list_del(&p_ent->list);
+<<<<<<< HEAD
 			qed_spq_comp_bmap_update(p_hwfn, echo);
+=======
+
+			/* Avoid overriding of SPQ entries when getting
+			 * out-of-order completions, by marking the completions
+			 * in a bitmap and increasing the chain consumer only
+			 * for the first successive completed entries.
+			 */
+			__set_bit(pos, p_spq->p_comp_bitmap);
+
+			while (test_bit(p_spq->comp_bitmap_idx,
+					p_spq->p_comp_bitmap)) {
+				__clear_bit(p_spq->comp_bitmap_idx,
+					    p_spq->p_comp_bitmap);
+				p_spq->comp_bitmap_idx++;
+				qed_chain_return_produced(&p_spq->chain);
+			}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			p_spq->comp_count++;
 			found = p_ent;
 			break;

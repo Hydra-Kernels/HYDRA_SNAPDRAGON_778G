@@ -1135,6 +1135,41 @@ static ssize_t hid_debug_events_read(struct file *file, char __user *buffer,
 
 		if (ret)
 			goto out;
+<<<<<<< HEAD
+=======
+
+		/* pass the ringbuffer contents to userspace */
+copy_rest:
+		if (list->tail == list->head)
+			goto out;
+		if (list->tail > list->head) {
+			len = list->tail - list->head;
+			if (len > count)
+				len = count;
+
+			if (copy_to_user(buffer + ret, &list->hid_debug_buf[list->head], len)) {
+				ret = -EFAULT;
+				goto out;
+			}
+			ret += len;
+			list->head += len;
+		} else {
+			len = HID_DEBUG_BUFSIZE - list->head;
+			if (len > count)
+				len = count;
+
+			if (copy_to_user(buffer, &list->hid_debug_buf[list->head], len)) {
+				ret = -EFAULT;
+				goto out;
+			}
+			list->head = 0;
+			ret += len;
+			count -= len;
+			if (count > 0)
+				goto copy_rest;
+		}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* pass the fifo content to userspace, locking is not needed with only

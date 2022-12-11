@@ -1109,12 +1109,21 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
 
 	zone = nf_ct_zone(ignored_conntrack);
 
+<<<<<<< HEAD
 	rcu_read_lock();
  begin:
 	nf_conntrack_get_ht(&ct_hash, &hsize);
 	hash = __hash_conntrack(net, tuple, hsize);
 
 	hlist_nulls_for_each_entry_rcu(h, n, &ct_hash[hash], hnnode) {
+=======
+	/* Disable BHs the entire time since we need to disable them at
+	 * least once for the stats anyway.
+	 */
+	rcu_read_lock_bh();
+ begin:
+	hlist_nulls_for_each_entry_rcu(h, n, &net->ct.hash[hash], hnnode) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ct = nf_ct_tuplehash_to_ctrack(h);
 
 		if (ct == ignored_conntrack)
@@ -1150,11 +1159,19 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
 	}
 
 	if (get_nulls_value(n) != hash) {
+<<<<<<< HEAD
 		NF_CT_STAT_INC_ATOMIC(net, search_restart);
 		goto begin;
 	}
 
 	rcu_read_unlock();
+=======
+		NF_CT_STAT_INC(net, search_restart);
+		goto begin;
+	}
+
+	rcu_read_unlock_bh();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -2657,6 +2674,7 @@ void nf_conntrack_init_end(void)
 
 int nf_conntrack_init_net(struct net *net)
 {
+	static atomic64_t unique_id;
 	int ret = -ENOMEM;
 	int cpu;
 
@@ -2680,6 +2698,28 @@ int nf_conntrack_init_net(struct net *net)
 	if (!net->ct.stat)
 		goto err_pcpu_lists;
 
+<<<<<<< HEAD
+=======
+	net->ct.slabname = kasprintf(GFP_KERNEL, "nf_conntrack_%llu",
+				(u64)atomic64_inc_return(&unique_id));
+	if (!net->ct.slabname)
+		goto err_slabname;
+
+	net->ct.nf_conntrack_cachep = kmem_cache_create(net->ct.slabname,
+							sizeof(struct nf_conn), 0,
+							SLAB_DESTROY_BY_RCU, NULL);
+	if (!net->ct.nf_conntrack_cachep) {
+		printk(KERN_ERR "Unable to create nf_conn slab cache\n");
+		goto err_cache;
+	}
+
+	net->ct.htable_size = nf_conntrack_htable_size;
+	net->ct.hash = nf_ct_alloc_hashtable(&net->ct.htable_size, 1);
+	if (!net->ct.hash) {
+		printk(KERN_ERR "Unable to create nf_conntrack_hash\n");
+		goto err_hash;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = nf_conntrack_expect_pernet_init(net);
 	if (ret < 0)
 		goto err_expect;

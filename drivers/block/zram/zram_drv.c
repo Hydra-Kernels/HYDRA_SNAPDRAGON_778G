@@ -1177,6 +1177,7 @@ static void zram_free_page(struct zram *zram, size_t index)
 	if (zram_test_flag(zram, index, ZRAM_IDLE))
 		zram_clear_flag(zram, index, ZRAM_IDLE);
 
+<<<<<<< HEAD
 	if (zram_test_flag(zram, index, ZRAM_HUGE)) {
 		zram_clear_flag(zram, index, ZRAM_HUGE);
 		atomic64_dec(&zram->stats.huge_pages);
@@ -1186,6 +1187,26 @@ static void zram_free_page(struct zram *zram, size_t index)
 		zram_clear_flag(zram, index, ZRAM_WB);
 		free_block_bdev(zram, zram_get_element(zram, index));
 		goto out;
+=======
+	if (!handle || zram_test_flag(meta, index, ZRAM_ZERO)) {
+		bit_spin_unlock(ZRAM_ACCESS, &meta->table[index].value);
+		memset(mem, 0, PAGE_SIZE);
+		return 0;
+	}
+
+	cmem = zs_map_object(meta->mem_pool, handle, ZS_MM_RO);
+	if (size == PAGE_SIZE)
+		memcpy(mem, cmem, PAGE_SIZE);
+	else
+		ret = zcomp_decompress(zram->comp, cmem, size, mem);
+	zs_unmap_object(meta->mem_pool, handle);
+	bit_spin_unlock(ZRAM_ACCESS, &meta->table[index].value);
+
+	/* Should NEVER happen. Return bio error if it does. */
+	if (unlikely(ret)) {
+		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/*
@@ -1393,8 +1414,12 @@ compress_again:
 	src = zstrm->buffer;
 	if (comp_len == PAGE_SIZE)
 		src = kmap_atomic(page);
+<<<<<<< HEAD
 	memcpy(dst, src, comp_len);
 	if (comp_len == PAGE_SIZE)
+=======
+		memcpy(cmem, src, PAGE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		kunmap_atomic(src);
 
 	zcomp_stream_put(zram->comp);
@@ -1942,6 +1967,8 @@ static int zram_add(void)
 	blk_queue_io_min(zram->disk->queue, PAGE_SIZE);
 	blk_queue_io_opt(zram->disk->queue, PAGE_SIZE);
 	zram->disk->queue->limits.discard_granularity = PAGE_SIZE;
+	zram->disk->queue->limits.max_sectors = SECTORS_PER_PAGE;
+	zram->disk->queue->limits.chunk_sectors = 0;
 	blk_queue_max_discard_sectors(zram->disk->queue, UINT_MAX);
 	blk_queue_flag_set(QUEUE_FLAG_DISCARD, zram->disk->queue);
 
@@ -2002,6 +2029,10 @@ static int zram_remove(struct zram *zram)
 
 	pr_info("Removed device: %s\n", zram->disk->disk_name);
 
+<<<<<<< HEAD
+=======
+	blk_cleanup_queue(zram->disk->queue);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	del_gendisk(zram->disk);
 	blk_cleanup_queue(zram->disk->queue);
 	put_disk(zram->disk);
@@ -2065,10 +2096,23 @@ static ssize_t hot_remove_store(struct class *class,
 }
 static CLASS_ATTR_WO(hot_remove);
 
+<<<<<<< HEAD
 static struct attribute *zram_control_class_attrs[] = {
 	&class_attr_hot_add.attr,
 	&class_attr_hot_remove.attr,
 	NULL,
+=======
+/*
+ * NOTE: hot_add attribute is not the usual read-only sysfs attribute. In a
+ * sense that reading from this file does alter the state of your system -- it
+ * creates a new un-initialized zram device and returns back this device's
+ * device_id (or an error code if it fails to create a new device).
+ */
+static struct class_attribute zram_control_class_attrs[] = {
+	__ATTR(hot_add, 0400, hot_add_show, NULL),
+	__ATTR_WO(hot_remove),
+	__ATTR_NULL,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 ATTRIBUTE_GROUPS(zram_control_class);
 

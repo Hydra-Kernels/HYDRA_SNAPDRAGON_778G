@@ -786,8 +786,12 @@ set_sndbuf:
 		 */
 		val = min_t(int, val, INT_MAX / 2);
 		sk->sk_userlocks |= SOCK_SNDBUF_LOCK;
+<<<<<<< HEAD
 		WRITE_ONCE(sk->sk_sndbuf,
 			   max_t(int, val * 2, SOCK_MIN_SNDBUF));
+=======
+		sk->sk_sndbuf = max_t(int, val * 2, SOCK_MIN_SNDBUF);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Wake up sending tasks if we upped the value. */
 		sk->sk_write_space(sk);
 		break;
@@ -833,8 +837,12 @@ set_rcvbuf:
 		 * returning the value we actually used in getsockopt
 		 * is the most desirable behavior.
 		 */
+<<<<<<< HEAD
 		WRITE_ONCE(sk->sk_rcvbuf,
 			   max_t(int, val * 2, SOCK_MIN_RCVBUF));
+=======
+		sk->sk_rcvbuf = max_t(int, val * 2, SOCK_MIN_RCVBUF);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 
 	case SO_RCVBUFFORCE:
@@ -1744,9 +1752,12 @@ void sk_destruct(struct sock *sk)
 
 static void __sk_free(struct sock *sk)
 {
+<<<<<<< HEAD
 	if (likely(sk->sk_net_refcnt))
 		sock_inuse_add(sock_net(sk), -1);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(sk->sk_net_refcnt && sock_diag_has_destroy_listeners(sk)))
 		sock_diag_broadcast_destroy(sk);
 	else
@@ -1857,6 +1868,7 @@ struct sock *sk_clone_lock(const struct sock *sk, const gfp_t priority)
 			 */
 			if (!is_charged)
 				RCU_INIT_POINTER(newsk->sk_filter, NULL);
+<<<<<<< HEAD
 			sk_free_unlock_clone(newsk);
 			newsk = NULL;
 			goto out;
@@ -1865,6 +1877,13 @@ struct sock *sk_clone_lock(const struct sock *sk, const gfp_t priority)
 
 		if (bpf_sk_storage_clone(sk, newsk)) {
 			sk_free_unlock_clone(newsk);
+=======
+			/* It is still raw copy of parent, so invalidate
+			 * destructor and make plain sk_free() */
+			newsk->sk_destruct = NULL;
+			bh_unlock_sock(newsk);
+			sk_free(newsk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			newsk = NULL;
 			goto out;
 		}
@@ -2028,6 +2047,7 @@ static bool can_skb_orphan_partial(const struct sk_buff *skb)
  */
 void skb_orphan_partial(struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	if (skb_is_tcp_pure_ack(skb))
 		return;
 
@@ -2035,6 +2055,22 @@ void skb_orphan_partial(struct sk_buff *skb)
 		return;
 
 	skb_orphan(skb);
+=======
+	if (skb->destructor == sock_wfree
+#ifdef CONFIG_INET
+	    || skb->destructor == tcp_wfree
+#endif
+		) {
+		struct sock *sk = skb->sk;
+
+		if (atomic_inc_not_zero(&sk->sk_refcnt)) {
+			atomic_sub(skb->truesize, &sk->sk_wmem_alloc);
+			skb->destructor = sock_efree;
+		}
+	} else {
+		skb_orphan(skb);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(skb_orphan_partial);
 

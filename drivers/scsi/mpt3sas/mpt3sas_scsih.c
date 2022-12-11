@@ -51,6 +51,7 @@
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 #include <linux/pci.h>
+#include <linux/pci-aspm.h>
 #include <linux/interrupt.h>
 #include <linux/aer.h>
 #include <linux/raid_class.h>
@@ -2673,6 +2674,7 @@ mpt3sas_scsih_issue_tm(struct MPT3SAS_ADAPTER *ioc, u16 handle, u64 lun,
 	u16 smid = 0;
 	u32 ioc_state;
 	int rc;
+	u16 msix_task = 0;
 
 	lockdep_assert_held(&ioc->tm_cmds.mutex);
 
@@ -2723,8 +2725,18 @@ mpt3sas_scsih_issue_tm(struct MPT3SAS_ADAPTER *ioc, u16 handle, u64 lun,
 	int_to_scsilun(lun, (struct scsi_lun *)mpi_request->LUN);
 	mpt3sas_scsih_set_tm_flag(ioc, handle);
 	init_completion(&ioc->tm_cmds.done);
+<<<<<<< HEAD
 	ioc->put_smid_hi_priority(ioc, smid, msix_task);
 	wait_for_completion_timeout(&ioc->tm_cmds.done, timeout*HZ);
+=======
+	if ((type == MPI2_SCSITASKMGMT_TASKTYPE_ABORT_TASK) &&
+			(scsi_lookup->msix_io < ioc->reply_queue_count))
+		msix_task = scsi_lookup->msix_io;
+	else
+		msix_task = 0;
+	mpt3sas_base_put_smid_hi_priority(ioc, smid, msix_task);
+	timeleft = wait_for_completion_timeout(&ioc->tm_cmds.done, timeout*HZ);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!(ioc->tm_cmds.status & MPT3_CMD_COMPLETE)) {
 		if (mpt3sas_base_check_cmd_timeout(ioc,
 			ioc->tm_cmds.status, mpi_request,
@@ -3701,9 +3713,13 @@ _scsih_tm_tr_send(struct MPT3SAS_ADAPTER *ioc, u16 handle)
 	mpi_request->Function = MPI2_FUNCTION_SCSI_TASK_MGMT;
 	mpi_request->DevHandle = cpu_to_le16(handle);
 	mpi_request->TaskType = MPI2_SCSITASKMGMT_TASKTYPE_TARGET_RESET;
+<<<<<<< HEAD
 	mpi_request->MsgFlags = tr_method;
 	set_bit(handle, ioc->device_remove_in_progress);
 	ioc->put_smid_hi_priority(ioc, smid, 0);
+=======
+	mpt3sas_base_put_smid_hi_priority(ioc, smid, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mpt3sas_trigger_master(ioc, MASTER_TRIGGER_DEVICE_REMOVAL);
 
 out:
@@ -3925,7 +3941,11 @@ _scsih_tm_tr_volume_send(struct MPT3SAS_ADAPTER *ioc, u16 handle)
 	mpi_request->Function = MPI2_FUNCTION_SCSI_TASK_MGMT;
 	mpi_request->DevHandle = cpu_to_le16(handle);
 	mpi_request->TaskType = MPI2_SCSITASKMGMT_TASKTYPE_TARGET_RESET;
+<<<<<<< HEAD
 	ioc->put_smid_hi_priority(ioc, smid, 0);
+=======
+	mpt3sas_base_put_smid_hi_priority(ioc, smid, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -4522,8 +4542,12 @@ _scsih_flush_running_cmds(struct MPT3SAS_ADAPTER *ioc)
 			continue;
 		count++;
 		_scsih_set_satl_pending(scmd, false);
+<<<<<<< HEAD
 		st = scsi_cmd_priv(scmd);
 		mpt3sas_base_clear_st(ioc, st);
+=======
+		mpt3sas_base_free_smid(ioc, smid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		scsi_dma_unmap(scmd);
 		if (ioc->pci_error_recovery || ioc->remove_host)
 			scmd->result = DID_NO_CONNECT << 16;
@@ -4702,6 +4726,19 @@ scsih_qcmd(struct Scsi_Host *shost, struct scsi_cmnd *scmd)
 			return SCSI_MLQUEUE_DEVICE_BUSY;
 	} while (_scsih_set_satl_pending(scmd, true));
 
+	/*
+	 * Bug work around for firmware SATL handling.  The loop
+	 * is based on atomic operations and ensures consistency
+	 * since we're lockless at this point
+	 */
+	do {
+		if (test_bit(0, &sas_device_priv_data->ata_command_pending)) {
+			scmd->result = SAM_STAT_BUSY;
+			scmd->scsi_done(scmd);
+			return 0;
+		}
+	} while (_scsih_set_satl_pending(scmd, true));
+
 	if (scmd->sc_data_direction == DMA_FROM_DEVICE)
 		mpi_control = MPI2_SCSIIO_CONTROL_READ;
 	else if (scmd->sc_data_direction == DMA_TO_DEVICE)
@@ -4727,7 +4764,12 @@ scsih_qcmd(struct Scsi_Host *shost, struct scsi_cmnd *scmd)
 
 	smid = mpt3sas_base_get_smid_scsiio(ioc, ioc->scsi_io_cb_idx, scmd);
 	if (!smid) {
+<<<<<<< HEAD
 		ioc_err(ioc, "%s: failed obtaining a smid\n", __func__);
+=======
+		pr_err(MPT3SAS_FMT "%s: failed obtaining a smid\n",
+		    ioc->name, __func__);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		_scsih_set_satl_pending(scmd, false);
 		goto out;
 	}
@@ -5218,6 +5260,11 @@ _scsih_io_done(struct MPT3SAS_ADAPTER *ioc, u16 smid, u8 msix_index, u32 reply)
 	u32 log_info;
 	struct MPT3SAS_DEVICE *sas_device_priv_data;
 	u32 response_code = 0;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+	unsigned int sector_sz;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mpi_reply = mpt3sas_base_get_reply_virt_addr(ioc, reply);
 
@@ -5277,6 +5324,20 @@ _scsih_io_done(struct MPT3SAS_ADAPTER *ioc, u16 smid, u8 msix_index, u32 reply)
 	}
 
 	xfer_cnt = le32_to_cpu(mpi_reply->TransferCount);
+
+	/* In case of bogus fw or device, we could end up having
+	 * unaligned partial completion. We can force alignment here,
+	 * then scsi-ml does not need to handle this misbehavior.
+	 */
+	sector_sz = scmd->device->sector_size;
+	if (unlikely(scmd->request->cmd_type == REQ_TYPE_FS && sector_sz &&
+		     xfer_cnt % sector_sz)) {
+		sdev_printk(KERN_INFO, scmd->device,
+		    "unaligned partial completion avoided (xfer_cnt=%u, sector_sz=%u)\n",
+			    xfer_cnt, sector_sz);
+		xfer_cnt = round_down(xfer_cnt, sector_sz);
+	}
+
 	scsi_set_resid(scmd, scsi_bufflen(scmd) - xfer_cnt);
 	if (ioc_status & MPI2_IOCSTATUS_FLAG_LOG_INFO_AVAILABLE)
 		log_info =  le32_to_cpu(mpi_reply->IOCLogInfo);

@@ -1845,6 +1845,7 @@ static const struct of_device_id msm_match_table[] = {
 	{}
 };
 MODULE_DEVICE_TABLE(of, msm_match_table);
+<<<<<<< HEAD
 
 static int __maybe_unused msm_serial_suspend(struct device *dev)
 {
@@ -1867,6 +1868,8 @@ static int __maybe_unused msm_serial_resume(struct device *dev)
 static const struct dev_pm_ops msm_serial_dev_pm_ops = {
 	SET_SYSTEM_SLEEP_PM_OPS(msm_serial_suspend, msm_serial_resume)
 };
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static struct platform_driver msm_platform_driver = {
 	.remove = msm_serial_remove,

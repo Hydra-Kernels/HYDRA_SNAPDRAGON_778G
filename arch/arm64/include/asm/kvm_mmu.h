@@ -311,6 +311,7 @@ static inline void __clean_dcache_guest_page(kvm_pfn_t pfn, unsigned long size)
 {
 	void *va = page_address(pfn_to_page(pfn));
 
+<<<<<<< HEAD
 	/*
 	 * With FWB, we ensure that the guest always accesses memory using
 	 * cacheable attributes, and we don't have to clean to PoC when
@@ -319,6 +320,9 @@ static inline void __clean_dcache_guest_page(kvm_pfn_t pfn, unsigned long size)
 	 */
 	if (cpus_have_const_cap(ARM64_HAS_STAGE2_FWB))
 		return;
+=======
+	kvm_flush_dcache_to_poc(va, size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kvm_flush_dcache_to_poc(va, size);
 }

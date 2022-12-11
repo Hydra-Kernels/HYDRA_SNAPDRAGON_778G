@@ -456,12 +456,17 @@ static int bond_newlink(struct net *src_net, struct net_device *bond_dev,
 		return err;
 
 	err = register_netdevice(bond_dev);
+<<<<<<< HEAD
 	if (!err) {
 		struct bonding *bond = netdev_priv(bond_dev);
 
 		netif_carrier_off(bond_dev);
 		bond_work_init_all(bond);
 	}
+=======
+
+	netif_carrier_off(bond_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return err;
 }

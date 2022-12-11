@@ -1082,6 +1082,7 @@ static bool cfg80211_combine_bsses(struct cfg80211_registered_device *rdev,
 		  "rdev bss entries[%d]/list[len:%d] corruption\n",
 		  rdev->bss_entries, n_entries);
 
+<<<<<<< HEAD
 	return true;
 }
 
@@ -1175,6 +1176,8 @@ cfg80211_update_known_bss(struct cfg80211_registered_device *rdev,
 	known->pub.max_bssid_indicator = new->pub.max_bssid_indicator;
 	known->pub.bssid_index = new->pub.bssid_index;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 
@@ -1257,6 +1260,7 @@ cfg80211_bss_update(struct cfg80211_registered_device *rdev,
 
 		if (rdev->bss_entries >= bss_entries_limit &&
 		    !cfg80211_bss_expire_oldest(rdev)) {
+<<<<<<< HEAD
 			bss_ref_put(rdev, new);
 			goto drop;
 		}
@@ -1272,6 +1276,12 @@ cfg80211_bss_update(struct cfg80211_registered_device *rdev,
 			bss_ref_get(rdev, pbss);
 		}
 
+=======
+			kfree(new);
+			goto drop;
+		}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		list_add_tail(&new->list, &rdev->bss_list);
 		rdev->bss_entries++;
 		rb_insert_bss(rdev, new);

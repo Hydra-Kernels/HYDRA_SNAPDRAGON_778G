@@ -1192,7 +1192,11 @@ gf100_gr_trap_gpc_rop(struct gf100_gr *gr, int gpc)
 	nvkm_wr32(device, GPC_UNIT(gpc, 0x0420), 0xc0000000);
 }
 
+<<<<<<< HEAD
 const struct nvkm_enum gf100_mp_warp_error[] = {
+=======
+static const struct nvkm_enum gf100_mp_warp_error[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ 0x01, "STACK_ERROR" },
 	{ 0x02, "API_STACK_ERROR" },
 	{ 0x03, "RET_EMPTY_STACK_ERROR" },
@@ -1217,7 +1221,11 @@ const struct nvkm_enum gf100_mp_warp_error[] = {
 	{}
 };
 
+<<<<<<< HEAD
 const struct nvkm_bitfield gf100_mp_global_error[] = {
+=======
+static const struct nvkm_bitfield gf100_mp_global_error[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ 0x00000001, "SM_TO_SM_FAULT" },
 	{ 0x00000002, "L1_ERROR" },
 	{ 0x00000004, "MULTIPLE_WARP_ERRORS" },
@@ -2321,8 +2329,38 @@ gf100_gr_init(struct gf100_gr *gr)
 
 	gr->func->init_gpc_mmu(gr);
 
+<<<<<<< HEAD
 	if (gr->fuc_sw_nonctx)
 		gf100_gr_mmio(gr, gr->fuc_sw_nonctx);
+=======
+	nvkm_mask(device, TPC_UNIT(0, 0, 0x05c), 0x00000001, 0x00000001);
+
+	memcpy(tpcnr, gr->tpc_nr, sizeof(gr->tpc_nr));
+	for (i = 0, gpc = -1; i < gr->tpc_total; i++) {
+		do {
+			gpc = (gpc + 1) % gr->gpc_nr;
+		} while (!tpcnr[gpc]);
+		tpc = gr->tpc_nr[gpc] - tpcnr[gpc]--;
+
+		data[i / 8] |= tpc << ((i % 8) * 4);
+	}
+
+	nvkm_wr32(device, GPC_BCAST(0x0980), data[0]);
+	nvkm_wr32(device, GPC_BCAST(0x0984), data[1]);
+	nvkm_wr32(device, GPC_BCAST(0x0988), data[2]);
+	nvkm_wr32(device, GPC_BCAST(0x098c), data[3]);
+
+	for (gpc = 0; gpc < gr->gpc_nr; gpc++) {
+		nvkm_wr32(device, GPC_UNIT(gpc, 0x0914),
+			gr->magic_not_rop_nr << 8 | gr->tpc_nr[gpc]);
+		nvkm_wr32(device, GPC_UNIT(gpc, 0x0910), 0x00040000 |
+			gr->tpc_total);
+		nvkm_wr32(device, GPC_UNIT(gpc, 0x0918), magicgpc918);
+	}
+
+	if (device->chipset != 0xd7)
+		nvkm_wr32(device, GPC_BCAST(0x1bd4), magicgpc918);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	else
 		gf100_gr_mmio(gr, gr->func->mmio);
 

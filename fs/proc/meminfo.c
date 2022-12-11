@@ -79,9 +79,17 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
 
 	available = si_mem_available();
 
+<<<<<<< HEAD
 #ifdef CONFIG_QCOM_MEM_OFFLINE
 	i.totalram = get_totalram_pages_count_inc_offlined();
 #endif
+=======
+	/*
+	 * Estimate the amount of memory available for userspace allocations,
+	 * without causing swapping.
+	 */
+	available = i.freeram - totalreserve_pages;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sreclaimable = global_node_page_state(NR_SLAB_RECLAIMABLE);
 	sunreclaim = global_node_page_state(NR_SLAB_UNRECLAIMABLE);

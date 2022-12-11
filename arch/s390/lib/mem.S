@@ -6,6 +6,7 @@
  */
 
 #include <linux/linkage.h>
+<<<<<<< HEAD
 #include <asm/export.h>
 #include <asm/nospec-insn.h>
 
@@ -50,6 +51,11 @@ ENTRY(__memmove)
 	mvc	0(1,%r1),0(%r3)
 ENDPROC(__memmove)
 EXPORT_SYMBOL(memmove)
+=======
+#include <asm/nospec-insn.h>
+
+	GEN_BR_THUNK %r14
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * memset implementation
@@ -84,7 +90,10 @@ ENTRY(__memset)
 .Lmemset_clear_remainder:
 	larl	%r3,.Lmemset_xc
 	ex	%r4,0(%r3)
+<<<<<<< HEAD
 .Lmemset_exit:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BR_EX	%r14
 .Lmemset_fill:
 	cghi	%r4,1
@@ -98,6 +107,7 @@ ENTRY(__memset)
 	stc	%r3,0(%r1)
 	mvc	1(255,%r1),0(%r1)
 	la	%r1,256(%r1)
+<<<<<<< HEAD
 	brctg	%r5,.Lmemset_fill_loop
 .Lmemset_fill_remainder:
 	stc	%r3,0(%r1)
@@ -106,6 +116,12 @@ ENTRY(__memset)
 	BR_EX	%r14
 .Lmemset_fill_exit:
 	stc	%r3,0(%r1)
+=======
+	brctg	%r3,.Lmemset_fill_loop
+.Lmemset_fill_rest:
+	larl	%r3,.Lmemset_mvc
+	ex	%r4,0(%r3)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BR_EX	%r14
 .Lmemset_xc:
 	xc	0(1,%r1),0(%r1)
@@ -131,7 +147,10 @@ ENTRY(__memcpy)
 .Lmemcpy_remainder:
 	larl	%r5,.Lmemcpy_mvc
 	ex	%r4,0(%r5)
+<<<<<<< HEAD
 .Lmemcpy_exit:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BR_EX	%r14
 .Lmemcpy_loop:
 	mvc	0(256,%r1),0(%r3)

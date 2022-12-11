@@ -79,11 +79,17 @@ static void amdgpu_display_flip_work_func(struct work_struct *__work)
 
 	struct drm_crtc *crtc = &amdgpu_crtc->base;
 	unsigned long flags;
+<<<<<<< HEAD
 	unsigned i;
 	int vpos, hpos;
 
 	if (amdgpu_display_flip_handle_fence(work, &work->excl))
 		return;
+=======
+	unsigned i, repcnt = 4;
+	int vpos, hpos, stat, min_udelay = 0;
+	struct drm_vblank_crtc *vblank = &crtc->dev->vblank[work->crtc_id];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < work->shared_count; ++i)
 		if (amdgpu_display_flip_handle_fence(work, &work->shared[i]))
@@ -107,8 +113,62 @@ static void amdgpu_display_flip_work_func(struct work_struct *__work)
 	/* We borrow the event spin lock for protecting flip_status */
 	spin_lock_irqsave(&crtc->dev->event_lock, flags);
 
+<<<<<<< HEAD
 	/* Do the flip (mmio) */
 	adev->mode_info.funcs->page_flip(adev, work->crtc_id, work->base, work->async);
+=======
+	/* If this happens to execute within the "virtually extended" vblank
+	 * interval before the start of the real vblank interval then it needs
+	 * to delay programming the mmio flip until the real vblank is entered.
+	 * This prevents completing a flip too early due to the way we fudge
+	 * our vblank counter and vblank timestamps in order to work around the
+	 * problem that the hw fires vblank interrupts before actual start of
+	 * vblank (when line buffer refilling is done for a frame). It
+	 * complements the fudging logic in amdgpu_get_crtc_scanoutpos() for
+	 * timestamping and amdgpu_get_vblank_counter_kms() for vblank counts.
+	 *
+	 * In practice this won't execute very often unless on very fast
+	 * machines because the time window for this to happen is very small.
+	 */
+	while (amdgpuCrtc->enabled && --repcnt) {
+		/* GET_DISTANCE_TO_VBLANKSTART returns distance to real vblank
+		 * start in hpos, and to the "fudged earlier" vblank start in
+		 * vpos.
+		 */
+		stat = amdgpu_get_crtc_scanoutpos(adev->ddev, work->crtc_id,
+						  GET_DISTANCE_TO_VBLANKSTART,
+						  &vpos, &hpos, NULL, NULL,
+						  &crtc->hwmode);
+
+		if ((stat & (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE)) !=
+		    (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE) ||
+		    !(vpos >= 0 && hpos <= 0))
+			break;
+
+		/* Sleep at least until estimated real start of hw vblank */
+		min_udelay = (-hpos + 1) * max(vblank->linedur_ns / 1000, 5);
+		if (min_udelay > vblank->framedur_ns / 2000) {
+			/* Don't wait ridiculously long - something is wrong */
+			repcnt = 0;
+			break;
+		}
+		spin_unlock_irqrestore(&crtc->dev->event_lock, flags);
+		usleep_range(min_udelay, 2 * min_udelay);
+		spin_lock_irqsave(&crtc->dev->event_lock, flags);
+	};
+
+	if (!repcnt)
+		DRM_DEBUG_DRIVER("Delay problem on crtc %d: min_udelay %d, "
+				 "framedur %d, linedur %d, stat %d, vpos %d, "
+				 "hpos %d\n", work->crtc_id, min_udelay,
+				 vblank->framedur_ns / 1000,
+				 vblank->linedur_ns / 1000, stat, vpos, hpos);
+
+	/* do the flip (mmio) */
+	adev->mode_info.funcs->page_flip(adev, work->crtc_id, work->base);
+	/* set the flip status */
+	amdgpuCrtc->pflip_status = AMDGPU_FLIP_SUBMITTED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Set the flip status */
 	amdgpu_crtc->pflip_status = AMDGPU_FLIP_SUBMITTED;

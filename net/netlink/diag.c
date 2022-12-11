@@ -74,10 +74,13 @@ static int sk_diag_fill(struct sock *sk, struct sk_buff *skb,
 	    sock_diag_put_meminfo(sk, skb, NETLINK_DIAG_MEMINFO))
 		goto out_nlmsg_trim;
 
+<<<<<<< HEAD
 	if ((req->ndiag_show & NDIAG_SHOW_FLAGS) &&
 	    sk_diag_put_flags(sk, skb))
 		goto out_nlmsg_trim;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	nlmsg_end(skb, nlh);
 	return 0;
 

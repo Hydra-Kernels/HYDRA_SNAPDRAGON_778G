@@ -41,6 +41,7 @@ gk104_fifo_gpfifo_kick_locked(struct gk104_fifo_chan *chan)
 	struct nvkm_subdev *subdev = &fifo->base.engine.subdev;
 	struct nvkm_device *device = subdev->device;
 	struct nvkm_client *client = chan->base.object.client;
+<<<<<<< HEAD
 	struct nvkm_fifo_cgrp *cgrp = chan->cgrp;
 	int ret = 0;
 
@@ -48,10 +49,17 @@ gk104_fifo_gpfifo_kick_locked(struct gk104_fifo_chan *chan)
 		nvkm_wr32(device, 0x002634, cgrp->id | 0x01000000);
 	else
 		nvkm_wr32(device, 0x002634, chan->base.chid);
+=======
+	int ret = 0;
+
+	mutex_lock(&subdev->mutex);
+	nvkm_wr32(device, 0x002634, chan->base.chid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (nvkm_msec(device, 2000,
 		if (!(nvkm_rd32(device, 0x002634) & 0x00100000))
 			break;
 	) < 0) {
+<<<<<<< HEAD
 		nvkm_error(subdev, "%s %d [%s] kick timeout\n",
 			   cgrp ? "tsg" : "channel",
 			   cgrp ? cgrp->id : chan->base.chid, client->name);
@@ -68,6 +76,13 @@ gk104_fifo_gpfifo_kick(struct gk104_fifo_chan *chan)
 	mutex_lock(&chan->base.fifo->engine.subdev.mutex);
 	ret = gk104_fifo_gpfifo_kick_locked(chan);
 	mutex_unlock(&chan->base.fifo->engine.subdev.mutex);
+=======
+		nvkm_error(subdev, "channel %d [%s] kick timeout\n",
+			   chan->base.chid, client->name);
+		ret = -ETIMEDOUT;
+	}
+	mutex_unlock(&subdev->mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

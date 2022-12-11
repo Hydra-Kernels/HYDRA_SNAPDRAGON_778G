@@ -78,13 +78,19 @@ static int groups_from_user(struct group_info *group_info,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int gid_cmp(const void *_a, const void *_b)
+=======
+/* a simple Shell sort */
+void groups_sort(struct group_info *group_info)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	kgid_t a = *(kgid_t *)_a;
 	kgid_t b = *(kgid_t *)_b;
 
 	return gid_gt(a, b) - gid_lt(a, b);
 }
+EXPORT_SYMBOL(groups_sort);
 
 void groups_sort(struct group_info *group_info)
 {

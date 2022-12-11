@@ -83,8 +83,11 @@ ENDPROC(enable_omap3630_toggle_l2_on_restore)
  *
  * r0 = physical address of the parameters
  */
+<<<<<<< HEAD
 	.arch armv7-a
 	.arch_extension sec
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ENTRY(save_secure_ram_context)
 	stmfd	sp!, {r4 - r11, lr}	@ save registers on stack
 	mov	r3, r0			@ physical address of parameters
@@ -500,12 +503,18 @@ l2dis_3630_offset:
 	.long	l2dis_3630 - .
 
 	.data
+<<<<<<< HEAD
 	.align	2
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 l2dis_3630:
 	.word	0
 
 	.data
+<<<<<<< HEAD
 	.align	2
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 l2_inv_api_params:
 	.word	0x1, 0x00
 

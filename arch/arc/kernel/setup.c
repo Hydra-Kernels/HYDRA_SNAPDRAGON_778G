@@ -425,6 +425,7 @@ static void arc_chk_core_config(void)
 	 * -If not, it will crash trying to save/restore the non-existant regs
 	 */
 
+<<<<<<< HEAD
 	if (is_isa_arcompact()) {
 		opt_nm = "CONFIG_ARC_FPU_SAVE_RESTORE";
 		saved = IS_ENABLED(CONFIG_ARC_FPU_SAVE_RESTORE);
@@ -443,6 +444,12 @@ static void arc_chk_core_config(void)
 		pr_warn("Enable %s for working apps\n", opt_nm);
 	else if (!present && saved)
 		panic("Disable %s, hardware NOT present\n", opt_nm);
+=======
+	if (cpu->extn.fpu_dp && !fpu_enabled)
+		pr_warn("CONFIG_ARC_FPU_SAVE_RESTORE needed for working apps\n");
+	else if (!cpu->extn.fpu_dp && fpu_enabled)
+		panic("FPU non-existent, disable CONFIG_ARC_FPU_SAVE_RESTORE\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

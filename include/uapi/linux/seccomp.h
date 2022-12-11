@@ -18,10 +18,16 @@
 #define SECCOMP_GET_NOTIF_SIZES		3
 
 /* Valid flags for SECCOMP_SET_MODE_FILTER */
+<<<<<<< HEAD
 #define SECCOMP_FILTER_FLAG_TSYNC		(1UL << 0)
 #define SECCOMP_FILTER_FLAG_LOG			(1UL << 1)
 #define SECCOMP_FILTER_FLAG_SPEC_ALLOW		(1UL << 2)
 #define SECCOMP_FILTER_FLAG_NEW_LISTENER	(1UL << 3)
+=======
+#define SECCOMP_FILTER_FLAG_TSYNC	(1UL << 0)
+/* In v4.14+ SECCOMP_FILTER_FLAG_LOG is (1UL << 1) */
+#define SECCOMP_FILTER_FLAG_SPEC_ALLOW	(1UL << 2)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * All BPF programs must return a 32-bit value.

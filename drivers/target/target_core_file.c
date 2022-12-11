@@ -344,7 +344,11 @@ static int fd_do_rw(struct se_cmd *cmd, struct file *fd,
 	if (is_write)
 		ret = vfs_iter_write(fd, &iter, &pos, 0);
 	else
+<<<<<<< HEAD
 		ret = vfs_iter_read(fd, &iter, &pos, 0);
+=======
+		ret = vfs_iter_read(fd, &iter, &pos);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (is_write) {
 		if (ret < 0 || ret != data_length) {

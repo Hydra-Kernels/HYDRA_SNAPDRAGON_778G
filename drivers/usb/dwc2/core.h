@@ -45,12 +45,29 @@
 #include <linux/usb/phy.h>
 #include "hw.h"
 
+<<<<<<< HEAD
 /*
  * Suggested defines for tracers:
  * - no_printk:    Disable tracing
  * - pr_info:      Print this info to the console
  * - trace_printk: Print this info to trace buffer (good for verbose logging)
  */
+=======
+#ifdef CONFIG_MIPS
+/*
+ * There are some MIPS machines that can run in either big-endian
+ * or little-endian mode and that use the dwc2 register without
+ * a byteswap in both ways.
+ * Unlike other architectures, MIPS apparently does not require a
+ * barrier before the __raw_writel() to synchronize with DMA but does
+ * require the barrier after the __raw_writel() to serialize a set of
+ * writes. This set of operations was added specifically for MIPS and
+ * should only be used there.
+ */
+static inline u32 dwc2_readl(const void __iomem *addr)
+{
+	u32 value = __raw_readl(addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define DWC2_TRACE_SCHEDULER		no_printk
 #define DWC2_TRACE_SCHEDULER_VB		no_printk
@@ -60,10 +77,39 @@
 	DWC2_TRACE_SCHEDULER(pr_fmt("%s: SCH: " fmt),			\
 			     dev_name(hsotg->dev), ##__VA_ARGS__)
 
+<<<<<<< HEAD
 /* Verbose scheduler tracing */
 #define dwc2_sch_vdbg(hsotg, fmt, ...)					\
 	DWC2_TRACE_SCHEDULER_VB(pr_fmt("%s: SCH: " fmt),		\
 				dev_name(hsotg->dev), ##__VA_ARGS__)
+=======
+	/*
+	 * In order to preserve endianness __raw_* operation is used. Therefore
+	 * a barrier is needed to ensure IO access is not re-ordered across
+	 * reads or writes
+	 */
+	mb();
+#ifdef DWC2_LOG_WRITES
+	pr_info("INFO:: wrote %08x to %p\n", value, addr);
+#endif
+}
+#else
+/* Normal architectures just use readl/write */
+static inline u32 dwc2_readl(const void __iomem *addr)
+{
+	return readl(addr);
+}
+
+static inline void dwc2_writel(u32 value, void __iomem *addr)
+{
+	writel(value, addr);
+
+#ifdef DWC2_LOG_WRITES
+	pr_info("info:: wrote %08x to %p\n", value, addr);
+#endif
+}
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Maximum number of Endpoints/HostChannels */
 #define MAX_EPS_CHANNELS	16

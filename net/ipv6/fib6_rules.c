@@ -29,11 +29,27 @@ struct fib6_rule {
 
 static bool fib6_rule_matchall(const struct fib_rule *rule)
 {
+<<<<<<< HEAD
 	struct fib6_rule *r = container_of(rule, struct fib6_rule, common);
 
 	if (r->dst.plen || r->src.plen || r->tclass)
 		return false;
 	return fib_rule_matchall(rule);
+=======
+	struct fib_lookup_arg arg = {
+		.lookup_ptr = lookup,
+		.flags = FIB_LOOKUP_NOREF,
+	};
+
+	fib_rules_lookup(net->ipv6.fib6_rules_ops,
+			 flowi6_to_flowi(fl6), flags, &arg);
+
+	if (arg.result)
+		return arg.result;
+
+	dst_hold(&net->ipv6.ip6_null_entry->dst);
+	return &net->ipv6.ip6_null_entry->dst;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 bool fib6_rule_default(const struct fib_rule *rule)

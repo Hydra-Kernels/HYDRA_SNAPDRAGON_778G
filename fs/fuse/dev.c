@@ -335,6 +335,7 @@ EXPORT_SYMBOL_GPL(fuse_request_end);
 
 static int queue_interrupt(struct fuse_iqueue *fiq, struct fuse_req *req)
 {
+<<<<<<< HEAD
 	spin_lock(&fiq->lock);
 	/* Check for we've sent request to interrupt this req */
 	if (unlikely(!test_bit(FR_INTERRUPTED, &req->flags))) {
@@ -342,6 +343,13 @@ static int queue_interrupt(struct fuse_iqueue *fiq, struct fuse_req *req)
 		return -EINVAL;
 	}
 
+=======
+	spin_lock(&fiq->waitq.lock);
+	if (test_bit(FR_FINISHED, &req->flags)) {
+		spin_unlock(&fiq->waitq.lock);
+		return;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (list_empty(&req->intr_entry)) {
 		list_add_tail(&req->intr_entry, &fiq->interrupts);
 		/*
@@ -2159,9 +2167,15 @@ void fuse_abort_conn(struct fuse_conn *fc)
 
 		spin_lock(&fiq->lock);
 		fiq->connected = 0;
+<<<<<<< HEAD
 		list_for_each_entry(req, &fiq->pending, list)
 			clear_bit(FR_PENDING, &req->flags);
 		list_splice_tail_init(&fiq->pending, &to_end);
+=======
+		list_splice_init(&fiq->pending, &to_end2);
+		list_for_each_entry(req, &to_end2, list)
+			clear_bit(FR_PENDING, &req->flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		while (forget_pending(fiq))
 			kfree(fuse_dequeue_forget(fiq, 1, NULL));
 		wake_up_all(&fiq->waitq);

@@ -41,8 +41,17 @@
 #include "socket.h"
 #include "node.h"
 #include "bcast.h"
+<<<<<<< HEAD
 #include "netlink.h"
 #include "monitor.h"
+=======
+
+static const struct nla_policy tipc_nl_net_policy[TIPC_NLA_NET_MAX + 1] = {
+	[TIPC_NLA_NET_UNSPEC]	= { .type = NLA_UNSPEC },
+	[TIPC_NLA_NET_ID]	= { .type = NLA_U32 },
+	[TIPC_NLA_NET_ADDR]	= { .type = NLA_U32 },
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * The TIPC locking policy is designed to ensure a very fine locking

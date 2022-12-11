@@ -14,7 +14,10 @@
 #define __U_F_H__
 
 #include <linux/usb/gadget.h>
+<<<<<<< HEAD
 #include <linux/overflow.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Variable Length Array Macros **********************************************/
 #define vla_group(groupname) size_t groupname##__next = 0
@@ -66,20 +69,32 @@ struct usb_request;
  *
  * @ep: the endpoint to allocate a usb_request
  * @len: usb_requests's buffer suggested size
+<<<<<<< HEAD
+=======
+ * @default_len: used if @len is not provided, ie, is 0
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * In case @ep direction is OUT, the @len will be aligned to ep's
  * wMaxPacketSize. In order to avoid memory leaks or drops, *always* use
  * usb_requests's length (req->length) to refer to the allocated buffer size.
  * Requests allocated via alloc_ep_req() *must* be freed by free_ep_req().
  */
+<<<<<<< HEAD
 struct usb_request *alloc_ep_req(struct usb_ep *ep, size_t len);
+=======
+struct usb_request *alloc_ep_req(struct usb_ep *ep, size_t len, int default_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Frees a usb_request previously allocated by alloc_ep_req() */
 static inline void free_ep_req(struct usb_ep *ep, struct usb_request *req)
 {
+<<<<<<< HEAD
 	WARN_ON(req->buf == NULL);
 	kfree(req->buf);
 	req->buf = NULL;
+=======
+	kfree(req->buf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	usb_ep_free_request(ep, req);
 }
 

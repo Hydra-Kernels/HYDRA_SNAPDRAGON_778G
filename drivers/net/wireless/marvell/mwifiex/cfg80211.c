@@ -2368,9 +2368,12 @@ mwifiex_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 	mwifiex_dbg(adapter, INFO,
 		    "info: Trying to associate to %.*s and bssid %pM\n",
 		    (int)sme->ssid_len, (char *)sme->ssid, sme->bssid);
+<<<<<<< HEAD:drivers/net/wireless/marvell/mwifiex/cfg80211.c
 
 	if (!mwifiex_stop_bg_scan(priv))
 		cfg80211_sched_scan_stopped_rtnl(priv->wdev.wiphy, 0);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/mwifiex/cfg80211.c
 
 	ret = mwifiex_cfg80211_assoc(priv, sme->ssid_len, sme->ssid, sme->bssid,
 				     priv->bss_mode, sme->channel, sme, 0);
@@ -4275,12 +4278,18 @@ int mwifiex_init_channel_scan_gap(struct mwifiex_adapter *adapter)
 	if (adapter->config_bands & BAND_A)
 		n_channels_a = mwifiex_band_5ghz.n_channels;
 
+<<<<<<< HEAD:drivers/net/wireless/marvell/mwifiex/cfg80211.c
 	/* allocate twice the number total channels, since the driver issues an
 	 * additional active scan request for hidden SSIDs on passive channels.
 	 */
 	adapter->num_in_chan_stats = 2 * (n_channels_bg + n_channels_a);
 	adapter->chan_stats = vmalloc(array_size(sizeof(*adapter->chan_stats),
 						 adapter->num_in_chan_stats));
+=======
+	adapter->num_in_chan_stats = n_channels_bg + n_channels_a;
+	adapter->chan_stats = vmalloc(sizeof(*adapter->chan_stats) *
+				      adapter->num_in_chan_stats);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/mwifiex/cfg80211.c
 
 	if (!adapter->chan_stats)
 		return -ENOMEM;

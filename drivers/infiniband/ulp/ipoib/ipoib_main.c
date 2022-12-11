@@ -704,7 +704,11 @@ static void push_pseudo_header(struct sk_buff *skb, const char *daddr)
 {
 	struct ipoib_pseudo_header *phdr;
 
+<<<<<<< HEAD
 	phdr = skb_push(skb, sizeof(*phdr));
+=======
+	phdr = (struct ipoib_pseudo_header *)skb_push(skb, sizeof(*phdr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memcpy(phdr->hwaddr, daddr, INFINIBAND_ALEN);
 }
 
@@ -925,8 +929,13 @@ static int path_rec_start(struct net_device *dev,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void neigh_refresh_path(struct ipoib_neigh *neigh, u8 *daddr,
 			       struct net_device *dev)
+=======
+static struct ipoib_neigh *neigh_add_path(struct sk_buff *skb, u8 *daddr,
+					  struct net_device *dev)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct ipoib_dev_priv *priv = ipoib_priv(dev);
 	struct ipoib_path *path;
@@ -1046,17 +1055,44 @@ static void unicast_arp_send(struct sk_buff *skb, struct net_device *dev,
 
 	spin_lock_irqsave(&priv->lock, flags);
 
+<<<<<<< HEAD
 	/* no broadcast means that all paths are (going to be) not valid */
 	if (!priv->broadcast)
 		goto drop_and_unlock;
+=======
+	path = __path_find(dev, phdr->hwaddr + 4);
+	if (!path || !path->valid) {
+		int new_path = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	path = __path_find(dev, phdr->hwaddr + 4);
 	if (!path || !path->ah || !path->ah->valid) {
 		if (!path) {
 			path = path_rec_create(dev, phdr->hwaddr + 4);
+<<<<<<< HEAD
 			if (!path)
 				goto drop_and_unlock;
 			__path_add(dev, path);
+=======
+			new_path = 1;
+		}
+		if (path) {
+			if (skb_queue_len(&path->queue) < IPOIB_MAX_PATH_REC_QUEUE) {
+				push_pseudo_header(skb, phdr->hwaddr);
+				__skb_queue_tail(&path->queue, skb);
+			} else {
+				++dev->stats.tx_dropped;
+				dev_kfree_skb_any(skb);
+			}
+
+			if (!path->query && path_rec_start(dev, path)) {
+				spin_unlock_irqrestore(&priv->lock, flags);
+				if (new_path)
+					path_free(dev, path);
+				return;
+			} else
+				__path_add(dev, path);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			/*
 			 * make sure there are no changes in the existing
@@ -1068,6 +1104,7 @@ static void unicast_arp_send(struct sk_buff *skb, struct net_device *dev,
 			goto drop_and_unlock;
 		}
 
+<<<<<<< HEAD
 		if (skb_queue_len(&path->queue) < IPOIB_MAX_PATH_REC_QUEUE) {
 			push_pseudo_header(skb, phdr->hwaddr);
 			__skb_queue_tail(&path->queue, skb);
@@ -1075,6 +1112,26 @@ static void unicast_arp_send(struct sk_buff *skb, struct net_device *dev,
 		} else {
 			goto drop_and_unlock;
 		}
+=======
+		spin_unlock_irqrestore(&priv->lock, flags);
+		return;
+	}
+
+	if (path->ah) {
+		ipoib_dbg(priv, "Send unicast ARP to %04x\n",
+			  be16_to_cpu(path->pathrec.dlid));
+
+		spin_unlock_irqrestore(&priv->lock, flags);
+		ipoib_send(dev, skb, path->ah, IPOIB_QPN(phdr->hwaddr));
+		return;
+	} else if ((path->query || !path_rec_start(dev, path)) &&
+		   skb_queue_len(&path->queue) < IPOIB_MAX_PATH_REC_QUEUE) {
+		push_pseudo_header(skb, phdr->hwaddr);
+		__skb_queue_tail(&path->queue, skb);
+	} else {
+		++dev->stats.tx_dropped;
+		dev_kfree_skb_any(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	spin_unlock_irqrestore(&priv->lock, flags);
@@ -1158,9 +1215,14 @@ send_using_neigh:
 			ipoib_cm_send(dev, skb, ipoib_cm_get(neigh));
 			goto unref;
 		}
+<<<<<<< HEAD
 	} else if (neigh->ah && neigh->ah->valid) {
 		neigh->ah->last_send = rn->send(dev, skb, neigh->ah->ah,
 						IPOIB_QPN(phdr->hwaddr));
+=======
+	} else if (neigh->ah) {
+		ipoib_send(dev, skb, neigh->ah, IPOIB_QPN(phdr->hwaddr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto unref;
 	} else if (neigh->ah) {
 		neigh_refresh_path(neigh, phdr->hwaddr, dev);
@@ -1669,11 +1731,22 @@ static void ipoib_napi_del(struct net_device *dev)
 	netif_napi_del(&priv->send_napi);
 }
 
+<<<<<<< HEAD
 static void ipoib_dev_uninit_default(struct net_device *dev)
 {
 	struct ipoib_dev_priv *priv = ipoib_priv(dev);
 
 	ipoib_transport_dev_cleanup(dev);
+=======
+	/* Delete any child interfaces first */
+	list_for_each_entry_safe(cpriv, tcpriv, &priv->child_intfs, list) {
+		/* Stop GC on child */
+		set_bit(IPOIB_STOP_NEIGH_GC, &cpriv->flags);
+		cancel_delayed_work(&cpriv->neigh_reap_task);
+		unregister_netdevice_queue(cpriv->dev, &head);
+	}
+	unregister_netdevice_many(&head);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ipoib_napi_del(dev);
 
@@ -2463,9 +2536,13 @@ static struct net_device *ipoib_add_port(const char *format,
 	/* call event handler to ensure pkey in sync */
 	queue_work(ipoib_workqueue, &priv->flush_heavy);
 
+<<<<<<< HEAD
 	ndev->rtnl_link_ops = ipoib_get_link_ops();
 
 	result = register_netdev(ndev);
+=======
+	result = register_netdev(priv->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (result) {
 		pr_warn("%s: couldn't register ipoib port %d; error %d\n",
 			hca->name, port, result);
@@ -2477,6 +2554,7 @@ static struct net_device *ipoib_add_port(const char *format,
 		return ERR_PTR(result);
 	}
 
+<<<<<<< HEAD
 	if (hca->ops.rdma_netdev_get_params) {
 		int rc = hca->ops.rdma_netdev_get_params(hca, port,
 						     RDMA_NETDEV_IPOIB,
@@ -2494,6 +2572,9 @@ static struct net_device *ipoib_add_port(const char *format,
 	ndev->priv_destructor = ipoib_intf_free;
 
 	if (ipoib_intercept_dev_id_attr(ndev))
+=======
+	if (ipoib_cm_add_mode_attr(priv->dev))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto sysfs_failed;
 	if (ipoib_cm_add_mode_attr(ndev))
 		goto sysfs_failed;
@@ -2509,9 +2590,30 @@ static struct net_device *ipoib_add_port(const char *format,
 	return ndev;
 
 sysfs_failed:
+<<<<<<< HEAD
 	ipoib_parent_unregister_pre(ndev);
 	unregister_netdev(ndev);
 	return ERR_PTR(-ENOMEM);
+=======
+	unregister_netdev(priv->dev);
+
+register_failed:
+	ib_unregister_event_handler(&priv->event_handler);
+	flush_workqueue(ipoib_workqueue);
+	/* Stop GC if started before flush */
+	set_bit(IPOIB_STOP_NEIGH_GC, &priv->flags);
+	cancel_delayed_work(&priv->neigh_reap_task);
+	flush_workqueue(priv->wq);
+
+event_failed:
+	ipoib_dev_cleanup(priv->dev);
+
+device_init_failed:
+	free_netdev(priv->dev);
+
+alloc_mem_failed:
+	return ERR_PTR(result);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void ipoib_add_one(struct ib_device *device)

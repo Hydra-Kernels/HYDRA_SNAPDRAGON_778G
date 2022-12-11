@@ -396,6 +396,7 @@ static struct tipc_node *tipc_node_create(struct net *net, u32 addr,
 		pr_warn("Node creation failed, no memory\n");
 		goto exit;
 	}
+<<<<<<< HEAD
 	n->addr = addr;
 	memcpy(&n->peer_id, peer_id, 16);
 	n->net = net;
@@ -423,6 +424,30 @@ static struct tipc_node *tipc_node_create(struct net *net, u32 addr,
 				 n->capabilities,
 				 &n->bc_entry.inputq1,
 				 &n->bc_entry.namedq,
+=======
+	n_ptr->addr = addr;
+	n_ptr->net = net;
+	n_ptr->capabilities = capabilities;
+	kref_init(&n_ptr->kref);
+	spin_lock_init(&n_ptr->lock);
+	INIT_HLIST_NODE(&n_ptr->hash);
+	INIT_LIST_HEAD(&n_ptr->list);
+	INIT_LIST_HEAD(&n_ptr->publ_list);
+	INIT_LIST_HEAD(&n_ptr->conn_sks);
+	skb_queue_head_init(&n_ptr->bc_entry.namedq);
+	skb_queue_head_init(&n_ptr->bc_entry.inputq1);
+	__skb_queue_head_init(&n_ptr->bc_entry.arrvq);
+	skb_queue_head_init(&n_ptr->bc_entry.inputq2);
+	n_ptr->state = SELF_DOWN_PEER_LEAVING;
+	n_ptr->signature = INVALID_NODE_SIG;
+	n_ptr->active_links[0] = INVALID_BEARER_ID;
+	n_ptr->active_links[1] = INVALID_BEARER_ID;
+	if (!tipc_link_bc_create(net, tipc_own_addr(net), n_ptr->addr,
+				 U16_MAX, tipc_bc_sndlink(net)->window,
+				 n_ptr->capabilities,
+				 &n_ptr->bc_entry.inputq1,
+				 &n_ptr->bc_entry.namedq,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 tipc_bc_sndlink(net),
 				 &n->bc_entry.link)) {
 		pr_warn("Broadcast rcv link creation failed, no memory\n");
@@ -430,6 +455,7 @@ static struct tipc_node *tipc_node_create(struct net *net, u32 addr,
 		n = NULL;
 		goto exit;
 	}
+<<<<<<< HEAD
 	tipc_node_get(n);
 	timer_setup(&n->timer, tipc_node_timeout, 0);
 	n->keepalive_intv = U32_MAX;
@@ -445,6 +471,17 @@ static struct tipc_node *tipc_node_create(struct net *net, u32 addr,
 		tn->capabilities &= temp_node->capabilities;
 	}
 	trace_tipc_node_create(n, true, " ");
+=======
+	tipc_node_get(n_ptr);
+	setup_timer(&n_ptr->timer, tipc_node_timeout, (unsigned long)n_ptr);
+	n_ptr->keepalive_intv = U32_MAX;
+	hlist_add_head_rcu(&n_ptr->hash, &tn->node_htable[tipc_hashfn(addr)]);
+	list_for_each_entry_rcu(temp_node, &tn->node_list, list) {
+		if (n_ptr->addr < temp_node->addr)
+			break;
+	}
+	list_add_tail_rcu(&n_ptr->list, &temp_node->list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 exit:
 	spin_unlock_bh(&tn->node_list_lock);
 	return n;
@@ -472,8 +509,14 @@ static void tipc_node_delete_from_list(struct tipc_node *node)
 
 static void tipc_node_delete(struct tipc_node *node)
 {
+<<<<<<< HEAD
 	trace_tipc_node_delete(node, true, " ");
 	tipc_node_delete_from_list(node);
+=======
+	list_del_rcu(&node->list);
+	hlist_del_rcu(&node->hash);
+	tipc_node_put(node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	del_timer_sync(&node->timer);
 	tipc_node_put(node);
@@ -669,7 +712,11 @@ static void tipc_node_timeout(struct timer_list *t)
 		if (rc & TIPC_LINK_DOWN_EVT)
 			tipc_node_link_down(n, bearer_id, false);
 	}
+<<<<<<< HEAD
 	mod_timer(&n->timer, jiffies + msecs_to_jiffies(n->keepalive_intv));
+=======
+	mod_timer(&n->timer, jiffies + n->keepalive_intv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

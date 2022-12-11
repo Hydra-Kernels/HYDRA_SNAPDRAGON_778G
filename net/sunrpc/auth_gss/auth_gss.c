@@ -303,7 +303,12 @@ __gss_find_upcall(struct rpc_pipe *pipe, kuid_t uid, const struct gss_auth *auth
 			continue;
 		if (auth && pos->auth->service != auth->service)
 			continue;
+<<<<<<< HEAD
 		refcount_inc(&pos->count);
+=======
+		atomic_inc(&pos->count);
+		dprintk("RPC:       %s found msg %p\n", __func__, pos);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return pos;
 	}
 	return NULL;
@@ -555,11 +560,19 @@ gss_setup_upcall(struct gss_auth *gss_auth, struct rpc_cred *cred)
 	gss_msg = gss_add_msg(gss_new);
 	if (gss_msg == gss_new) {
 		int res;
+<<<<<<< HEAD
 		refcount_inc(&gss_msg->count);
 		res = rpc_queue_upcall(gss_new->pipe, &gss_new->msg);
 		if (res) {
 			gss_unhash_msg(gss_new);
 			refcount_dec(&gss_msg->count);
+=======
+		atomic_inc(&gss_msg->count);
+		res = rpc_queue_upcall(gss_new->pipe, &gss_new->msg);
+		if (res) {
+			gss_unhash_msg(gss_new);
+			atomic_dec(&gss_msg->count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			gss_release_msg(gss_new);
 			gss_msg = ERR_PTR(res);
 		}

@@ -65,8 +65,164 @@ smb3_crypto_shash_allocate(struct TCP_Server_Info *server)
 		goto err;
 
 	return 0;
+<<<<<<< HEAD
 err:
 	cifs_free_hash(&p->hmacsha256, &p->sdeschmacsha256);
+=======
+}
+
+static struct cifs_ses *
+smb2_find_smb_ses_unlocked(struct TCP_Server_Info *server, __u64 ses_id)
+{
+	struct cifs_ses *ses;
+
+	list_for_each_entry(ses, &server->smb_ses_list, smb_ses_list) {
+		if (ses->Suid != ses_id)
+			continue;
+		return ses;
+	}
+
+	return NULL;
+}
+
+struct cifs_ses *
+smb2_find_smb_ses(struct TCP_Server_Info *server, __u64 ses_id)
+{
+	struct cifs_ses *ses;
+
+	spin_lock(&cifs_tcp_ses_lock);
+	ses = smb2_find_smb_ses_unlocked(server, ses_id);
+	spin_unlock(&cifs_tcp_ses_lock);
+
+	return ses;
+}
+
+static struct cifs_tcon *
+smb2_find_smb_sess_tcon_unlocked(struct cifs_ses *ses, __u32  tid)
+{
+	struct cifs_tcon *tcon;
+
+	list_for_each_entry(tcon, &ses->tcon_list, tcon_list) {
+		if (tcon->tid != tid)
+			continue;
+		++tcon->tc_count;
+		return tcon;
+	}
+
+	return NULL;
+}
+
+/*
+ * Obtain tcon corresponding to the tid in the given
+ * cifs_ses
+ */
+
+struct cifs_tcon *
+smb2_find_smb_tcon(struct TCP_Server_Info *server, __u64 ses_id, __u32 tid)
+{
+	struct cifs_ses *ses;
+	struct cifs_tcon *tcon;
+
+	spin_lock(&cifs_tcp_ses_lock);
+	ses = smb2_find_smb_ses_unlocked(server, ses_id);
+	if (!ses) {
+		spin_unlock(&cifs_tcp_ses_lock);
+		return NULL;
+	}
+	tcon = smb2_find_smb_sess_tcon_unlocked(ses, tid);
+	spin_unlock(&cifs_tcp_ses_lock);
+
+	return tcon;
+}
+
+int
+smb2_calc_signature(struct smb_rqst *rqst, struct TCP_Server_Info *server)
+{
+	int i, rc;
+	unsigned char smb2_signature[SMB2_HMACSHA256_SIZE];
+	unsigned char *sigptr = smb2_signature;
+	struct kvec *iov = rqst->rq_iov;
+	int n_vec = rqst->rq_nvec;
+	struct smb2_hdr *smb2_pdu = (struct smb2_hdr *)iov[0].iov_base;
+	struct cifs_ses *ses;
+
+	ses = smb2_find_smb_ses(server, smb2_pdu->SessionId);
+	if (!ses) {
+		cifs_dbg(VFS, "%s: Could not find session\n", __func__);
+		return 0;
+	}
+
+	memset(smb2_signature, 0x0, SMB2_HMACSHA256_SIZE);
+	memset(smb2_pdu->Signature, 0x0, SMB2_SIGNATURE_SIZE);
+
+	rc = smb2_crypto_shash_allocate(server);
+	if (rc) {
+		cifs_dbg(VFS, "%s: shah256 alloc failed\n", __func__);
+		return rc;
+	}
+
+	rc = crypto_shash_setkey(server->secmech.hmacsha256,
+		ses->auth_key.response, SMB2_NTLMV2_SESSKEY_SIZE);
+	if (rc) {
+		cifs_dbg(VFS, "%s: Could not update with response\n", __func__);
+		return rc;
+	}
+
+	rc = crypto_shash_init(&server->secmech.sdeschmacsha256->shash);
+	if (rc) {
+		cifs_dbg(VFS, "%s: Could not init sha256", __func__);
+		return rc;
+	}
+
+	for (i = 0; i < n_vec; i++) {
+		if (iov[i].iov_len == 0)
+			continue;
+		if (iov[i].iov_base == NULL) {
+			cifs_dbg(VFS, "null iovec entry\n");
+			return -EIO;
+		}
+		/*
+		 * The first entry includes a length field (which does not get
+		 * signed that occupies the first 4 bytes before the header).
+		 */
+		if (i == 0) {
+			if (iov[0].iov_len <= 8) /* cmd field at offset 9 */
+				break; /* nothing to sign or corrupt header */
+			rc =
+			crypto_shash_update(
+				&server->secmech.sdeschmacsha256->shash,
+				iov[i].iov_base + 4, iov[i].iov_len - 4);
+		} else {
+			rc =
+			crypto_shash_update(
+				&server->secmech.sdeschmacsha256->shash,
+				iov[i].iov_base, iov[i].iov_len);
+		}
+		if (rc) {
+			cifs_dbg(VFS, "%s: Could not update with payload\n",
+				 __func__);
+			return rc;
+		}
+	}
+
+	/* now hash over the rq_pages array */
+	for (i = 0; i < rqst->rq_npages; i++) {
+		struct kvec p_iov;
+
+		cifs_rqst_page_to_kvec(rqst, i, &p_iov);
+		crypto_shash_update(&server->secmech.sdeschmacsha256->shash,
+					p_iov.iov_base, p_iov.iov_len);
+		kunmap(rqst->rq_pages[i]);
+	}
+
+	rc = crypto_shash_final(&server->secmech.sdeschmacsha256->shash,
+				sigptr);
+	if (rc)
+		cifs_dbg(VFS, "%s: Could not generate sha256 hash\n", __func__);
+
+	memcpy(smb2_pdu->Signature, sigptr, SMB2_SIGNATURE_SIZE);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -435,7 +591,11 @@ smb3_calc_signature(struct smb_rqst *rqst, struct TCP_Server_Info *server)
 	struct shash_desc *shash = &server->secmech.sdesccmacaes->shash;
 	struct smb_rqst drqst;
 
+<<<<<<< HEAD
 	ses = smb2_find_smb_ses(server, shdr->SessionId);
+=======
+	ses = smb2_find_smb_ses(server, smb2_pdu->SessionId);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!ses) {
 		cifs_server_dbg(VFS, "%s: Could not find session\n", __func__);
 		return 0;

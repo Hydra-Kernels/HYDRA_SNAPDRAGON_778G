@@ -304,7 +304,10 @@ static int ci_hdrc_imx_probe(struct platform_device *pdev)
 	struct ci_hdrc_platform_data pdata = {
 		.name		= dev_name(&pdev->dev),
 		.capoffset	= DEF_CAPOFFSET,
+<<<<<<< HEAD
 		.notify_event	= ci_hdrc_imx_notify_event,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	};
 	int ret;
 	const struct of_device_id *of_id;

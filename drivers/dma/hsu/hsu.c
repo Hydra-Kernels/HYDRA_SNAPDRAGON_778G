@@ -123,6 +123,7 @@ static void hsu_dma_start_transfer(struct hsu_dma_chan *hsuc)
 	hsu_dma_start_channel(hsuc);
 }
 
+<<<<<<< HEAD
 /*
  *      hsu_dma_get_status() - get DMA channel status
  *      @chip: HSUART DMA chip
@@ -142,6 +143,21 @@ static void hsu_dma_start_transfer(struct hsu_dma_chan *hsuc)
  */
 int hsu_dma_get_status(struct hsu_dma_chip *chip, unsigned short nr,
 		       u32 *status)
+=======
+static u32 hsu_dma_chan_get_sr(struct hsu_dma_chan *hsuc)
+{
+	unsigned long flags;
+	u32 sr;
+
+	spin_lock_irqsave(&hsuc->vchan.lock, flags);
+	sr = hsu_chan_readl(hsuc, HSU_CH_SR);
+	spin_unlock_irqrestore(&hsuc->vchan.lock, flags);
+
+	return sr & ~(HSU_CH_SR_DESCE_ANY | HSU_CH_SR_CDESC_ANY);
+}
+
+irqreturn_t hsu_dma_irq(struct hsu_dma_chip *chip, unsigned short nr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct hsu_dma_chan *hsuc;
 	unsigned long flags;

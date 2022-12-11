@@ -969,8 +969,11 @@ static void ext4_put_super(struct super_block *sb)
 {
 	struct ext4_sb_info *sbi = EXT4_SB(sb);
 	struct ext4_super_block *es = sbi->s_es;
+<<<<<<< HEAD
 	struct buffer_head **group_desc;
 	struct flex_groups **flex_groups;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int aborted = 0;
 	int i, err;
 
@@ -994,7 +997,11 @@ static void ext4_put_super(struct super_block *sb)
 	ext4_mb_release(sb);
 	ext4_ext_release(sb);
 
+<<<<<<< HEAD
 	if (!sb_rdonly(sb) && !aborted) {
+=======
+	if (!(sb->s_flags & MS_RDONLY) && !aborted) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ext4_clear_feature_journal_needs_recovery(sb);
 		es->s_state = cpu_to_le16(sbi->s_mount_state);
 	}
@@ -2166,6 +2173,7 @@ static int parse_options(char *options, struct super_block *sb,
 			return 0;
 	}
 #ifdef CONFIG_QUOTA
+<<<<<<< HEAD
 	/*
 	 * We do the test below only for project quotas. 'usrquota' and
 	 * 'grpquota' mount options are allowed even without quota feature
@@ -2180,6 +2188,16 @@ static int parse_options(char *options, struct super_block *sb,
 	grp_qf_name = get_qf_name(sb, sbi, GRPQUOTA);
 	if (usr_qf_name || grp_qf_name) {
 		if (test_opt(sb, USRQUOTA) && usr_qf_name)
+=======
+	if (ext4_has_feature_quota(sb) &&
+	    (test_opt(sb, USRQUOTA) || test_opt(sb, GRPQUOTA))) {
+		ext4_msg(sb, KERN_INFO, "Quota feature enabled, usrquota and grpquota "
+			 "mount options ignored.");
+		clear_opt(sb, USRQUOTA);
+		clear_opt(sb, GRPQUOTA);
+	} else if (sbi->s_qf_names[USRQUOTA] || sbi->s_qf_names[GRPQUOTA]) {
+		if (test_opt(sb, USRQUOTA) && sbi->s_qf_names[USRQUOTA])
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			clear_opt(sb, USRQUOTA);
 
 		if (test_opt(sb, GRPQUOTA) && grp_qf_name)
@@ -2599,7 +2617,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Block bitmap for group %u overlaps "
 				 "superblock", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (block_bitmap >= sb_block + 1 &&
@@ -2607,7 +2629,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Block bitmap for group %u overlaps "
 				 "block group descriptors", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (block_bitmap < first_block || block_bitmap > last_block) {
@@ -2621,7 +2647,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Inode bitmap for group %u overlaps "
 				 "superblock", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (inode_bitmap >= sb_block + 1 &&
@@ -2629,7 +2659,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Inode bitmap for group %u overlaps "
 				 "block group descriptors", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (inode_bitmap < first_block || inode_bitmap > last_block) {
@@ -2643,7 +2677,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Inode table for group %u overlaps "
 				 "superblock", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (inode_table >= sb_block + 1 &&
@@ -2651,7 +2689,11 @@ static int ext4_check_descriptors(struct super_block *sb,
 			ext4_msg(sb, KERN_ERR, "ext4_check_descriptors: "
 				 "Inode table for group %u overlaps "
 				 "block group descriptors", i);
+<<<<<<< HEAD
 			if (!sb_rdonly(sb))
+=======
+			if (!(sb->s_flags & MS_RDONLY))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return 0;
 		}
 		if (inode_table < first_block ||
@@ -2741,11 +2783,21 @@ static void ext4_orphan_cleanup(struct super_block *sb,
 		sb->s_flags &= ~SB_RDONLY;
 	}
 #ifdef CONFIG_QUOTA
+<<<<<<< HEAD
+=======
+	/* Needed for iput() to work correctly and not trash data */
+	sb->s_flags |= MS_ACTIVE;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Turn on quotas which were not enabled for read-only mounts if
 	 * filesystem has quota feature, so that they are updated correctly.
 	 */
+<<<<<<< HEAD
 	if (ext4_has_feature_quota(sb) && (s_flags & SB_RDONLY)) {
+=======
+	if (ext4_has_feature_quota(sb) && (s_flags & MS_RDONLY)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		int ret = ext4_enable_quotas(sb);
 
 		if (!ret)
@@ -3696,7 +3748,10 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 	struct buffer_head *bh, **group_desc;
 	struct ext4_super_block *es = NULL;
 	struct ext4_sb_info *sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+<<<<<<< HEAD
 	struct flex_groups **flex_groups;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ext4_fsblk_t block;
 	ext4_fsblk_t sb_block = get_sb_block(&data);
 	ext4_fsblk_t logical_sb_block;
@@ -3867,6 +3922,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 	 */
 	sbi->s_li_wait_mult = EXT4_DEF_LI_WAIT_MULT;
 
+<<<<<<< HEAD
 	blocksize = BLOCK_SIZE << le32_to_cpu(es->s_log_block_size);
 	if (blocksize < EXT4_MIN_BLOCK_SIZE ||
 	    blocksize > EXT4_MAX_BLOCK_SIZE) {
@@ -3939,6 +3995,8 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 		}
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sbi->s_es->s_mount_opts[0]) {
 		char *s_mount_opts = kstrndup(sbi->s_es->s_mount_opts,
 					      sizeof(sbi->s_es->s_mount_opts),
@@ -4094,6 +4152,16 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 	if (le32_to_cpu(es->s_log_block_size) >
 	    (EXT4_MAX_BLOCK_LOG_SIZE - EXT4_MIN_BLOCK_LOG_SIZE)) {
 		ext4_msg(sb, KERN_ERR,
+<<<<<<< HEAD
+=======
+		       "Unsupported filesystem blocksize %d (%d log_block_size)",
+			 blocksize, le32_to_cpu(es->s_log_block_size));
+		goto failed_mount;
+	}
+	if (le32_to_cpu(es->s_log_block_size) >
+	    (EXT4_MAX_BLOCK_LOG_SIZE - EXT4_MIN_BLOCK_LOG_SIZE)) {
+		ext4_msg(sb, KERN_ERR,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			 "Invalid log block size: %u",
 			 le32_to_cpu(es->s_log_block_size));
 		goto failed_mount;
@@ -4163,6 +4231,32 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 						      has_huge_files);
 	sb->s_maxbytes = ext4_max_size(sb->s_blocksize_bits, has_huge_files);
 
+<<<<<<< HEAD
+=======
+	if (le32_to_cpu(es->s_rev_level) == EXT4_GOOD_OLD_REV) {
+		sbi->s_inode_size = EXT4_GOOD_OLD_INODE_SIZE;
+		sbi->s_first_ino = EXT4_GOOD_OLD_FIRST_INO;
+	} else {
+		sbi->s_inode_size = le16_to_cpu(es->s_inode_size);
+		sbi->s_first_ino = le32_to_cpu(es->s_first_ino);
+		if (sbi->s_first_ino < EXT4_GOOD_OLD_FIRST_INO) {
+			ext4_msg(sb, KERN_ERR, "invalid first ino: %u",
+				 sbi->s_first_ino);
+			goto failed_mount;
+		}
+		if ((sbi->s_inode_size < EXT4_GOOD_OLD_INODE_SIZE) ||
+		    (!is_power_of_2(sbi->s_inode_size)) ||
+		    (sbi->s_inode_size > blocksize)) {
+			ext4_msg(sb, KERN_ERR,
+			       "unsupported inode size: %d",
+			       sbi->s_inode_size);
+			goto failed_mount;
+		}
+		if (sbi->s_inode_size > EXT4_GOOD_OLD_INODE_SIZE)
+			sb->s_time_gran = 1 << (EXT4_EPOCH_BITS - 2);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sbi->s_desc_size = le16_to_cpu(es->s_desc_size);
 	if (ext4_has_feature_64bit(sb)) {
 		if (sbi->s_desc_size < EXT4_MIN_DESC_SIZE_64BIT ||
@@ -4185,7 +4279,11 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 	if (sbi->s_inodes_per_group < sbi->s_inodes_per_block ||
 	    sbi->s_inodes_per_group > blocksize * 8) {
 		ext4_msg(sb, KERN_ERR, "invalid inodes per group: %lu\n",
+<<<<<<< HEAD
 			 sbi->s_inodes_per_group);
+=======
+			 sbi->s_blocks_per_group);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto failed_mount;
 	}
 	sbi->s_itb_per_group = sbi->s_inodes_per_group /
@@ -4344,13 +4442,25 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 			goto failed_mount;
 		}
 	}
+<<<<<<< HEAD
 	rcu_assign_pointer(sbi->s_group_desc,
 			   kvmalloc_array(db_count,
+=======
+	sbi->s_group_desc = ext4_kvmalloc(db_count *
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					  sizeof(struct buffer_head *),
 					  GFP_KERNEL));
 	if (sbi->s_group_desc == NULL) {
 		ext4_msg(sb, KERN_ERR, "not enough memory");
 		ret = -ENOMEM;
+		goto failed_mount;
+	}
+	if (((u64)sbi->s_groups_count * sbi->s_inodes_per_group) !=
+	    le32_to_cpu(es->s_inodes_count)) {
+		ext4_msg(sb, KERN_ERR, "inodes count not valid: %u vs %llu",
+			 le32_to_cpu(es->s_inodes_count),
+			 ((u64)sbi->s_groups_count * sbi->s_inodes_per_group));
+		ret = -EINVAL;
 		goto failed_mount;
 	}
 
@@ -4384,7 +4494,15 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 		goto failed_mount2;
 	}
 
+<<<<<<< HEAD
 	timer_setup(&sbi->s_err_report, print_daily_error_info, 0);
+=======
+	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+	spin_lock_init(&sbi->s_next_gen_lock);
+
+	setup_timer(&sbi->s_err_report, print_daily_error_info,
+		(unsigned long) sb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Register extent status tree shrinker */
 	if (ext4_es_register_shrinker(sbi))
@@ -5121,11 +5239,38 @@ static int ext4_commit_super(struct super_block *sb, int sync)
 	struct buffer_head *sbh = EXT4_SB(sb)->s_sbh;
 	int error = 0;
 
+<<<<<<< HEAD
 	if (!sbh)
 		return -EINVAL;
 	if (block_device_ejected(sb))
 		return -ENODEV;
 
+=======
+	if (!sbh || block_device_ejected(sb))
+		return error;
+
+	/*
+	 * The superblock bh should be mapped, but it might not be if the
+	 * device was hot-removed. Not much we can do but fail the I/O.
+	 */
+	if (!buffer_mapped(sbh))
+		return error;
+
+	if (buffer_write_io_error(sbh)) {
+		/*
+		 * Oh, dear.  A previous attempt to write the
+		 * superblock failed.  This could happen because the
+		 * USB device was yanked out.  Or it could happen to
+		 * be a transient write error and maybe the block will
+		 * be remapped.  Nothing we can do but to retry the
+		 * write and hope for the best.
+		 */
+		ext4_msg(sb, KERN_ERR, "previous I/O error to "
+		       "superblock detected");
+		clear_buffer_write_io_error(sbh);
+		set_buffer_uptodate(sbh);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * If the file system is mounted read-only, don't update the
 	 * superblock write time.  This avoids updating the superblock
@@ -5960,6 +6105,7 @@ static int ext4_quota_on(struct super_block *sb, int type, int format_id,
 		if (err)
 			return err;
 	}
+<<<<<<< HEAD
 
 	lockdep_set_quota_inode(path->dentry->d_inode, I_DATA_SEM_QUOTA);
 	err = dquot_quota_on(sb, type, format_id, path);
@@ -5987,6 +6133,13 @@ static int ext4_quota_on(struct super_block *sb, int type, int format_id,
 	unlock_inode:
 		inode_unlock(inode);
 	}
+=======
+	lockdep_set_quota_inode(path->dentry->d_inode, I_DATA_SEM_QUOTA);
+	err = dquot_quota_on(sb, type, format_id, path);
+	if (err)
+		lockdep_set_quota_inode(path->dentry->d_inode,
+					     I_DATA_SEM_NORMAL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -6019,6 +6172,8 @@ static int ext4_quota_enable(struct super_block *sb, int type, int format_id,
 	if (err)
 		lockdep_set_quota_inode(qf_inode, I_DATA_SEM_NORMAL);
 	iput(qf_inode);
+	if (err)
+		lockdep_set_quota_inode(qf_inode, I_DATA_SEM_NORMAL);
 
 	return err;
 }
@@ -6045,6 +6200,9 @@ static int ext4_enable_quotas(struct super_block *sb)
 				DQUOT_USAGE_ENABLED |
 				(quota_mopt[type] ? DQUOT_LIMITS_ENABLED : 0));
 			if (err) {
+				for (type--; type >= 0; type--)
+					dquot_quota_off(sb, type);
+
 				ext4_warning(sb,
 					"Failed to enable quota tracking "
 					"(type=%d, err=%d). Please run "

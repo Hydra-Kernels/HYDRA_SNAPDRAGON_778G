@@ -2722,6 +2722,99 @@ write_err:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static int macronix_quad_enable(struct spi_nor *nor)
+{
+	int ret, val;
+
+	val = read_sr(nor);
+	write_enable(nor);
+
+	write_sr(nor, val | SR_QUAD_EN_MX);
+
+	if (spi_nor_wait_till_ready(nor))
+		return 1;
+
+	ret = read_sr(nor);
+	if (!(ret > 0 && (ret & SR_QUAD_EN_MX))) {
+		dev_err(nor->dev, "Macronix Quad bit not set\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+/*
+ * Write status Register and configuration register with 2 bytes
+ * The first byte will be written to the status register, while the
+ * second byte will be written to the configuration register.
+ * Return negative if error occured.
+ */
+static int write_sr_cr(struct spi_nor *nor, u16 val)
+{
+	nor->cmd_buf[0] = val & 0xff;
+	nor->cmd_buf[1] = (val >> 8);
+
+	return nor->write_reg(nor, SPINOR_OP_WRSR, nor->cmd_buf, 2);
+}
+
+static int spansion_quad_enable(struct spi_nor *nor)
+{
+	int ret;
+	int quad_en = CR_QUAD_EN_SPAN << 8;
+
+	write_enable(nor);
+
+	ret = write_sr_cr(nor, quad_en);
+	if (ret < 0) {
+		dev_err(nor->dev,
+			"error while writing configuration register\n");
+		return -EINVAL;
+	}
+
+	ret = spi_nor_wait_till_ready(nor);
+	if (ret) {
+		dev_err(nor->dev,
+			"timeout while writing configuration register\n");
+		return ret;
+	}
+
+	/* read back and check it */
+	ret = read_cr(nor);
+	if (!(ret > 0 && (ret & CR_QUAD_EN_SPAN))) {
+		dev_err(nor->dev, "Spansion Quad bit not set\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int set_quad_mode(struct spi_nor *nor, const struct flash_info *info)
+{
+	int status;
+
+	switch (JEDEC_MFR(info)) {
+	case SNOR_MFR_MACRONIX:
+		status = macronix_quad_enable(nor);
+		if (status) {
+			dev_err(nor->dev, "Macronix quad-read not enabled\n");
+			return -EINVAL;
+		}
+		return status;
+	case SNOR_MFR_MICRON:
+		return 0;
+	default:
+		status = spansion_quad_enable(nor);
+		if (status) {
+			dev_err(nor->dev, "Spansion quad-read not enabled\n");
+			return -EINVAL;
+		}
+		return status;
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int spi_nor_check(struct spi_nor *nor)
 {
 	if (!nor->dev ||

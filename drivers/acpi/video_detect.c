@@ -141,6 +141,7 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		DMI_MATCH(DMI_PRODUCT_NAME, "UL30A"),
 		},
 	},
+<<<<<<< HEAD
 	{
 	.callback = video_detect_force_vendor,
 	.ident = "GIGABYTE GB-BXBT-2807",
@@ -157,6 +158,8 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		DMI_MATCH(DMI_PRODUCT_NAME, "VPCEH3U1E"),
 		},
 	},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * These models have a working acpi_video backlight control, and using
@@ -329,6 +332,7 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		},
 	},
 	{
+<<<<<<< HEAD
 	 .callback = video_detect_force_native,
 	 .ident = "Dell Vostro V131",
 	 .matches = {
@@ -337,6 +341,8 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		},
 	},
 	{
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 /* https://bugzilla.redhat.com/show_bug.cgi?id=1123661 */
 	 .callback = video_detect_force_native,
 	 .ident = "Dell XPS 17 L702X",
@@ -346,6 +352,7 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		},
 	},
 	{
+<<<<<<< HEAD
 	 .callback = video_detect_force_native,
 	 .ident = "Dell Precision 7510",
 	 .matches = {
@@ -393,6 +400,18 @@ static const struct dmi_system_id video_detect_dmi_table[] = {
 		DMI_MATCH(DMI_PRODUCT_NAME, "MS-7721"),
 		},
 	},
+=======
+	/* https://bugzilla.redhat.com/show_bug.cgi?id=1204476 */
+	/* https://bugs.launchpad.net/ubuntu/+source/linux-lts-trusty/+bug/1416940 */
+	.callback = video_detect_force_native,
+	.ident = "HP Pavilion dv6",
+	.matches = {
+		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+		DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv6 Notebook PC"),
+		},
+	},
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ },
 };
 

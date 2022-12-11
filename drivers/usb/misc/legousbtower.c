@@ -795,7 +795,14 @@ static int tower_probe (struct usb_interface *interface, const struct usb_device
 	struct device *idev = &interface->dev;
 	struct usb_device *udev = interface_to_usbdev(interface);
 	struct lego_usb_tower *dev = NULL;
+<<<<<<< HEAD
 	struct tower_get_version_reply *get_version_reply = NULL;
+=======
+	struct usb_host_interface *iface_desc;
+	struct usb_endpoint_descriptor* endpoint;
+	struct tower_get_version_reply *get_version_reply = NULL;
+	int i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int retval = -ENOMEM;
 	int result;
 
@@ -878,10 +885,15 @@ static int tower_probe (struct usb_interface *interface, const struct usb_device
 				  get_version_reply,
 				  sizeof(*get_version_reply),
 				  1000);
+<<<<<<< HEAD
 	if (result != sizeof(*get_version_reply)) {
 		if (result >= 0)
 			result = -EIO;
 		dev_err(idev, "get version request failed: %d\n", result);
+=======
+	if (result < 0) {
+		dev_err(idev, "LEGO USB Tower get version control request failed\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		retval = result;
 		goto error;
 	}

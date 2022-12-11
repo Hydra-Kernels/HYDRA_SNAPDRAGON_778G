@@ -134,6 +134,7 @@ static void cls_cgroup_destroy(struct tcf_proto *tp, bool rtnl_held,
 {
 	struct cls_cgroup_head *head = rtnl_dereference(tp->root);
 
+<<<<<<< HEAD
 	/* Head can still be NULL due to cls_cgroup_init(). */
 	if (head) {
 		if (tcf_exts_get_net(&head->exts))
@@ -141,6 +142,15 @@ static void cls_cgroup_destroy(struct tcf_proto *tp, bool rtnl_held,
 		else
 			__cls_cgroup_destroy(head);
 	}
+=======
+	if (!force)
+		return false;
+	/* Head can still be NULL due to cls_cgroup_init(). */
+	if (head)
+		call_rcu(&head->rcu, cls_cgroup_destroy_rcu);
+
+	return true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int cls_cgroup_delete(struct tcf_proto *tp, void *arg, bool *last,

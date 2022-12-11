@@ -625,7 +625,10 @@ static int tegra_mc_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct tegra_mc *mc;
+<<<<<<< HEAD
 	void *isr;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err;
 
 	mc = devm_kzalloc(&pdev->dev, sizeof(*mc), GFP_KERNEL);
@@ -699,6 +702,7 @@ static int tegra_mc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "failed to register reset controller: %d\n",
 			err);
 
+<<<<<<< HEAD
 	if (IS_ENABLED(CONFIG_TEGRA_IOMMU_SMMU) && mc->soc->smmu) {
 		mc->smmu = tegra_smmu_probe(&pdev->dev, mc->soc->smmu, mc);
 		if (IS_ERR(mc->smmu)) {
@@ -716,6 +720,9 @@ static int tegra_mc_probe(struct platform_device *pdev)
 			mc->gart = NULL;
 		}
 	}
+=======
+	mc_writel(mc, mc->soc->intmask, MC_INTMASK);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

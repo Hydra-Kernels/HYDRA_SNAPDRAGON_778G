@@ -311,11 +311,26 @@ struct sdhci_adma2_32_desc {
 	__le16	len;
 	__le32	addr;
 }  __packed __aligned(4);
+<<<<<<< HEAD
+=======
 
 /* ADMA2 data alignment */
 #define SDHCI_ADMA2_ALIGN	4
 #define SDHCI_ADMA2_MASK	(SDHCI_ADMA2_ALIGN - 1)
 
+/*
+ * ADMA2 descriptor alignment.  Some controllers (e.g. Intel) require 8 byte
+ * alignment for the descriptor table even in 32-bit DMA mode.  Memory
+ * allocation is at least 8 byte aligned anyway, so just stipulate 8 always.
+ */
+#define SDHCI_ADMA2_DESC_ALIGN	8
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+/* ADMA2 data alignment */
+#define SDHCI_ADMA2_ALIGN	4
+#define SDHCI_ADMA2_MASK	(SDHCI_ADMA2_ALIGN - 1)
+
+<<<<<<< HEAD
 /*
  * ADMA2 descriptor alignment.  Some controllers (e.g. Intel) require 8 byte
  * alignment for the descriptor table even in 32-bit DMA mode.  Memory
@@ -332,6 +347,8 @@ struct sdhci_adma2_32_desc {
  */
 #define SDHCI_ADMA2_64_DESC_SZ(host)	((host)->v4_mode ? 16 : 12)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * ADMA2 64-bit descriptor. Note 12-byte descriptor can't always be 8-byte
  * aligned.
@@ -564,10 +581,14 @@ struct sdhci_host {
 	dma_addr_t adma_addr;	/* Mapped ADMA descr. table */
 	dma_addr_t align_addr;	/* Mapped bounce buffer */
 
+<<<<<<< HEAD
 	unsigned int desc_sz;	/* ADMA current descriptor size */
 #if defined(CONFIG_SDC_QTI)
 	unsigned int alloc_desc_sz;	/* ADMA descr. max size host supports */
 #endif
+=======
+	unsigned int desc_sz;	/* ADMA descriptor size */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	struct workqueue_struct *complete_wq;	/* Request completion wq */
 	struct work_struct	complete_work;	/* Request completion work */

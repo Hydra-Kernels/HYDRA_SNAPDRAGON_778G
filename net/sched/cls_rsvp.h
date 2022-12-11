@@ -148,6 +148,11 @@ static int rsvp_classify(struct sk_buff *skb, const struct tcf_proto *tp,
 		return -1;
 	nhptr = ip_hdr(skb);
 #endif
+<<<<<<< HEAD
+=======
+	if (unlikely(!head))
+		return -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 restart:
 
 #if RSVP_DST_LEN == 4

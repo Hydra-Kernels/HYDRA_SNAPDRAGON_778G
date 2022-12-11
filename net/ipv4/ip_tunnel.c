@@ -241,6 +241,7 @@ static struct net_device *__ip_tunnel_create(struct net *net,
 	err = -E2BIG;
 	if (parms->name[0]) {
 		if (!dev_valid_name(parms->name))
+<<<<<<< HEAD
 			goto failed;
 		strlcpy(name, parms->name, IFNAMSIZ);
 	} else {
@@ -248,6 +249,15 @@ static struct net_device *__ip_tunnel_create(struct net *net,
 			goto failed;
 		strcpy(name, ops->kind);
 		strcat(name, "%d");
+=======
+			goto failed;
+		strlcpy(name, parms->name, IFNAMSIZ);
+	} else {
+		if (strlen(ops->kind) > (IFNAMSIZ - 3))
+			goto failed;
+		strlcpy(name, ops->kind, IFNAMSIZ);
+		strncat(name, "%d", 2);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ASSERT_RTNL();
@@ -739,6 +749,7 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
 	if (ip_tunnel_encap(skb, tunnel, &protocol, &fl4) < 0)
 		goto tx_error;
 
+<<<<<<< HEAD
 	if (connected && md) {
 		use_cache = ip_tunnel_dst_cache_usable(skb, tun_info);
 		if (use_cache)
@@ -748,6 +759,10 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
 		rt = connected ? dst_cache_get_ip4(&tunnel->dst_cache,
 						&fl4.saddr) : NULL;
 	}
+=======
+	rt = connected ? dst_cache_get_ip4(&tunnel->dst_cache, &fl4.saddr) :
+			 NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!rt) {
 		rt = ip_route_output_key(tunnel->net, &fl4);
@@ -756,10 +771,14 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
 			dev->stats.tx_carrier_errors++;
 			goto tx_error;
 		}
+<<<<<<< HEAD
 		if (use_cache)
 			dst_cache_set_ip4(&tun_info->dst_cache, &rt->dst,
 					  fl4.saddr);
 		else if (!md && connected)
+=======
+		if (connected)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dst_cache_set_ip4(&tunnel->dst_cache, &rt->dst,
 					  fl4.saddr);
 	}
@@ -969,12 +988,18 @@ int __ip_tunnel_change_mtu(struct net_device *dev, int new_mtu, bool strict)
 {
 	struct ip_tunnel *tunnel = netdev_priv(dev);
 	int t_hlen = tunnel->hlen + sizeof(struct iphdr);
+<<<<<<< HEAD
 	int max_mtu = IP_MAX_MTU - t_hlen;
 
 	if (dev->type == ARPHRD_ETHER)
 		max_mtu -= dev->hard_header_len;
 
 	if (new_mtu < ETH_MIN_MTU)
+=======
+	int max_mtu = 0xFFF8 - dev->hard_header_len - t_hlen;
+
+	if (new_mtu < 68)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (new_mtu > max_mtu) {

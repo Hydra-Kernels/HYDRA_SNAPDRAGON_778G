@@ -638,11 +638,22 @@ static int usbhsg_ep_disable(struct usb_ep *ep)
 	struct usbhsg_uep *uep = usbhsg_ep_to_uep(ep);
 	struct usbhs_pipe *pipe;
 	unsigned long flags;
+<<<<<<< HEAD
 
 	spin_lock_irqsave(&uep->lock, flags);
 	pipe = usbhsg_uep_to_pipe(uep);
 	if (!pipe)
 		goto out;
+=======
+	int ret = 0;
+
+	spin_lock_irqsave(&uep->lock, flags);
+	pipe = usbhsg_uep_to_pipe(uep);
+	if (!pipe) {
+		ret = -EINVAL;
+		goto out;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	usbhsg_pipe_disable(uep);
 	usbhs_pipe_free(pipe);
@@ -1093,6 +1104,7 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
 		ret = -ENOMEM;
 		goto usbhs_mod_gadget_probe_err_gpriv;
 	}
+	spin_lock_init(&uep->lock);
 
 	gpriv->transceiver = usb_get_phy(USB_PHY_TYPE_UNDEFINED);
 	dev_info(dev, "%stransceiver found\n",

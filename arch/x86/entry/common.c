@@ -30,9 +30,14 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 #include <asm/vdso.h>
+<<<<<<< HEAD
 #include <asm/cpufeature.h>
 #include <asm/fpu/api.h>
 #include <asm/nospec-branch.h>
+=======
+#include <asm/uaccess.h>
+#include <asm/cpufeature.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/syscalls.h>
@@ -180,7 +185,11 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags)
 /* Called with IRQs disabled. */
 __visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
 {
+<<<<<<< HEAD
 	struct thread_info *ti = current_thread_info();
+=======
+	struct thread_info *ti = pt_regs_to_thread_info(regs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32 cached_flags;
 
 	addr_limit_user_check();
@@ -193,6 +202,7 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
 	if (unlikely(cached_flags & EXIT_TO_USERMODE_LOOP_FLAGS))
 		exit_to_usermode_loop(regs, cached_flags);
 
+<<<<<<< HEAD
 	/* Reload ti->flags; we may have rescheduled above. */
 	cached_flags = READ_ONCE(ti->flags);
 
@@ -200,6 +210,8 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
 	if (unlikely(cached_flags & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_COMPAT
 	/*
 	 * Compat syscalls set TS_COMPAT.  Make sure we clear it before
@@ -207,6 +219,7 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
 	 * handling, because syscall restart has a fixup for compat
 	 * syscalls.  The fixup is exercised by the ptrace_syscall_32
 	 * selftest.
+<<<<<<< HEAD
 	 *
 	 * We also need to clear TS_REGS_POKED_I386: the 32-bit tracer
 	 * special case only applies after poking regs and before the
@@ -218,6 +231,13 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
 	user_enter_irqoff();
 
 	mds_user_clear_cpu_buffers();
+=======
+	 */
+	ti->status &= ~TS_COMPAT;
+#endif
+
+	user_enter();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define SYSCALL_EXIT_WORK_FLAGS				\
@@ -329,9 +349,12 @@ static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs)
 
 	if (likely(nr < IA32_NR_syscalls)) {
 		nr = array_index_nospec(nr, IA32_NR_syscalls);
+<<<<<<< HEAD
 #ifdef CONFIG_IA32_EMULATION
 		regs->ax = ia32_sys_call_table[nr](regs);
 #else
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * It's possible that a 32-bit syscall implementation
 		 * takes a 64-bit parameter but nonetheless assumes that

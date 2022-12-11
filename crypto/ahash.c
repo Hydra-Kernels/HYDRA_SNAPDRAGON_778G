@@ -88,10 +88,18 @@ int crypto_hash_walk_done(struct crypto_hash_walk *walk, int err)
 		unsigned int nbytes;
 
 		walk->offset = ALIGN(walk->offset, alignmask + 1);
+<<<<<<< HEAD
 		nbytes = min(walk->entrylen,
 			     (unsigned int)(PAGE_SIZE - walk->offset));
 		if (nbytes) {
 			walk->entrylen -= nbytes;
+=======
+		nbytes = min(nbytes,
+			     ((unsigned int)(PAGE_SIZE)) - walk->offset);
+		walk->entrylen -= nbytes;
+
+		if (nbytes) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			walk->data += walk->offset;
 			return nbytes;
 		}
@@ -348,7 +356,13 @@ static int ahash_op_unaligned(struct ahash_request *req,
 		return err;
 
 	err = op(req);
+<<<<<<< HEAD
 	if (err == -EINPROGRESS || err == -EBUSY)
+=======
+	if (err == -EINPROGRESS ||
+	    (err == -EBUSY && (ahash_request_flags(req) &
+			       CRYPTO_TFM_REQ_MAY_BACKLOG)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return err;
 
 	ahash_restore_req(req, err);
@@ -433,7 +447,13 @@ static int ahash_def_finup_finish1(struct ahash_request *req, int err)
 	req->base.complete = ahash_def_finup_done2;
 
 	err = crypto_ahash_reqtfm(req)->final(req);
+<<<<<<< HEAD
 	if (err == -EINPROGRESS || err == -EBUSY)
+=======
+	if (err == -EINPROGRESS ||
+	    (err == -EBUSY && (ahash_request_flags(req) &
+			       CRYPTO_TFM_REQ_MAY_BACKLOG)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return err;
 
 out:
@@ -469,7 +489,13 @@ static int ahash_def_finup(struct ahash_request *req)
 		return err;
 
 	err = tfm->update(req);
+<<<<<<< HEAD
 	if (err == -EINPROGRESS || err == -EBUSY)
+=======
+	if (err == -EINPROGRESS ||
+	    (err == -EBUSY && (ahash_request_flags(req) &
+			       CRYPTO_TFM_REQ_MAY_BACKLOG)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return err;
 
 	return ahash_def_finup_finish1(req, err);
@@ -481,6 +507,12 @@ static int crypto_ahash_init_tfm(struct crypto_tfm *tfm)
 	struct ahash_alg *alg = crypto_ahash_alg(hash);
 
 	hash->setkey = ahash_nosetkey;
+<<<<<<< HEAD
+=======
+	hash->has_setkey = false;
+	hash->export = ahash_no_export;
+	hash->import = ahash_no_import;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (tfm->__crt_alg->cra_type != &crypto_ahash_type)
 		return crypto_init_shash_ops_async(tfm);
@@ -495,8 +527,17 @@ static int crypto_ahash_init_tfm(struct crypto_tfm *tfm)
 
 	if (alg->setkey) {
 		hash->setkey = alg->setkey;
+<<<<<<< HEAD
 		ahash_set_needkey(hash);
 	}
+=======
+		hash->has_setkey = true;
+	}
+	if (alg->export)
+		hash->export = alg->export;
+	if (alg->import)
+		hash->import = alg->import;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

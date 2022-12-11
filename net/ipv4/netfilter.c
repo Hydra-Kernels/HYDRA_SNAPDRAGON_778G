@@ -23,8 +23,13 @@ int ip_route_me_harder(struct net *net, struct sock *sk, struct sk_buff *skb, un
 	struct rtable *rt;
 	struct flowi4 fl4 = {};
 	__be32 saddr = iph->saddr;
+<<<<<<< HEAD
 	__u8 flags;
 	struct net_device *dev = skb_dst(skb)->dev;
+=======
+	const struct sock *sk = skb_to_full_sk(skb);
+	__u8 flags = sk ? inet_sk_flowi_flags(sk) : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int hh_len;
 
 	sk = sk_to_full_sk(sk);
@@ -44,8 +49,11 @@ int ip_route_me_harder(struct net *net, struct sock *sk, struct sk_buff *skb, un
 	fl4.saddr = saddr;
 	fl4.flowi4_tos = RT_TOS(iph->tos);
 	fl4.flowi4_oif = sk ? sk->sk_bound_dev_if : 0;
+<<<<<<< HEAD
 	if (!fl4.flowi4_oif)
 		fl4.flowi4_oif = l3mdev_master_ifindex(dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fl4.flowi4_mark = skb->mark;
 	fl4.flowi4_flags = flags;
 	rt = ip_route_output_key(net, &fl4);

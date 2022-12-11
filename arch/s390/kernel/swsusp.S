@@ -108,7 +108,10 @@ ENTRY(swsusp_arch_suspend)
 	lmg	%r6,%r15,STACK_FRAME_OVERHEAD + __SF_GPRS(%r15)
 	lghi	%r2,0
 	BR_EX	%r14
+<<<<<<< HEAD
 ENDPROC(swsusp_arch_suspend)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Restore saved memory image to correct place and restore register context.
@@ -192,7 +195,14 @@ pgm_check_entry:
 	/* Suspend CPU not available -> panic */
 	larl	%r15,init_thread_union+THREAD_SIZE-STACK_FRAME_OVERHEAD
 	larl	%r2,.Lpanic_string
+<<<<<<< HEAD
 	brasl	%r14,sclp_early_printk_force
+=======
+	lghi	%r1,0
+	sam31
+	sigp	%r1,%r0,SIGP_SET_ARCHITECTURE
+	brasl	%r14,_sclp_print_early
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	larl	%r3,.Ldisabled_wait_31
 	lpsw	0(%r3)
 4:
@@ -259,7 +269,10 @@ restore_registers:
 	lmg	%r6,%r15,STACK_FRAME_OVERHEAD + __SF_GPRS(%r15)
 	lghi	%r2,0
 	BR_EX	%r14
+<<<<<<< HEAD
 ENDPROC(swsusp_arch_resume)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	.section .data..nosave,"aw",@progbits
 	.align	8

@@ -1418,6 +1418,7 @@ static bool ext4_match(struct inode *parent,
 	if (!de->inode)
 		return false;
 
+<<<<<<< HEAD
 	f.usr_fname = fname->usr_fname;
 	f.disk_name = fname->disk_name;
 #ifdef CONFIG_FS_ENCRYPTION
@@ -1439,6 +1440,17 @@ static bool ext4_match(struct inode *parent,
 			}
 			return !ext4_ci_compare(parent, &cf, de->name,
 							de->name_len, true);
+=======
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+	if (unlikely(!name)) {
+		if (fname->usr_fname->name[0] == '_') {
+			int ret;
+			if (de->name_len <= 32)
+				return 0;
+			ret = memcmp(de->name + ((de->name_len - 17) & ~15),
+				     fname->crypto_buf.name + 8, 16);
+			return (ret == 0) ? 1 : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		return !ext4_ci_compare(parent, fname->usr_fname, de->name,
 						de->name_len, false);
@@ -1762,6 +1774,24 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, unsi
 	struct inode *inode;
 	struct ext4_dir_entry_2 *de;
 	struct buffer_head *bh;
+
+       if (ext4_encrypted_inode(dir)) {
+               int res = ext4_get_encryption_info(dir);
+
+		/*
+		 * This should be a properly defined flag for
+		 * dentry->d_flags when we uplift this to the VFS.
+		 * d_fsdata is set to (void *) 1 if if the dentry is
+		 * created while the directory was encrypted and we
+		 * don't have access to the key.
+		 */
+	       dentry->d_fsdata = NULL;
+	       if (ext4_encryption_info(dir))
+		       dentry->d_fsdata = (void *) 1;
+	       d_set_d_op(dentry, &ext4_encrypted_d_ops);
+	       if (res && res != -ENOKEY)
+		       return ERR_PTR(res);
+       }
 
 	if (dentry->d_name.len > EXT4_NAME_LEN)
 		return ERR_PTR(-ENAMETOOLONG);
@@ -2239,17 +2269,29 @@ static int make_indexed_dir(handle_t *handle, struct ext4_filename *fname,
 	retval = ext4_handle_dirty_dx_node(handle, dir, frame->bh);
 	if (retval)
 		goto out_frames;	
+<<<<<<< HEAD
 	retval = ext4_handle_dirty_dirblock(handle, dir, bh2);
 	if (retval)
 		goto out_frames;	
 
 	de = do_split(handle, dir, &bh2, frame, &fname->hinfo, &block);
+=======
+	retval = ext4_handle_dirty_dirent_node(handle, dir, bh2);
+	if (retval)
+		goto out_frames;	
+
+	de = do_split(handle,dir, &bh2, frame, &fname->hinfo);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(de)) {
 		retval = PTR_ERR(de);
 		goto out_frames;
 	}
 
+<<<<<<< HEAD
 	retval = add_dirent_to_buf(handle, fname, dir, inode, de, block, bh2);
+=======
+	retval = add_dirent_to_buf(handle, fname, dir, inode, de, bh2);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_frames:
 	/*
 	 * Even if the block split failed, we have to properly write
@@ -3809,6 +3851,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	int credits;
 	u8 old_file_type;
 
+<<<<<<< HEAD
 	if (new.inode && new.inode->i_nlink == 0) {
 		EXT4_ERROR_INODE(new.inode,
 				 "target of rename is already freed");
@@ -3819,6 +3862,13 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	    (!projid_eq(EXT4_I(new_dir)->i_projid,
 			EXT4_I(old_dentry->d_inode)->i_projid)))
 		return -EXDEV;
+=======
+	if ((ext4_encrypted_inode(old_dir) &&
+	     !ext4_has_encryption_key(old_dir)) ||
+	    (ext4_encrypted_inode(new_dir) &&
+	     !ext4_has_encryption_key(new_dir)))
+		return -ENOKEY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	retval = dquot_initialize(old.dir);
 	if (retval)
@@ -4018,6 +4068,7 @@ static int ext4_cross_rename(struct inode *old_dir, struct dentry *old_dentry,
 	int retval;
 	struct timespec64 ctime;
 
+<<<<<<< HEAD
 	if ((ext4_test_inode_flag(new_dir, EXT4_INODE_PROJINHERIT) &&
 	     !projid_eq(EXT4_I(new_dir)->i_projid,
 			EXT4_I(old_dentry->d_inode)->i_projid)) ||
@@ -4025,6 +4076,22 @@ static int ext4_cross_rename(struct inode *old_dir, struct dentry *old_dentry,
 	     !projid_eq(EXT4_I(old_dir)->i_projid,
 			EXT4_I(new_dentry->d_inode)->i_projid)))
 		return -EXDEV;
+=======
+	if ((ext4_encrypted_inode(old_dir) &&
+	     !ext4_has_encryption_key(old_dir)) ||
+	    (ext4_encrypted_inode(new_dir) &&
+	     !ext4_has_encryption_key(new_dir)))
+		return -ENOKEY;
+
+	if ((ext4_encrypted_inode(old_dir) ||
+	     ext4_encrypted_inode(new_dir)) &&
+	    (old_dir != new_dir) &&
+	    (!ext4_is_child_context_consistent_with_parent(new_dir,
+							   old.inode) ||
+	     !ext4_is_child_context_consistent_with_parent(old_dir,
+							   new.inode)))
+		return -EPERM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	retval = dquot_initialize(old.dir);
 	if (retval)

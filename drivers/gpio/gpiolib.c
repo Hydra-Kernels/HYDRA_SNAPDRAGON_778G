@@ -4453,15 +4453,24 @@ EXPORT_SYMBOL_GPL(gpiod_get_optional);
  * gpiod_configure_flags - helper function to configure a given GPIO
  * @desc:	gpio whose value will be assigned
  * @con_id:	function within the GPIO consumer
+<<<<<<< HEAD
  * @lflags:	bitmask of gpio_lookup_flags GPIO_* values - returned from
  *		of_find_gpio() or of_get_gpio_hog()
+=======
+ * @lflags:	gpio_lookup_flags - returned from of_find_gpio() or
+ *		of_get_gpio_hog()
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @dflags:	gpiod_flags - optional GPIO initialization flags
  *
  * Return 0 on success, -ENOENT if no GPIO has been assigned to the
  * requested function and/or index, or another IS_ERR() code if an error
  * occurred while trying to acquire the GPIO.
  */
+<<<<<<< HEAD
 int gpiod_configure_flags(struct gpio_desc *desc, const char *con_id,
+=======
+static int gpiod_configure_flags(struct gpio_desc *desc, const char *con_id,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		unsigned long lflags, enum gpiod_flags dflags)
 {
 	int ret;
@@ -4501,6 +4510,13 @@ int gpiod_configure_flags(struct gpio_desc *desc, const char *con_id,
 	if (ret < 0)
 		return ret;
 
+	if (lflags & GPIO_ACTIVE_LOW)
+		set_bit(FLAG_ACTIVE_LOW, &desc->flags);
+	if (lflags & GPIO_OPEN_DRAIN)
+		set_bit(FLAG_OPEN_DRAIN, &desc->flags);
+	if (lflags & GPIO_OPEN_SOURCE)
+		set_bit(FLAG_OPEN_SOURCE, &desc->flags);
+
 	/* No particular flag request, return here... */
 	if (!(dflags & GPIOD_FLAGS_BIT_DIR_SET)) {
 		pr_debug("no flags found for %s\n", con_id);
@@ -4538,7 +4554,12 @@ struct gpio_desc *__must_check gpiod_get_index(struct device *dev,
 {
 	unsigned long lookupflags = GPIO_LOOKUP_FLAGS_DEFAULT;
 	struct gpio_desc *desc = NULL;
+<<<<<<< HEAD
 	int ret;
+=======
+	int status;
+	enum gpio_lookup_flags lookupflags = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Maybe we have a device name, maybe not */
 	const char *devname = dev ? dev_name(dev) : "?";
 
@@ -4573,6 +4594,7 @@ struct gpio_desc *__must_check gpiod_get_index(struct device *dev,
 	 * If a connection label was passed use that, else attempt to use
 	 * the device name as label
 	 */
+<<<<<<< HEAD
 	ret = gpiod_request(desc, con_id ? con_id : devname);
 	if (ret < 0) {
 		if (ret == -EBUSY && flags & GPIOD_FLAGS_BIT_NONEXCLUSIVE) {
@@ -4594,6 +4616,14 @@ struct gpio_desc *__must_check gpiod_get_index(struct device *dev,
 
 	ret = gpiod_configure_flags(desc, con_id, lookupflags, flags);
 	if (ret < 0) {
+=======
+	status = gpiod_request(desc, con_id ? con_id : devname);
+	if (status < 0)
+		return ERR_PTR(status);
+
+	status = gpiod_configure_flags(desc, con_id, lookupflags, flags);
+	if (status < 0) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_dbg(dev, "setup of GPIO %s failed\n", con_id);
 		gpiod_put(desc);
 		return ERR_PTR(ret);
@@ -4653,6 +4683,7 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
 		acpi_gpio_update_gpiod_lookup_flags(&lflags, &info);
 	}
 
+<<<<<<< HEAD
 	/* Currently only ACPI takes this path */
 	ret = gpiod_request(desc, label);
 	if (ret)
@@ -4662,6 +4693,23 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
 	if (ret < 0) {
 		gpiod_put(desc);
 		return ERR_PTR(ret);
+=======
+	if (IS_ERR(desc))
+		return desc;
+
+	ret = gpiod_request(desc, NULL);
+	if (ret)
+		return ERR_PTR(ret);
+
+	if (active_low)
+		set_bit(FLAG_ACTIVE_LOW, &desc->flags);
+
+	if (single_ended) {
+		if (active_low)
+			set_bit(FLAG_OPEN_DRAIN, &desc->flags);
+		else
+			set_bit(FLAG_OPEN_SOURCE, &desc->flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return desc;
@@ -4716,6 +4764,7 @@ int gpiod_hog(struct gpio_desc *desc, const char *name,
 	chip = gpiod_to_chip(desc);
 	hwnum = gpio_chip_hwgpio(desc);
 
+<<<<<<< HEAD
 	local_desc = gpiochip_request_own_desc(chip, hwnum, name,
 					       lflags, dflags);
 	if (IS_ERR(local_desc)) {
@@ -4723,6 +4772,21 @@ int gpiod_hog(struct gpio_desc *desc, const char *name,
 		pr_err("requesting hog GPIO %s (chip %s, offset %d) failed, %d\n",
 		       name, chip->label, hwnum, ret);
 		return ret;
+=======
+	local_desc = gpiochip_request_own_desc(chip, hwnum, name);
+	if (IS_ERR(local_desc)) {
+		pr_err("requesting hog GPIO %s (chip %s, offset %d) failed\n",
+		       name, chip->label, hwnum);
+		return PTR_ERR(local_desc);
+	}
+
+	status = gpiod_configure_flags(desc, name, lflags, dflags);
+	if (status < 0) {
+		pr_err("setup of hog GPIO %s (chip %s, offset %d) failed\n",
+		       name, chip->label, hwnum);
+		gpiochip_free_own_desc(desc);
+		return status;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Mark GPIO as hogged so it can be identified and removed later */

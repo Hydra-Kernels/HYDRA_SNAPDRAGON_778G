@@ -450,8 +450,11 @@ int hw_port_test_set(struct ci_hdrc *ci, u8 mode);
 
 u8 hw_port_test_get(struct ci_hdrc *ci);
 
+<<<<<<< HEAD
 void hw_phymode_configure(struct ci_hdrc *ci);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void ci_platform_configure(struct ci_hdrc *ci);
 
 void dbg_create_files(struct ci_hdrc *ci);

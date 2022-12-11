@@ -126,7 +126,12 @@ unsigned long task_statm(struct mm_struct *mm,
 	return size;
 }
 
+<<<<<<< HEAD
 static int is_stack(struct vm_area_struct *vma)
+=======
+static int is_stack(struct proc_maps_private *priv,
+		    struct vm_area_struct *vma)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct mm_struct *mm = vma->vm_mm;
 
@@ -176,9 +181,15 @@ static int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)
 	if (file) {
 		seq_pad(m, ' ');
 		seq_file_path(m, file, "");
+<<<<<<< HEAD
 	} else if (mm && is_stack(vma)) {
 		seq_pad(m, ' ');
 		seq_puts(m, "[stack]");
+=======
+	} else if (mm && is_stack(priv, vma)) {
+		seq_pad(m, ' ');
+		seq_printf(m, "[stack]");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	seq_putc(m, '\n');

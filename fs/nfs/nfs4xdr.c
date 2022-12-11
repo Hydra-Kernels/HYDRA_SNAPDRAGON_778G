@@ -2587,8 +2587,15 @@ static void nfs4_xdr_enc_getacl(struct rpc_rqst *req, struct xdr_stream *xdr,
 	encode_sequence(xdr, &args->seq_args, &hdr);
 	encode_putfh(xdr, args->fh, &hdr);
 	replen = hdr.replen + op_decode_hdr_maxsz;
+<<<<<<< HEAD
 	encode_getattr(xdr, nfs4_acl_bitmap, NULL,
 			ARRAY_SIZE(nfs4_acl_bitmap), &hdr);
+=======
+	encode_getattr_two(xdr, FATTR4_WORD0_ACL, 0, &hdr);
+
+	xdr_inline_pages(&req->rq_rcv_buf, replen << 2,
+		args->acl_pages, 0, args->acl_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rpc_prepare_reply_pages(req, args->acl_pages, 0,
 				args->acl_len, replen + 1);

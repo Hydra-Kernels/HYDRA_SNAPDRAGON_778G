@@ -266,6 +266,31 @@ static int imx_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
 		func->name, grp->name);
 
 	for (i = 0; i < npins; i++) {
+<<<<<<< HEAD
+=======
+		struct imx_pin *pin = &grp->pins[i];
+		pin_id = pin->pin;
+		pin_reg = &info->pin_regs[pin_id];
+
+		if (pin_reg->mux_reg == -1) {
+			dev_dbg(ipctl->dev, "Pin(%s) does not support mux function\n",
+				info->pins[pin_id].name);
+			continue;
+		}
+
+		if (info->flags & SHARE_MUX_CONF_REG) {
+			u32 reg;
+			reg = readl(ipctl->base + pin_reg->mux_reg);
+			reg &= ~(0x7 << 20);
+			reg |= (pin->mux_mode << 20);
+			writel(reg, ipctl->base + pin_reg->mux_reg);
+		} else {
+			writel(pin->mux_mode, ipctl->base + pin_reg->mux_reg);
+		}
+		dev_dbg(ipctl->dev, "write: offset 0x%x val 0x%x\n",
+			pin_reg->mux_reg, pin->mux_mode);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * For IMX_USE_SCU case, we postpone the mux setting
 		 * until config is set as we can set them together
@@ -824,6 +849,7 @@ int imx_pinctrl_probe(struct platform_device *pdev,
 				return -EINVAL;
 			}
 
+<<<<<<< HEAD
 			ipctl->input_sel_base = of_iomap(np, 0);
 			of_node_put(np);
 			if (!ipctl->input_sel_base) {
@@ -832,6 +858,22 @@ int imx_pinctrl_probe(struct platform_device *pdev,
 				return -ENOMEM;
 			}
 		}
+=======
+	if (of_property_read_bool(dev_np, "fsl,input-sel")) {
+		np = of_parse_phandle(dev_np, "fsl,input-sel", 0);
+		if (!np) {
+			dev_err(&pdev->dev, "iomuxc fsl,input-sel property not found\n");
+			return -EINVAL;
+		}
+
+		ipctl->input_sel_base = of_iomap(np, 0);
+		of_node_put(np);
+		if (!ipctl->input_sel_base) {
+			dev_err(&pdev->dev,
+				"iomuxc input select base address not found\n");
+			return -ENOMEM;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	imx_pinctrl_desc = devm_kzalloc(&pdev->dev, sizeof(*imx_pinctrl_desc),

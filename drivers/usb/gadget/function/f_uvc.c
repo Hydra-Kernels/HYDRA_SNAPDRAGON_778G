@@ -606,8 +606,13 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
 	if (opts->streaming_maxburst &&
 	    (opts->streaming_maxpacket % 1024) != 0) {
 		opts->streaming_maxpacket = roundup(opts->streaming_maxpacket, 1024);
+<<<<<<< HEAD
 		uvcg_info(f, "overriding streaming_maxpacket to %d\n",
 			  opts->streaming_maxpacket);
+=======
+		INFO(cdev, "overriding streaming_maxpacket to %d\n",
+		     opts->streaming_maxpacket);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Fill in the FS/HS/SS Video Streaming specific descriptors from the

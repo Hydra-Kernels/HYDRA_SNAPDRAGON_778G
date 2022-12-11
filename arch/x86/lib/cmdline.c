@@ -40,11 +40,21 @@ __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 	if (!cmdline)
 		return -1;      /* No command line */
 
+<<<<<<< HEAD
+=======
+	if (!strlen(cmdline))
+		return 0;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * This 'pos' check ensures we do not overrun
 	 * a non-NULL-terminated 'cmdline'
 	 */
+<<<<<<< HEAD
 	while (pos < max_cmdline_size) {
+=======
+	while (pos < COMMAND_LINE_SIZE) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		c = *(char *)cmdline++;
 		pos++;
 
@@ -70,17 +80,23 @@ __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 				 */
 				if (!c || myisspace(c))
 					return wstart;
+<<<<<<< HEAD
 				/*
 				 * We hit the end of the option, but _not_
 				 * the end of a word on the cmdline.  Not
 				 * a match.
 				 */
+=======
+				else
+					state = st_wordskip;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			} else if (!c) {
 				/*
 				 * Hit the NULL terminator on the end of
 				 * cmdline.
 				 */
 				return 0;
+<<<<<<< HEAD
 			} else if (c == *opptr++) {
 				/*
 				 * We are currently matching, so continue
@@ -90,6 +106,12 @@ __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 			}
 			state = st_wordskip;
 			/* fall through */
+=======
+			} else if (c != *opptr++) {
+				state = st_wordskip;
+			}
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		case st_wordskip:
 			if (!c)
@@ -201,11 +223,14 @@ __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 	return len;
 }
 
+<<<<<<< HEAD
 int cmdline_find_option_bool(const char *cmdline, const char *option)
 {
 	return __cmdline_find_option_bool(cmdline, COMMAND_LINE_SIZE, option);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int cmdline_find_option(const char *cmdline, const char *option, char *buffer,
 			int bufsize)
 {

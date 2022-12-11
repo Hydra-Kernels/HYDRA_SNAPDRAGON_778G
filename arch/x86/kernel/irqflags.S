@@ -1,7 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
 #include <asm/asm.h>
+<<<<<<< HEAD
 #include <asm/export.h>
+=======
+#include <asm-generic/export.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/linkage.h>
 
 /*

@@ -164,8 +164,13 @@ void ring_buffer_record_disable(struct ring_buffer *buffer);
 void ring_buffer_record_enable(struct ring_buffer *buffer);
 void ring_buffer_record_off(struct ring_buffer *buffer);
 void ring_buffer_record_on(struct ring_buffer *buffer);
+<<<<<<< HEAD
 bool ring_buffer_record_is_on(struct ring_buffer *buffer);
 bool ring_buffer_record_is_set_on(struct ring_buffer *buffer);
+=======
+int ring_buffer_record_is_on(struct ring_buffer *buffer);
+int ring_buffer_record_is_set_on(struct ring_buffer *buffer);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void ring_buffer_record_disable_cpu(struct ring_buffer *buffer, int cpu);
 void ring_buffer_record_enable_cpu(struct ring_buffer *buffer, int cpu);
 

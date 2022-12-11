@@ -2004,8 +2004,12 @@ retry:
 				le16_to_cpu(es->s_reserved_gdt_blocks);
 			n_group = n_desc_blocks * EXT4_DESC_PER_BLOCK(sb);
 			n_blocks_count = (ext4_fsblk_t)n_group *
+<<<<<<< HEAD
 				EXT4_BLOCKS_PER_GROUP(sb) +
 				le32_to_cpu(es->s_first_data_block);
+=======
+				EXT4_BLOCKS_PER_GROUP(sb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			n_group--; /* set to last group number */
 		}
 

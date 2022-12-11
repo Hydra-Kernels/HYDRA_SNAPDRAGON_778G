@@ -46,6 +46,24 @@ static void to_talitos_ptr(struct talitos_ptr *ptr, dma_addr_t dma_addr,
 			   unsigned int len, bool is_sec1)
 {
 	ptr->ptr = cpu_to_be32(lower_32_bits(dma_addr));
+<<<<<<< HEAD
+=======
+	if (!is_sec1)
+		ptr->eptr = upper_32_bits(dma_addr);
+}
+
+static void copy_talitos_ptr(struct talitos_ptr *dst_ptr,
+			     struct talitos_ptr *src_ptr, bool is_sec1)
+{
+	dst_ptr->ptr = src_ptr->ptr;
+	if (!is_sec1)
+		dst_ptr->eptr = src_ptr->eptr;
+}
+
+static void to_talitos_ptr_len(struct talitos_ptr *ptr, unsigned int len,
+			       bool is_sec1)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (is_sec1) {
 		ptr->len1 = cpu_to_be16(len);
 	} else {
@@ -834,6 +852,7 @@ static void talitos_unregister_rng(struct device *dev)
  * crypto alg
  */
 #define TALITOS_CRA_PRIORITY		3000
+<<<<<<< HEAD
 /*
  * Defines a priority for doing AEAD with descriptors type
  * HMAC_SNOOP_NO_AFEA (HSNA) instead of type IPSEC_ESP
@@ -844,6 +863,9 @@ static void talitos_unregister_rng(struct device *dev)
 #else
 #define TALITOS_MAX_KEY_SIZE		(AES_MAX_KEY_SIZE + SHA256_BLOCK_SIZE)
 #endif
+=======
+#define TALITOS_MAX_KEY_SIZE		(AES_MAX_KEY_SIZE + SHA512_BLOCK_SIZE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define TALITOS_MAX_IV_LENGTH		16 /* max of AES_BLOCK_SIZE, DES3_EDE_BLOCK_SIZE */
 
 struct talitos_ctx {
@@ -1221,6 +1243,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
 	/* hmac key */
 	to_talitos_ptr(&desc->ptr[0], ctx->dma_key, ctx->authkeylen, is_sec1);
 
+<<<<<<< HEAD
 	sg_count = edesc->src_nents ?: 1;
 	if (is_sec1 && sg_count > 1)
 		sg_copy_to_buffer(areq->src, sg_count, edesc->buf,
@@ -1237,6 +1260,28 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
 	if (ret > 1) {
 		tbl_off += ret;
 		sync_needed = true;
+=======
+	sg_count = dma_map_sg(dev, areq->src, edesc->src_nents ?: 1,
+			      (areq->src == areq->dst) ? DMA_BIDIRECTIONAL
+							   : DMA_TO_DEVICE);
+	/* hmac data */
+	desc->ptr[1].len = cpu_to_be16(areq->assoclen);
+	if (sg_count > 1 &&
+	    (ret = sg_to_link_tbl_offset(areq->src, sg_count, 0,
+					 areq->assoclen,
+					 &edesc->link_tbl[tbl_off])) > 1) {
+		to_talitos_ptr(&desc->ptr[1], edesc->dma_link_tbl + tbl_off *
+			       sizeof(struct talitos_ptr), 0);
+		desc->ptr[1].j_extent = DESC_PTR_LNKTBL_JUMP;
+
+		dma_sync_single_for_device(dev, edesc->dma_link_tbl,
+					   edesc->dma_len, DMA_BIDIRECTIONAL);
+
+		tbl_off += ret;
+	} else {
+		to_talitos_ptr(&desc->ptr[1], sg_dma_address(areq->src), 0);
+		desc->ptr[1].j_extent = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* cipher iv */
@@ -1259,6 +1304,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
 				 sg_count, areq->assoclen, tbl_off, elen,
 				 false, 1);
 
+<<<<<<< HEAD
 	if (ret > 1) {
 		tbl_off += ret;
 		sync_needed = true;
@@ -1308,6 +1354,73 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
 		dma_sync_single_for_device(dev, edesc->dma_link_tbl,
 					   edesc->dma_len,
 					   DMA_BIDIRECTIONAL);
+=======
+	if (sg_count == 1) {
+		to_talitos_ptr(&desc->ptr[4], sg_dma_address(areq->src) +
+			       areq->assoclen, 0);
+	} else if ((ret = sg_to_link_tbl_offset(areq->src, sg_count,
+						areq->assoclen, sg_link_tbl_len,
+						&edesc->link_tbl[tbl_off])) >
+		   1) {
+		desc->ptr[4].j_extent |= DESC_PTR_LNKTBL_JUMP;
+		to_talitos_ptr(&desc->ptr[4], edesc->dma_link_tbl +
+					      tbl_off *
+					      sizeof(struct talitos_ptr), 0);
+		dma_sync_single_for_device(dev, edesc->dma_link_tbl,
+					   edesc->dma_len,
+					   DMA_BIDIRECTIONAL);
+		tbl_off += ret;
+	} else {
+		copy_talitos_ptr(&desc->ptr[4], &edesc->link_tbl[tbl_off], 0);
+	}
+
+	/* cipher out */
+	desc->ptr[5].len = cpu_to_be16(cryptlen);
+	desc->ptr[5].j_extent = authsize;
+
+	if (areq->src != areq->dst)
+		sg_count = dma_map_sg(dev, areq->dst, edesc->dst_nents ? : 1,
+				      DMA_FROM_DEVICE);
+
+	edesc->icv_ool = false;
+
+	if (sg_count == 1) {
+		to_talitos_ptr(&desc->ptr[5], sg_dma_address(areq->dst) +
+			       areq->assoclen, 0);
+	} else if ((sg_count =
+			sg_to_link_tbl_offset(areq->dst, sg_count,
+					      areq->assoclen, cryptlen,
+					      &edesc->link_tbl[tbl_off])) > 1) {
+		struct talitos_ptr *tbl_ptr = &edesc->link_tbl[tbl_off];
+
+		to_talitos_ptr(&desc->ptr[5], edesc->dma_link_tbl +
+			       tbl_off * sizeof(struct talitos_ptr), 0);
+
+		/* Add an entry to the link table for ICV data */
+		tbl_ptr += sg_count - 1;
+		tbl_ptr->j_extent = 0;
+		tbl_ptr++;
+		tbl_ptr->j_extent = DESC_PTR_LNKTBL_RETURN;
+		tbl_ptr->len = cpu_to_be16(authsize);
+
+		/* icv data follows link tables */
+		to_talitos_ptr(tbl_ptr, edesc->dma_link_tbl +
+					(edesc->src_nents + edesc->dst_nents +
+					 2) * sizeof(struct talitos_ptr) +
+					authsize, 0);
+		desc->ptr[5].j_extent |= DESC_PTR_LNKTBL_JUMP;
+		dma_sync_single_for_device(ctx->dev, edesc->dma_link_tbl,
+					   edesc->dma_len, DMA_BIDIRECTIONAL);
+
+		edesc->icv_ool = true;
+	} else {
+		copy_talitos_ptr(&desc->ptr[5], &edesc->link_tbl[tbl_off], 0);
+	}
+
+	/* iv out */
+	map_single_talitos_ptr(dev, &desc->ptr[6], ivsize, ctx->iv,
+			       DMA_FROM_DEVICE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
 	if (ret != -EINPROGRESS) {
@@ -1500,6 +1613,11 @@ static int ablkcipher_setkey(struct crypto_ablkcipher *cipher,
 
 	if (ctx->keylen)
 		dma_unmap_single(dev, ctx->dma_key, ctx->keylen, DMA_TO_DEVICE);
+
+	if (keylen > TALITOS_MAX_KEY_SIZE) {
+		crypto_ablkcipher_set_flags(cipher, CRYPTO_TFM_RES_BAD_KEY_LEN);
+		return -EINVAL;
+	}
 
 	memcpy(&ctx->key, key, keylen);
 	ctx->keylen = keylen;
@@ -1811,6 +1929,11 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
 					      req_ctx->hw_context,
 					      DMA_TO_DEVICE);
 		req_ctx->swinit = 0;
+<<<<<<< HEAD
+=======
+	} else {
+		desc->ptr[1] = zero_entry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	/* Indicate next op is not the first. */
 	req_ctx->first = 0;
@@ -2131,6 +2254,54 @@ static int ahash_digest(struct ahash_request *areq)
 }
 
 static int ahash_export(struct ahash_request *areq, void *out)
+<<<<<<< HEAD
+=======
+{
+	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
+	struct talitos_export_state *export = out;
+
+	memcpy(export->hw_context, req_ctx->hw_context,
+	       req_ctx->hw_context_size);
+	memcpy(export->buf, req_ctx->buf, req_ctx->nbuf);
+	export->swinit = req_ctx->swinit;
+	export->first = req_ctx->first;
+	export->last = req_ctx->last;
+	export->to_hash_later = req_ctx->to_hash_later;
+	export->nbuf = req_ctx->nbuf;
+
+	return 0;
+}
+
+static int ahash_import(struct ahash_request *areq, const void *in)
+{
+	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
+	struct crypto_ahash *tfm = crypto_ahash_reqtfm(areq);
+	const struct talitos_export_state *export = in;
+
+	memset(req_ctx, 0, sizeof(*req_ctx));
+	req_ctx->hw_context_size =
+		(crypto_ahash_digestsize(tfm) <= SHA256_DIGEST_SIZE)
+			? TALITOS_MDEU_CONTEXT_SIZE_MD5_SHA1_SHA256
+			: TALITOS_MDEU_CONTEXT_SIZE_SHA384_SHA512;
+	memcpy(req_ctx->hw_context, export->hw_context,
+	       req_ctx->hw_context_size);
+	memcpy(req_ctx->buf, export->buf, export->nbuf);
+	req_ctx->swinit = export->swinit;
+	req_ctx->first = export->first;
+	req_ctx->last = export->last;
+	req_ctx->to_hash_later = export->to_hash_later;
+	req_ctx->nbuf = export->nbuf;
+
+	return 0;
+}
+
+struct keyhash_result {
+	struct completion completion;
+	int err;
+};
+
+static void keyhash_complete(struct crypto_async_request *req, int err)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
 	struct talitos_export_state *export = out;

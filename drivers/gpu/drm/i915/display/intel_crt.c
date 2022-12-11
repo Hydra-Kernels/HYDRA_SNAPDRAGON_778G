@@ -404,6 +404,7 @@ static int hsw_crt_compute_config(struct intel_encoder *encoder,
 	pipe_config->output_format = INTEL_OUTPUT_FORMAT_RGB;
 
 	/* LPT FDI RX only supports 8bpc. */
+<<<<<<< HEAD:drivers/gpu/drm/i915/display/intel_crt.c
 	if (HAS_PCH_LPT(dev_priv)) {
 		if (pipe_config->bw_constrained && pipe_config->pipe_bpp < 24) {
 			DRM_DEBUG_KMS("LPT only supports 24bpp\n");
@@ -411,6 +412,25 @@ static int hsw_crt_compute_config(struct intel_encoder *encoder,
 		}
 
 		pipe_config->pipe_bpp = 24;
+=======
+	if (HAS_PCH_LPT(dev)) {
+		if (pipe_config->bw_constrained && pipe_config->pipe_bpp < 24) {
+			DRM_DEBUG_KMS("LPT only supports 24bpp\n");
+			return false;
+		}
+
+		pipe_config->pipe_bpp = 24;
+	}
+
+	/* FDI must always be 2.7 GHz */
+	if (HAS_DDI(dev)) {
+		pipe_config->ddi_pll_sel = PORT_CLK_SEL_SPLL;
+		pipe_config->port_clock = 135000 * 2;
+
+		pipe_config->dpll_hw_state.wrpll = 0;
+		pipe_config->dpll_hw_state.spll =
+			SPLL_PLL_ENABLE | SPLL_PLL_FREQ_1350MHz | SPLL_PLL_SSC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i915/intel_crt.c
 	}
 
 	/* FDI must always be 2.7 GHz */

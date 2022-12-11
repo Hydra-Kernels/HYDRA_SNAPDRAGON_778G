@@ -55,7 +55,11 @@ int dvb_ringbuffer_empty(struct dvb_ringbuffer *rbuf)
 	 * this pairs with smp_store_release() in dvb_ringbuffer_write(),
 	 * dvb_ringbuffer_write_user(), or dvb_ringbuffer_reset()
 	 *
+<<<<<<< HEAD
 	 * for memory barriers also see Documentation/core-api/circular-buffers.rst
+=======
+	 * for memory barriers also see Documentation/circular-buffers.txt
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 	return (rbuf->pread == smp_load_acquire(&rbuf->pwrite));
 }
@@ -66,12 +70,20 @@ ssize_t dvb_ringbuffer_free(struct dvb_ringbuffer *rbuf)
 {
 	ssize_t free;
 
+<<<<<<< HEAD
 	/* READ_ONCE() to load read pointer on writer side
+=======
+	/* ACCESS_ONCE() to load read pointer on writer side
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * this pairs with smp_store_release() in dvb_ringbuffer_read(),
 	 * dvb_ringbuffer_read_user(), dvb_ringbuffer_flush(),
 	 * or dvb_ringbuffer_reset()
 	 */
+<<<<<<< HEAD
 	free = READ_ONCE(rbuf->pread) - rbuf->pwrite;
+=======
+	free = ACCESS_ONCE(rbuf->pread) - rbuf->pwrite;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (free <= 0)
 		free += rbuf->size;
 	return free-1;
@@ -143,7 +155,11 @@ ssize_t dvb_ringbuffer_read_user(struct dvb_ringbuffer *rbuf, u8 __user *buf, si
 		todo -= split;
 		/* smp_store_release() for read pointer update to ensure
 		 * that buf is not overwritten until read is complete,
+<<<<<<< HEAD
 		 * this pairs with READ_ONCE() in dvb_ringbuffer_free()
+=======
+		 * this pairs with ACCESS_ONCE() in dvb_ringbuffer_free()
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 */
 		smp_store_release(&rbuf->pread, 0);
 	}
@@ -168,7 +184,11 @@ void dvb_ringbuffer_read(struct dvb_ringbuffer *rbuf, u8 *buf, size_t len)
 		todo -= split;
 		/* smp_store_release() for read pointer update to ensure
 		 * that buf is not overwritten until read is complete,
+<<<<<<< HEAD
 		 * this pairs with READ_ONCE() in dvb_ringbuffer_free()
+=======
+		 * this pairs with ACCESS_ONCE() in dvb_ringbuffer_free()
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 */
 		smp_store_release(&rbuf->pread, 0);
 	}

@@ -268,8 +268,12 @@ static long madvise_willneed(struct vm_area_struct *vma,
 	*prev = vma;
 #ifdef CONFIG_SWAP
 	if (!file) {
+<<<<<<< HEAD
 		walk_page_range(vma->vm_mm, start, end, &swapin_walk_ops, vma);
 		lru_add_drain(); /* Push any new pages onto the LRU now */
+=======
+		force_swapin_readahead(vma, start, end);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	}
 
@@ -288,6 +292,7 @@ static long madvise_willneed(struct vm_area_struct *vma,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Filesystem's fadvise may need to take various locks.  We need to
 	 * explicitly grab a reference because the vma (and hence the
@@ -750,6 +755,12 @@ static int madvise_free_single_vma(struct vm_area_struct *vma,
 	vm_write_end(vma);
 	mmu_notifier_invalidate_range_end(&range);
 	tlb_finish_mmu(&tlb, range.start, range.end);
+=======
+	start = ((start - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+	if (end > vma->vm_end)
+		end = vma->vm_end;
+	end = ((end - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

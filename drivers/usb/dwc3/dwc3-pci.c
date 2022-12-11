@@ -29,6 +29,7 @@
 #define PCI_DEVICE_ID_INTEL_BXT_M		0x1aaa
 #define PCI_DEVICE_ID_INTEL_APL			0x5aaa
 #define PCI_DEVICE_ID_INTEL_KBP			0xa2b0
+<<<<<<< HEAD
 #define PCI_DEVICE_ID_INTEL_CMLLP		0x02ee
 #define PCI_DEVICE_ID_INTEL_CMLH		0x06ee
 #define PCI_DEVICE_ID_INTEL_GLK			0x31aa
@@ -68,6 +69,9 @@ struct dwc3_pci {
 	unsigned int has_dsm_for_pm:1;
 	struct work_struct wakeup_work;
 };
+=======
+#define PCI_DEVICE_ID_INTEL_GLK			0x31aa
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static const struct acpi_gpio_params reset_gpios = { 0, 0, false };
 static const struct acpi_gpio_params cs_gpios = { 1, 0, false };
@@ -309,6 +313,7 @@ static void dwc3_pci_remove(struct pci_dev *pci)
 }
 
 static const struct pci_device_id dwc3_pci_id_table[] = {
+<<<<<<< HEAD
 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_BSW),
 	  (kernel_ulong_t) &dwc3_pci_intel_properties },
 
@@ -374,6 +379,30 @@ static const struct pci_device_id dwc3_pci_id_table[] = {
 
 	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_NL_USB),
 	  (kernel_ulong_t) &dwc3_pci_amd_properties, },
+=======
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_SYNOPSYS,
+				PCI_DEVICE_ID_SYNOPSYS_HAPSUSB3),
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_SYNOPSYS,
+				PCI_DEVICE_ID_SYNOPSYS_HAPSUSB3_AXI),
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_SYNOPSYS,
+				PCI_DEVICE_ID_SYNOPSYS_HAPSUSB31),
+	},
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_BSW), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_BYT), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_MRFLD), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SPTLP), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SPTH), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_BXT), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_APL), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KBP), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GLK), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_NL_USB), },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{  }	/* Terminating Entry */
 };
 MODULE_DEVICE_TABLE(pci, dwc3_pci_id_table);

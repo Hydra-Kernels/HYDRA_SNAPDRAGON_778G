@@ -110,7 +110,11 @@ struct cpuidle_coupled {
 
 #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
 
+<<<<<<< HEAD
 static DEFINE_PER_CPU(call_single_data_t, cpuidle_coupled_poke_cb);
+=======
+static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * The cpuidle_coupled_poke_pending mask is used to avoid calling

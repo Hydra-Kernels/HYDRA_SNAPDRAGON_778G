@@ -1068,7 +1068,11 @@ static int wcn36xx_ampdu_action(struct ieee80211_hw *hw,
 		    struct ieee80211_ampdu_params *params)
 {
 	struct wcn36xx *wcn = hw->priv;
+<<<<<<< HEAD
 	struct wcn36xx_sta *sta_priv = wcn36xx_sta_to_priv(params->sta);
+=======
+	struct wcn36xx_sta *sta_priv = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;

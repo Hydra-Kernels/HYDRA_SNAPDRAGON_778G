@@ -121,11 +121,14 @@ struct iv_tcw_private {
  */
 enum flags { DM_CRYPT_SUSPENDED, DM_CRYPT_KEY_VALID,
 	     DM_CRYPT_SAME_CPU, DM_CRYPT_NO_OFFLOAD };
+<<<<<<< HEAD
 
 enum cipher_flags {
 	CRYPT_MODE_INTEGRITY_AEAD,	/* Use authenticated mode for cihper */
 	CRYPT_IV_LARGE_SECTORS,		/* Calculate IV from sector_size, not 512B sectors */
 };
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * The fields in here must be read only after initialization.
@@ -1524,18 +1527,34 @@ continue_locked:
 			goto pop_from_list;
 
 		set_current_state(TASK_INTERRUPTIBLE);
+<<<<<<< HEAD
 
 		spin_unlock_irq(&cc->write_thread_lock);
 
 		if (unlikely(kthread_should_stop())) {
 			set_current_state(TASK_RUNNING);
+=======
+		__add_wait_queue(&cc->write_thread_wait, &wait);
+
+		spin_unlock_irq(&cc->write_thread_wait.lock);
+
+		if (unlikely(kthread_should_stop())) {
+			set_task_state(current, TASK_RUNNING);
+			remove_wait_queue(&cc->write_thread_wait, &wait);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 
 		schedule();
 
+<<<<<<< HEAD
 		set_current_state(TASK_RUNNING);
 		spin_lock_irq(&cc->write_thread_lock);
+=======
+		set_task_state(current, TASK_RUNNING);
+		spin_lock_irq(&cc->write_thread_wait.lock);
+		__remove_wait_queue(&cc->write_thread_wait, &wait);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto continue_locked;
 
 pop_from_list:
@@ -2024,6 +2043,7 @@ static int crypt_set_key(struct crypt_config *cc, char *key)
 	if (!cc->key_size && strcmp(key, "-"))
 		goto out;
 
+<<<<<<< HEAD
 	/* ':' means the key is in kernel keyring, short-circuit normal key processing */
 	if (key[0] == ':') {
 		r = crypt_set_keyring_key(cc, key + 1);
@@ -2042,6 +2062,15 @@ static int crypt_set_key(struct crypt_config *cc, char *key)
 		goto out;
 
 	r = crypt_setkey(cc);
+=======
+	/* clear the flag since following operations may invalidate previously valid key */
+	clear_bit(DM_CRYPT_KEY_VALID, &cc->flags);
+
+	if (cc->key_size && crypt_decode_key(cc->key, key, cc->key_size) < 0)
+		goto out;
+
+	r = crypt_setkey_allcpus(cc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!r)
 		set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
 
@@ -2769,6 +2798,7 @@ static int crypt_map(struct dm_target *ti, struct bio *bio)
 	 * Check if bio is too large, split as needed.
 	 */
 	if (unlikely(bio->bi_iter.bi_size > (BIO_MAX_PAGES << PAGE_SHIFT)) &&
+<<<<<<< HEAD
 	    (bio_data_dir(bio) == WRITE || cc->on_disk_tag_size))
 		dm_accept_partial_bio(bio, ((BIO_MAX_PAGES << PAGE_SHIFT) >> SECTOR_SHIFT));
 
@@ -2782,6 +2812,11 @@ static int crypt_map(struct dm_target *ti, struct bio *bio)
 	if (unlikely(bio->bi_iter.bi_size & (cc->sector_size - 1)))
 		return DM_MAPIO_KILL;
 
+=======
+	    bio_data_dir(bio) == WRITE)
+		dm_accept_partial_bio(bio, ((BIO_MAX_PAGES << PAGE_SHIFT) >> SECTOR_SHIFT));
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	io = dm_per_bio_data(bio, cc->per_bio_data_size);
 	crypt_io_init(io, cc, bio, dm_target_offset(ti, bio->bi_iter.bi_sector));
 

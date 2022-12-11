@@ -1941,11 +1941,17 @@ static __initconst const u64 knl_hw_cache_extra_regs
  * disabled state if called consecutively.
  *
  * During consecutive calls, the same disable value will be written to related
+<<<<<<< HEAD:arch/x86/events/intel/core.c
  * registers, so the PMU state remains unchanged.
  *
  * intel_bts events don't coexist with intel PMU's BTS events because of
  * x86_add_exclusive(x86_lbr_exclusive_lbr); there's no need to keep them
  * disabled around intel PMU's event batching etc, only inside the PMI handler.
+=======
+ * registers, so the PMU state remains unchanged. hw.state in
+ * intel_bts_disable_local will remain PERF_HES_STOPPED too in consecutive
+ * calls.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel.c
  */
 static void __intel_pmu_disable_all(void)
 {
@@ -2377,6 +2383,18 @@ static int handle_pmi_common(struct pt_regs *regs, u64 status)
 	if (__test_and_clear_bit(62, (unsigned long *)&status)) {
 		handled++;
 		x86_pmu.drain_pebs(regs);
+<<<<<<< HEAD:arch/x86/events/intel/core.c
+=======
+		/*
+		 * There are cases where, even though, the PEBS ovfl bit is set
+		 * in GLOBAL_OVF_STATUS, the PEBS events may also have their
+		 * overflow bits set for their counters. We must clear them
+		 * here because they have been processed as exact samples in
+		 * the drain_pebs() routine. They must not be processed again
+		 * in the for_each_bit_set() loop for regular samples below.
+		 */
+		status &= ~cpuc->pebs_enabled;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel.c
 		status &= x86_pmu.intel_ctrl | GLOBAL_STATUS_TRACE_TOPAPMI;
 	}
 
@@ -2572,10 +2590,15 @@ again:
 
 done:
 	/* Only restore PMU state when it's active. See x86_pmu_disable(). */
+<<<<<<< HEAD:arch/x86/events/intel/core.c
 	cpuc->enabled = pmu_enabled;
 	if (pmu_enabled)
 		__intel_pmu_enable_all(0, true);
 	intel_bts_enable_local();
+=======
+	if (cpuc->enabled)
+		__intel_pmu_enable_all(0, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel.c
 
 	/*
 	 * Only unmask the NMI after the overflow counters
@@ -4803,7 +4826,10 @@ __init int intel_pmu_init(void)
 			X86_CONFIG(.event=0xb1, .umask=0x3f, .inv=1, .cmask=1);
 
 		intel_pmu_pebs_data_source_nhm();
+<<<<<<< HEAD:arch/x86/events/intel/core.c
 		extra_attr = nhm_format_attr;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel.c
 		pr_cont("Westmere events, ");
 		name = "westmere";
 		break;

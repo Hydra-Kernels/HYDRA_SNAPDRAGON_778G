@@ -2725,6 +2725,7 @@ static int clk_core_get_phase(struct clk_core *core)
 {
 	int ret;
 
+<<<<<<< HEAD
 	lockdep_assert_held(&prepare_lock);
 	if (!core->ops->get_phase)
 		return 0;
@@ -2733,6 +2734,14 @@ static int clk_core_get_phase(struct clk_core *core)
 	ret = core->ops->get_phase(core->hw);
 	if (ret >= 0)
 		core->phase = ret;
+=======
+	clk_prepare_lock();
+	/* Always try to update cached phase if possible */
+	if (core->ops->get_phase)
+		core->phase = core->ops->get_phase(core->hw);
+	ret = core->phase;
+	clk_prepare_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

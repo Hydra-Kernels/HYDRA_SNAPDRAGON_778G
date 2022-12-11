@@ -4,12 +4,21 @@
 #include "libgcc.h"
 
 /*
+<<<<<<< HEAD
  * GCC 7 & older can suboptimally generate __multi3 calls for mips64r6, so for
  * that specific case only we implement that intrinsic here.
  *
  * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82981
  */
 #if defined(CONFIG_64BIT) && defined(CONFIG_CPU_MIPSR6) && (__GNUC__ < 8)
+=======
+ * GCC 7 suboptimally generates __multi3 calls for mips64r6, so for that
+ * specific case only we'll implement it here.
+ *
+ * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82981
+ */
+#if defined(CONFIG_64BIT) && defined(CONFIG_CPU_MIPSR6) && (__GNUC__ == 7)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* multiply 64-bit values, low 64-bits returned */
 static inline long long notrace dmulu(long long a, long long b)

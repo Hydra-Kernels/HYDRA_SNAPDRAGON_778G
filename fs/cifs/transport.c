@@ -839,7 +839,10 @@ cifs_call_async(struct TCP_Server_Info *server, struct smb_rqst *rqst,
 	cifs_in_send_dec(server);
 
 	if (rc < 0) {
+<<<<<<< HEAD
 		revert_current_mid(server, mid->credits);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		server->sequence_number -= 2;
 		cifs_delete_mid(mid);
 	}
@@ -849,7 +852,11 @@ cifs_call_async(struct TCP_Server_Info *server, struct smb_rqst *rqst,
 	if (rc == 0)
 		return 0;
 
+<<<<<<< HEAD
 	add_credits_and_wake_if(server, &credits, optype);
+=======
+	add_credits_and_wake_if(server, credits, optype);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -1147,6 +1154,7 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 			break;
 	}
 	if (rc != 0) {
+<<<<<<< HEAD
 		for (; i < num_rqst; i++) {
 			cifs_server_dbg(FYI, "Cancelling wait for mid %llu cmd: %d\n",
 				 midQ[i]->mid, le16_to_cpu(midQ[i]->command));
@@ -1158,6 +1166,14 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 				cancelled_mid[i] = true;
 				credits[i].value = 0;
 			}
+=======
+		cifs_dbg(FYI, "Cancelling wait for mid %llu\n",	midQ->mid);
+		send_cancel(ses->server, buf, midQ);
+		spin_lock(&GlobalMid_Lock);
+		if (midQ->mid_state == MID_REQUEST_SUBMITTED) {
+			midQ->mid_flags |= MID_WAIT_CANCELLED;
+			midQ->callback = DeleteMidQEntry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			spin_unlock(&GlobalMid_Lock);
 		}
 	}

@@ -5185,6 +5185,7 @@ static int send_hole(struct send_ctx *sctx, u64 end)
 	u64 len;
 	int ret = 0;
 
+<<<<<<< HEAD
 	/*
 	 * A hole that starts at EOF or beyond it. Since we do not yet support
 	 * fallocate (for extent preallocation and hole punching), sending a
@@ -5200,6 +5201,8 @@ static int send_hole(struct send_ctx *sctx, u64 end)
 	 */
 	end = min_t(u64, end, sctx->cur_inode_size);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sctx->flags & BTRFS_SEND_FLAG_NO_FILE_DATA)
 		return send_update_extent(sctx, offset, end - offset);
 
@@ -5712,12 +5715,23 @@ static int is_extent_unchanged(struct send_ctx *sctx,
 			goto out;
 		}
 
+<<<<<<< HEAD
 		if (right_type == BTRFS_FILE_EXTENT_INLINE) {
 			right_len = btrfs_file_extent_ram_bytes(eb, ei);
+=======
+		right_disknr = btrfs_file_extent_disk_bytenr(eb, ei);
+		if (right_type == BTRFS_FILE_EXTENT_INLINE) {
+			right_len = btrfs_file_extent_inline_len(eb, slot, ei);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			right_len = PAGE_ALIGN(right_len);
 		} else {
 			right_len = btrfs_file_extent_num_bytes(eb, ei);
 		}
+<<<<<<< HEAD
+=======
+		right_offset = btrfs_file_extent_offset(eb, ei);
+		right_gen = btrfs_file_extent_generation(eb, ei);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * Are we at extent 8? If yes, we know the extent is changed.
@@ -5742,10 +5756,13 @@ static int is_extent_unchanged(struct send_ctx *sctx,
 			goto out;
 		}
 
+<<<<<<< HEAD
 		right_disknr = btrfs_file_extent_disk_bytenr(eb, ei);
 		right_offset = btrfs_file_extent_offset(eb, ei);
 		right_gen = btrfs_file_extent_generation(eb, ei);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		left_offset_fixed = left_offset;
 		if (key.offset < ekey->offset) {
 			/* Fix the right offset for 2a and 7. */

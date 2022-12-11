@@ -548,7 +548,11 @@ gmbus_is_index_xfer(struct i2c_msg *msgs, int i, int num)
 		msgs[i].addr == msgs[i + 1].addr &&
 		!(msgs[i].flags & I2C_M_RD) &&
 		(msgs[i].len == 1 || msgs[i].len == 2) &&
+<<<<<<< HEAD:drivers/gpu/drm/i915/display/intel_gmbus.c
 		msgs[i + 1].len > 0);
+=======
+		(msgs[i + 1].flags & I2C_M_RD));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i915/intel_i2c.c
 }
 
 static int

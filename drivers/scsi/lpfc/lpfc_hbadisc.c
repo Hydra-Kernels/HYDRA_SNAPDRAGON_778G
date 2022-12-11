@@ -1135,6 +1135,10 @@ out:
 	return;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void
 lpfc_mbx_cmpl_local_config_link(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
 {
@@ -1168,6 +1172,7 @@ lpfc_mbx_cmpl_local_config_link(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
 	/* Start discovery by sending a FLOGI. port_state is identically
 	 * LPFC_FLOGI while waiting for FLOGI cmpl.
 	 */
+<<<<<<< HEAD
 	if (vport->port_state != LPFC_FLOGI) {
 		/* Issue MBX_READ_SPARAM to update CSPs before FLOGI if
 		 * bb-credit recovery is in place.
@@ -1206,6 +1211,12 @@ lpfc_mbx_cmpl_local_config_link(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
 		if (vport->fc_flag & FC_PT2PT)
 			lpfc_disc_start(vport);
 	}
+=======
+	if (vport->port_state != LPFC_FLOGI)
+		lpfc_initial_flogi(vport);
+	else if (vport->fc_flag & FC_PT2PT)
+		lpfc_disc_start(vport);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return;
 
 out:
@@ -3603,6 +3614,7 @@ lpfc_mbx_cmpl_reg_login(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
 		spin_lock_irq(shost->host_lock);
 		ndlp->nlp_flag &= ~NLP_IGNR_REG_CMPL;
 		spin_unlock_irq(shost->host_lock);
+<<<<<<< HEAD
 
 		/*
 		 * We cannot leave the RPI registered because
@@ -3611,6 +3623,8 @@ lpfc_mbx_cmpl_reg_login(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
 		 */
 		ndlp->nlp_flag |= NLP_RPI_REGISTERED;
 		lpfc_unreg_rpi(vport, ndlp);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Call state machine */

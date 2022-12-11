@@ -1074,6 +1074,15 @@ static int bq24257_probe(struct i2c_client *client,
 		return ret;
 	}
 
+<<<<<<< HEAD:drivers/power/supply/bq24257_charger.c
+=======
+	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
+	if (ret < 0) {
+		dev_err(dev, "Can't create sysfs entries\n");
+		return ret;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/power/bq24257_charger.c
 	return 0;
 }
 

@@ -225,7 +225,11 @@ static int rxkad_secure_packet_encrypt(const struct rxrpc_call *call,
 	struct scatterlist sg[16];
 	unsigned int len;
 	u16 check;
+<<<<<<< HEAD
 	int err;
+=======
+	int nsg, err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sp = rxrpc_skb(skb);
 
@@ -255,12 +259,20 @@ static int rxkad_secure_packet_encrypt(const struct rxrpc_call *call,
 	len = data_size + call->conn->size_align - 1;
 	len &= ~(call->conn->size_align - 1);
 
+<<<<<<< HEAD
 	sg_init_table(sg, ARRAY_SIZE(sg));
 	err = skb_to_sgvec(skb, sg, 0, len);
 	if (unlikely(err < 0))
 		goto out;
 	skcipher_request_set_crypt(req, sg, sg, len, iv.x);
 	crypto_skcipher_encrypt(req);
+=======
+	sg_init_table(sg, nsg);
+	err = skb_to_sgvec(skb, sg, 0, len);
+	if (unlikely(err < 0))
+		return err;
+	crypto_blkcipher_encrypt_iv(&desc, sg, sg, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	_leave(" = 0");
 	err = 0;
@@ -359,7 +371,11 @@ static int rxkad_verify_packet_1(struct rxrpc_call *call, struct sk_buff *skb,
 	bool aborted;
 	u32 data_size, buf;
 	u16 check;
+<<<<<<< HEAD
 	int ret;
+=======
+	int nsg, ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	_enter("");
 
@@ -369,11 +385,21 @@ static int rxkad_verify_packet_1(struct rxrpc_call *call, struct sk_buff *skb,
 		goto protocol_error;
 	}
 
+<<<<<<< HEAD
 	/* Decrypt the skbuff in-place.  TODO: We really want to decrypt
 	 * directly into the target buffer.
 	 */
 	sg_init_table(sg, ARRAY_SIZE(sg));
 	ret = skb_to_sgvec(skb, sg, offset, 8);
+=======
+	/* we want to decrypt the skbuff in-place */
+	nsg = skb_cow_data(skb, 0, &trailer);
+	if (nsg < 0 || nsg > 16)
+		goto nomem;
+
+	sg_init_table(sg, nsg);
+	ret = skb_to_sgvec(skb, sg, 0, 8);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(ret < 0))
 		return ret;
 
@@ -461,7 +487,11 @@ static int rxkad_verify_packet_2(struct rxrpc_call *call, struct sk_buff *skb,
 	}
 
 	sg_init_table(sg, nsg);
+<<<<<<< HEAD
 	ret = skb_to_sgvec(skb, sg, offset, len);
+=======
+	ret = skb_to_sgvec(skb, sg, 0, skb->len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(ret < 0)) {
 		if (sg != _sg)
 			kfree(sg);

@@ -281,15 +281,24 @@ static irqreturn_t da8xx_musb_interrupt(int irq, void *hci)
 			MUSB_HST_MODE(musb);
 			musb->xceiv->otg->state = OTG_STATE_A_WAIT_VRISE;
 			portstate(musb->port1_status |= USB_PORT_STAT_POWER);
+<<<<<<< HEAD
 			del_timer(&musb->dev_timer);
 		} else if (!(musb->int_usb & MUSB_INTR_BABBLE)) {
+=======
+			del_timer(&otg_workaround);
+		} else if (!(musb->int_usb & MUSB_INTR_BABBLE)){
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * When babble condition happens, drvvbus interrupt
 			 * is also generated. Ignore this drvvbus interrupt
 			 * and let babble interrupt handler recovers the
 			 * controller; otherwise, the host-mode flag is lost
 			 * due to the MUSB_DEV_MODE() call below and babble
+<<<<<<< HEAD
 			 * recovery logic will not be called.
+=======
+			 * recovery logic will not called.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			 */
 			musb->is_active = 0;
 			MUSB_DEV_MODE(musb);
@@ -466,16 +475,23 @@ da8xx_dma_controller_create(struct musb *musb, void __iomem *base)
 #endif
 
 static const struct musb_platform_ops da8xx_ops = {
+<<<<<<< HEAD
 	.quirks		= MUSB_INDEXED_EP | MUSB_PRESERVE_SESSION |
 			  MUSB_DMA_CPPI41 | MUSB_DA8XX,
+=======
+	.quirks		= MUSB_INDEXED_EP,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.init		= da8xx_musb_init,
 	.exit		= da8xx_musb_exit,
 
 	.fifo_mode	= 2,
+<<<<<<< HEAD
 #ifdef CONFIG_USB_TI_CPPI41_DMA
 	.dma_init	= da8xx_dma_controller_create,
 	.dma_exit	= cppi41_dma_controller_destroy,
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.enable		= da8xx_musb_enable,
 	.disable	= da8xx_musb_disable,
 

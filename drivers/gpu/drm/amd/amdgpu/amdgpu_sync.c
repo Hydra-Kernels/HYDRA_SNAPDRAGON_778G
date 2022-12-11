@@ -368,8 +368,115 @@ int amdgpu_sync_wait(struct amdgpu_sync *sync, bool intr)
 			return r;
 
 		hash_del(&e->node);
+<<<<<<< HEAD
 		dma_fence_put(e->fence);
 		kmem_cache_free(amdgpu_sync_slab, e);
+=======
+		fence_put(e->fence);
+		kfree(e);
+	}
+
+	if (amdgpu_enable_semaphores)
+		return 0;
+
+	for (i = 0; i < AMDGPU_MAX_RINGS; ++i) {
+		struct fence *fence = sync->sync_to[i];
+		if (!fence)
+			continue;
+
+		r = fence_wait(fence, false);
+		if (r)
+			return r;
+	}
+
+	return 0;
+}
+
+/**
+ * amdgpu_sync_rings - sync ring to all registered fences
+ *
+ * @sync: sync object to use
+ * @ring: ring that needs sync
+ *
+ * Ensure that all registered fences are signaled before letting
+ * the ring continue. The caller must hold the ring lock.
+ */
+int amdgpu_sync_rings(struct amdgpu_sync *sync,
+		      struct amdgpu_ring *ring)
+{
+	struct amdgpu_device *adev = ring->adev;
+	unsigned count = 0;
+	int i, r;
+
+	for (i = 0; i < AMDGPU_MAX_RINGS; ++i) {
+		struct amdgpu_ring *other = adev->rings[i];
+		struct amdgpu_semaphore *semaphore;
+		struct amdgpu_fence *fence;
+
+		if (!sync->sync_to[i])
+			continue;
+
+		fence = to_amdgpu_fence(sync->sync_to[i]);
+
+		/* check if we really need to sync */
+		if (!amdgpu_enable_scheduler &&
+		    !amdgpu_fence_need_sync(fence, ring))
+			continue;
+
+		/* prevent GPU deadlocks */
+		if (!other->ready) {
+			dev_err(adev->dev, "Syncing to a disabled ring!");
+			return -EINVAL;
+		}
+
+		if (amdgpu_enable_scheduler || !amdgpu_enable_semaphores) {
+			r = fence_wait(sync->sync_to[i], true);
+			if (r)
+				return r;
+			continue;
+		}
+
+		if (count >= AMDGPU_NUM_SYNCS) {
+			/* not enough room, wait manually */
+			r = fence_wait(&fence->base, false);
+			if (r)
+				return r;
+			continue;
+		}
+		r = amdgpu_semaphore_create(adev, &semaphore);
+		if (r)
+			return r;
+
+		sync->semaphores[count++] = semaphore;
+
+		/* allocate enough space for sync command */
+		r = amdgpu_ring_alloc(other, 16);
+		if (r)
+			return r;
+
+		/* emit the signal semaphore */
+		if (!amdgpu_semaphore_emit_signal(other, semaphore)) {
+			/* signaling wasn't successful wait manually */
+			amdgpu_ring_undo(other);
+			r = fence_wait(&fence->base, false);
+			if (r)
+				return r;
+			continue;
+		}
+
+		/* we assume caller has already allocated space on waiters ring */
+		if (!amdgpu_semaphore_emit_wait(ring, semaphore)) {
+			/* waiting wasn't successful wait manually */
+			amdgpu_ring_undo(other);
+			r = fence_wait(&fence->base, false);
+			if (r)
+				return r;
+			continue;
+		}
+
+		amdgpu_ring_commit(other);
+		amdgpu_fence_note_sync(fence, ring);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;

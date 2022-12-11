@@ -60,9 +60,15 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
 
 	pagefault_enable();
 
+<<<<<<< HEAD
 	*oval = oldval;
 
 	prevent_read_write_user(uaddr, uaddr, sizeof(*uaddr));
+=======
+	if (!ret)
+		*oval = oldval;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

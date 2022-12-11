@@ -354,7 +354,12 @@ STORE(__cached_dev)
 	}
 
 	if (attr == &sysfs_cache_mode) {
+<<<<<<< HEAD
 		v = __sysfs_match_string(bch_cache_modes, -1, buf);
+=======
+		v = bch_read_string_list(buf, bch_cache_modes + 1);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (v < 0)
 			return v;
 
@@ -419,8 +424,13 @@ STORE(__cached_dev)
 			if (!v)
 				return size;
 		}
+<<<<<<< HEAD
 		if (v == -ENOENT)
 			pr_err("Can't attach %s: cache set not found", buf);
+=======
+
+		pr_err("Can't attach %s: cache set not found", buf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return v;
 	}
 

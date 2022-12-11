@@ -77,7 +77,17 @@ int ahash_register_instance(struct crypto_template *tmpl,
 			    struct ahash_instance *inst);
 void ahash_free_instance(struct crypto_instance *inst);
 
+<<<<<<< HEAD
 bool crypto_shash_alg_has_setkey(struct shash_alg *alg);
+=======
+int shash_no_setkey(struct crypto_shash *tfm, const u8 *key,
+		    unsigned int keylen);
+
+static inline bool crypto_shash_alg_has_setkey(struct shash_alg *alg)
+{
+	return alg->setkey != shash_no_setkey;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 bool crypto_hash_alg_has_setkey(struct hash_alg_common *halg);
 
@@ -160,6 +170,16 @@ static inline struct ahash_instance *ahash_alloc_instance(
 	const char *name, struct crypto_alg *alg)
 {
 	return crypto_alloc_instance(name, alg, ahash_instance_headroom());
+}
+
+static inline void ahash_request_complete(struct ahash_request *req, int err)
+{
+	req->base.complete(&req->base, err);
+}
+
+static inline u32 ahash_request_flags(struct ahash_request *req)
+{
+	return req->base.flags;
 }
 
 static inline void ahash_request_complete(struct ahash_request *req, int err)

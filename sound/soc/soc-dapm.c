@@ -403,6 +403,13 @@ static int dapm_kcontrol_data_alloc(struct snd_soc_dapm_widget *widget,
 			kfree(name);
 			if (IS_ERR(data->widget)) {
 				ret = PTR_ERR(data->widget);
+<<<<<<< HEAD
+=======
+				goto err_data;
+			}
+			if (!data->widget) {
+				ret = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				goto err_data;
 			}
 		}
@@ -437,6 +444,13 @@ static int dapm_kcontrol_data_alloc(struct snd_soc_dapm_widget *widget,
 			kfree(name);
 			if (IS_ERR(data->widget)) {
 				ret = PTR_ERR(data->widget);
+<<<<<<< HEAD
+=======
+				goto err_data;
+			}
+			if (!data->widget) {
+				ret = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				goto err_data;
 			}
 
@@ -904,7 +918,10 @@ static int dapm_create_or_share_kcontrol(struct snd_soc_dapm_widget *w,
 			case snd_soc_dapm_switch:
 			case snd_soc_dapm_mixer:
 			case snd_soc_dapm_pga:
+<<<<<<< HEAD
 			case snd_soc_dapm_effect:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			case snd_soc_dapm_out_drv:
 				wname_in_long_name = true;
 				kcname_in_long_name = true;
@@ -3600,6 +3617,37 @@ int snd_soc_dapm_put_pin_switch(struct snd_kcontrol *kcontrol,
 EXPORT_SYMBOL_GPL(snd_soc_dapm_put_pin_switch);
 
 struct snd_soc_dapm_widget *
+<<<<<<< HEAD
+=======
+snd_soc_dapm_new_control(struct snd_soc_dapm_context *dapm,
+	const struct snd_soc_dapm_widget *widget)
+{
+	struct snd_soc_dapm_widget *w;
+
+	mutex_lock_nested(&dapm->card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
+	w = snd_soc_dapm_new_control_unlocked(dapm, widget);
+	/* Do not nag about probe deferrals */
+	if (IS_ERR(w)) {
+		int ret = PTR_ERR(w);
+
+		if (ret != -EPROBE_DEFER)
+			dev_err(dapm->dev,
+				"ASoC: Failed to create DAPM control %s (%d)\n",
+				widget->name, ret);
+		goto out_unlock;
+	}
+	if (!w)
+		dev_err(dapm->dev,
+			"ASoC: Failed to create DAPM control %s\n",
+			widget->name);
+
+out_unlock:
+	mutex_unlock(&dapm->card->dapm_mutex);
+	return w;
+}
+
+struct snd_soc_dapm_widget *
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 			 const struct snd_soc_dapm_widget *widget)
 {
@@ -3616,7 +3664,15 @@ snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 		w->regulator = devm_regulator_get(dapm->dev, w->name);
 		if (IS_ERR(w->regulator)) {
 			ret = PTR_ERR(w->regulator);
+<<<<<<< HEAD
 			goto request_failed;
+=======
+			if (ret == -EPROBE_DEFER)
+				return ERR_PTR(ret);
+			dev_err(dapm->dev, "ASoC: Failed to request %s: %d\n",
+				w->name, ret);
+			return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (w->on_val & SND_SOC_DAPM_REGULATOR_BYPASS) {
@@ -3638,7 +3694,15 @@ snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 		w->clk = devm_clk_get(dapm->dev, w->name);
 		if (IS_ERR(w->clk)) {
 			ret = PTR_ERR(w->clk);
+<<<<<<< HEAD
 			goto request_failed;
+=======
+			if (ret == -EPROBE_DEFER)
+				return ERR_PTR(ret);
+			dev_err(dapm->dev, "ASoC: Failed to request %s: %d\n",
+				w->name, ret);
+			return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		break;
 	default:
@@ -3794,6 +3858,22 @@ int snd_soc_dapm_new_controls(struct snd_soc_dapm_context *dapm,
 		w = snd_soc_dapm_new_control_unlocked(dapm, widget);
 		if (IS_ERR(w)) {
 			ret = PTR_ERR(w);
+<<<<<<< HEAD
+=======
+			/* Do not nag about probe deferrals */
+			if (ret == -EPROBE_DEFER)
+				break;
+			dev_err(dapm->dev,
+				"ASoC: Failed to create DAPM control %s (%d)\n",
+				widget->name, ret);
+			break;
+		}
+		if (!w) {
+			dev_err(dapm->dev,
+				"ASoC: Failed to create DAPM control %s\n",
+				widget->name);
+			ret = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 		widget++;
@@ -4014,7 +4094,11 @@ static int snd_soc_dapm_dai_link_get(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_widget *w = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_pcm_runtime *rtd = w->priv;
 
+<<<<<<< HEAD
 	ucontrol->value.enumerated.item[0] = rtd->params_select;
+=======
+	ucontrol->value.enumerated.item[0] = w->params_select;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -4029,6 +4113,7 @@ static int snd_soc_dapm_dai_link_put(struct snd_kcontrol *kcontrol,
 	if (w->power)
 		return -EBUSY;
 
+<<<<<<< HEAD
 	if (ucontrol->value.enumerated.item[0] == rtd->params_select)
 		return 0;
 
@@ -4036,6 +4121,15 @@ static int snd_soc_dapm_dai_link_put(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 
 	rtd->params_select = ucontrol->value.enumerated.item[0];
+=======
+	if (ucontrol->value.enumerated.item[0] == w->params_select)
+		return 0;
+
+	if (ucontrol->value.enumerated.item[0] >= w->num_params)
+		return -EINVAL;
+
+	w->params_select = ucontrol->value.enumerated.item[0];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -4182,6 +4276,20 @@ snd_soc_dapm_new_dai(struct snd_soc_card *card,
 	w = snd_soc_dapm_new_control_unlocked(&card->dapm, &template);
 	if (IS_ERR(w)) {
 		ret = PTR_ERR(w);
+<<<<<<< HEAD
+=======
+		/* Do not nag about probe deferrals */
+		if (ret != -EPROBE_DEFER)
+			dev_err(card->dev,
+				"ASoC: Failed to create %s widget (%d)\n",
+				link_name, ret);
+		goto outfree_kcontrol_news;
+	}
+	if (!w) {
+		dev_err(card->dev, "ASoC: Failed to create %s widget\n",
+			link_name);
+		ret = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto outfree_kcontrol_news;
 	}
 
@@ -4218,8 +4326,26 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 			template.name);
 
 		w = snd_soc_dapm_new_control_unlocked(dapm, &template);
+<<<<<<< HEAD
 		if (IS_ERR(w))
 			return PTR_ERR(w);
+=======
+		if (IS_ERR(w)) {
+			int ret = PTR_ERR(w);
+
+			/* Do not nag about probe deferrals */
+			if (ret != -EPROBE_DEFER)
+				dev_err(dapm->dev,
+				"ASoC: Failed to create %s widget (%d)\n",
+				dai->driver->playback.stream_name, ret);
+			return ret;
+		}
+		if (!w) {
+			dev_err(dapm->dev, "ASoC: Failed to create %s widget\n",
+				dai->driver->playback.stream_name);
+			return -ENOMEM;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		w->priv = dai;
 		dai->playback_widget = w;
@@ -4234,8 +4360,26 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 			template.name);
 
 		w = snd_soc_dapm_new_control_unlocked(dapm, &template);
+<<<<<<< HEAD
 		if (IS_ERR(w))
 			return PTR_ERR(w);
+=======
+		if (IS_ERR(w)) {
+			int ret = PTR_ERR(w);
+
+			/* Do not nag about probe deferrals */
+			if (ret != -EPROBE_DEFER)
+				dev_err(dapm->dev,
+				"ASoC: Failed to create %s widget (%d)\n",
+				dai->driver->playback.stream_name, ret);
+			return ret;
+		}
+		if (!w) {
+			dev_err(dapm->dev, "ASoC: Failed to create %s widget\n",
+				dai->driver->capture.stream_name);
+			return -ENOMEM;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		w->priv = dai;
 		dai->capture_widget = w;

@@ -325,7 +325,12 @@ ttm_bo_get_unless_zero(struct ttm_buffer_object *bo)
  * Returns -EBUSY if no_wait is true and the buffer is busy.
  * Returns -ERESTARTSYS if interrupted by a signal.
  */
+<<<<<<< HEAD
 int ttm_bo_wait(struct ttm_buffer_object *bo, bool interruptible, bool no_wait);
+=======
+extern int ttm_bo_wait(struct ttm_buffer_object *bo, bool lazy,
+		       bool interruptible, bool no_wait);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * ttm_bo_mem_compat - Check if proposed placement is compatible with a bo
@@ -336,8 +341,14 @@ int ttm_bo_wait(struct ttm_buffer_object *bo, bool interruptible, bool no_wait);
  *
  * Returns true if the placement is compatible
  */
+<<<<<<< HEAD
 bool ttm_bo_mem_compat(struct ttm_placement *placement, struct ttm_mem_reg *mem,
 		       uint32_t *new_flags);
+=======
+extern bool ttm_bo_mem_compat(struct ttm_placement *placement,
+			      struct ttm_mem_reg *mem,
+			      uint32_t *new_flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * ttm_bo_validate

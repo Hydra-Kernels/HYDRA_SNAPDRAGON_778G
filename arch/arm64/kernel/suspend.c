@@ -2,11 +2,17 @@
 #include <linux/ftrace.h>
 #include <linux/percpu.h>
 #include <linux/slab.h>
+<<<<<<< HEAD
 #include <linux/uaccess.h>
 #include <asm/alternative.h>
 #include <asm/cacheflush.h>
 #include <asm/cpufeature.h>
 #include <asm/daifflags.h>
+=======
+#include <asm/alternative.h>
+#include <asm/cacheflush.h>
+#include <asm/cpufeature.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/debug-monitors.h>
 #include <asm/exec.h>
 #include <asm/pgtable.h>
@@ -114,10 +120,29 @@ int cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
 		 * If the return value is set to 0 force ret = -EOPNOTSUPP
 		 * to make sure a proper error condition is propagated
 		 */
+<<<<<<< HEAD
 		if (!ret)
 			ret = -EOPNOTSUPP;
 	} else {
 		__cpu_suspend_exit();
+=======
+		set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
+
+		/*
+		 * PSTATE was not saved over suspend/resume, re-enable any
+		 * detected features that might not have been set correctly.
+		 */
+		asm(ALTERNATIVE("nop", SET_PSTATE_PAN(1), ARM64_HAS_PAN,
+				CONFIG_ARM64_PAN));
+
+		/*
+		 * Restore HW breakpoint registers to sane values
+		 * before debug exceptions are possibly reenabled
+		 * through local_dbg_restore.
+		 */
+		if (hw_breakpoint_restore)
+			hw_breakpoint_restore(NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	unpause_graph_tracing();

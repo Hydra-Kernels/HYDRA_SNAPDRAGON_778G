@@ -725,6 +725,7 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
 
 	disk_alloc_events(disk);
 
+<<<<<<< HEAD
 	if (disk->flags & GENHD_FL_HIDDEN) {
 		/*
 		 * Don't let hidden disks show up in /proc/partitions,
@@ -734,6 +735,11 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
 		disk->flags |= GENHD_FL_NO_PART_SCAN;
 	} else {
 		int ret;
+=======
+	/* Register BDI before referencing it from bdev */
+	bdi = &disk->queue->backing_dev_info;
+	bdi_register_owner(bdi, disk_to_dev(disk));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Register BDI before referencing it from bdev */
 		disk_to_dev(disk)->devt = devt;
@@ -826,9 +832,12 @@ void del_gendisk(struct gendisk *disk)
 
 	kobject_put(disk->part0.holder_dir);
 	kobject_put(disk->slave_dir);
+<<<<<<< HEAD
 
 	part_stat_set_all(&disk->part0, 0);
 	disk->part0.stamp = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sysfs_deprecated)
 		sysfs_remove_link(block_depr, dev_name(disk_to_dev(disk)));
 	pm_runtime_set_memalloc_noio(disk_to_dev(disk), false);

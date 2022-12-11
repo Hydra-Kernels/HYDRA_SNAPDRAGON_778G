@@ -25,6 +25,7 @@
 				996000  1250000
 				792000  1175000
 				396000  1150000
+<<<<<<< HEAD
 			>;
 			fsl,soc-operating-points = <
 				/* ARM kHz  SOC-PU uV */
@@ -56,6 +57,8 @@
 				996000  1250000
 				792000  1175000
 				396000  1150000
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			>;
 			fsl,soc-operating-points = <
 				/* ARM kHz  SOC-PU uV */

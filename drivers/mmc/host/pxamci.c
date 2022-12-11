@@ -733,6 +733,23 @@ static int pxamci_probe(struct platform_device *pdev)
 			dev_err(dev, "Failed requesting gpio_power\n");
 			goto out;
 		}
+<<<<<<< HEAD
+=======
+		gpio_direction_output(gpio_power,
+				      host->pdata->gpio_power_invert);
+	}
+	if (gpio_is_valid(gpio_ro)) {
+		ret = mmc_gpio_request_ro(mmc, gpio_ro);
+		if (ret) {
+			dev_err(&pdev->dev, "Failed requesting gpio_ro %d\n",
+				gpio_ro);
+			goto out;
+		} else {
+			mmc->caps2 |= host->pdata->gpio_card_ro_invert ?
+				0 : MMC_CAP2_RO_ACTIVE_HIGH;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* FIXME: should we pass detection delay to debounce? */
 		ret = mmc_gpiod_request_cd(mmc, "cd", 0, false, 0, NULL);

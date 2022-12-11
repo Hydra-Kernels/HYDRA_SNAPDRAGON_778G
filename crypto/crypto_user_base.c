@@ -452,8 +452,14 @@ static int crypto_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 				.done = link->done,
 				.min_dump_alloc = min(dump_alloc, 65535UL),
 			};
+<<<<<<< HEAD:crypto/crypto_user_base.c
 			err = netlink_dump_start(net->crypto_nlsk, skb, nlh, &c);
 		}
+=======
+			err = netlink_dump_start(crypto_nlsk, skb, nlh, &c);
+		}
+		up_read(&crypto_alg_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:crypto/crypto_user.c
 
 		return err;
 	}

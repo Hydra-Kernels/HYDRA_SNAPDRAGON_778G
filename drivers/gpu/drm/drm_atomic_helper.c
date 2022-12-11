@@ -113,10 +113,14 @@ static int handle_conflicting_encoders(struct drm_atomic_state *state,
 {
 	struct drm_connector_state *new_conn_state;
 	struct drm_connector *connector;
+<<<<<<< HEAD
 	struct drm_connector_list_iter conn_iter;
 	struct drm_encoder *encoder;
 	unsigned encoder_mask = 0;
 	int i, ret = 0;
+=======
+	struct drm_connector_state *connector_state;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * First loop, find all newly assigned encoders from the connectors
@@ -143,11 +147,15 @@ static int handle_conflicting_encoders(struct drm_atomic_state *state,
 					new_encoder->base.id, new_encoder->name,
 					connector->base.id, connector->name);
 
+<<<<<<< HEAD
 				return -EINVAL;
 			}
 
 			encoder_mask |= drm_encoder_mask(new_encoder);
 		}
+=======
+		connector_state->best_encoder = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (!encoder_mask)

@@ -2353,13 +2353,33 @@ static bool uuid_is_nonzero(__u8 u[16])
 static int f2fs_ioc_set_encryption_policy(struct file *filp, unsigned long arg)
 {
 	struct inode *inode = file_inode(filp);
+	int err;
 
 	if (!f2fs_sb_has_encrypt(F2FS_I_SB(inode)))
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 	f2fs_update_time(F2FS_I_SB(inode), REQ_TIME);
 
 	return fscrypt_ioctl_set_policy(filp, (const void __user *)arg);
+=======
+	err = mnt_want_write_file(filp);
+	if (err)
+		return err;
+
+	mutex_lock(&inode->i_mutex);
+
+	err = f2fs_process_policy(&policy, inode);
+
+	mutex_unlock(&inode->i_mutex);
+
+	mnt_drop_write_file(filp);
+
+	return err;
+#else
+	return -EOPNOTSUPP;
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int f2fs_ioc_get_encryption_policy(struct file *filp, unsigned long arg)

@@ -175,8 +175,8 @@ static void __imx2_wdt_set_timeout(struct watchdog_device *wdog,
 			   WDOG_SEC_TO_COUNT(new_timeout));
 }
 
-static int imx2_wdt_set_timeout(struct watchdog_device *wdog,
-				unsigned int new_timeout)
+static void __imx2_wdt_set_timeout(struct watchdog_device *wdog,
+				   unsigned int new_timeout)
 {
 	unsigned int actual;
 
@@ -191,6 +191,7 @@ static int imx2_wdt_set_pretimeout(struct watchdog_device *wdog,
 {
 	struct imx2_wdt_device *wdev = watchdog_get_drvdata(wdog);
 
+<<<<<<< HEAD
 	if (new_pretimeout >= IMX2_WDT_MAX_TIME)
 		return -EINVAL;
 
@@ -199,6 +200,18 @@ static int imx2_wdt_set_pretimeout(struct watchdog_device *wdog,
 	regmap_update_bits(wdev->regmap, IMX2_WDT_WICR,
 			   IMX2_WDT_WICR_WIE | IMX2_WDT_WICR_WICT,
 			   IMX2_WDT_WICR_WIE | (new_pretimeout << 1));
+=======
+	regmap_update_bits(wdev->regmap, IMX2_WDT_WCR, IMX2_WDT_WCR_WT,
+			   WDOG_SEC_TO_COUNT(new_timeout));
+}
+
+static int imx2_wdt_set_timeout(struct watchdog_device *wdog,
+				unsigned int new_timeout)
+{
+	__imx2_wdt_set_timeout(wdog, new_timeout);
+
+	wdog->timeout = new_timeout;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

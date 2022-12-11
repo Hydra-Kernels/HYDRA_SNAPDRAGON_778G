@@ -2189,10 +2189,18 @@ static int snd_echo_resume(struct device *dev)
 	u32 pipe_alloc_mask;
 	int err;
 
+<<<<<<< HEAD
 	commpage = chip->comm_page;
 	commpage_bak = kmemdup(commpage, sizeof(*commpage), GFP_KERNEL);
 	if (commpage_bak == NULL)
 		return -ENOMEM;
+=======
+	commpage_bak = kmalloc(sizeof(*commpage), GFP_KERNEL);
+	if (commpage_bak == NULL)
+		return -ENOMEM;
+	commpage = chip->comm_page;
+	memcpy(commpage_bak, commpage, sizeof(*commpage));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	err = init_hw(chip, chip->pci->device, chip->pci->subsystem_device);
 	if (err < 0) {

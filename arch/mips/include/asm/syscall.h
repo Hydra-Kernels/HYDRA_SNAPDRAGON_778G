@@ -125,11 +125,19 @@ static inline void syscall_get_arguments(struct task_struct *task,
 					 struct pt_regs *regs,
 					 unsigned long *args)
 {
+<<<<<<< HEAD
 	unsigned int i = 0;
 	unsigned int n = 6;
 
 	/* O32 ABI syscall() */
 	if (mips_syscall_is_indirect(task, regs))
+=======
+	int ret;
+	/* O32 ABI syscall() - Either 64-bit with O32 or 32-bit */
+	if ((config_enabled(CONFIG_32BIT) ||
+	    test_tsk_thread_flag(task, TIF_32BIT_REGS)) &&
+	    (regs->regs[2] == __NR_syscall))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		i++;
 
 	while (n--)

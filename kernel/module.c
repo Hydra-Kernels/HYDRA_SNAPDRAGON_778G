@@ -311,11 +311,33 @@ int unregister_module_notifier(struct notifier_block *nb)
 }
 EXPORT_SYMBOL(unregister_module_notifier);
 
+<<<<<<< HEAD
 /*
  * We require a truly strong try_module_get(): 0 means success.
  * Otherwise an error is returned due to ongoing or failed
  * initialization etc.
  */
+=======
+struct load_info {
+	Elf_Ehdr *hdr;
+	unsigned long len;
+	Elf_Shdr *sechdrs;
+	char *secstrings, *strtab;
+	unsigned long symoffs, stroffs;
+	struct _ddebug *debug;
+	unsigned int num_debug;
+	bool sig_ok;
+#ifdef CONFIG_KALLSYMS
+	unsigned long mod_kallsyms_init_off;
+#endif
+	struct {
+		unsigned int sym, str, mod, vers, info, pcpu;
+	} index;
+};
+
+/* We require a truly strong try_module_get(): 0 means failure due to
+   ongoing or failed initialization etc. */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline int strong_try_module_get(struct module *mod)
 {
 	BUG_ON(mod && mod->state == MODULE_STATE_UNFORMED);
@@ -2780,7 +2802,11 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 
 	/* Compute total space required for the core symbols' strtab. */
 	for (ndst = i = 0; i < nsrc; i++) {
+<<<<<<< HEAD
 		if (i == 0 || is_livepatch_module(mod) ||
+=======
+		if (i == 0 ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		    is_core_symbol(src+i, info->sechdrs, info->hdr->e_shnum,
 				   info->index.pcpu)) {
 			strtab_size += strlen(&info->strtab[src[i].st_name])+1;
@@ -2803,6 +2829,7 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 	pr_debug("\t%s\n", info->secstrings + strsect->sh_name);
 
 	/* We'll tack temporary mod_kallsyms on the end. */
+<<<<<<< HEAD
 	mod->init_layout.size = ALIGN(mod->init_layout.size,
 				      __alignof__(struct mod_kallsyms));
 	info->mod_kallsyms_init_off = mod->init_layout.size;
@@ -2810,6 +2837,13 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 	info->init_typeoffs = mod->init_layout.size;
 	mod->init_layout.size += nsrc * sizeof(char);
 	mod->init_layout.size = debug_align(mod->init_layout.size);
+=======
+	mod->init_size = ALIGN(mod->init_size,
+			       __alignof__(struct mod_kallsyms));
+	info->mod_kallsyms_init_off = mod->init_size;
+	mod->init_size += sizeof(struct mod_kallsyms);
+	mod->init_size = debug_align(mod->init_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -2826,12 +2860,17 @@ static void add_kallsyms(struct module *mod, const struct load_info *info)
 	Elf_Shdr *symsec = &info->sechdrs[info->index.sym];
 
 	/* Set up to point into init section. */
+<<<<<<< HEAD
 	mod->kallsyms = mod->init_layout.base + info->mod_kallsyms_init_off;
+=======
+	mod->kallsyms = mod->module_init + info->mod_kallsyms_init_off;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mod->kallsyms->symtab = (void *)symsec->sh_addr;
 	mod->kallsyms->num_symtab = symsec->sh_size / sizeof(Elf_Sym);
 	/* Make sure we get permanent strtab: don't use info->strtab. */
 	mod->kallsyms->strtab = (void *)info->sechdrs[info->index.str].sh_addr;
+<<<<<<< HEAD
 	mod->kallsyms->typetab = mod->init_layout.base + info->init_typeoffs;
 
 	/*
@@ -2849,6 +2888,22 @@ static void add_kallsyms(struct module *mod, const struct load_info *info)
 				   info->index.pcpu)) {
 			mod->core_kallsyms.typetab[ndst] =
 			    mod->kallsyms->typetab[i];
+=======
+
+	/* Set types up while we still have access to sections. */
+	for (i = 0; i < mod->kallsyms->num_symtab; i++)
+		mod->kallsyms->symtab[i].st_info
+			= elf_type(&mod->kallsyms->symtab[i], info);
+
+	/* Now populate the cut down core kallsyms for after init. */
+	mod->core_kallsyms.symtab = dst = mod->module_core + info->symoffs;
+	mod->core_kallsyms.strtab = s = mod->module_core + info->stroffs;
+	src = mod->kallsyms->symtab;
+	for (ndst = i = 0; i < mod->kallsyms->num_symtab; i++) {
+		if (i == 0 ||
+		    is_core_symbol(src+i, info->sechdrs, info->hdr->e_shnum,
+				   info->index.pcpu)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dst[ndst] = src[i];
 			dst[ndst++].st_name = s - mod->core_kallsyms.strtab;
 			s += strlcpy(s, &mod->kallsyms->strtab[src[i].st_name],
@@ -3259,6 +3314,15 @@ static int setup_load_info(struct load_info *info, int flags)
 	info->index.pcpu = find_pcpusec(info);
 
 	return 0;
+}
+
+static void check_modinfo_retpoline(struct module *mod, struct load_info *info)
+{
+	if (retpoline_module_ok(get_modinfo(info, "retpoline")))
+		return;
+
+	pr_warn("%s: loading module not compiled with retpoline compiler.\n",
+		mod->name);
 }
 
 static int check_modinfo(struct module *mod, struct load_info *info, int flags)
@@ -3945,6 +4009,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	long err = 0;
 	char *after_dashes;
 
+<<<<<<< HEAD
 	/*
 	 * Do the signature check (if any) first. All that
 	 * the signature check needs is info->len, it does
@@ -3957,6 +4022,8 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	 * off the sig length at the end of the module, making
 	 * checks against info->len more correct.
 	 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	err = module_sig_check(info, flags);
 	if (err)
 		goto free_copy;
@@ -4226,11 +4293,16 @@ static inline int is_arm_mapping_symbol(const char *str)
 	       && (str[2] == '\0' || str[2] == '.');
 }
 
+<<<<<<< HEAD
 static const char *kallsyms_symbol_name(struct mod_kallsyms *kallsyms, unsigned int symnum)
+=======
+static const char *symname(struct mod_kallsyms *kallsyms, unsigned int symnum)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return kallsyms->strtab + kallsyms->symtab[symnum].st_name;
 }
 
+<<<<<<< HEAD
 /*
  * Given a module and address, find the corresponding symbol and return its name
  * while providing its size and offset if needed.
@@ -4242,6 +4314,15 @@ static const char *find_kallsyms_symbol(struct module *mod,
 {
 	unsigned int i, best = 0;
 	unsigned long nextval, bestval;
+=======
+static const char *get_ksymbol(struct module *mod,
+			       unsigned long addr,
+			       unsigned long *size,
+			       unsigned long *offset)
+{
+	unsigned int i, best = 0;
+	unsigned long nextval;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct mod_kallsyms *kallsyms = rcu_dereference_sched(mod->kallsyms);
 
 	/* At worse, next value is at end of module */
@@ -4255,14 +4336,19 @@ static const char *find_kallsyms_symbol(struct module *mod,
 	/* Scan for closest preceding symbol, and next symbol. (ELF
 	   starts real symbols at 1). */
 	for (i = 1; i < kallsyms->num_symtab; i++) {
+<<<<<<< HEAD
 		const Elf_Sym *sym = &kallsyms->symtab[i];
 		unsigned long thisval = kallsyms_symbol_value(sym);
 
 		if (sym->st_shndx == SHN_UNDEF)
+=======
+		if (kallsyms->symtab[i].st_shndx == SHN_UNDEF)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 
 		/* We ignore unnamed symbols: they're uninformative
 		 * and inserted at a whim. */
+<<<<<<< HEAD
 		if (*kallsyms_symbol_name(kallsyms, i) == '\0'
 		    || is_arm_mapping_symbol(kallsyms_symbol_name(kallsyms, i)))
 			continue;
@@ -4273,12 +4359,25 @@ static const char *find_kallsyms_symbol(struct module *mod,
 		}
 		if (thisval > addr && thisval < nextval)
 			nextval = thisval;
+=======
+		if (*symname(kallsyms, i) == '\0'
+		    || is_arm_mapping_symbol(symname(kallsyms, i)))
+			continue;
+
+		if (kallsyms->symtab[i].st_value <= addr
+		    && kallsyms->symtab[i].st_value > kallsyms->symtab[best].st_value)
+			best = i;
+		if (kallsyms->symtab[i].st_value > addr
+		    && kallsyms->symtab[i].st_value < nextval)
+			nextval = kallsyms->symtab[i].st_value;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (!best)
 		return NULL;
 
 	if (size)
+<<<<<<< HEAD
 		*size = nextval - bestval;
 	if (offset)
 		*offset = addr - bestval;
@@ -4290,6 +4389,12 @@ void * __weak dereference_module_function_descriptor(struct module *mod,
 						     void *ptr)
 {
 	return ptr;
+=======
+		*size = nextval - kallsyms->symtab[best].st_value;
+	if (offset)
+		*offset = addr - kallsyms->symtab[best].st_value;
+	return symname(kallsyms, best);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* For kallsyms to ask for address resolution.  NULL means not found.  Careful
@@ -4387,11 +4492,17 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
 			continue;
 		kallsyms = rcu_dereference_sched(mod->kallsyms);
 		if (symnum < kallsyms->num_symtab) {
+<<<<<<< HEAD
 			const Elf_Sym *sym = &kallsyms->symtab[symnum];
 
 			*value = kallsyms_symbol_value(sym);
 			*type = kallsyms->typetab[symnum];
 			strlcpy(name, kallsyms_symbol_name(kallsyms, symnum), KSYM_NAME_LEN);
+=======
+			*value = kallsyms->symtab[symnum].st_value;
+			*type = kallsyms->symtab[symnum].st_info;
+			strlcpy(name, symname(kallsyms, symnum), KSYM_NAME_LEN);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			strlcpy(module_name, mod->name, MODULE_NAME_LEN);
 			*exported = is_exported(name, *value, mod);
 			preempt_enable();
@@ -4409,6 +4520,7 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 	unsigned int i;
 	struct mod_kallsyms *kallsyms = rcu_dereference_sched(mod->kallsyms);
 
+<<<<<<< HEAD
 	for (i = 0; i < kallsyms->num_symtab; i++) {
 		const Elf_Sym *sym = &kallsyms->symtab[i];
 
@@ -4416,6 +4528,12 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 		    sym->st_shndx != SHN_UNDEF)
 			return kallsyms_symbol_value(sym);
 	}
+=======
+	for (i = 0; i < kallsyms->num_symtab; i++)
+		if (strcmp(name, symname(kallsyms, i)) == 0 &&
+		    kallsyms->symtab[i].st_info != 'U')
+			return kallsyms->symtab[i].st_value;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -4460,6 +4578,7 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
 		if (mod->state == MODULE_STATE_UNFORMED)
 			continue;
 		for (i = 0; i < kallsyms->num_symtab; i++) {
+<<<<<<< HEAD
 			const Elf_Sym *sym = &kallsyms->symtab[i];
 
 			if (sym->st_shndx == SHN_UNDEF)
@@ -4467,6 +4586,10 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
 
 			ret = fn(data, kallsyms_symbol_name(kallsyms, i),
 				 mod, kallsyms_symbol_value(sym));
+=======
+			ret = fn(data, symname(kallsyms, i),
+				 mod, kallsyms->symtab[i].st_value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (ret != 0)
 				return ret;
 		}

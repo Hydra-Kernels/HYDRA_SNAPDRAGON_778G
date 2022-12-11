@@ -76,6 +76,7 @@ static int vhci_send_cmd_submit(struct vhci_device *vdev)
 
 		usbip_dbg_vhci_tx("setup txdata urb seqnum %lu\n",
 				  priv->seqnum);
+<<<<<<< HEAD
 
 		if (urb->num_sgs && usb_pipeout(urb->pipe))
 			iovnum = 2 + urb->num_sgs;
@@ -90,6 +91,8 @@ static int vhci_send_cmd_submit(struct vhci_device *vdev)
 
 		if (urb->num_sgs)
 			urb->transfer_flags |= URB_DMA_MAP_SG;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* 1. setup usbip_header */
 		setup_cmd_submit_pdu(&pdu_header, urb);

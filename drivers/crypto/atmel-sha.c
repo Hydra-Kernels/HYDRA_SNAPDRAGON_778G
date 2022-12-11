@@ -1011,7 +1011,20 @@ static void atmel_sha_finish_req(struct ahash_request *req, int err)
 	}
 
 	/* atomic operation is not needed here */
+<<<<<<< HEAD
 	(void)atmel_sha_complete(dd, err);
+=======
+	dd->flags &= ~(SHA_FLAGS_BUSY | SHA_FLAGS_FINAL | SHA_FLAGS_CPU |
+			SHA_FLAGS_DMA_READY | SHA_FLAGS_OUTPUT_READY);
+
+	clk_disable(dd->iclk);
+
+	if (req->base.complete)
+		req->base.complete(&req->base, err);
+
+	/* handle new request */
+	tasklet_schedule(&dd->done_task);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int atmel_sha_hw_init(struct atmel_sha_dev *dd)

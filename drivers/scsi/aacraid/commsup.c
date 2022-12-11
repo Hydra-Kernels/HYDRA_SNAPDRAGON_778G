@@ -81,6 +81,7 @@ static int fib_map_alloc(struct aac_dev *dev)
 
 void aac_fib_map_free(struct aac_dev *dev)
 {
+<<<<<<< HEAD
 	size_t alloc_size;
 	size_t fib_size;
 	int num_fibs;
@@ -95,6 +96,14 @@ void aac_fib_map_free(struct aac_dev *dev)
 	dma_free_coherent(&dev->pdev->dev, alloc_size, dev->hw_fib_va,
 			  dev->hw_fib_pa);
 
+=======
+	if (dev->hw_fib_va && dev->max_fib_size) {
+		pci_free_consistent(dev->pdev,
+		(dev->max_fib_size *
+		(dev->scsi_host_ptr->can_queue + AAC_NUM_MGT_FIB)),
+		dev->hw_fib_va, dev->hw_fib_pa);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dev->hw_fib_va = NULL;
 	dev->hw_fib_pa = 0;
 }
@@ -2516,10 +2525,13 @@ int aac_command_thread(void *data)
 		if (kthread_should_stop())
 			break;
 
+<<<<<<< HEAD
 		/*
 		 * we probably want usleep_range() here instead of the
 		 * jiffies computation
 		 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		schedule_timeout(difference);
 
 		if (kthread_should_stop())

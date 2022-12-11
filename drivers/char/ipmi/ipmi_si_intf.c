@@ -843,7 +843,11 @@ restart:
 		 * asynchronously reset, and may thus get interrupts
 		 * disable and messages disabled.
 		 */
+<<<<<<< HEAD
 		if (smi_info->supports_event_msg_buff || smi_info->io.irq) {
+=======
+		if (smi_info->supports_event_msg_buff || smi_info->irq) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			start_check_enables(smi_info);
 		} else {
 			smi_info->curr_msg = alloc_msg_handle_irq(smi_info);
@@ -1157,7 +1161,11 @@ static int smi_start_processing(void            *send_info,
 	new_smi->intf = intf;
 
 	/* Set up the timer that drives the interface. */
+<<<<<<< HEAD
 	timer_setup(&new_smi->si_timer, smi_timeout, 0);
+=======
+	setup_timer(&new_smi->si_timer, smi_timeout, (long)new_smi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	new_smi->timer_can_start = true;
 	smi_mod_timer(new_smi, jiffies + SI_TIMEOUT_JIFFIES);
 
@@ -1839,7 +1847,69 @@ static inline void stop_timer_and_thread(struct smi_info *smi_info)
 {
 	if (smi_info->thread != NULL) {
 		kthread_stop(smi_info->thread);
+<<<<<<< HEAD
 		smi_info->thread = NULL;
+=======
+
+	smi_info->timer_can_start = false;
+	if (smi_info->timer_running)
+		del_timer_sync(&smi_info->si_timer);
+}
+
+static const struct ipmi_default_vals
+{
+	int type;
+	int port;
+} ipmi_defaults[] =
+{
+	{ .type = SI_KCS, .port = 0xca2 },
+	{ .type = SI_SMIC, .port = 0xca9 },
+	{ .type = SI_BT, .port = 0xe4 },
+	{ .port = 0 }
+};
+
+static void default_find_bmc(void)
+{
+	struct smi_info *info;
+	int             i;
+
+	for (i = 0; ; i++) {
+		if (!ipmi_defaults[i].port)
+			break;
+#ifdef CONFIG_PPC
+		if (check_legacy_ioport(ipmi_defaults[i].port))
+			continue;
+#endif
+		info = smi_info_alloc();
+		if (!info)
+			return;
+
+		info->addr_source = SI_DEFAULT;
+
+		info->si_type = ipmi_defaults[i].type;
+		info->io_setup = port_setup;
+		info->io.addr_data = ipmi_defaults[i].port;
+		info->io.addr_type = IPMI_IO_ADDR_SPACE;
+
+		info->io.addr = NULL;
+		info->io.regspacing = DEFAULT_REGSPACING;
+		info->io.regsize = DEFAULT_REGSPACING;
+		info->io.regshift = 0;
+
+		if (add_smi(info) == 0) {
+			if ((try_smi_init(info)) == 0) {
+				/* Found one... */
+				printk(KERN_INFO PFX "Found default %s"
+				" state machine at %s address 0x%lx\n",
+				si_to_str[info->si_type],
+				addr_space_to_str[info->io.addr_type],
+				info->io.addr_data);
+			} else
+				cleanup_one_si(info);
+		} else {
+			kfree(info);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	smi_info->timer_can_start = false;
@@ -2078,7 +2148,25 @@ static int try_smi_init(struct smi_info *new_smi)
 	dev_info(new_smi->io.dev, "IPMI %s interface initialized\n",
 		 si_to_str[new_smi->io.si_type]);
 
+<<<<<<< HEAD
 	WARN_ON(new_smi->io.dev->init_name != NULL);
+=======
+	rv = ipmi_smi_add_proc_entry(new_smi->intf, "params",
+				     &smi_params_proc_ops,
+				     new_smi);
+	if (rv) {
+		dev_err(new_smi->dev, "Unable to create proc entry: %d\n", rv);
+		goto out_err_stop_timer;
+	}
+
+	dev_info(new_smi->dev, "IPMI %s interface initialized\n",
+		 si_to_str[new_smi->si_type]);
+
+	return 0;
+
+ out_err_stop_timer:
+	stop_timer_and_thread(new_smi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
  out_err:
 	if (rv && new_smi->io.io_cleanup) {
@@ -2172,6 +2260,7 @@ static void shutdown_smi(void *send_info)
 	 * Make sure that interrupts, the timer and the thread are
 	 * stopped and will not run again.
 	 */
+<<<<<<< HEAD
 	smi_info->interrupt_disabled = true;
 	if (smi_info->io.irq_cleanup) {
 		smi_info->io.irq_cleanup(&smi_info->io);
@@ -2185,6 +2274,11 @@ static void shutdown_smi(void *send_info)
 	 * interrupt.
 	 */
 	synchronize_rcu();
+=======
+	if (to_clean->irq_cleanup)
+		to_clean->irq_cleanup(to_clean);
+	stop_timer_and_thread(to_clean);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Timeouts are stopped, now make sure the interrupts are off
@@ -2195,10 +2289,16 @@ static void shutdown_smi(void *send_info)
 		poll(smi_info);
 		schedule_timeout_uninterruptible(1);
 	}
+<<<<<<< HEAD
 	if (smi_info->handlers)
 		disable_si_irq(smi_info);
 	while (smi_info->curr_msg || (smi_info->si_state != SI_NORMAL)) {
 		poll(smi_info);
+=======
+	disable_si_irq(to_clean);
+	while (to_clean->curr_msg || (to_clean->si_state != SI_NORMAL)) {
+		poll(to_clean);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		schedule_timeout_uninterruptible(1);
 	}
 	if (smi_info->handlers)

@@ -763,6 +763,7 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
 {
 	struct se_cmd *se_cmd = cmd->se_cmd.se_tfo ? &cmd->se_cmd : NULL;
 	int rc;
+<<<<<<< HEAD
 
 	WARN_ON(!list_empty(&cmd->i_conn_node));
 
@@ -771,6 +772,25 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
 		rc = transport_generic_free_cmd(se_cmd, shutdown);
 		if (!rc && shutdown && se_cmd->se_sess) {
 			__iscsit_free_cmd(cmd, shutdown);
+=======
+	bool op_scsi = false;
+	/*
+	 * Determine if a struct se_cmd is associated with
+	 * this struct iscsi_cmd.
+	 */
+	switch (cmd->iscsi_opcode) {
+	case ISCSI_OP_SCSI_CMD:
+		op_scsi = true;
+		/*
+		 * Fallthrough
+		 */
+	case ISCSI_OP_SCSI_TMFUNC:
+		se_cmd = &cmd->se_cmd;
+		__iscsit_free_cmd(cmd, op_scsi, shutdown);
+		rc = transport_generic_free_cmd(se_cmd, shutdown);
+		if (!rc && shutdown && se_cmd->se_sess) {
+			__iscsit_free_cmd(cmd, op_scsi, shutdown);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			target_put_sess_cmd(se_cmd);
 		}
 	} else {

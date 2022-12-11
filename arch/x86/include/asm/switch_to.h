@@ -2,7 +2,11 @@
 #ifndef _ASM_X86_SWITCH_TO_H
 #define _ASM_X86_SWITCH_TO_H
 
+<<<<<<< HEAD
 #include <linux/sched/task_stack.h>
+=======
+#include <asm/nospec-branch.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct task_struct; /* one of the stranger aspects of C forward declarations */
 
@@ -34,6 +38,23 @@ static inline void prepare_switch_to(struct task_struct *next)
 }
 
 asmlinkage void ret_from_fork(void);
+
+#ifdef CONFIG_RETPOLINE
+	/*
+	 * When switching from a shallower to a deeper call stack
+	 * the RSB may either underflow or use entries populated
+	 * with userspace addresses. On CPUs where those concerns
+	 * exist, overwrite the RSB with entries which capture
+	 * speculative execution to prevent attack.
+	 */
+#define __retpoline_fill_return_buffer					\
+	ALTERNATIVE("jmp 910f",						\
+		__stringify(__FILL_RETURN_BUFFER(%%ebx, RSB_CLEAR_LOOPS, %%esp)),\
+		X86_FEATURE_RSB_CTXSW)					\
+	"910:\n\t"
+#else
+#define __retpoline_fill_return_buffer
+#endif
 
 /*
  * This is the structure pointed to by thread.sp for an inactive task.  The
@@ -69,7 +90,46 @@ struct fork_frame {
 do {									\
 	prepare_switch_to(next);					\
 									\
+<<<<<<< HEAD
 	((last) = __switch_to_asm((prev), (next)));			\
+=======
+	asm volatile("pushfl\n\t"		/* save    flags */	\
+		     "pushl %%ebp\n\t"		/* save    EBP   */	\
+		     "movl %%esp,%[prev_sp]\n\t"	/* save    ESP   */ \
+		     "movl %[next_sp],%%esp\n\t"	/* restore ESP   */ \
+		     "movl $1f,%[prev_ip]\n\t"	/* save    EIP   */	\
+		     "pushl %[next_ip]\n\t"	/* restore EIP   */	\
+		     __switch_canary					\
+		     __retpoline_fill_return_buffer			\
+		     "jmp __switch_to\n"	/* regparm call  */	\
+		     "1:\t"						\
+		     "popl %%ebp\n\t"		/* restore EBP   */	\
+		     "popfl\n"			/* restore flags */	\
+									\
+		     /* output parameters */				\
+		     : [prev_sp] "=m" (prev->thread.sp),		\
+		       [prev_ip] "=m" (prev->thread.ip),		\
+		       "=a" (last),					\
+									\
+		       /* clobbered output registers: */		\
+		       "=b" (ebx), "=c" (ecx), "=d" (edx),		\
+		       "=S" (esi), "=D" (edi)				\
+		       							\
+		       __switch_canary_oparam				\
+									\
+		       /* input parameters: */				\
+		     : [next_sp]  "m" (next->thread.sp),		\
+		       [next_ip]  "m" (next->thread.ip),		\
+		       							\
+		       /* regparm parameters for __switch_to(): */	\
+		       [prev]     "a" (prev),				\
+		       [next]     "d" (next)				\
+									\
+		       __switch_canary_iparam				\
+									\
+		     : /* reloaded segment registers */			\
+			"memory");					\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } while (0)
 
 #ifdef CONFIG_X86_32
@@ -104,6 +164,70 @@ static inline void update_task_stack(struct task_struct *task)
 		load_sp0(task_top_of_stack(task));
 #endif
 
+<<<<<<< HEAD
 }
+=======
+#ifdef CONFIG_CC_STACKPROTECTOR
+#define __switch_canary							  \
+	"movq %P[task_canary](%%rsi),%%r8\n\t"				  \
+	"movq %%r8,"__percpu_arg([gs_canary])"\n\t"
+#define __switch_canary_oparam						  \
+	, [gs_canary] "=m" (irq_stack_union.stack_canary)
+#define __switch_canary_iparam						  \
+	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
+#else	/* CC_STACKPROTECTOR */
+#define __switch_canary
+#define __switch_canary_oparam
+#define __switch_canary_iparam
+#endif	/* CC_STACKPROTECTOR */
+
+#ifdef CONFIG_RETPOLINE
+	/*
+	 * When switching from a shallower to a deeper call stack
+	 * the RSB may either underflow or use entries populated
+	 * with userspace addresses. On CPUs where those concerns
+	 * exist, overwrite the RSB with entries which capture
+	 * speculative execution to prevent attack.
+	 */
+#define __retpoline_fill_return_buffer					\
+	ALTERNATIVE("jmp 910f",						\
+		__stringify(__FILL_RETURN_BUFFER(%%r12, RSB_CLEAR_LOOPS, %%rsp)),\
+		X86_FEATURE_RSB_CTXSW)					\
+	"910:\n\t"
+#else
+#define __retpoline_fill_return_buffer
+#endif
+
+/*
+ * There is no need to save or restore flags, because flags are always
+ * clean in kernel mode, with the possible exception of IOPL.  Kernel IOPL
+ * has no effect.
+ */
+#define switch_to(prev, next, last) \
+	asm volatile(SAVE_CONTEXT					  \
+	     "movq %%rsp,%P[threadrsp](%[prev])\n\t" /* save RSP */	  \
+	     "movq %P[threadrsp](%[next]),%%rsp\n\t" /* restore RSP */	  \
+	     "call __switch_to\n\t"					  \
+	     "movq "__percpu_arg([current_task])",%%rsi\n\t"		  \
+	     __switch_canary						  \
+	     __retpoline_fill_return_buffer				  \
+	     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
+	     "movq %%rax,%%rdi\n\t" 					  \
+	     "testl  %[_tif_fork],%P[ti_flags](%%r8)\n\t"		  \
+	     "jnz   ret_from_fork\n\t"					  \
+	     RESTORE_CONTEXT						  \
+	     : "=a" (last)					  	  \
+	       __switch_canary_oparam					  \
+	     : [next] "S" (next), [prev] "D" (prev),			  \
+	       [threadrsp] "i" (offsetof(struct task_struct, thread.sp)), \
+	       [ti_flags] "i" (offsetof(struct thread_info, flags)),	  \
+	       [_tif_fork] "i" (_TIF_FORK),			  	  \
+	       [thread_info] "i" (offsetof(struct task_struct, stack)),   \
+	       [current_task] "m" (current_task)			  \
+	       __switch_canary_iparam					  \
+	     : "memory", "cc" __EXTRA_CLOBBER)
+
+#endif /* CONFIG_X86_32 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* _ASM_X86_SWITCH_TO_H */

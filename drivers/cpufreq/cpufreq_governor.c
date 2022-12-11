@@ -443,6 +443,7 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
 	if (!have_governor_per_policy())
 		gov->gdbs_data = dbs_data;
 
+<<<<<<< HEAD
 	policy_dbs->dbs_data = dbs_data;
 	policy->governor_data = policy_dbs;
 
@@ -489,11 +490,53 @@ void cpufreq_dbs_governor_exit(struct cpufreq_policy *policy)
 	policy->governor_data = NULL;
 
 	if (!count) {
+=======
+	policy->governor_data = dbs_data;
+
+	ret = sysfs_create_group(get_governor_parent_kobj(policy),
+				 get_sysfs_attr(dbs_data));
+	if (ret)
+		goto reset_gdbs_data;
+
+	return 0;
+
+reset_gdbs_data:
+	policy->governor_data = NULL;
+
+	if (!have_governor_per_policy())
+		cdata->gdbs_data = NULL;
+	cdata->exit(dbs_data, !policy->governor->initialized);
+free_common_dbs_info:
+	free_common_dbs_info(policy, cdata);
+free_dbs_data:
+	kfree(dbs_data);
+	return ret;
+}
+
+static int cpufreq_governor_exit(struct cpufreq_policy *policy,
+				 struct dbs_data *dbs_data)
+{
+	struct common_dbs_data *cdata = dbs_data->cdata;
+	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(policy->cpu);
+
+	/* State should be equivalent to INIT */
+	if (!cdbs->shared || cdbs->shared->policy)
+		return -EBUSY;
+
+	if (!--dbs_data->usage_count) {
+		sysfs_remove_group(get_governor_parent_kobj(policy),
+				   get_sysfs_attr(dbs_data));
+
+		policy->governor_data = NULL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!have_governor_per_policy())
 			gov->gdbs_data = NULL;
 
 		gov->exit(dbs_data);
 		kfree(dbs_data);
+	} else {
+		policy->governor_data = NULL;
 	}
 
 	free_policy_dbs_info(policy_dbs, gov);

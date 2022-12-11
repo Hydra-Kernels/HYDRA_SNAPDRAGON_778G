@@ -139,6 +139,7 @@ static const struct pci_device_id intel_th_pci_id_table[] = {
 		.driver_data = (kernel_ulong_t)0,
 	},
 	{
+<<<<<<< HEAD
 		/* Apollo Lake */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x5a8e),
 		.driver_data = (kernel_ulong_t)0,
@@ -171,11 +172,26 @@ static const struct pci_device_id intel_th_pci_id_table[] = {
 	{
 		/* Lewisburg PCH */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa226),
+=======
+		/* Kaby Lake PCH-H */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa2a6),
+		.driver_data = (kernel_ulong_t)0,
+	},
+	{
+		/* Cannon Lake H */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa326),
+		.driver_data = (kernel_ulong_t)0,
+	},
+	{
+		/* Cannon Lake LP */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9da6),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.driver_data = (kernel_ulong_t)0,
 	},
 	{
 		/* Gemini Lake */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x318e),
+<<<<<<< HEAD
 		.driver_data = (kernel_ulong_t)&intel_th_2x,
 	},
 	{
@@ -277,6 +293,9 @@ static const struct pci_device_id intel_th_pci_id_table[] = {
 		/* Rocket Lake CPU */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4c19),
 		.driver_data = (kernel_ulong_t)&intel_th_2x,
+=======
+		.driver_data = (kernel_ulong_t)0,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{ 0 },
 };

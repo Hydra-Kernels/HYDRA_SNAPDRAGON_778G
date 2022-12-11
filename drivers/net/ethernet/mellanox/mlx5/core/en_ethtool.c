@@ -504,7 +504,19 @@ static int mlx5e_get_coalesce(struct net_device *netdev,
 {
 	struct mlx5e_priv *priv = netdev_priv(netdev);
 
+<<<<<<< HEAD
 	return mlx5e_ethtool_get_coalesce(priv, coal);
+=======
+	if (!MLX5_CAP_GEN(priv->mdev, cq_moderation))
+		return -ENOTSUPP;
+
+	coal->rx_coalesce_usecs       = priv->params.rx_cq_moderation_usec;
+	coal->rx_max_coalesced_frames = priv->params.rx_cq_moderation_pkts;
+	coal->tx_coalesce_usecs       = priv->params.tx_cq_moderation_usec;
+	coal->tx_max_coalesced_frames = priv->params.tx_cq_moderation_pkts;
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define MLX5E_MAX_COAL_TIME		MLX5_MAX_CQ_PERIOD
@@ -517,8 +529,25 @@ mlx5e_set_priv_channels_coalesce(struct mlx5e_priv *priv, struct ethtool_coalesc
 	int tc;
 	int i;
 
+<<<<<<< HEAD
 	for (i = 0; i < priv->channels.num; ++i) {
 		struct mlx5e_channel *c = priv->channels.c[i];
+=======
+	if (!MLX5_CAP_GEN(mdev, cq_moderation))
+		return -ENOTSUPP;
+
+	mutex_lock(&priv->state_lock);
+	priv->params.tx_cq_moderation_usec = coal->tx_coalesce_usecs;
+	priv->params.tx_cq_moderation_pkts = coal->tx_max_coalesced_frames;
+	priv->params.rx_cq_moderation_usec = coal->rx_coalesce_usecs;
+	priv->params.rx_cq_moderation_pkts = coal->rx_max_coalesced_frames;
+
+	if (!test_bit(MLX5E_STATE_OPENED, &priv->state))
+		goto out;
+
+	for (i = 0; i < priv->params.num_channels; ++i) {
+		c = priv->channel[i];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		for (tc = 0; tc < c->num_tc; tc++) {
 			mlx5_core_modify_cq_moderation(mdev,
@@ -654,6 +683,8 @@ static u32 pplm2ethtool_fec(u_long fec_mode, unsigned long size)
 	if (mode < ARRAY_SIZE(pplm_fec_2_ethtool))
 		return pplm_fec_2_ethtool[mode];
 
+out:
+	mutex_unlock(&priv->state_lock);
 	return 0;
 }
 

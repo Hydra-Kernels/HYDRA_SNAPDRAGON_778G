@@ -53,14 +53,18 @@ static int send_command(struct cros_ec_device *ec_dev,
 {
 	int ret;
 	int (*xfer_fxn)(struct cros_ec_device *ec, struct cros_ec_command *msg);
+<<<<<<< HEAD
 
 	trace_cros_ec_cmd(msg);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ec_dev->proto_version > 2)
 		xfer_fxn = ec_dev->pkt_xfer;
 	else
 		xfer_fxn = ec_dev->cmd_xfer;
 
+<<<<<<< HEAD
 	if (!xfer_fxn) {
 		/*
 		 * This error can happen if a communication error happened and
@@ -72,6 +76,8 @@ static int send_command(struct cros_ec_device *ec_dev,
 		return -EIO;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = (*xfer_fxn)(ec_dev, msg);
 	if (msg->result == EC_RES_IN_PROGRESS) {
 		int i;
@@ -96,8 +102,11 @@ static int send_command(struct cros_ec_device *ec_dev,
 			usleep_range(10000, 11000);
 
 			ret = (*xfer_fxn)(ec_dev, status_msg);
+<<<<<<< HEAD
 			if (ret == -EAGAIN)
 				continue;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (ret < 0)
 				break;
 
@@ -516,6 +525,7 @@ int cros_ec_cmd_xfer_status(struct cros_ec_device *ec_dev,
 	return ret;
 }
 EXPORT_SYMBOL(cros_ec_cmd_xfer_status);
+<<<<<<< HEAD
 
 static int get_next_event_xfer(struct cros_ec_device *ec_dev,
 			       struct cros_ec_command *msg,
@@ -647,3 +657,5 @@ u32 cros_ec_get_host_event(struct cros_ec_device *ec_dev)
 	return host_event;
 }
 EXPORT_SYMBOL(cros_ec_get_host_event);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

@@ -1189,6 +1189,10 @@ static int scsi_eh_action(struct scsi_cmnd *scmd, int rtn)
  */
 void scsi_eh_finish_cmd(struct scsi_cmnd *scmd, struct list_head *done_q)
 {
+<<<<<<< HEAD
+=======
+	scmd->eh_eflags = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	list_move_tail(&scmd->eh_entry, done_q);
 }
 EXPORT_SYMBOL(scsi_eh_finish_cmd);

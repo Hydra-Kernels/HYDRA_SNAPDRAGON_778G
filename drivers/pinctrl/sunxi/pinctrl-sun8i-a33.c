@@ -487,8 +487,12 @@ static const struct sunxi_pinctrl_desc sun8i_a33_pinctrl_data = {
 	.pins = sun8i_a33_pins,
 	.npins = ARRAY_SIZE(sun8i_a33_pins),
 	.irq_banks = 2,
+<<<<<<< HEAD
 	.irq_bank_map = sun8i_a33_pinctrl_irq_bank_map,
 	.disable_strict_mode = true,
+=======
+	.irq_bank_base = 1,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static int sun8i_a33_pinctrl_probe(struct platform_device *pdev)

@@ -24,6 +24,11 @@
 #include <crypto/internal/simd.h>
 #include <crypto/b128ops.h>
 
+<<<<<<< HEAD
+=======
+#define IN_INTERRUPT in_interrupt()
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void gcm_init_p8(u128 htable[16], const u64 Xi[2]);
 void gcm_gmult_p8(u64 Xi[2], const u128 htable[16]);
 void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
@@ -42,6 +47,53 @@ struct p8_ghash_desc_ctx {
 	int bytes;
 };
 
+<<<<<<< HEAD
+=======
+static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
+{
+	const char *alg = "ghash-generic";
+	struct crypto_shash *fallback;
+	struct crypto_shash *shash_tfm = __crypto_shash_cast(tfm);
+	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+
+	fallback = crypto_alloc_shash(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
+	if (IS_ERR(fallback)) {
+		printk(KERN_ERR
+		       "Failed to allocate transformation for '%s': %ld\n",
+		       alg, PTR_ERR(fallback));
+		return PTR_ERR(fallback);
+	}
+
+	crypto_shash_set_flags(fallback,
+			       crypto_shash_get_flags((struct crypto_shash
+						       *) tfm));
+
+	/* Check if the descsize defined in the algorithm is still enough. */
+	if (shash_tfm->descsize < sizeof(struct p8_ghash_desc_ctx)
+	    + crypto_shash_descsize(fallback)) {
+		printk(KERN_ERR
+		       "Desc size of the fallback implementation (%s) does not match the expected value: %lu vs %u\n",
+		       alg,
+		       shash_tfm->descsize - sizeof(struct p8_ghash_desc_ctx),
+		       crypto_shash_descsize(fallback));
+		return -EINVAL;
+	}
+	ctx->fallback = fallback;
+
+	return 0;
+}
+
+static void p8_ghash_exit_tfm(struct crypto_tfm *tfm)
+{
+	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+
+	if (ctx->fallback) {
+		crypto_free_shash(ctx->fallback);
+		ctx->fallback = NULL;
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int p8_ghash_init(struct shash_desc *desc)
 {
 	struct p8_ghash_desc_ctx *dctx = shash_desc_ctx(desc);

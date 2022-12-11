@@ -110,7 +110,11 @@ int pvr2_eeprom_analyze(struct pvr2_hdw *hdw)
 	if (!eeprom)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	tveeprom_hauppauge_analog(&tvdata, eeprom);
+=======
+	tveeprom_hauppauge_analog(NULL, &tvdata, eeprom);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	trace_eeprom("eeprom assumed v4l tveeprom module");
 	trace_eeprom("eeprom direct call results:");

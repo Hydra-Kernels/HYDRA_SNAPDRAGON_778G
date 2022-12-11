@@ -294,7 +294,11 @@ void init_cache_modes(void)
  * pat_init - Initialize PAT MSR and PAT table
  *
  * This function initializes PAT MSR and PAT table with an OS-defined value
+<<<<<<< HEAD
  * to enable additional cache attributes, WC, WT and WP.
+=======
+ * to enable additional cache attributes, WC and WT.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * This function must be called on all CPUs using the specific sequence of
  * operations defined in Intel SDM. mtrr_rendezvous_handler() provides this

@@ -147,6 +147,7 @@ static void ip_expire(struct timer_list *t)
 	if (qp->q.fqdir->dead)
 		goto out_rcu_unlock;
 
+	rcu_read_lock();
 	spin_lock(&qp->q.lock);
 
 	if (qp->q.flags & INET_FRAG_COMPLETE)
@@ -156,8 +157,15 @@ static void ip_expire(struct timer_list *t)
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMTIMEOUT);
 
+<<<<<<< HEAD
 	if (!(qp->q.flags & INET_FRAG_FIRST_IN))
 		goto out;
+=======
+	if (!inet_frag_evicting(&qp->q)) {
+		struct sk_buff *clone, *head = qp->q.fragments;
+		const struct iphdr *iph;
+		int err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* sk_buff::dev and sk_buff::rbnode are unionized. So we
 	 * pull the head out of the tree in order to be able to
@@ -171,6 +179,7 @@ static void ip_expire(struct timer_list *t)
 		goto out;
 
 
+<<<<<<< HEAD
 	/* skb has no dst, perform route lookup again */
 	iph = ip_hdr(head);
 	err = ip_route_input_noref(head, iph->daddr, iph->saddr,
@@ -189,11 +198,46 @@ static void ip_expire(struct timer_list *t)
 	icmp_send(head, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
 	goto out_rcu_unlock;
 
+=======
+		head->dev = dev_get_by_index_rcu(net, qp->iif);
+		if (!head->dev)
+			goto out;
+
+
+		/* skb has no dst, perform route lookup again */
+		iph = ip_hdr(head);
+		err = ip_route_input_noref(head, iph->daddr, iph->saddr,
+					   iph->tos, head->dev);
+		if (err)
+			goto out;
+
+		/* Only an end host needs to send an ICMP
+		 * "Fragment Reassembly Timeout" message, per RFC792.
+		 */
+		if (frag_expire_skip_icmp(qp->user) &&
+		    (skb_rtable(head)->rt_type != RTN_LOCAL))
+			goto out;
+
+		clone = skb_clone(head, GFP_ATOMIC);
+
+		/* Send an ICMP "Fragment Reassembly Timeout" message. */
+		if (clone) {
+			spin_unlock(&qp->q.lock);
+			icmp_send(clone, ICMP_TIME_EXCEEDED,
+				  ICMP_EXC_FRAGTIME, 0);
+			consume_skb(clone);
+			goto out_rcu_unlock;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	spin_unlock(&qp->q.lock);
 out_rcu_unlock:
 	rcu_read_unlock();
+<<<<<<< HEAD
 	kfree_skb(head);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ipq_put(qp);
 }
 
@@ -477,7 +521,11 @@ int ip_defrag(struct net *net, struct sk_buff *skb, u32 user)
 	int vif = l3mdev_master_ifindex_rcu(dev);
 	struct ipq *qp;
 
+<<<<<<< HEAD
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMREQDS);
+=======
+	IP_INC_STATS_BH(net, IPSTATS_MIB_REASMREQDS);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb_orphan(skb);
 
 	/* Lookup (or create) queue header */
@@ -650,11 +698,14 @@ static void __init ip4_frags_ctl_register(void)
 
 static int __net_init ipv4_frags_init_net(struct net *net)
 {
+<<<<<<< HEAD
 	int res;
 
 	res = fqdir_init(&net->ipv4.fqdir, &ip4_frags, net);
 	if (res < 0)
 		return res;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Fragment cache limits.
 	 *
 	 * The fragment memory accounting code, (tries to) account for
@@ -680,10 +731,16 @@ static int __net_init ipv4_frags_init_net(struct net *net)
 
 	net->ipv4.fqdir->max_dist = 64;
 
+<<<<<<< HEAD
 	res = ip4_frags_ns_ctl_register(net);
 	if (res < 0)
 		fqdir_exit(net->ipv4.fqdir);
 	return res;
+=======
+	inet_frags_init_net(&net->ipv4.frags);
+
+	return ip4_frags_ns_ctl_register(net);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __net_exit ipv4_frags_pre_exit_net(struct net *net)

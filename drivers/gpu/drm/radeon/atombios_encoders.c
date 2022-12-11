@@ -26,6 +26,7 @@
 
 #include <linux/backlight.h>
 #include <linux/dmi.h>
+<<<<<<< HEAD
 
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_file.h>
@@ -36,6 +37,8 @@
 #include "radeon.h"
 #include "radeon_asic.h"
 #include "radeon_audio.h"
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern int atom_debug;
 

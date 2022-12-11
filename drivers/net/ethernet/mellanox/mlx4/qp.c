@@ -401,7 +401,11 @@ struct mlx4_qp *mlx4_qp_lookup(struct mlx4_dev *dev, u32 qpn)
 	return qp;
 }
 
+<<<<<<< HEAD
 int mlx4_qp_alloc(struct mlx4_dev *dev, int qpn, struct mlx4_qp *qp)
+=======
+int mlx4_qp_alloc(struct mlx4_dev *dev, int qpn, struct mlx4_qp *qp, gfp_t gfp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct mlx4_priv *priv = mlx4_priv(dev);
 	struct mlx4_qp_table *qp_table = &priv->qp_table;

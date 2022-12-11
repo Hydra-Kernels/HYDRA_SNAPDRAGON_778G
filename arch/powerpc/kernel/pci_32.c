@@ -11,7 +11,11 @@
 #include <linux/capability.h>
 #include <linux/sched.h>
 #include <linux/errno.h>
+<<<<<<< HEAD
 #include <linux/memblock.h>
+=======
+#include <linux/bootmem.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/syscalls.h>
 #include <linux/irq.h>
 #include <linux/list.h>

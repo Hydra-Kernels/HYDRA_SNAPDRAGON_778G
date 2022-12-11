@@ -54,6 +54,7 @@
 #include "nterr.h"
 #include "rfc1002pdu.h"
 #include "fscache.h"
+<<<<<<< HEAD
 #include "smb2proto.h"
 #include "smbdirect.h"
 #include "dns_resolve.h"
@@ -61,6 +62,14 @@
 #ifdef CONFIG_CIFS_DFS_UPCALL
 #include "dfs_cache.h"
 #endif
+=======
+#ifdef CONFIG_CIFS_SMB2
+#include "smb2proto.h"
+#endif
+
+#define CIFS_PORT 445
+#define RFC1001_PORT 139
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern mempool_t *cifs_req_poolp;
 extern bool disable_legacy_dialects;
@@ -647,6 +656,7 @@ cifs_reconnect(struct TCP_Server_Info *server)
 		}
 	} while (server->tcpStatus == CifsNeedReconnect);
 
+<<<<<<< HEAD
 #ifdef CONFIG_CIFS_DFS_UPCALL
 	if (tgt_it) {
 		rc = dfs_cache_noreq_update_tgthint(cifs_sb->origin_fullpath + 1,
@@ -666,6 +676,8 @@ cifs_reconnect(struct TCP_Server_Info *server)
 
 	put_tcp_super(sb);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (server->tcpStatus == CifsNeedNegotiate)
 		mod_delayed_work(cifsiod_wq, &server->echo, 0);
 
@@ -687,7 +699,11 @@ cifs_echo_request(struct work_struct *work)
 	if (server->tcpStatus == CifsNeedNegotiate)
 		echo_interval = 0;
 	else
+<<<<<<< HEAD
 		echo_interval = server->echo_interval;
+=======
+		echo_interval = SMB_ECHO_INTERVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We cannot send an echo if it is disabled.
@@ -1261,6 +1277,32 @@ next_pdu:
 		}
 
 		server->lstrp = jiffies;
+<<<<<<< HEAD
+=======
+		if (mid_entry != NULL) {
+			if ((mid_entry->mid_flags & MID_WAIT_CANCELLED) &&
+			     mid_entry->mid_state == MID_RESPONSE_RECEIVED &&
+					server->ops->handle_cancelled_mid)
+				server->ops->handle_cancelled_mid(
+							mid_entry->resp_buf,
+							server);
+
+			if (!mid_entry->multiRsp || mid_entry->multiEnd)
+				mid_entry->callback(mid_entry);
+		} else if (server->ops->is_oplock_break &&
+			   server->ops->is_oplock_break(buf, server)) {
+			cifs_dbg(FYI, "Received oplock break\n");
+		} else {
+			cifs_dbg(VFS, "No task to wake, unknown frame received! NumMids %d\n",
+				 atomic_read(&midCount));
+			cifs_dump_mem("Received Data is: ", buf,
+				      HEADER_SIZE(server));
+#ifdef CONFIG_CIFS_DEBUG2
+			if (server->ops->dump_detail)
+				server->ops->dump_detail(buf);
+			cifs_dump_mids(server);
+#endif /* CIFS_DEBUG2 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		for (i = 0; i < num_mids; i++) {
 			if (mids[i] != NULL) {
@@ -2723,6 +2765,10 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
 
 	cancel_delayed_work_sync(&server->echo);
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_CIFS_SMB2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (from_reconnect)
 		/*
 		 * Avoid deadlock here: reconnect work calls
@@ -2733,6 +2779,10 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
 		cancel_delayed_work(&server->reconnect);
 	else
 		cancel_delayed_work_sync(&server->reconnect);
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock(&GlobalMid_Lock);
 	server->tcpStatus = CifsExiting;
@@ -2803,13 +2853,26 @@ cifs_get_tcp_session(struct smb_vol *volume_info)
 	INIT_LIST_HEAD(&tcp_ses->tcp_ses_list);
 	INIT_LIST_HEAD(&tcp_ses->smb_ses_list);
 	INIT_DELAYED_WORK(&tcp_ses->echo, cifs_echo_request);
+<<<<<<< HEAD
 	INIT_DELAYED_WORK(&tcp_ses->reconnect, smb2_reconnect_server);
 	mutex_init(&tcp_ses->reconnect_mutex);
+=======
+#ifdef CONFIG_CIFS_SMB2
+	INIT_DELAYED_WORK(&tcp_ses->reconnect, smb2_reconnect_server);
+	mutex_init(&tcp_ses->reconnect_mutex);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memcpy(&tcp_ses->srcaddr, &volume_info->srcaddr,
 	       sizeof(tcp_ses->srcaddr));
 	memcpy(&tcp_ses->dstaddr, &volume_info->dstaddr,
 		sizeof(tcp_ses->dstaddr));
+<<<<<<< HEAD
 	generate_random_uuid(tcp_ses->client_guid);
+=======
+#ifdef CONFIG_CIFS_SMB2
+	generate_random_uuid(tcp_ses->client_guid);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * at this point we are the only ones with the pointer
 	 * to the struct since the kernel thread not created yet
@@ -4656,8 +4719,46 @@ cifs_are_all_path_components_accessible(struct TCP_Server_Info *server,
 					unsigned int xid,
 					struct cifs_tcon *tcon,
 					struct cifs_sb_info *cifs_sb,
+<<<<<<< HEAD
 					char *full_path,
 					int added_treename)
+=======
+					char *full_path)
+{
+	int rc;
+	char *s;
+	char sep, tmp;
+
+	sep = CIFS_DIR_SEP(cifs_sb);
+	s = full_path;
+
+	rc = server->ops->is_path_accessible(xid, tcon, cifs_sb, "");
+	while (rc == 0) {
+		/* skip separators */
+		while (*s == sep)
+			s++;
+		if (!*s)
+			break;
+		/* next separator */
+		while (*s && *s != sep)
+			s++;
+
+		/*
+		 * temporarily null-terminate the path at the end of
+		 * the current component
+		 */
+		tmp = *s;
+		*s = 0;
+		rc = server->ops->is_path_accessible(xid, tcon, cifs_sb,
+						     full_path);
+		*s = tmp;
+	}
+	return rc;
+}
+
+int
+cifs_mount(struct cifs_sb_info *cifs_sb, struct smb_vol *volume_info)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int rc;
 	char *s;
@@ -4875,7 +4976,46 @@ int cifs_mount(struct cifs_sb_info *cifs_sb, struct smb_vol *vol)
 		 *     to prevent an indefinite loop if 'DFS tree' is
 		 *     misconfigured (i.e. has loops).
 		 */
+<<<<<<< HEAD
 		if (count++ > MAX_NESTED_LINKS) {
+=======
+		full_path = cifs_build_path_to_root(volume_info, cifs_sb, tcon);
+		if (full_path == NULL) {
+			rc = -ENOMEM;
+			goto mount_fail_check;
+		}
+		rc = server->ops->is_path_accessible(xid, tcon, cifs_sb,
+						     full_path);
+		if (rc != 0 && rc != -EREMOTE) {
+			kfree(full_path);
+			goto mount_fail_check;
+		}
+
+		if (rc != -EREMOTE) {
+			rc = cifs_are_all_path_components_accessible(server,
+							     xid, tcon, cifs_sb,
+							     full_path);
+			if (rc != 0) {
+				cifs_dbg(VFS, "cannot query dirs between root and final path, "
+					 "enabling CIFS_MOUNT_USE_PREFIX_PATH\n");
+				cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_USE_PREFIX_PATH;
+				rc = 0;
+			}
+		}
+		kfree(full_path);
+	}
+
+	/* get referral if needed */
+	if (rc == -EREMOTE) {
+#ifdef CONFIG_CIFS_DFS_UPCALL
+		if (referral_walks_count > MAX_NESTED_LINKS) {
+			/*
+			 * BB: when we implement proper loop detection,
+			 *     we will remove this check. But now we need it
+			 *     to prevent an indefinite loop if 'DFS tree' is
+			 *     misconfigured (i.e. has loops).
+			 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			rc = -ELOOP;
 			break;
 		}
@@ -4944,8 +5084,20 @@ int cifs_mount(struct cifs_sb_info *cifs_sb, struct smb_vol *vol)
 
 	rc = dfs_cache_add_vol(origin_mountdata, vol, cifs_sb->origin_fullpath);
 	if (rc) {
+<<<<<<< HEAD
 		kfree(cifs_sb->origin_fullpath);
 		goto error;
+=======
+		/* If find_unc succeeded then rc == 0 so we can not end */
+		/* up accidentally freeing someone elses tcon struct */
+		if (tcon)
+			cifs_put_tcon(tcon);
+		else if (ses)
+			cifs_put_smb_ses(ses);
+		else
+			cifs_put_tcp_session(server, 0);
+		bdi_destroy(&cifs_sb->bdi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	/*
 	 * After reconnecting to a different server, unique ids won't
@@ -5189,10 +5341,13 @@ cifs_umount(struct cifs_sb_info *cifs_sb)
 
 	kfree(cifs_sb->mountdata);
 	kfree(cifs_sb->prepath);
+<<<<<<< HEAD
 #ifdef CONFIG_CIFS_DFS_UPCALL
 	dfs_cache_del_vol(cifs_sb->origin_fullpath);
 	kfree(cifs_sb->origin_fullpath);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	call_rcu(&cifs_sb->rcu, delayed_free);
 }
 
@@ -5237,7 +5392,11 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 		 server->sec_mode, server->capabilities, server->timeAdj);
 
 	if (ses->auth_key.response) {
+<<<<<<< HEAD
 		cifs_dbg(FYI, "Free previous auth_key.response = %p\n",
+=======
+		cifs_dbg(VFS, "Free previous auth_key.response = %p\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			 ses->auth_key.response);
 		kfree(ses->auth_key.response);
 		ses->auth_key.response = NULL;

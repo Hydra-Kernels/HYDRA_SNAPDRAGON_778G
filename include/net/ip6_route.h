@@ -108,6 +108,19 @@ static inline void ip6_rt_put_flags(struct rt6_info *rt, int flags)
 		ip6_rt_put(rt);
 }
 
+<<<<<<< HEAD
+=======
+struct dst_entry *ip6_route_output_flags(struct net *net, const struct sock *sk,
+					 struct flowi6 *fl6, int flags);
+
+static inline struct dst_entry *ip6_route_output(struct net *net,
+						 const struct sock *sk,
+						 struct flowi6 *fl6)
+{
+	return ip6_route_output_flags(net, sk, fl6, 0);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct dst_entry *ip6_route_lookup(struct net *net, struct flowi6 *fl6,
 				   const struct sk_buff *skb, int flags);
 struct rt6_info *ip6_pol_route(struct net *net, struct fib6_table *table,
@@ -300,6 +313,7 @@ static inline const struct in6_addr *rt6_nexthop(const struct rt6_info *rt,
 		return daddr;
 }
 
+<<<<<<< HEAD
 static inline bool rt6_duplicate_nexthop(struct fib6_info *a, struct fib6_info *b)
 {
 	struct fib6_nh *nha, *nhb;
@@ -343,4 +357,13 @@ u32 ip6_mtu_from_fib6(const struct fib6_result *res,
 struct neighbour *ip6_neigh_lookup(const struct in6_addr *gw,
 				   struct net_device *dev, struct sk_buff *skb,
 				   const void *daddr);
+=======
+static inline bool rt6_duplicate_nexthop(struct rt6_info *a, struct rt6_info *b)
+{
+	return a->dst.dev == b->dst.dev &&
+	       a->rt6i_idev == b->rt6i_idev &&
+	       ipv6_addr_equal(&a->rt6i_gateway, &b->rt6i_gateway) &&
+	       !lwtunnel_cmp_encap(a->dst.lwtstate, b->dst.lwtstate);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif

@@ -222,7 +222,10 @@ static struct platform_driver xgene_gpio_driver = {
 	.driver = {
 		.name = "xgene-gpio",
 		.of_match_table = xgene_gpio_of_match,
+<<<<<<< HEAD
 		.acpi_match_table = ACPI_PTR(xgene_gpio_acpi_match),
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.pm     = &xgene_gpio_pm,
 	},
 	.probe = xgene_gpio_probe,

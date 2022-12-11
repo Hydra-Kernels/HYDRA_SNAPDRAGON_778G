@@ -345,6 +345,7 @@ static const struct blk_mq_ops ubiblock_mq_ops = {
 	.init_request	= ubiblock_init_request,
 };
 
+<<<<<<< HEAD
 static int calc_disk_capacity(struct ubi_volume_info *vi, u64 *disk_capacity)
 {
 	u64 size = vi->used_bytes >> 9;
@@ -363,6 +364,8 @@ static int calc_disk_capacity(struct ubi_volume_info *vi, u64 *disk_capacity)
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int ubiblock_create(struct ubi_volume_info *vi)
 {
 	struct ubiblock *dev;

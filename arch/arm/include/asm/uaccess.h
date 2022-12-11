@@ -242,8 +242,14 @@ extern int __put_user_8(void *, unsigned long long);
 #define __put_user_check(__pu_val, __ptr, __err, __s)			\
 	({								\
 		unsigned long __limit = current_thread_info()->addr_limit - 1; \
+<<<<<<< HEAD
 		register typeof(__pu_val) __r2 asm("r2") = __pu_val;	\
 		register const void __user *__p asm("r0") = __ptr;	\
+=======
+		const typeof(*(p)) __user *__tmp_p = (p);		\
+		register typeof(*(p)) __r2 asm("r2") = (x);	\
+		register const typeof(*(p)) __user *__p asm("r0") = __tmp_p; \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		register unsigned long __l asm("r1") = __limit;		\
 		register int __e asm("r0");				\
 		__asm__ __volatile__ (					\

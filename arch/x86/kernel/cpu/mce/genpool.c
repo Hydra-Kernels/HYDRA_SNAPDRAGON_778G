@@ -55,6 +55,7 @@ static bool is_duplicate_mce_record(struct mce_evt_llist *t, struct mce_evt_llis
 struct llist_node *mce_gen_pool_prepare_records(void)
 {
 	struct llist_node *head;
+<<<<<<< HEAD:arch/x86/kernel/cpu/mce/genpool.c
 	LLIST_HEAD(new_head);
 	struct mce_evt_llist *node, *t;
 
@@ -74,6 +75,8 @@ struct llist_node *mce_gen_pool_prepare_records(void)
 void mce_gen_pool_process(struct work_struct *__unused)
 {
 	struct llist_node *head;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mcheck/mce-genpool.c
 	struct mce_evt_llist *node, *tmp;
 	struct mce *mce;
 

@@ -598,7 +598,11 @@ static int rds_ib_setup_qp(struct rds_connection *conn)
 	rdsdebug("conn %p pd %p cq %p %p\n", conn, ic->i_pd,
 		 ic->i_send_cq, ic->i_recv_cq);
 
+<<<<<<< HEAD
 	goto out;
+=======
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 sends_out:
 	vfree(ic->i_sends);
@@ -616,6 +620,7 @@ send_hdrs_dma_out:
 qp_out:
 	rdma_destroy_qp(ic->i_cm_id);
 recv_cq_out:
+<<<<<<< HEAD
 	ib_destroy_cq(ic->i_recv_cq);
 	ic->i_recv_cq = NULL;
 send_cq_out:
@@ -624,6 +629,15 @@ send_cq_out:
 rds_ibdev_out:
 	rds_ib_remove_conn(rds_ibdev, conn);
 out:
+=======
+	if (!ib_destroy_cq(ic->i_recv_cq))
+		ic->i_recv_cq = NULL;
+send_cq_out:
+	if (!ib_destroy_cq(ic->i_send_cq))
+		ic->i_send_cq = NULL;
+rds_ibdev_out:
+	rds_ib_remove_conn(rds_ibdev, conn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rds_ib_dev_put(rds_ibdev);
 
 	return ret;

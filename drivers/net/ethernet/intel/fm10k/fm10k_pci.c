@@ -251,7 +251,28 @@ static bool fm10k_prepare_for_reset(struct fm10k_intfc *interface)
 	/* delay any future reset requests */
 	interface->last_reset = jiffies + (10 * HZ);
 
+<<<<<<< HEAD
 	rtnl_unlock();
+=======
+	/* reset and initialize the hardware so it is in a known state */
+	err = hw->mac.ops.reset_hw(hw);
+	if (err) {
+		dev_err(&interface->pdev->dev, "reset_hw failed: %d\n", err);
+		goto reinit_err;
+	}
+
+	err = hw->mac.ops.init_hw(hw);
+	if (err) {
+		dev_err(&interface->pdev->dev, "init_hw failed: %d\n", err);
+		goto reinit_err;
+	}
+
+	err = fm10k_init_queueing_scheme(interface);
+	if (err) {
+		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
+		goto reinit_err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return true;
 }
@@ -317,6 +338,10 @@ static int fm10k_handle_reset(struct fm10k_intfc *interface)
 		goto err_open;
 
 	fm10k_iov_resume(interface->pdev);
+
+reinit_err:
+	if (err)
+		netif_device_detach(netdev);
 
 	rtnl_unlock();
 
@@ -1392,7 +1417,11 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
 	}
 
 	if (err == FM10K_ERR_RESET_REQUESTED)
+<<<<<<< HEAD
 		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
+=======
+		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* if switch toggled state we should reset GLORTs */
 	if (eicr & FM10K_EICR_SWITCHNOTREADY) {
@@ -1428,8 +1457,11 @@ void fm10k_mbx_free_irq(struct fm10k_intfc *interface)
 	if (!interface->msix_entries)
 		return;
 
+<<<<<<< HEAD
 	entry = &interface->msix_entries[FM10K_MBX_VECTOR];
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* disconnect the mailbox */
 	hw->mbx.ops.disconnect(hw, &hw->mbx);
 
@@ -2310,12 +2342,24 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
 	struct fm10k_hw *hw = &interface->hw;
 	int err;
 
+<<<<<<< HEAD
 	/* Even if we didn't properly prepare for reset in
 	 * fm10k_prepare_suspend, we'll attempt to resume anyways.
 	 */
 	if (!test_and_clear_bit(__FM10K_RESET_SUSPENDED, interface->state))
 		dev_warn(&interface->pdev->dev,
 			 "Device was shut down as part of suspend... Attempting to recover\n");
+=======
+	/* refresh hw_addr in case it was dropped */
+	hw->hw_addr = interface->uc_addr;
+
+	/* reset hardware to known state */
+	err = hw->mac.ops.init_hw(&interface->hw);
+	if (err) {
+		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+		return err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* reset statistics starting values */
 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
@@ -2409,7 +2453,19 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
 	if (state == pci_channel_io_perm_failure)
 		return PCI_ERS_RESULT_DISCONNECT;
 
+<<<<<<< HEAD
 	fm10k_prepare_suspend(interface);
+=======
+	if (netif_running(netdev))
+		fm10k_close(netdev);
+
+	/* free interrupts */
+	fm10k_clear_queueing_scheme(interface);
+
+	fm10k_mbx_free_irq(interface);
+
+	pci_disable_device(pdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Request a slot reset. */
 	return PCI_ERS_RESULT_NEED_RESET;
@@ -2459,12 +2515,44 @@ static void fm10k_io_resume(struct pci_dev *pdev)
 	struct net_device *netdev = interface->netdev;
 	int err;
 
+<<<<<<< HEAD
 	err = fm10k_handle_resume(interface);
 
 	if (err)
 		dev_warn(&pdev->dev,
 			 "%s failed: %d\n", __func__, err);
 	else
+=======
+	/* reset hardware to known state */
+	err = hw->mac.ops.init_hw(&interface->hw);
+	if (err) {
+		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+		return;
+	}
+
+	/* reset statistics starting values */
+	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+
+	err = fm10k_init_queueing_scheme(interface);
+	if (err) {
+		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
+		return;
+	}
+
+	/* reassociate interrupts */
+	fm10k_mbx_request_irq(interface);
+
+	/* reset clock */
+	fm10k_ts_reset(interface);
+
+	if (netif_running(netdev))
+		err = fm10k_open(netdev);
+
+	/* final check of hardware state before registering the interface */
+	err = err ? : fm10k_hw_ready(interface);
+
+	if (!err)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		netif_device_attach(netdev);
 }
 

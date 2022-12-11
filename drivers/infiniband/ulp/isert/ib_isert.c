@@ -48,10 +48,14 @@ isert_rdma_accept(struct isert_conn *isert_conn);
 struct rdma_cm_id *isert_setup_id(struct isert_np *isert_np);
 
 static void isert_release_work(struct work_struct *work);
+<<<<<<< HEAD
 static void isert_recv_done(struct ib_cq *cq, struct ib_wc *wc);
 static void isert_send_done(struct ib_cq *cq, struct ib_wc *wc);
 static void isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc);
 static void isert_login_send_done(struct ib_cq *cq, struct ib_wc *wc);
+=======
+static void isert_wait4flush(struct isert_conn *isert_conn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline bool
 isert_prot_cmd(struct isert_conn *conn, struct se_cmd *cmd)
@@ -640,6 +644,10 @@ isert_handle_unbound_conn(struct isert_conn *isert_conn)
 		 */
 		list_del_init(&isert_conn->node);
 		isert_put_conn(isert_conn);
+<<<<<<< HEAD
+=======
+		complete(&isert_conn->wait);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		queue_work(isert_release_wq, &isert_conn->release_work);
 	}
 	mutex_unlock(&isert_np->mutex);
@@ -672,6 +680,12 @@ isert_conn_terminate(struct isert_conn *isert_conn)
 	if (err)
 		isert_warn("Failed rdma_disconnect isert_conn %p\n",
 			   isert_conn);
+<<<<<<< HEAD
+=======
+
+	isert_info("conn %p completing wait\n", isert_conn);
+	complete(&isert_conn->wait);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int
@@ -713,7 +727,11 @@ isert_disconnected_handler(struct rdma_cm_id *cma_id,
 		break;
 	case ISER_CONN_UP:
 		isert_conn_terminate(isert_conn);
+<<<<<<< HEAD
 		ib_drain_qp(isert_conn->qp);
+=======
+		isert_wait4flush(isert_conn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		isert_handle_unbound_conn(isert_conn);
 		break;
 	case ISER_CONN_BOUND:
@@ -721,7 +739,11 @@ isert_disconnected_handler(struct rdma_cm_id *cma_id,
 		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
 		break;
 	default:
+<<<<<<< HEAD
 		isert_warn("conn %p terminating in state %d\n",
+=======
+		isert_warn("conn %p teminating in state %d\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			   isert_conn, isert_conn->state);
 	}
 	mutex_unlock(&isert_conn->mutex);
@@ -746,7 +768,10 @@ static int
 isert_cma_handler(struct rdma_cm_id *cma_id, struct rdma_cm_event *event)
 {
 	struct isert_np *isert_np = cma_id->context;
+<<<<<<< HEAD
 	struct isert_conn *isert_conn;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret = 0;
 
 	isert_info("%s (%d): status %d id %p np %p\n",
@@ -817,7 +842,12 @@ isert_post_recvm(struct isert_conn *isert_conn, u32 count)
 	rx_wr--;
 	rx_wr->next = NULL; /* mark end of work requests list */
 
+<<<<<<< HEAD
 	ret = ib_post_recv(isert_conn->qp, isert_conn->rx_wr, NULL);
+=======
+	ret = ib_post_recv(isert_conn->qp, isert_conn->rx_wr,
+			   &rx_wr_failed);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		isert_err("ib_post_recv() failed with ret: %d\n", ret);
 
@@ -844,7 +874,11 @@ isert_post_recv(struct isert_conn *isert_conn, struct iser_rx_desc *rx_desc)
 	rx_wr.num_sge = 1;
 	rx_wr.next = NULL;
 
+<<<<<<< HEAD
 	ret = ib_post_recv(isert_conn->qp, &rx_wr, NULL);
+=======
+	ret = ib_post_recv(isert_conn->qp, &rx_wr, &rx_wr_failed);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		isert_err("ib_post_recv() failed with ret: %d\n", ret);
 
@@ -978,7 +1012,11 @@ isert_login_post_recv(struct isert_conn *isert_conn)
 	rx_wr.sg_list = &sge;
 	rx_wr.num_sge = 1;
 
+<<<<<<< HEAD
 	ret = ib_post_recv(isert_conn->qp, &rx_wr, NULL);
+=======
+	ret = ib_post_recv(isert_conn->qp, &rx_wr, &rx_wr_fail);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		isert_err("ib_post_recv() failed: %d\n", ret);
 
@@ -1455,8 +1493,15 @@ isert_recv_done(struct ib_cq *cq, struct ib_wc *wc)
 static void
 isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc)
 {
+<<<<<<< HEAD
 	struct isert_conn *isert_conn = wc->qp->qp_context;
 	struct ib_device *ib_dev = isert_conn->device->ib_device;
+=======
+	struct ib_device *ib_dev = isert_conn->device->ib_device;
+	struct iscsi_hdr *hdr;
+	u64 rx_dma;
+	int rx_buflen;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(wc->status != IB_WC_SUCCESS)) {
 		isert_print_wc(wc, "login recv");
@@ -1502,7 +1547,132 @@ isert_rdma_rw_ctx_destroy(struct isert_cmd *cmd, struct isert_conn *conn)
 				se_cmd->t_data_sg, se_cmd->t_data_nents, dir);
 	}
 
+<<<<<<< HEAD
 	cmd->rw.nr_ops = 0;
+=======
+	ib_dma_sync_single_for_cpu(ib_dev, rx_dma, rx_buflen, DMA_FROM_DEVICE);
+
+	hdr = &desc->iscsi_header;
+	isert_dbg("iSCSI opcode: 0x%02x, ITT: 0x%08x, flags: 0x%02x dlen: %d\n",
+		 hdr->opcode, hdr->itt, hdr->flags,
+		 (int)(xfer_len - ISER_HEADERS_LEN));
+
+	if ((char *)desc == isert_conn->login_req_buf) {
+		isert_conn->login_req_len = xfer_len - ISER_HEADERS_LEN;
+		if (isert_conn->conn) {
+			struct iscsi_login *login = isert_conn->conn->conn_login;
+
+			if (login && !login->first_request)
+				isert_rx_login_req(isert_conn);
+		}
+		mutex_lock(&isert_conn->mutex);
+		complete(&isert_conn->login_req_comp);
+		mutex_unlock(&isert_conn->mutex);
+	} else {
+		isert_rx_do_work(desc, isert_conn);
+	}
+
+	ib_dma_sync_single_for_device(ib_dev, rx_dma, rx_buflen,
+				      DMA_FROM_DEVICE);
+
+}
+
+static int
+isert_map_data_buf(struct isert_conn *isert_conn, struct isert_cmd *isert_cmd,
+		   struct scatterlist *sg, u32 nents, u32 length, u32 offset,
+		   enum iser_ib_op_code op, struct isert_data_buf *data)
+{
+	struct ib_device *ib_dev = isert_conn->cm_id->device;
+
+	data->dma_dir = op == ISER_IB_RDMA_WRITE ?
+			      DMA_TO_DEVICE : DMA_FROM_DEVICE;
+
+	data->len = length - offset;
+	data->offset = offset;
+	data->sg_off = data->offset / PAGE_SIZE;
+
+	data->sg = &sg[data->sg_off];
+	data->nents = min_t(unsigned int, nents - data->sg_off,
+					  ISCSI_ISER_SG_TABLESIZE);
+	data->len = min_t(unsigned int, data->len, ISCSI_ISER_SG_TABLESIZE *
+					PAGE_SIZE);
+
+	data->dma_nents = ib_dma_map_sg(ib_dev, data->sg, data->nents,
+					data->dma_dir);
+	if (unlikely(!data->dma_nents)) {
+		isert_err("Cmd: unable to dma map SGs %p\n", sg);
+		return -EINVAL;
+	}
+
+	isert_dbg("Mapped cmd: %p count: %u sg: %p sg_nents: %u rdma_len %d\n",
+		  isert_cmd, data->dma_nents, data->sg, data->nents, data->len);
+
+	return 0;
+}
+
+static void
+isert_unmap_data_buf(struct isert_conn *isert_conn, struct isert_data_buf *data)
+{
+	struct ib_device *ib_dev = isert_conn->cm_id->device;
+
+	ib_dma_unmap_sg(ib_dev, data->sg, data->nents, data->dma_dir);
+	memset(data, 0, sizeof(*data));
+}
+
+
+
+static void
+isert_unmap_cmd(struct isert_cmd *isert_cmd, struct isert_conn *isert_conn)
+{
+	struct isert_rdma_wr *wr = &isert_cmd->rdma_wr;
+
+	isert_dbg("Cmd %p\n", isert_cmd);
+
+	if (wr->data.sg) {
+		isert_dbg("Cmd %p unmap_sg op\n", isert_cmd);
+		isert_unmap_data_buf(isert_conn, &wr->data);
+	}
+
+	if (wr->rdma_wr) {
+		isert_dbg("Cmd %p free send_wr\n", isert_cmd);
+		kfree(wr->rdma_wr);
+		wr->rdma_wr = NULL;
+	}
+
+	if (wr->ib_sge) {
+		isert_dbg("Cmd %p free ib_sge\n", isert_cmd);
+		kfree(wr->ib_sge);
+		wr->ib_sge = NULL;
+	}
+}
+
+static void
+isert_unreg_rdma(struct isert_cmd *isert_cmd, struct isert_conn *isert_conn)
+{
+	struct isert_rdma_wr *wr = &isert_cmd->rdma_wr;
+
+	isert_dbg("Cmd %p\n", isert_cmd);
+
+	if (wr->fr_desc) {
+		isert_dbg("Cmd %p free fr_desc %p\n", isert_cmd, wr->fr_desc);
+		if (wr->fr_desc->ind & ISERT_PROTECTED) {
+			isert_unmap_data_buf(isert_conn, &wr->prot);
+			wr->fr_desc->ind &= ~ISERT_PROTECTED;
+		}
+		spin_lock_bh(&isert_conn->pool_lock);
+		list_add_tail(&wr->fr_desc->list, &isert_conn->fr_pool);
+		spin_unlock_bh(&isert_conn->pool_lock);
+		wr->fr_desc = NULL;
+	}
+
+	if (wr->data.sg) {
+		isert_dbg("Cmd %p unmap_sg op\n", isert_cmd);
+		isert_unmap_data_buf(isert_conn, &wr->data);
+	}
+
+	wr->ib_sge = NULL;
+	wr->rdma_wr = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void
@@ -1819,6 +1989,114 @@ isert_send_done(struct ib_cq *cq, struct ib_wc *wc)
 	}
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * is_isert_tx_desc() - Indicate if the completion wr_id
+ *     is a TX descriptor or not.
+ * @isert_conn: iser connection
+ * @wr_id: completion WR identifier
+ *
+ * Since we cannot rely on wc opcode in FLUSH errors
+ * we must work around it by checking if the wr_id address
+ * falls in the iser connection rx_descs buffer. If so
+ * it is an RX descriptor, otherwize it is a TX.
+ */
+static inline bool
+is_isert_tx_desc(struct isert_conn *isert_conn, void *wr_id)
+{
+	void *start = isert_conn->rx_descs;
+	int len = ISERT_QP_MAX_RECV_DTOS * sizeof(*isert_conn->rx_descs);
+
+	if ((wr_id >= start && wr_id < start + len) ||
+	    (wr_id == isert_conn->login_req_buf))
+		return false;
+
+	return true;
+}
+
+static void
+isert_cq_comp_err(struct isert_conn *isert_conn, struct ib_wc *wc)
+{
+	if (wc->wr_id == ISER_BEACON_WRID) {
+		isert_info("conn %p completing wait_comp_err\n",
+			   isert_conn);
+		complete(&isert_conn->wait_comp_err);
+	} else if (is_isert_tx_desc(isert_conn, (void *)(uintptr_t)wc->wr_id)) {
+		struct ib_device *ib_dev = isert_conn->cm_id->device;
+		struct isert_cmd *isert_cmd;
+		struct iser_tx_desc *desc;
+
+		desc = (struct iser_tx_desc *)(uintptr_t)wc->wr_id;
+		isert_cmd = desc->isert_cmd;
+		if (!isert_cmd)
+			isert_unmap_tx_desc(desc, ib_dev);
+		else
+			isert_completion_put(desc, isert_cmd, ib_dev, true);
+	}
+}
+
+static void
+isert_handle_wc(struct ib_wc *wc)
+{
+	struct isert_conn *isert_conn;
+	struct iser_tx_desc *tx_desc;
+	struct iser_rx_desc *rx_desc;
+
+	isert_conn = wc->qp->qp_context;
+	if (likely(wc->status == IB_WC_SUCCESS)) {
+		if (wc->opcode == IB_WC_RECV) {
+			rx_desc = (struct iser_rx_desc *)(uintptr_t)wc->wr_id;
+			isert_rcv_completion(rx_desc, isert_conn, wc->byte_len);
+		} else {
+			tx_desc = (struct iser_tx_desc *)(uintptr_t)wc->wr_id;
+			isert_snd_completion(tx_desc, isert_conn);
+		}
+	} else {
+		if (wc->status != IB_WC_WR_FLUSH_ERR)
+			isert_err("%s (%d): wr id %llx vend_err %x\n",
+				  ib_wc_status_msg(wc->status), wc->status,
+				  wc->wr_id, wc->vendor_err);
+		else
+			isert_dbg("%s (%d): wr id %llx\n",
+				  ib_wc_status_msg(wc->status), wc->status,
+				  wc->wr_id);
+
+		if (wc->wr_id != ISER_FASTREG_LI_WRID)
+			isert_cq_comp_err(isert_conn, wc);
+	}
+}
+
+static void
+isert_cq_work(struct work_struct *work)
+{
+	enum { isert_poll_budget = 65536 };
+	struct isert_comp *comp = container_of(work, struct isert_comp,
+					       work);
+	struct ib_wc *const wcs = comp->wcs;
+	int i, n, completed = 0;
+
+	while ((n = ib_poll_cq(comp->cq, ARRAY_SIZE(comp->wcs), wcs)) > 0) {
+		for (i = 0; i < n; i++)
+			isert_handle_wc(&wcs[i]);
+
+		completed += n;
+		if (completed >= isert_poll_budget)
+			break;
+	}
+
+	ib_req_notify_cq(comp->cq, IB_CQ_NEXT_COMP);
+}
+
+static void
+isert_cq_callback(struct ib_cq *cq, void *context)
+{
+	struct isert_comp *comp = context;
+
+	queue_work(isert_comp_wq, &comp->work);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int
 isert_post_response(struct isert_conn *isert_conn, struct isert_cmd *isert_cmd)
 {

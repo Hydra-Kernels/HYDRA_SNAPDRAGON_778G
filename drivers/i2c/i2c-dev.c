@@ -313,6 +313,10 @@ static noinline int i2cdev_ioctl_smbus(struct i2c_client *client,
 		u8 read_write, u8 command, u32 size,
 		union i2c_smbus_data __user *data)
 {
+<<<<<<< HEAD
+=======
+	struct i2c_smbus_ioctl_data data_arg;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	union i2c_smbus_data temp = {};
 	int datasize, res;
 

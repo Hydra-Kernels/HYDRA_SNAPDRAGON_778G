@@ -195,6 +195,239 @@ out_free_rq:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static bool bsg_complete(struct bsg_device *bd)
+{
+	bool ret = false;
+	bool spin;
+
+	do {
+		spin_lock_irq(&bd->lock);
+
+		BUG_ON(bd->done_cmds > bd->queued_cmds);
+
+		/*
+		 * All commands consumed.
+		 */
+		if (bd->done_cmds == bd->queued_cmds)
+			ret = true;
+
+		spin = !test_bit(BSG_F_BLOCK, &bd->flags);
+
+		spin_unlock_irq(&bd->lock);
+	} while (!ret && spin);
+
+	return ret;
+}
+
+static int bsg_complete_all_commands(struct bsg_device *bd)
+{
+	struct bsg_command *bc;
+	int ret, tret;
+
+	dprintk("%s: entered\n", bd->name);
+
+	/*
+	 * wait for all commands to complete
+	 */
+	io_wait_event(bd->wq_done, bsg_complete(bd));
+
+	/*
+	 * discard done commands
+	 */
+	ret = 0;
+	do {
+		spin_lock_irq(&bd->lock);
+		if (!bd->queued_cmds) {
+			spin_unlock_irq(&bd->lock);
+			break;
+		}
+		spin_unlock_irq(&bd->lock);
+
+		bc = bsg_get_done_cmd(bd);
+		if (IS_ERR(bc))
+			break;
+
+		tret = blk_complete_sgv4_hdr_rq(bc->rq, &bc->hdr, bc->bio,
+						bc->bidi_bio);
+		if (!ret)
+			ret = tret;
+
+		bsg_free_command(bc);
+	} while (1);
+
+	return ret;
+}
+
+static int
+__bsg_read(char __user *buf, size_t count, struct bsg_device *bd,
+	   const struct iovec *iov, ssize_t *bytes_read)
+{
+	struct bsg_command *bc;
+	int nr_commands, ret;
+
+	if (count % sizeof(struct sg_io_v4))
+		return -EINVAL;
+
+	ret = 0;
+	nr_commands = count / sizeof(struct sg_io_v4);
+	while (nr_commands) {
+		bc = bsg_get_done_cmd(bd);
+		if (IS_ERR(bc)) {
+			ret = PTR_ERR(bc);
+			break;
+		}
+
+		/*
+		 * this is the only case where we need to copy data back
+		 * after completing the request. so do that here,
+		 * bsg_complete_work() cannot do that for us
+		 */
+		ret = blk_complete_sgv4_hdr_rq(bc->rq, &bc->hdr, bc->bio,
+					       bc->bidi_bio);
+
+		if (copy_to_user(buf, &bc->hdr, sizeof(bc->hdr)))
+			ret = -EFAULT;
+
+		bsg_free_command(bc);
+
+		if (ret)
+			break;
+
+		buf += sizeof(struct sg_io_v4);
+		*bytes_read += sizeof(struct sg_io_v4);
+		nr_commands--;
+	}
+
+	return ret;
+}
+
+static inline void bsg_set_block(struct bsg_device *bd, struct file *file)
+{
+	if (file->f_flags & O_NONBLOCK)
+		clear_bit(BSG_F_BLOCK, &bd->flags);
+	else
+		set_bit(BSG_F_BLOCK, &bd->flags);
+}
+
+/*
+ * Check if the error is a "real" error that we should return.
+ */
+static inline int err_block_err(int ret)
+{
+	if (ret && ret != -ENOSPC && ret != -ENODATA && ret != -EAGAIN)
+		return 1;
+
+	return 0;
+}
+
+static ssize_t
+bsg_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	struct bsg_device *bd = file->private_data;
+	int ret;
+	ssize_t bytes_read;
+
+	dprintk("%s: read %Zd bytes\n", bd->name, count);
+
+	bsg_set_block(bd, file);
+
+	bytes_read = 0;
+	ret = __bsg_read(buf, count, bd, NULL, &bytes_read);
+	*ppos = bytes_read;
+
+	if (!bytes_read || err_block_err(ret))
+		bytes_read = ret;
+
+	return bytes_read;
+}
+
+static int __bsg_write(struct bsg_device *bd, const char __user *buf,
+		       size_t count, ssize_t *bytes_written,
+		       fmode_t has_write_perm)
+{
+	struct bsg_command *bc;
+	struct request *rq;
+	int ret, nr_commands;
+
+	if (count % sizeof(struct sg_io_v4))
+		return -EINVAL;
+
+	nr_commands = count / sizeof(struct sg_io_v4);
+	rq = NULL;
+	bc = NULL;
+	ret = 0;
+	while (nr_commands) {
+		struct request_queue *q = bd->queue;
+
+		bc = bsg_alloc_command(bd);
+		if (IS_ERR(bc)) {
+			ret = PTR_ERR(bc);
+			bc = NULL;
+			break;
+		}
+
+		if (copy_from_user(&bc->hdr, buf, sizeof(bc->hdr))) {
+			ret = -EFAULT;
+			break;
+		}
+
+		/*
+		 * get a request, fill in the blanks, and add to request queue
+		 */
+		rq = bsg_map_hdr(bd, &bc->hdr, has_write_perm, bc->sense);
+		if (IS_ERR(rq)) {
+			ret = PTR_ERR(rq);
+			rq = NULL;
+			break;
+		}
+
+		bsg_add_command(bd, q, bc, rq);
+		bc = NULL;
+		rq = NULL;
+		nr_commands--;
+		buf += sizeof(struct sg_io_v4);
+		*bytes_written += sizeof(struct sg_io_v4);
+	}
+
+	if (bc)
+		bsg_free_command(bc);
+
+	return ret;
+}
+
+static ssize_t
+bsg_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+{
+	struct bsg_device *bd = file->private_data;
+	ssize_t bytes_written;
+	int ret;
+
+	dprintk("%s: write %Zd bytes\n", bd->name, count);
+
+	if (unlikely(segment_eq(get_fs(), KERNEL_DS)))
+		return -EINVAL;
+
+	bsg_set_block(bd, file);
+
+	bytes_written = 0;
+	ret = __bsg_write(bd, buf, count, &bytes_written,
+			  file->f_mode & FMODE_WRITE);
+
+	*ppos = bytes_written;
+
+	/*
+	 * return bytes written on non-fatal errors
+	 */
+	if (!bytes_written || err_block_err(ret))
+		bytes_written = ret;
+
+	dprintk("%s: returning %Zd\n", bd->name, bytes_written);
+	return bytes_written;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct bsg_device *bsg_alloc_device(void)
 {
 	struct bsg_device *bd;

@@ -144,7 +144,11 @@ struct sata_device {
 	u8     port_no;        /* port number, if this is a PM (Port) */
 
 	struct ata_port *ap;
+<<<<<<< HEAD
 	struct ata_host *ata_host;
+=======
+	struct ata_host ata_host;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct smp_resp rps_resp ____cacheline_aligned; /* report_phy_sata_resp */
 	u8     fis[ATA_RESP_FIS_SIZE];
 };

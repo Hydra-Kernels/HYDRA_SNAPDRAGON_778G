@@ -1287,7 +1287,11 @@ static void rtsx_usb_update_led(struct work_struct *work)
 		container_of(work, struct rtsx_usb_sdmmc, led_work);
 	struct rtsx_ucr *ucr = host->ucr;
 
+<<<<<<< HEAD
 	pm_runtime_get_noresume(sdmmc_dev(host));
+=======
+	pm_runtime_get_sync(sdmmc_dev(host));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_lock(&ucr->dev_mutex);
 
 	if (host->power_mode == MMC_POWER_OFF)
@@ -1300,7 +1304,11 @@ static void rtsx_usb_update_led(struct work_struct *work)
 
 out:
 	mutex_unlock(&ucr->dev_mutex);
+<<<<<<< HEAD
 	pm_runtime_put_sync_suspend(sdmmc_dev(host));
+=======
+	pm_runtime_put(sdmmc_dev(host));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 

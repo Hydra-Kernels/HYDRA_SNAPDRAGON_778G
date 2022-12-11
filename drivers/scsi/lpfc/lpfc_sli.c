@@ -164,6 +164,7 @@ lpfc_sli4_wq_put(struct lpfc_queue *q, union lpfc_wqe128 *wqe)
 		bf_set(wqe_wqec, &wqe->generic.wqe_com, 0);
 	if (q->phba->sli3_options & LPFC_SLI4_PHWQ_ENABLED)
 		bf_set(wqe_wqid, &wqe->generic.wqe_com, q->queue_id);
+<<<<<<< HEAD
 	lpfc_sli4_pcimem_bcopy(wqe, temp_wqe, q->entry_size);
 	if (q->dpp_enable && q->phba->cfg_enable_dpp) {
 		/* write to DPP aperture taking advatage of Combined Writes */
@@ -179,6 +180,10 @@ lpfc_sli4_wq_put(struct lpfc_queue *q, union lpfc_wqe128 *wqe)
 #endif
 	}
 	/* ensure WQE bcopy and DPP flushed before doorbell write */
+=======
+	lpfc_sli_pcimem_bcopy(wqe, temp_wqe, q->entry_size);
+	/* ensure WQE bcopy flushed before doorbell write */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	wmb();
 
 	/* Update the host index before invoking device */
@@ -15547,6 +15552,7 @@ lpfc_wq_create(struct lpfc_hba *phba, struct lpfc_queue *wq,
 	else
 		wq_create_version = LPFC_Q_CREATE_VERSION_0;
 
+<<<<<<< HEAD
 
 	if (phba->sli4_hba.pc_sli4_params.wqsize & LPFC_WQ_SZ128_SUPPORT)
 		wq_create_version = LPFC_Q_CREATE_VERSION_1;
@@ -15554,6 +15560,20 @@ lpfc_wq_create(struct lpfc_hba *phba, struct lpfc_queue *wq,
 		wq_create_version = LPFC_Q_CREATE_VERSION_0;
 
 	switch (wq_create_version) {
+=======
+			bf_set(lpfc_mbx_wq_create_wqe_count,
+			       &wq_create->u.request_1, wq->entry_count);
+			bf_set(lpfc_mbx_wq_create_wqe_size,
+			       &wq_create->u.request_1,
+			       LPFC_WQ_WQE_SIZE_128);
+			bf_set(lpfc_mbx_wq_create_page_size,
+			       &wq_create->u.request_1,
+			       LPFC_WQ_PAGE_SIZE_4096);
+			page = wq_create->u.request_1.page;
+			break;
+		}
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case LPFC_Q_CREATE_VERSION_1:
 		bf_set(lpfc_mbx_wq_create_wqe_count, &wq_create->u.request_1,
 		       wq->entry_count);
@@ -15573,11 +15593,17 @@ lpfc_wq_create(struct lpfc_hba *phba, struct lpfc_queue *wq,
 			       LPFC_WQ_WQE_SIZE_128);
 			break;
 		}
+<<<<<<< HEAD
 		/* Request DPP by default */
 		bf_set(lpfc_mbx_wq_create_dpp_req, &wq_create->u.request_1, 1);
 		bf_set(lpfc_mbx_wq_create_page_size,
 		       &wq_create->u.request_1,
 		       (wq->page_size / SLI4_PAGE_SIZE));
+=======
+		bf_set(lpfc_mbx_wq_create_page_size,
+		       &wq_create->u.request_1,
+		       LPFC_WQ_PAGE_SIZE_4096);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		page = wq_create->u.request_1.page;
 		break;
 	default:

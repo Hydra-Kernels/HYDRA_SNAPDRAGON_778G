@@ -92,9 +92,16 @@ static inline void purge_tlb_entries(struct mm_struct *mm, unsigned long addr)
 		unsigned long flags;				\
 		spin_lock_irqsave(pgd_spinlock((mm)->pgd), flags);\
 		old_pte = *ptep;				\
+<<<<<<< HEAD
 		set_pte(ptep, pteval);				\
 		purge_tlb_entries(mm, addr);			\
 		spin_unlock_irqrestore(pgd_spinlock((mm)->pgd), flags);\
+=======
+		if (pte_inserted(old_pte))			\
+			purge_tlb_entries(mm, addr);		\
+		set_pte(ptep, pteval);				\
+		spin_unlock_irqrestore(&pa_tlb_lock, flags);	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} while (0)
 
 #endif /* !__ASSEMBLY__ */
@@ -509,9 +516,13 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned
 		spin_unlock_irqrestore(pgd_spinlock(vma->vm_mm->pgd), flags);
 		return 0;
 	}
-	set_pte(ptep, pte_mkold(pte));
 	purge_tlb_entries(vma->vm_mm, addr);
+<<<<<<< HEAD
 	spin_unlock_irqrestore(pgd_spinlock(vma->vm_mm->pgd), flags);
+=======
+	set_pte(ptep, pte_mkold(pte));
+	spin_unlock_irqrestore(&pa_tlb_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 1;
 }
 
@@ -523,9 +534,16 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 
 	spin_lock_irqsave(pgd_spinlock(mm->pgd), flags);
 	old_pte = *ptep;
+<<<<<<< HEAD
 	set_pte(ptep, __pte(0));
 	purge_tlb_entries(mm, addr);
 	spin_unlock_irqrestore(pgd_spinlock(mm->pgd), flags);
+=======
+	if (pte_inserted(old_pte))
+		purge_tlb_entries(mm, addr);
+	set_pte(ptep, __pte(0));
+	spin_unlock_irqrestore(&pa_tlb_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return old_pte;
 }
@@ -533,10 +551,17 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
 {
 	unsigned long flags;
+<<<<<<< HEAD
 	spin_lock_irqsave(pgd_spinlock(mm->pgd), flags);
 	set_pte(ptep, pte_wrprotect(*ptep));
 	purge_tlb_entries(mm, addr);
 	spin_unlock_irqrestore(pgd_spinlock(mm->pgd), flags);
+=======
+	spin_lock_irqsave(&pa_tlb_lock, flags);
+	purge_tlb_entries(mm, addr);
+	set_pte(ptep, pte_wrprotect(*ptep));
+	spin_unlock_irqrestore(&pa_tlb_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define pte_same(A,B)	(pte_val(A) == pte_val(B))

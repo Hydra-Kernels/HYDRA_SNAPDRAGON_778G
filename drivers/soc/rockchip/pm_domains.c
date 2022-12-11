@@ -682,6 +682,7 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
 	for_each_available_child_of_node(np, node) {
 		error = rockchip_pm_add_one_domain(pmu, node);
 		if (error) {
+<<<<<<< HEAD
 			dev_err(dev, "failed to handle node %pOFn: %d\n",
 				node, error);
 			of_node_put(node);
@@ -692,6 +693,10 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
 		if (error < 0) {
 			dev_err(dev, "failed to handle subdomain node %pOFn: %d\n",
 				node, error);
+=======
+			dev_err(dev, "failed to handle node %s: %d\n",
+				node->name, error);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			of_node_put(node);
 			goto err_out;
 		}

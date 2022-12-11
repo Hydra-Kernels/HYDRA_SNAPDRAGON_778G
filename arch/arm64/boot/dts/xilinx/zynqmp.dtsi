@@ -124,7 +124,11 @@
 			     <1 10 0xf08>;
 	};
 
+<<<<<<< HEAD
 	amba_apu: amba-apu@0 {
+=======
+	amba_apu: amba_apu@0 {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		compatible = "simple-bus";
 		#address-cells = <2>;
 		#size-cells = <1>;
@@ -419,7 +423,11 @@
 		};
 
 		i2c0: i2c@ff020000 {
+<<<<<<< HEAD
 			compatible = "cdns,i2c-r1p14";
+=======
+			compatible = "cdns,i2c-r1p14", "cdns,i2c-r1p10";
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			status = "disabled";
 			interrupt-parent = <&gic>;
 			interrupts = <0 17 4>;
@@ -429,7 +437,11 @@
 		};
 
 		i2c1: i2c@ff030000 {
+<<<<<<< HEAD
 			compatible = "cdns,i2c-r1p14";
+=======
+			compatible = "cdns,i2c-r1p14", "cdns,i2c-r1p10";
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			status = "disabled";
 			interrupt-parent = <&gic>;
 			interrupts = <0 18 4>;

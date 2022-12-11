@@ -188,6 +188,7 @@ static inline struct shmid_kernel *shm_lock(struct ipc_namespace *ns, int id)
 
 	ipc_lock_object(ipcp);
 	/*
+<<<<<<< HEAD
 	 * ipc_rmid() may have already freed the ID while ipc_lock_object()
 	 * was spinning: here verify that the structure is still valid.
 	 * Upon races with RMID, return -EIDRM, thus indicating that
@@ -207,6 +208,15 @@ err:
 	 * object pointer and error out as appropriate.
 	 */
 	return ERR_CAST(ipcp);
+=======
+	 * Callers of shm_lock() must validate the status of the returned ipc
+	 * object pointer (as returned by ipc_lock()), and error out as
+	 * appropriate.
+	 */
+	if (IS_ERR(ipcp))
+		return (void *)ipcp;
+	return container_of(ipcp, struct shmid_kernel, shm_perm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void shm_lock_by_ptr(struct shmid_kernel *ipcp)
@@ -249,8 +259,13 @@ static int __shm_open(struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	shp->shm_atim = ktime_get_real_seconds();
 	ipc_update_pid(&shp->shm_lprid, task_tgid(current));
+=======
+	shp->shm_atim = get_seconds();
+	shp->shm_lprid = task_tgid_vnr(current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	shp->shm_nattch++;
 	shm_unlock(shp);
 	return 0;
@@ -337,8 +352,13 @@ static void shm_close(struct vm_area_struct *vma)
 	if (WARN_ON_ONCE(IS_ERR(shp)))
 		goto done; /* no-op */
 
+<<<<<<< HEAD
 	ipc_update_pid(&shp->shm_lprid, task_tgid(current));
 	shp->shm_dtim = ktime_get_real_seconds();
+=======
+	shp->shm_lprid = task_tgid_vnr(current);
+	shp->shm_dtim = get_seconds();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	shp->shm_nattch--;
 	if (shm_may_destroy(ns, shp))
 		shm_destroy(ns, shp);
@@ -494,11 +514,19 @@ static int shm_mmap(struct file *file, struct vm_area_struct *vma)
 	 * IPC ID that was removed, and possibly even reused by another shm
 	 * segment already.  Propagate this case as an error to caller.
 	 */
+<<<<<<< HEAD
 	ret = __shm_open(vma);
 	if (ret)
 		return ret;
 
 	ret = call_mmap(sfd->file, vma);
+=======
+	ret =__shm_open(vma);
+	if (ret)
+		return ret;
+
+	ret = sfd->file->f_op->mmap(sfd->file, vma);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret) {
 		shm_close(vma);
 		return ret;
@@ -1536,7 +1564,20 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 
 	sfd->id = shp->shm_perm.id;
 	sfd->ns = get_ipc_ns(ns);
+<<<<<<< HEAD
 	sfd->file = base;
+=======
+	/*
+	 * We need to take a reference to the real shm file to prevent the
+	 * pointer from becoming stale in cases where the lifetime of the outer
+	 * file extends beyond that of the shm segment.  It's not usually
+	 * possible, but it can happen during remap_file_pages() emulation as
+	 * that unmaps the memory, then does ->mmap() via file reference only.
+	 * We'll deny the ->mmap() if the shm segment was since removed, but to
+	 * detect shm ID reuse we need to compare the file pointers.
+	 */
+	sfd->file = get_file(shp->shm_file);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sfd->vm_ops = NULL;
 	file->private_data = sfd;
 

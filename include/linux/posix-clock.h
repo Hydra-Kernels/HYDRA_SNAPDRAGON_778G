@@ -47,6 +47,19 @@ struct posix_clock_operations {
 	int  (*clock_settime)(struct posix_clock *pc,
 			      const struct timespec64 *ts);
 
+<<<<<<< HEAD
+=======
+	int  (*timer_create) (struct posix_clock *pc, struct k_itimer *kit);
+
+	int  (*timer_delete) (struct posix_clock *pc, struct k_itimer *kit);
+
+	void (*timer_gettime)(struct posix_clock *pc,
+			      struct k_itimer *kit, struct itimerspec64 *tsp);
+
+	int  (*timer_settime)(struct posix_clock *pc,
+			      struct k_itimer *kit, int flags,
+			      struct itimerspec64 *tsp, struct itimerspec64 *old);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Optional character device methods:
 	 */

@@ -1925,7 +1925,11 @@ send_last:
 		if (ret < 0)
 			goto nack_op_err;
 		if (!ret) {
+<<<<<<< HEAD
 			rvt_put_ss(&qp->r_sge);
+=======
+			qib_put_ss(&qp->r_sge);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto rnr_nak;
 		}
 		wc.ex.imm_data = ohdr->u.rc.imm_data;

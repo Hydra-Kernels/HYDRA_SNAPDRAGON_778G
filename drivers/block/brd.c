@@ -293,6 +293,21 @@ static blk_qc_t brd_make_request(struct request_queue *q, struct bio *bio)
 	if (bio_end_sector(bio) > get_capacity(bio->bi_disk))
 		goto io_error;
 
+<<<<<<< HEAD
+=======
+	if (unlikely(bio->bi_rw & REQ_DISCARD)) {
+		if (sector & ((PAGE_SIZE >> SECTOR_SHIFT) - 1) ||
+		    bio->bi_iter.bi_size & ~PAGE_MASK)
+			goto io_error;
+		discard_from_brd(brd, sector, bio->bi_iter.bi_size);
+		goto out;
+	}
+
+	rw = bio_rw(bio);
+	if (rw == READA)
+		rw = READ;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bio_for_each_segment(bvec, bio, iter) {
 		unsigned int len = bvec.bv_len;
 		int err;

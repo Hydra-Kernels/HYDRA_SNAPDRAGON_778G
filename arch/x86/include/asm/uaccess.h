@@ -7,6 +7,7 @@
 #include <linux/compiler.h>
 #include <linux/kasan-checks.h>
 #include <linux/string.h>
+#include <linux/preempt.h>
 #include <asm/asm.h>
 #include <asm/page.h>
 #include <asm/smap.h>
@@ -66,9 +67,13 @@ static inline bool __chk_range_not_ok(unsigned long addr, unsigned long size, un
 })
 
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
+<<<<<<< HEAD
 static inline bool pagefault_disabled(void);
 # define WARN_ON_IN_IRQ()	\
 	WARN_ON_ONCE(!in_task() && !pagefault_disabled())
+=======
+# define WARN_ON_IN_IRQ()	WARN_ON_ONCE(!in_task())
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 # define WARN_ON_IN_IRQ()
 #endif
@@ -86,6 +91,23 @@ static inline bool pagefault_disabled(void);
  * Note that, depending on architecture, this function probably just
  * checks that the pointer is in the user space range - after calling
  * this function, memory access functions may still return -EFAULT.
+<<<<<<< HEAD
+=======
+ */
+#define access_ok(type, addr, size)					\
+({									\
+	WARN_ON_IN_IRQ();						\
+	likely(!__range_not_ok(addr, size, user_addr_max()));		\
+})
+
+/*
+ * The exception table consists of pairs of addresses relative to the
+ * exception table enty itself: the first is the address of an
+ * instruction that is allowed to fault, and the second is the address
+ * at which the program should continue.  No registers are modified,
+ * so it is entirely up to the continuation code to figure out what to
+ * do.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Return: true (nonzero) if the memory block may be valid, false (zero)
  * if it is definitely invalid.
@@ -340,7 +362,7 @@ do {									\
 #define __get_user_asm_u64(x, ptr, retval, errret) \
 	 __get_user_asm(x, ptr, retval, "q", "", "=r", errret)
 #define __get_user_asm_ex_u64(x, ptr) \
-	 __get_user_asm_ex(x, ptr, "q", "", "=r")
+	 __get_user_asm_ex(x, ptr, "q", "", "=&r")
 #endif
 
 #define __get_user_size(x, ptr, size, retval, errret)			\
@@ -399,13 +421,13 @@ do {									\
 	__chk_user_ptr(ptr);						\
 	switch (size) {							\
 	case 1:								\
-		__get_user_asm_ex(x, ptr, "b", "b", "=q");		\
+		__get_user_asm_ex(x, ptr, "b", "b", "=&q");		\
 		break;							\
 	case 2:								\
-		__get_user_asm_ex(x, ptr, "w", "w", "=r");		\
+		__get_user_asm_ex(x, ptr, "w", "w", "=&r");		\
 		break;							\
 	case 4:								\
-		__get_user_asm_ex(x, ptr, "l", "k", "=r");		\
+		__get_user_asm_ex(x, ptr, "l", "k", "=&r");		\
 		break;							\
 	case 8:								\
 		__get_user_asm_ex_u64(x, ptr);				\
@@ -418,12 +440,17 @@ do {									\
 #define __get_user_asm_ex(x, addr, itype, rtype, ltype)			\
 	asm volatile("1:	mov"itype" %1,%"rtype"0\n"		\
 		     "2:\n"						\
+<<<<<<< HEAD
 		     ".section .fixup,\"ax\"\n"				\
                      "3:xor"itype" %"rtype"0,%"rtype"0\n"		\
 		     "  jmp 2b\n"					\
 		     ".previous\n"					\
 		     _ASM_EXTABLE_EX(1b, 3b)				\
 		     : ltype(x) : "m" (__m(addr)))
+=======
+		     _ASM_EXTABLE_EX(1b, 2b)				\
+		     : ltype(x) : "m" (__m(addr)), "0" (0))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define __put_user_nocheck(x, ptr, size)			\
 ({								\

@@ -1035,10 +1035,41 @@ static void sh_mmcif_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	host->state = STATE_IOS;
 	spin_unlock_irqrestore(&host->lock, flags);
 
+<<<<<<< HEAD
 	switch (ios->power_mode) {
 	case MMC_POWER_UP:
 		if (!IS_ERR(mmc->supply.vmmc))
 			mmc_regulator_set_ocr(mmc, mmc->supply.vmmc, ios->vdd);
+=======
+	if (ios->power_mode == MMC_POWER_UP) {
+		if (!host->card_present) {
+			/* See if we also get DMA */
+			sh_mmcif_request_dma(host);
+			host->card_present = true;
+		}
+		sh_mmcif_set_power(host, ios);
+	} else if (ios->power_mode == MMC_POWER_OFF || !ios->clock) {
+		/* clock stop */
+		sh_mmcif_clock_control(host, 0);
+		if (ios->power_mode == MMC_POWER_OFF) {
+			if (host->card_present) {
+				sh_mmcif_release_dma(host);
+				host->card_present = false;
+			}
+		}
+		if (host->power) {
+			pm_runtime_put_sync(dev);
+			clk_disable_unprepare(host->clk);
+			host->power = false;
+			if (ios->power_mode == MMC_POWER_OFF)
+				sh_mmcif_set_power(host, ios);
+		}
+		host->state = STATE_IDLE;
+		return;
+	}
+
+	if (ios->clock) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!host->power) {
 			clk_prepare_enable(host->clk);
 			pm_runtime_get_sync(dev);

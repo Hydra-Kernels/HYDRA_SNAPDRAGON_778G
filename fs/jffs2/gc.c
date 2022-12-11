@@ -1326,9 +1326,16 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 	 * end up here trying to GC the *same* page that jffs2_write_begin() is
 	 * trying to write out, read_cache_page() will not deadlock. */
 	mutex_unlock(&f->sem);
+<<<<<<< HEAD
 	page = read_cache_page(inode->i_mapping, start >> PAGE_SHIFT,
 			       jffs2_do_readpage_unlock, inode);
 	if (IS_ERR(page)) {
+=======
+	pg_ptr = jffs2_gc_fetch_page(c, f, start, &pg);
+	mutex_lock(&f->sem);
+
+	if (IS_ERR(pg_ptr)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pr_warn("read_cache_page() returned error: %ld\n",
 			PTR_ERR(page));
 		mutex_lock(&f->sem);

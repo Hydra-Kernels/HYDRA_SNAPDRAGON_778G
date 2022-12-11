@@ -105,11 +105,14 @@
 /* Qualcomm implemented cores */
 #define ARM_CPU_PART_SCORPION		0x510002d0
 
+<<<<<<< HEAD
 #ifndef __ASSEMBLY__
 
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern unsigned int processor_id;
 struct proc_info_list *lookup_processor(u32 midr);
 

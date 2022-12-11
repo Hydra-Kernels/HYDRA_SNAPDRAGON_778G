@@ -27,10 +27,13 @@
 #include <linux/poll.h>
 #include <linux/workqueue.h>
 #include <linux/kref.h>
+<<<<<<< HEAD
 #include <linux/xattr.h>
 #include <linux/pid_namespace.h>
 #include <linux/refcount.h>
 #include <linux/user_namespace.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /** Default max number of pages that can be used in a single read request */
 #define FUSE_DEFAULT_MAX_PAGES_PER_REQ 32
@@ -286,11 +289,19 @@ struct fuse_io_priv {
 	bool blocking;
 };
 
+<<<<<<< HEAD
 #define FUSE_IO_PRIV_SYNC(i) \
 {					\
 	.refcnt = KREF_INIT(1),		\
 	.async = 0,			\
 	.iocb = i,			\
+=======
+#define FUSE_IO_PRIV_SYNC(f) \
+{					\
+	.refcnt = { ATOMIC_INIT(1) },	\
+	.async = 0,			\
+	.file = f,			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

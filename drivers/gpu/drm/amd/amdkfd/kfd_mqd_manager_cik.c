@@ -238,7 +238,11 @@ static void update_mqd_sdma(struct mqd_manager *mm, void *mqd,
 	struct cik_sdma_rlc_registers *m;
 
 	m = get_sdma_mqd(mqd);
+<<<<<<< HEAD
 	m->sdma_rlc_rb_cntl = order_base_2(q->queue_size / 4)
+=======
+	m->sdma_rlc_rb_cntl = (ffs(q->queue_size / sizeof(unsigned int)) - 1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			<< SDMA0_RLC0_RB_CNTL__RB_SIZE__SHIFT |
 			q->vmid << SDMA0_RLC0_RB_CNTL__RB_VMID__SHIFT |
 			1 << SDMA0_RLC0_RB_CNTL__RPTR_WRITEBACK_ENABLE__SHIFT |

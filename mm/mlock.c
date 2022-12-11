@@ -182,7 +182,11 @@ static void __munlock_isolation_failed(struct page *page)
 unsigned int munlock_vma_page(struct page *page)
 {
 	int nr_pages;
+<<<<<<< HEAD
 	pg_data_t *pgdat = page_pgdat(page);
+=======
+	struct zone *zone = page_zone(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* For try_to_munlock() and to serialize with page migration */
 	BUG_ON(!PageLocked(page));

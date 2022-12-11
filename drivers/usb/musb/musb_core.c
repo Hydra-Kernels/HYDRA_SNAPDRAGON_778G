@@ -996,6 +996,56 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 	if (int_usb & MUSB_INTR_RESET) {
 		musb_handle_intr_reset(musb);
 		handled = IRQ_HANDLED;
+<<<<<<< HEAD
+=======
+		if (is_host_active(musb)) {
+			/*
+			 * When BABBLE happens what we can depends on which
+			 * platform MUSB is running, because some platforms
+			 * implemented proprietary means for 'recovering' from
+			 * Babble conditions. One such platform is AM335x. In
+			 * most cases, however, the only thing we can do is
+			 * drop the session.
+			 */
+			dev_err(musb->controller, "Babble\n");
+			musb_recover_from_babble(musb);
+		} else {
+			dev_dbg(musb->controller, "BUS RESET as %s\n",
+				usb_otg_state_string(musb->xceiv->otg->state));
+			switch (musb->xceiv->otg->state) {
+			case OTG_STATE_A_SUSPEND:
+				musb_g_reset(musb);
+				/* FALLTHROUGH */
+			case OTG_STATE_A_WAIT_BCON:	/* OPT TD.4.7-900ms */
+				/* never use invalid T(a_wait_bcon) */
+				dev_dbg(musb->controller, "HNP: in %s, %d msec timeout\n",
+					usb_otg_state_string(musb->xceiv->otg->state),
+					TA_WAIT_BCON(musb));
+				mod_timer(&musb->otg_timer, jiffies
+					+ msecs_to_jiffies(TA_WAIT_BCON(musb)));
+				break;
+			case OTG_STATE_A_PERIPHERAL:
+				del_timer(&musb->otg_timer);
+				musb_g_reset(musb);
+				break;
+			case OTG_STATE_B_WAIT_ACON:
+				dev_dbg(musb->controller, "HNP: RESET (%s), to b_peripheral\n",
+					usb_otg_state_string(musb->xceiv->otg->state));
+				musb->xceiv->otg->state = OTG_STATE_B_PERIPHERAL;
+				musb_g_reset(musb);
+				break;
+			case OTG_STATE_B_IDLE:
+				musb->xceiv->otg->state = OTG_STATE_B_PERIPHERAL;
+				/* FALLTHROUGH */
+			case OTG_STATE_B_PERIPHERAL:
+				musb_g_reset(musb);
+				break;
+			default:
+				dev_dbg(musb->controller, "Unhandled BUS RESET as %s\n",
+					usb_otg_state_string(musb->xceiv->otg->state));
+			}
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 #if 0
@@ -2797,8 +2847,13 @@ static int musb_resume(struct device *dev)
 			error);
 	spin_unlock_irqrestore(&musb->lock, flags);
 
+<<<<<<< HEAD
 	pm_runtime_mark_last_busy(dev);
 	pm_runtime_put_autosuspend(dev);
+=======
+	musb_enable_interrupts(musb);
+	musb_platform_enable(musb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

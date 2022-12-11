@@ -20,9 +20,21 @@ else
   Q=@
 endif
 
+<<<<<<< HEAD
 ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
   quiet=silent_
 endif
+=======
+ifneq ($(filter 4.%,$(MAKE_VERSION)),)	# make-4
+ifneq ($(filter %s ,$(firstword x$(MAKEFLAGS))),)
+  quiet=silent_
+endif
+else					# make-3.8x
+ifneq ($(filter s% -s%,$(MAKEFLAGS)),)
+  quiet=silent_
+endif
+endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 build-dir := $(srctree)/tools/build
 

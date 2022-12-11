@@ -162,11 +162,19 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
 	{ NULL }
 };
 
+<<<<<<< HEAD
 struct kvm_s390_tod_clock_ext {
 	__u8 epoch_idx;
 	__u64 tod;
 	__u8 reserved[7];
 } __packed;
+=======
+/* upper facilities limit for kvm */
+unsigned long kvm_s390_fac_list_mask[] = {
+	0xffe6ffffffffffffUL,
+	0x005effffffffffffUL,
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* allow nested virtualization in KVM (if enabled by user space) */
 static int nested;
@@ -557,12 +565,15 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
 	case KVM_CAP_S390_VECTOR_REGISTERS:
 		r = MACHINE_HAS_VX;
 		break;
+<<<<<<< HEAD
 	case KVM_CAP_S390_RI:
 		r = test_facility(64);
 		break;
 	case KVM_CAP_S390_GS:
 		r = test_facility(133);
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case KVM_CAP_S390_BPB:
 		r = test_facility(82);
 		break;
@@ -2733,8 +2744,13 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
 	 */
 	if (MACHINE_HAS_VX)
 		vcpu->run->kvm_valid_regs |= KVM_SYNC_VRS;
+<<<<<<< HEAD
 	else
 		vcpu->run->kvm_valid_regs |= KVM_SYNC_FPRS;
+=======
+	if (test_kvm_facility(vcpu->kvm, 82))
+		vcpu->run->kvm_valid_regs |= KVM_SYNC_BPBC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (kvm_is_ucontrol(vcpu->kvm))
 		return __kvm_ucontrol_vcpu_init(vcpu);
@@ -2742,6 +2758,7 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
 	return 0;
 }
 
+<<<<<<< HEAD
 /* needs disabled preemption to protect from TOD sync and vcpu_load/put */
 static void __start_cpu_timer_accounting(struct kvm_vcpu *vcpu)
 {
@@ -2837,6 +2854,28 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
 	if (vcpu->arch.cputm_enabled && !is_vcpu_idle(vcpu))
 		__start_cpu_timer_accounting(vcpu);
 	vcpu->cpu = cpu;
+=======
+void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+{
+	/* Save host register state */
+	save_fpu_regs();
+	vcpu->arch.host_fpregs.fpc = current->thread.fpu.fpc;
+	vcpu->arch.host_fpregs.regs = current->thread.fpu.regs;
+
+	/* Depending on MACHINE_HAS_VX, data stored to vrs either
+	 * has vector register or floating point register format.
+	 */
+	current->thread.fpu.regs = vcpu->run->s.regs.vrs;
+	current->thread.fpu.fpc = vcpu->run->s.regs.fpc;
+	if (test_fp_ctl(current->thread.fpu.fpc))
+		/* User space provided an invalid FPC, let's clear it */
+		current->thread.fpu.fpc = 0;
+
+	save_access_regs(vcpu->arch.host_acrs);
+	restore_access_regs(vcpu->run->s.regs.acrs);
+	gmap_enable(vcpu->arch.gmap);
+	atomic_or(CPUSTAT_RUNNING, &vcpu->arch.sie_block->cpuflags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
@@ -2848,6 +2887,19 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
 	vcpu->arch.enabled_gmap = gmap_get_enabled();
 	gmap_disable(vcpu->arch.enabled_gmap);
 
+<<<<<<< HEAD
+=======
+	/* Save guest register state */
+	save_fpu_regs();
+	vcpu->run->s.regs.fpc = current->thread.fpu.fpc;
+
+	/* Restore host register state */
+	current->thread.fpu.fpc = vcpu->arch.host_fpregs.fpc;
+	current->thread.fpu.regs = vcpu->arch.host_fpregs.regs;
+
+	save_access_regs(vcpu->run->s.regs.acrs);
+	restore_access_regs(vcpu->arch.host_acrs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void kvm_s390_vcpu_initial_reset(struct kvm_vcpu *vcpu)
@@ -2860,6 +2912,7 @@ static void kvm_s390_vcpu_initial_reset(struct kvm_vcpu *vcpu)
 	vcpu->arch.sie_block->ckc       = 0UL;
 	vcpu->arch.sie_block->todpr     = 0;
 	memset(vcpu->arch.sie_block->gcr, 0, 16 * sizeof(__u64));
+<<<<<<< HEAD
 	vcpu->arch.sie_block->gcr[0]  = CR0_UNUSED_56 |
 					CR0_INTERRUPT_KEY_SUBMASK |
 					CR0_MEASUREMENT_ALERT_SUBMASK;
@@ -2867,6 +2920,13 @@ static void kvm_s390_vcpu_initial_reset(struct kvm_vcpu *vcpu)
 					CR14_UNUSED_33 |
 					CR14_EXTERNAL_DAMAGE_SUBMASK;
 	vcpu->run->s.regs.fpc = 0;
+=======
+	vcpu->arch.sie_block->gcr[0]  = 0xE0UL;
+	vcpu->arch.sie_block->gcr[14] = 0xC2000000UL;
+	/* make sure the new fpc will be lazily loaded */
+	save_fpu_regs();
+	current->thread.fpu.fpc = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vcpu->arch.sie_block->gbea = 1;
 	vcpu->arch.sie_block->pp = 0;
 	vcpu->arch.sie_block->fpf &= ~FPF_BPBC;
@@ -3069,10 +3129,16 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
 
 	vcpu->arch.sie_block->icpua = id;
 	spin_lock_init(&vcpu->arch.local_int.lock);
+<<<<<<< HEAD
 	vcpu->arch.sie_block->gd = (u32)(u64)kvm->arch.gisa_int.origin;
 	if (vcpu->arch.sie_block->gd && sclp.has_gisaf)
 		vcpu->arch.sie_block->gd |= GISA_FORMAT1;
 	seqcount_init(&vcpu->arch.cputm_seqcount);
+=======
+	vcpu->arch.local_int.float_int = &kvm->arch.float_int;
+	vcpu->arch.local_int.wq = &vcpu->wq;
+	vcpu->arch.local_int.cpuflags = &vcpu->arch.sie_block->cpuflags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rc = kvm_vcpu_init(vcpu, kvm, id);
 	if (rc)
@@ -3339,6 +3405,7 @@ int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
 
 int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
 {
+<<<<<<< HEAD
 	int ret = 0;
 
 	vcpu_load(vcpu);
@@ -3357,10 +3424,23 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
 out:
 	vcpu_put(vcpu);
 	return ret;
+=======
+	/* make sure the new values will be lazily loaded */
+	save_fpu_regs();
+	if (test_fp_ctl(fpu->fpc))
+		return -EINVAL;
+	current->thread.fpu.fpc = fpu->fpc;
+	if (MACHINE_HAS_VX)
+		convert_fp_to_vx(current->thread.fpu.vxrs, (freg_t *)fpu->fprs);
+	else
+		memcpy(current->thread.fpu.fprs, &fpu->fprs, sizeof(fpu->fprs));
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int kvm_arch_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
 {
+<<<<<<< HEAD
 	vcpu_load(vcpu);
 
 	/* make sure we have the latest values */
@@ -3373,6 +3453,15 @@ int kvm_arch_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
 	fpu->fpc = vcpu->run->s.regs.fpc;
 
 	vcpu_put(vcpu);
+=======
+	/* make sure we have the latest values */
+	save_fpu_regs();
+	if (MACHINE_HAS_VX)
+		convert_vx_to_fp((freg_t *)fpu->fprs, current->thread.fpu.vxrs);
+	else
+		memcpy(fpu->fprs, current->thread.fpu.fprs, sizeof(fpu->fprs));
+	fpu->fpc = current->thread.fpu.fpc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -3894,6 +3983,7 @@ static void sync_regs(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 		if (vcpu->arch.pfault_token == KVM_S390_PFAULT_TOKEN_INVALID)
 			kvm_clear_async_pf_completion_queue(vcpu);
 	}
+<<<<<<< HEAD
 	/*
 	 * If userspace sets the riccb (e.g. after migration) to a valid state,
 	 * we should enable RI here instead of doing the lazy enablement.
@@ -3918,11 +4008,14 @@ static void sync_regs(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 		vcpu->arch.sie_block->ecd |= ECD_HOSTREGMGMT;
 		vcpu->arch.gs_enabled = 1;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if ((kvm_run->kvm_dirty_regs & KVM_SYNC_BPBC) &&
 	    test_kvm_facility(vcpu->kvm, 82)) {
 		vcpu->arch.sie_block->fpf &= ~FPF_BPBC;
 		vcpu->arch.sie_block->fpf |= kvm_run->s.regs.bpbc ? FPF_BPBC : 0;
 	}
+<<<<<<< HEAD
 	save_access_regs(vcpu->arch.host_acrs);
 	restore_access_regs(vcpu->run->s.regs.acrs);
 	/* save host (userspace) fprs/vrs */
@@ -3953,6 +4046,8 @@ static void sync_regs(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 	}
 	/* SIE will load etoken directly from SDNX and therefore kvm_run */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kvm_run->kvm_dirty_regs = 0;
 }
 
@@ -3971,6 +4066,7 @@ static void store_regs(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 	kvm_run->s.regs.pfs = vcpu->arch.pfault_select;
 	kvm_run->s.regs.pfc = vcpu->arch.pfault_compare;
 	kvm_run->s.regs.bpbc = (vcpu->arch.sie_block->fpf & FPF_BPBC) == FPF_BPBC;
+<<<<<<< HEAD
 	save_access_regs(vcpu->run->s.regs.acrs);
 	restore_access_regs(vcpu->arch.host_acrs);
 	/* Save guest register state */
@@ -3992,6 +4088,8 @@ static void store_regs(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 		preempt_enable();
 	}
 	/* SIE will save etoken directly into SDNX and therefore kvm_run */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
@@ -4089,7 +4187,11 @@ int kvm_s390_store_status_unloaded(struct kvm_vcpu *vcpu, unsigned long gpa)
 				     fprs, 128);
 	} else {
 		rc = write_guest_abs(vcpu, gpa + __LC_FPREGS_SAVE_AREA,
+<<<<<<< HEAD
 				     vcpu->run->s.regs.fprs, 128);
+=======
+				     vcpu->run->s.regs.vrs, 128);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	rc |= write_guest_abs(vcpu, gpa + __LC_GPREGS_SAVE_AREA,
 			      vcpu->run->s.regs.gprs, 128);
@@ -4101,9 +4203,14 @@ int kvm_s390_store_status_unloaded(struct kvm_vcpu *vcpu, unsigned long gpa)
 			      &vcpu->run->s.regs.fpc, 4);
 	rc |= write_guest_abs(vcpu, gpa + __LC_TOD_PROGREG_SAVE_AREA,
 			      &vcpu->arch.sie_block->todpr, 4);
+<<<<<<< HEAD
 	cputm = kvm_s390_get_cpu_timer(vcpu);
 	rc |= write_guest_abs(vcpu, gpa + __LC_CPU_TIMER_SAVE_AREA,
 			      &cputm, 8);
+=======
+	rc |= write_guest_abs(vcpu, gpa + __LC_CPU_TIMER_SAVE_AREA,
+			      &vcpu->arch.sie_block->cputm, 8);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	clkcomp = vcpu->arch.sie_block->ckc >> 8;
 	rc |= write_guest_abs(vcpu, gpa + __LC_CLOCK_COMP_SAVE_AREA,
 			      &clkcomp, 8);

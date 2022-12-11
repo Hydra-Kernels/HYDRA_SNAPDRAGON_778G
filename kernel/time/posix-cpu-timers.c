@@ -738,7 +738,13 @@ static void posix_cpu_timer_get(struct k_itimer *timer, struct itimerspec64 *itp
 			 * We can't even collect a sample any more.
 			 * Disarm the timer, nothing else to do.
 			 */
+<<<<<<< HEAD
 			cpu_timer_setexpires(ctmr, 0);
+=======
+			timer->it.cpu.expires = 0;
+			sample_to_timespec(timer->it_clock, timer->it.cpu.expires,
+					   &itp->it_value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 		} else {
 			now = cpu_clock_sample_group(clkid, p, false);

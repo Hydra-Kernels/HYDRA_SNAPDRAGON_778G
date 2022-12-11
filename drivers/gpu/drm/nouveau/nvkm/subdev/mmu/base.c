@@ -150,6 +150,7 @@ nvkm_mmu_ptc_put(struct nvkm_mmu *mmu, bool force, struct nvkm_mmu_pt **ppt)
 			return;
 		}
 
+<<<<<<< HEAD
 		/* Either cache or free the object. */
 		mutex_lock(&mmu->ptc.mutex);
 		if (pt->ptc->refs < 8 /* Heuristic. */ && !force) {
@@ -160,6 +161,11 @@ nvkm_mmu_ptc_put(struct nvkm_mmu *mmu, bool force, struct nvkm_mmu_pt **ppt)
 			kfree(pt);
 		}
 		mutex_unlock(&mmu->ptc.mutex);
+=======
+		mmu->func->flush(vm);
+
+		nvkm_memory_del(&pgt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

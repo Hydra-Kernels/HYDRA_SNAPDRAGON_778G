@@ -32,11 +32,17 @@
 /* Control register */
 #define SUN6I_LOSC_CTRL				0x0000
 #define SUN6I_LOSC_CTRL_KEY			(0x16aa << 16)
+<<<<<<< HEAD
 #define SUN6I_LOSC_CTRL_AUTO_SWT_BYPASS		BIT(15)
 #define SUN6I_LOSC_CTRL_ALM_DHMS_ACC		BIT(9)
 #define SUN6I_LOSC_CTRL_RTC_HMS_ACC		BIT(8)
 #define SUN6I_LOSC_CTRL_RTC_YMD_ACC		BIT(7)
 #define SUN6I_LOSC_CTRL_EXT_LOSC_EN		BIT(4)
+=======
+#define SUN6I_LOSC_CTRL_ALM_DHMS_ACC		BIT(9)
+#define SUN6I_LOSC_CTRL_RTC_HMS_ACC		BIT(8)
+#define SUN6I_LOSC_CTRL_RTC_YMD_ACC		BIT(7)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define SUN6I_LOSC_CTRL_EXT_OSC			BIT(0)
 #define SUN6I_LOSC_CTRL_ACC_MASK		GENMASK(9, 7)
 
@@ -142,11 +148,14 @@ struct sun6i_rtc_dev {
 	int irq;
 	unsigned long alarm;
 
+<<<<<<< HEAD
 	struct clk_hw hw;
 	struct clk_hw *int_osc;
 	struct clk *losc;
 	struct clk *ext_losc;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spinlock_t lock;
 };
 
@@ -684,7 +693,12 @@ static int sun6i_rtc_probe(struct platform_device *pdev)
 	int ret;
 
 	if (!chip)
+<<<<<<< HEAD
 		return -ENODEV;
+=======
+		return -ENOMEM;
+	spin_lock_init(&chip->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	platform_set_drvdata(pdev, chip);
 	chip->dev = &pdev->dev;
@@ -726,12 +740,21 @@ static int sun6i_rtc_probe(struct platform_device *pdev)
 	/* disable alarm wakeup */
 	writel(0, chip->base + SUN6I_ALARM_CONFIG);
 
+<<<<<<< HEAD
 	clk_prepare_enable(chip->losc);
 
 	device_init_wakeup(&pdev->dev, 1);
 
 	chip->rtc = devm_rtc_device_register(&pdev->dev, "rtc-sun6i",
 					     &sun6i_rtc_ops, THIS_MODULE);
+=======
+	/* switch to the external, more precise, oscillator */
+	writel(SUN6I_LOSC_CTRL_KEY | SUN6I_LOSC_CTRL_EXT_OSC,
+	       chip->base + SUN6I_LOSC_CTRL);
+
+	chip->rtc = rtc_device_register("rtc-sun6i", &pdev->dev,
+					&sun6i_rtc_ops, THIS_MODULE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(chip->rtc)) {
 		dev_err(&pdev->dev, "unable to register device\n");
 		return PTR_ERR(chip->rtc);

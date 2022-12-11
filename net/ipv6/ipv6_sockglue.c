@@ -916,10 +916,13 @@ pref_skip_coa:
 	case IPV6_AUTOFLOWLABEL:
 		np->autoflowlabel = valbool;
 		np->autoflowlabel_set = 1;
+<<<<<<< HEAD
 		retv = 0;
 		break;
 	case IPV6_RECVFRAGSIZE:
 		np->rxopt.bits.recvfragsize = valbool;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		retv = 0;
 		break;
 	}
@@ -1363,6 +1366,7 @@ static int do_ipv6_getsockopt(struct sock *sk, int level, int optname,
 
 	case IPV6_AUTOFLOWLABEL:
 		val = ip6_autoflowlabel(sock_net(sk), np);
+<<<<<<< HEAD
 		break;
 
 	case IPV6_RECVFRAGSIZE:
@@ -1371,6 +1375,8 @@ static int do_ipv6_getsockopt(struct sock *sk, int level, int optname,
 
 	case IPV6_ROUTER_ALERT_ISOLATE:
 		val = np->rtalert_isolate;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 
 	default:

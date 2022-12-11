@@ -277,6 +277,7 @@
 
 #include <linux/uaccess.h>
 #include <asm/ioctls.h>
+#include <asm/unaligned.h>
 #include <net/busy_poll.h>
 
 struct percpu_counter tcp_orphan_count;
@@ -1149,11 +1150,18 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 				struct ubuf_info *uarg)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
+<<<<<<< HEAD
 	struct inet_sock *inet = inet_sk(sk);
 	struct sockaddr *uaddr = msg->msg_name;
 	int err, flags;
 
 	if (!(sock_net(sk)->ipv4.sysctl_tcp_fastopen & TFO_CLIENT_ENABLE) ||
+=======
+	struct sockaddr *uaddr = msg->msg_name;
+	int err, flags;
+
+	if (!(sysctl_tcp_fastopen & TFO_CLIENT_ENABLE) ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    (uaddr && msg->msg_namelen >= sizeof(uaddr->sa_family) &&
 	     uaddr->sa_family == AF_UNSPEC))
 		return -EOPNOTSUPP;
@@ -1179,6 +1187,7 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 	}
 	flags = (msg->msg_flags & MSG_DONTWAIT) ? O_NONBLOCK : 0;
 	err = __inet_stream_connect(sk->sk_socket, uaddr,
+<<<<<<< HEAD
 				    msg->msg_namelen, flags, 1);
 	/* fastopen_req could already be freed in __inet_stream_connect
 	 * if the connection times out or gets rst
@@ -1188,6 +1197,11 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 		tcp_free_fastopen_req(tp);
 		inet->defer_connect = 0;
 	}
+=======
+				    msg->msg_namelen, flags);
+	*copied = tp->fastopen_req->copied;
+	tcp_free_fastopen_req(tp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -1204,6 +1218,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	long timeo;
 
 	flags = msg->msg_flags;
+<<<<<<< HEAD
 
 	if (flags & MSG_ZEROCOPY && size && sock_flag(sk, SOCK_ZEROCOPY)) {
 		skb = tcp_write_queue_tail(sk);
@@ -1221,6 +1236,10 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	if (unlikely(flags & MSG_FASTOPEN || inet_sk(sk)->defer_connect) &&
 	    !tp->repair) {
 		err = tcp_sendmsg_fastopen(sk, msg, &copied_syn, size, uarg);
+=======
+	if ((flags & MSG_FASTOPEN) && !tp->repair) {
+		err = tcp_sendmsg_fastopen(sk, msg, &copied_syn, size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err == -EINPROGRESS && copied_syn > 0)
 			goto out;
 		else if (err)
@@ -1337,7 +1356,11 @@ new_segment:
 
 			if (!skb_can_coalesce(skb, i, pfrag->page,
 					      pfrag->offset)) {
+<<<<<<< HEAD
 				if (i >= sysctl_max_skb_frags) {
+=======
+				if (i >= sysctl_max_skb_frags || !sg) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					tcp_mark_push(tp, skb);
 					goto new_segment;
 				}
@@ -2654,11 +2677,16 @@ int tcp_disconnect(struct sock *sk, int flags)
 	 * issue in __tcp_select_window()
 	 */
 	icsk->icsk_ack.rcv_mss = TCP_MIN_MSS;
+<<<<<<< HEAD
+=======
+	tcp_init_send_head(sk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memset(&tp->rx_opt, 0, sizeof(tp->rx_opt));
 	__sk_dst_reset(sk);
 	dst_release(sk->sk_rx_dst);
 	sk->sk_rx_dst = NULL;
 	tcp_saved_syn_free(tp);
+<<<<<<< HEAD
 	tp->compressed_ack = 0;
 	tp->segs_in = 0;
 	tp->segs_out = 0;
@@ -2694,6 +2722,8 @@ int tcp_disconnect(struct sock *sk, int flags)
 	/* Clean up fastopen related fields */
 	tcp_free_fastopen_req(tp);
 	inet->defer_connect = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	WARN_ON(inet->inet_num && !icsk->icsk_bind_hash);
 
@@ -3105,8 +3135,15 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 
 #ifdef CONFIG_TCP_MD5SIG
 	case TCP_MD5SIG:
+<<<<<<< HEAD
 	case TCP_MD5SIG_EXT:
 		err = tp->af_specific->md5_parse(sk, optname, optval, optlen);
+=======
+		if ((1 << sk->sk_state) & (TCPF_CLOSE | TCPF_LISTEN))
+			err = tp->af_specific->md5_parse(sk, optval, optlen);
+		else
+			err = -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 #endif
 	case TCP_USER_TIMEOUT:
@@ -3230,10 +3267,17 @@ void tcp_get_info(struct sock *sk, struct tcp_info *info)
 {
 	const struct tcp_sock *tp = tcp_sk(sk); /* iff sk_type == SOCK_STREAM */
 	const struct inet_connection_sock *icsk = inet_csk(sk);
+<<<<<<< HEAD
 	unsigned long rate;
 	u32 now;
 	u64 rate64;
 	bool slow;
+=======
+	u32 now = tcp_time_stamp;
+	unsigned int start;
+	u64 rate64;
+	u32 rate;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memset(info, 0, sizeof(*info));
 	if (sk->sk_type != SOCK_STREAM)
@@ -3315,11 +3359,27 @@ void tcp_get_info(struct sock *sk, struct tcp_info *info)
 
 	info->tcpi_total_retrans = tp->total_retrans;
 
+<<<<<<< HEAD
 	info->tcpi_bytes_acked = tp->bytes_acked;
 	info->tcpi_bytes_received = tp->bytes_received;
 	info->tcpi_notsent_bytes = max_t(int, 0, tp->write_seq - tp->snd_nxt);
 	tcp_get_info_chrono_stats(tp, info);
 
+=======
+	rate = READ_ONCE(sk->sk_pacing_rate);
+	rate64 = rate != ~0U ? rate : ~0ULL;
+	put_unaligned(rate64, &info->tcpi_pacing_rate);
+
+	rate = READ_ONCE(sk->sk_max_pacing_rate);
+	rate64 = rate != ~0U ? rate : ~0ULL;
+	put_unaligned(rate64, &info->tcpi_max_pacing_rate);
+
+	do {
+		start = u64_stats_fetch_begin_irq(&tp->syncp);
+		put_unaligned(tp->bytes_acked, &info->tcpi_bytes_acked);
+		put_unaligned(tp->bytes_received, &info->tcpi_bytes_received);
+	} while (u64_stats_fetch_retry_irq(&tp->syncp, start));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	info->tcpi_segs_out = tp->segs_out;
 	info->tcpi_segs_in = tp->segs_in;
 

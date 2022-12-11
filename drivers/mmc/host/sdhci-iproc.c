@@ -220,8 +220,12 @@ static const struct sdhci_iproc_data iproc_cygnus_data = {
 
 static const struct sdhci_pltfm_data sdhci_iproc_pltfm_data = {
 	.quirks = SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK |
+<<<<<<< HEAD
 		  SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12 |
 		  SDHCI_QUIRK_NO_HISPD_BIT,
+=======
+		  SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.quirks2 = SDHCI_QUIRK2_ACMD23_BROKEN,
 	.ops = &sdhci_iproc_ops,
 };

@@ -8,6 +8,11 @@
 #include <linux/netdevice.h>
 #include <linux/filter.h>
 #include <linux/if_vlan.h>
+<<<<<<< HEAD
+=======
+#include <asm/cacheflush.h>
+#include <asm/nospec-branch.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/bpf.h>
 
 #include <asm/set_memory.h>
@@ -259,7 +264,11 @@ static void emit_bpf_tail_call(u8 **pprog)
 	EMIT2(0x89, 0xD2);                        /* mov edx, edx */
 	EMIT3(0x39, 0x56,                         /* cmp dword ptr [rsi + 16], edx */
 	      offsetof(struct bpf_array, map.max_entries));
+<<<<<<< HEAD
 #define OFFSET1 (41 + RETPOLINE_RAX_BPF_JIT_SIZE) /* Number of bytes to jump */
+=======
+#define OFFSET1 (41 + RETPOLINE_RAX_BPF_JIT_SIZE) /* number of bytes to jump */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	EMIT2(X86_JBE, OFFSET1);                  /* jbe out */
 	label1 = cnt;
 

@@ -135,6 +135,7 @@ $M	%exclude /lib/modules/$KERNELRELEASE/build
 $M	%exclude /lib/modules/$KERNELRELEASE/source
 	/boot/*
 
+<<<<<<< HEAD
 	%files headers
 	%defattr (-, root, root)
 	/usr/include
@@ -145,3 +146,55 @@ $S$M	/usr/src/kernels/$KERNELRELEASE
 $S$M	/lib/modules/$KERNELRELEASE/build
 $S$M	/lib/modules/$KERNELRELEASE/source
 EOF
+=======
+echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
+
+echo "%ifnarch ppc64"
+echo 'bzip2 -9 --keep vmlinux'
+echo 'mv vmlinux.bz2 $RPM_BUILD_ROOT'"/boot/vmlinux-$KERNELRELEASE.bz2"
+echo "%endif"
+
+if ! $PREBUILT; then
+echo 'rm -f $RPM_BUILD_ROOT'"/lib/modules/$KERNELRELEASE/{build,source}"
+echo "mkdir -p "'$RPM_BUILD_ROOT'"/usr/src/kernels/$KERNELRELEASE"
+echo "EXCLUDES=\"$RCS_TAR_IGNORE --exclude .tmp_versions --exclude=*vmlinux* --exclude=*.o --exclude=*.ko --exclude=*.cmd --exclude=Documentation --exclude=firmware --exclude .config.old --exclude .missing-syscalls.d\""
+echo "tar "'$EXCLUDES'" -cf- . | (cd "'$RPM_BUILD_ROOT'"/usr/src/kernels/$KERNELRELEASE;tar xvf -)"
+echo 'cd $RPM_BUILD_ROOT'"/lib/modules/$KERNELRELEASE"
+echo "ln -sf /usr/src/kernels/$KERNELRELEASE build"
+echo "ln -sf /usr/src/kernels/$KERNELRELEASE source"
+fi
+
+echo ""
+echo "%clean"
+echo 'rm -rf $RPM_BUILD_ROOT'
+echo ""
+echo "%post"
+echo "if [ -x /sbin/installkernel -a -r /boot/vmlinuz-$KERNELRELEASE -a -r /boot/System.map-$KERNELRELEASE ]; then"
+echo "cp /boot/vmlinuz-$KERNELRELEASE /boot/.vmlinuz-$KERNELRELEASE-rpm"
+echo "cp /boot/System.map-$KERNELRELEASE /boot/.System.map-$KERNELRELEASE-rpm"
+echo "rm -f /boot/vmlinuz-$KERNELRELEASE /boot/System.map-$KERNELRELEASE"
+echo "/sbin/installkernel $KERNELRELEASE /boot/.vmlinuz-$KERNELRELEASE-rpm /boot/.System.map-$KERNELRELEASE-rpm"
+echo "rm -f /boot/.vmlinuz-$KERNELRELEASE-rpm /boot/.System.map-$KERNELRELEASE-rpm"
+echo "fi"
+echo ""
+echo "%files"
+echo '%defattr (-, root, root)'
+echo "/lib/modules/$KERNELRELEASE"
+echo "%exclude /lib/modules/$KERNELRELEASE/build"
+echo "%exclude /lib/modules/$KERNELRELEASE/source"
+echo "/lib/firmware/$KERNELRELEASE"
+echo "/boot/*"
+echo ""
+echo "%files headers"
+echo '%defattr (-, root, root)'
+echo "/usr/include"
+echo ""
+if ! $PREBUILT; then
+echo "%files devel"
+echo '%defattr (-, root, root)'
+echo "/usr/src/kernels/$KERNELRELEASE"
+echo "/lib/modules/$KERNELRELEASE/build"
+echo "/lib/modules/$KERNELRELEASE/source"
+echo ""
+fi
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

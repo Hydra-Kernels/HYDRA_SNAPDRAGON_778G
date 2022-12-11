@@ -348,7 +348,10 @@ enum {
 
 	__WQ_DRAINING		= 1 << 16, /* internal: workqueue is draining */
 	__WQ_ORDERED		= 1 << 17, /* internal: workqueue is ordered */
+<<<<<<< HEAD
 	__WQ_LEGACY		= 1 << 18, /* internal: create*_workqueue() */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__WQ_ORDERED_EXPLICIT	= 1 << 19, /* internal: alloc_ordered_workqueue() */
 
 	WQ_MAX_ACTIVE		= 512,	  /* I like 512, better ideas? */

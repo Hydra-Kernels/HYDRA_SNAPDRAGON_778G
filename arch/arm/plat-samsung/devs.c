@@ -69,6 +69,15 @@
 static struct resource s3c_ac97_resource[] = {
 	[0] = DEFINE_RES_MEM(S3C2440_PA_AC97, S3C2440_SZ_AC97),
 	[1] = DEFINE_RES_IRQ(IRQ_S3C244X_AC97),
+<<<<<<< HEAD
+=======
+};
+
+static struct s3c_audio_pdata s3c_ac97_pdata = {
+	.dma_playback = (void *)DMACH_PCM_OUT,
+	.dma_capture = (void *)DMACH_PCM_IN,
+	.dma_capture_mic = (void *)DMACH_MIC_IN,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct platform_device s3c_device_ac97 = {
@@ -79,6 +88,7 @@ struct platform_device s3c_device_ac97 = {
 	.dev		= {
 		.dma_mask		= &samsung_device_dma_mask,
 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+		.platform_data		= &s3c_ac97_pdata,
 	}
 };
 #endif /* CONFIG_CPU_S3C2440 */

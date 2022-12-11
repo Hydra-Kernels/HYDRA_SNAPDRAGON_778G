@@ -737,8 +737,12 @@ static int ghes_proc(struct ghes *ghes)
 	ghes_do_proc(ghes, estatus);
 
 out:
+<<<<<<< HEAD
 	ghes_clear_estatus(ghes, estatus, buf_paddr, FIX_APEI_GHES_IRQ);
 
+=======
+	ghes_clear_estatus(ghes);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -1014,11 +1018,37 @@ static int ghes_notify_nmi(unsigned int cmd, struct pt_regs *regs)
 	if (!atomic_add_unless(&ghes_in_nmi, 1, 1))
 		return ret;
 
+<<<<<<< HEAD
 	raw_spin_lock(&ghes_notify_lock_nmi);
 	if (!ghes_in_nmi_spool_from_list(&ghes_nmi, FIX_APEI_GHES_NMI))
 		ret = NMI_HANDLED;
 	raw_spin_unlock(&ghes_notify_lock_nmi);
 
+=======
+	list_for_each_entry_rcu(ghes, &ghes_nmi, list) {
+		if (ghes_read_estatus(ghes, 1)) {
+			ghes_clear_estatus(ghes);
+			continue;
+		} else {
+			ret = NMI_HANDLED;
+		}
+
+		sev = ghes_severity(ghes->estatus->error_severity);
+		if (sev >= GHES_SEV_PANIC)
+			__ghes_panic(ghes);
+
+		if (!(ghes->flags & GHES_TO_CLEAR))
+			continue;
+
+		__process_error(ghes);
+		ghes_clear_estatus(ghes);
+	}
+
+#ifdef CONFIG_ARCH_HAVE_NMI_SAFE_CMPXCHG
+	if (ret == NMI_HANDLED)
+		irq_work_queue(&ghes_proc_irq_work);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	atomic_dec(&ghes_in_nmi);
 	return ret;
 }
@@ -1272,10 +1302,13 @@ static int ghes_remove(struct platform_device *ghes_dev)
 			unregister_acpi_hed_notifier(&ghes_notifier_hed);
 		mutex_unlock(&ghes_list_mutex);
 		synchronize_rcu();
+<<<<<<< HEAD
 		break;
 
 	case ACPI_HEST_NOTIFY_SEA:
 		ghes_sea_remove(ghes);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case ACPI_HEST_NOTIFY_NMI:
 		ghes_nmi_remove(ghes);

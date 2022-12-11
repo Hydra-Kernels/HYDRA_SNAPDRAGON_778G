@@ -4148,6 +4148,152 @@ static void hwi_disable_intr(struct beiscsi_hba *phba)
 			    "BM_%d : In hwi_disable_intr, Already Disabled\n");
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * beiscsi_get_boot_info()- Get the boot session info
+ * @phba: The device priv structure instance
+ *
+ * Get the boot target info and store in driver priv structure
+ *
+ * return values
+ *	Success: 0
+ *	Failure: Non-Zero Value
+ **/
+static int beiscsi_get_boot_info(struct beiscsi_hba *phba)
+{
+	struct be_cmd_get_session_resp *session_resp;
+	struct be_dma_mem nonemb_cmd;
+	unsigned int tag;
+	unsigned int s_handle;
+	int ret = -ENOMEM;
+
+	/* Get the session handle of the boot target */
+	ret = be_mgmt_get_boot_shandle(phba, &s_handle);
+	if (ret) {
+		beiscsi_log(phba, KERN_ERR,
+			    BEISCSI_LOG_INIT | BEISCSI_LOG_CONFIG,
+			    "BM_%d : No boot session\n");
+
+		if (ret == -ENXIO)
+			phba->get_boot = 0;
+
+
+		return ret;
+	}
+	phba->get_boot = 0;
+	nonemb_cmd.va = pci_zalloc_consistent(phba->ctrl.pdev,
+					      sizeof(*session_resp),
+					      &nonemb_cmd.dma);
+	if (nonemb_cmd.va == NULL) {
+		beiscsi_log(phba, KERN_ERR,
+			    BEISCSI_LOG_INIT | BEISCSI_LOG_CONFIG,
+			    "BM_%d : Failed to allocate memory for"
+			    "beiscsi_get_session_info\n");
+
+		return -ENOMEM;
+	}
+
+	tag = mgmt_get_session_info(phba, s_handle,
+				    &nonemb_cmd);
+	if (!tag) {
+		beiscsi_log(phba, KERN_ERR,
+			    BEISCSI_LOG_INIT | BEISCSI_LOG_CONFIG,
+			    "BM_%d : beiscsi_get_session_info"
+			    " Failed\n");
+
+		goto boot_freemem;
+	}
+
+	ret = beiscsi_mccq_compl(phba, tag, NULL, &nonemb_cmd);
+	if (ret) {
+		beiscsi_log(phba, KERN_ERR,
+			    BEISCSI_LOG_INIT | BEISCSI_LOG_CONFIG,
+			    "BM_%d : beiscsi_get_session_info Failed");
+
+		if (ret != -EBUSY)
+			goto boot_freemem;
+		else
+			return ret;
+	}
+
+	session_resp = nonemb_cmd.va ;
+
+	memcpy(&phba->boot_sess, &session_resp->session_info,
+	       sizeof(struct mgmt_session_info));
+
+	 beiscsi_logout_fw_sess(phba,
+				phba->boot_sess.session_handle);
+	ret = 0;
+
+boot_freemem:
+	pci_free_consistent(phba->ctrl.pdev, nonemb_cmd.size,
+		    nonemb_cmd.va, nonemb_cmd.dma);
+	return ret;
+}
+
+static void beiscsi_boot_release(void *data)
+{
+	struct beiscsi_hba *phba = data;
+
+	scsi_host_put(phba->shost);
+}
+
+static int beiscsi_setup_boot_info(struct beiscsi_hba *phba)
+{
+	struct iscsi_boot_kobj *boot_kobj;
+
+	/* it has been created previously */
+	if (phba->boot_kset)
+		return 0;
+
+	/* get boot info using mgmt cmd */
+	if (beiscsi_get_boot_info(phba))
+		/* Try to see if we can carry on without this */
+		return 0;
+
+	phba->boot_kset = iscsi_boot_create_host_kset(phba->shost->host_no);
+	if (!phba->boot_kset)
+		return -ENOMEM;
+
+	/* get a ref because the show function will ref the phba */
+	if (!scsi_host_get(phba->shost))
+		goto free_kset;
+	boot_kobj = iscsi_boot_create_target(phba->boot_kset, 0, phba,
+					     beiscsi_show_boot_tgt_info,
+					     beiscsi_tgt_get_attr_visibility,
+					     beiscsi_boot_release);
+	if (!boot_kobj)
+		goto put_shost;
+
+	if (!scsi_host_get(phba->shost))
+		goto free_kset;
+	boot_kobj = iscsi_boot_create_initiator(phba->boot_kset, 0, phba,
+						beiscsi_show_boot_ini_info,
+						beiscsi_ini_get_attr_visibility,
+						beiscsi_boot_release);
+	if (!boot_kobj)
+		goto put_shost;
+
+	if (!scsi_host_get(phba->shost))
+		goto free_kset;
+	boot_kobj = iscsi_boot_create_ethernet(phba->boot_kset, 0, phba,
+					       beiscsi_show_boot_eth_info,
+					       beiscsi_eth_get_attr_visibility,
+					       beiscsi_boot_release);
+	if (!boot_kobj)
+		goto put_shost;
+	return 0;
+
+put_shost:
+	scsi_host_put(phba->shost);
+free_kset:
+	iscsi_boot_destroy_kset(phba->boot_kset);
+	phba->boot_kset = NULL;
+	return -ENOMEM;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int beiscsi_init_port(struct beiscsi_hba *phba)
 {
 	int ret;

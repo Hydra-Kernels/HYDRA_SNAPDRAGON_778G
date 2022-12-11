@@ -780,6 +780,7 @@ void __init fpu__init_system_xstate(void)
 		goto out_disable;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Clear XSAVE features that are disabled in the normal CPUID.
 	 */
@@ -788,6 +789,8 @@ void __init fpu__init_system_xstate(void)
 			xfeatures_mask &= ~BIT(i);
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xfeatures_mask &= fpu__get_supported_xfeatures_mask();
 
 	/* Enable xstate instructions to be able to continue with initialization: */

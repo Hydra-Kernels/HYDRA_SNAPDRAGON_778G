@@ -47,8 +47,12 @@
 #include <linux/crash_dump.h>
 #include <linux/crc32.h>
 #include <linux/qed/qed_if.h>
+<<<<<<< HEAD
 #include <linux/qed/qed_ll2_if.h>
 #include <net/devlink.h>
+=======
+#include <linux/crash_dump.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "qed.h"
 #include "qed_sriov.h"

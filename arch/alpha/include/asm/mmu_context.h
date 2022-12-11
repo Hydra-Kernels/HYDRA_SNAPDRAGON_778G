@@ -8,9 +8,13 @@
  * Copyright (C) 1996, Linus Torvalds
  */
 
+<<<<<<< HEAD
 #include <linux/mm_types.h>
 #include <linux/sched.h>
 
+=======
+#include <linux/sched.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/machvec.h>
 #include <asm/compiler.h>
 #include <asm-generic/mm_hooks.h>

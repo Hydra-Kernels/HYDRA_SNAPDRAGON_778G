@@ -270,6 +270,9 @@ int mlx4_ib_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
 err_cq_free:
 	mlx4_cq_free(dev->dev, &cq->mcq);
 
+err_cq_free:
+	mlx4_cq_free(dev->dev, &cq->mcq);
+
 err_dbmap:
 	if (udata)
 		mlx4_ib_db_unmap_user(context, &cq->db);

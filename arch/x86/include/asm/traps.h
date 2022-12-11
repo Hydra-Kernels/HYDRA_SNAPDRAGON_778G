@@ -92,7 +92,11 @@ dotraplinkage void do_simd_coprocessor_error(struct pt_regs *regs, long error_co
 #ifdef CONFIG_X86_32
 dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code);
 #endif
+<<<<<<< HEAD
 dotraplinkage void do_mce(struct pt_regs *regs, long error_code);
+=======
+dotraplinkage void do_mce(struct pt_regs *, long);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int get_si_code(unsigned long condition)
 {

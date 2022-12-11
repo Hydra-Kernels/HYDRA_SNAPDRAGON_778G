@@ -83,9 +83,16 @@ STRTO_H(strtoll, long long)
 STRTO_H(strtoull, unsigned long long)
 
 /**
+<<<<<<< HEAD
  * bch_hprint - formats @v to human readable string for sysfs.
  * @buf: the (at least 8 byte) buffer to format the result into.
  * @v: signed 64 bit integer
+=======
+ * bch_hprint() - formats @v to human readable string for sysfs.
+ *
+ * @v - signed 64 bit integer
+ * @buf - the (at least 8 byte) buffer to format the result into.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Returns the number of bytes used by format.
  */
@@ -111,6 +118,18 @@ ssize_t bch_hprint(char *buf, int64_t v)
 		t = q & ~(~0 << 10);
 		q >>= 10;
 	} while (q >= 1000);
+<<<<<<< HEAD
+=======
+
+	if (v < 0)
+		/* '-', up to 3 digits, '.', 1 digit, 1 character, null;
+		 * yields 8 bytes.
+		 */
+		return sprintf(buf, "-%llu.%i%c", q, t * 10 / 1024, units[u]);
+	else
+		return sprintf(buf, "%llu.%i%c", q, t * 10 / 1024, units[u]);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (v < 0)
 		/* '-', up to 3 digits, '.', 1 digit, 1 character, null;

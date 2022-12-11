@@ -436,6 +436,7 @@ static int i8042_start(struct serio *serio)
 {
 	struct i8042_port *port = serio->port_data;
 
+<<<<<<< HEAD
 	device_set_wakeup_capable(&serio->dev, true);
 
 	/*
@@ -450,6 +451,8 @@ static int i8042_start(struct serio *serio)
 		device_set_wakeup_enable(&serio->dev, true);
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_lock_irq(&i8042_lock);
 	port->exists = true;
 	spin_unlock_irq(&i8042_lock);

@@ -807,6 +807,9 @@ static void free_pud_table(pgd_t *pgd, bool direct)
 
 	free_pagetable(page, 0, direct);
 
+	/* Ensure the zero page is visible to the page table walker */
+	dsb(ishst);
+
 	/*
 	 * This spin lock could be only
 	 * taken in _pte_aloc_kernel in
@@ -1332,6 +1335,7 @@ void *__init fixmap_remap_fdt(phys_addr_t dt_phys, int *size, pgprot_t prot)
 	return dt_virt;
 }
 
+<<<<<<< HEAD
 int __init arch_ioremap_p4d_supported(void)
 {
 	return 0;
@@ -1507,3 +1511,16 @@ void arch_remove_memory(int nid, u64 start, u64 size,
 	kernel_physical_mapping_remove(start, start + size);
 }
 #endif /* CONFIG_MEMORY_HOTPLUG */
+=======
+#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+int pud_free_pmd_page(pud_t *pud)
+{
+	return pud_none(*pud);
+}
+
+int pmd_free_pte_page(pmd_t *pmd)
+{
+	return pmd_none(*pmd);
+}
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

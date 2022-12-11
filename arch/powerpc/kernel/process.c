@@ -368,6 +368,7 @@ void enable_kernel_vsx(void)
 
 	WARN_ON(preemptible());
 
+<<<<<<< HEAD
 	cpumsr = msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
 
 	if (current->thread.regs &&
@@ -385,6 +386,17 @@ void enable_kernel_vsx(void)
 			return;
 		__giveup_vsx(current);
 	}
+=======
+#ifdef CONFIG_SMP
+	if (current->thread.regs &&
+	    (current->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)))
+		giveup_vsx(current);
+	else
+		giveup_vsx(NULL);	/* just enable vsx for kernel - force */
+#else
+	giveup_vsx(last_task_used_vsx);
+#endif /* CONFIG_SMP */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(enable_kernel_vsx);
 
@@ -393,6 +405,10 @@ void flush_vsx_to_thread(struct task_struct *tsk)
 	if (tsk->thread.regs) {
 		preempt_disable();
 		if (tsk->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)) {
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_SMP
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			BUG_ON(tsk != current);
 			giveup_vsx(tsk);
 		}

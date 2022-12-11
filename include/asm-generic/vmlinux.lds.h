@@ -675,6 +675,7 @@
 	EARLY_LSM_TABLE()
 
 #define INIT_TEXT							\
+<<<<<<< HEAD
 	*(.init.text .init.text.*)					\
 	*(.text.startup)						\
 	MEM_DISCARD(init.text*)
@@ -685,6 +686,18 @@
 	*(.dtors .dtors.*)						\
 	MEM_DISCARD(exit.data*)						\
 	MEM_DISCARD(exit.rodata*)
+=======
+	*(.init.text)							\
+	*(.text.startup)						\
+	MEM_DISCARD(init.text)
+
+#define EXIT_DATA							\
+	*(.exit.data)							\
+	*(.fini_array)							\
+	*(.dtors)							\
+	MEM_DISCARD(exit.data)						\
+	MEM_DISCARD(exit.rodata)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define EXIT_TEXT							\
 	*(.exit.text)							\
@@ -928,8 +941,19 @@
  * sharing between subsections for different purposes.
  */
 #define PERCPU_INPUT(cacheline)						\
+<<<<<<< HEAD
 	__per_cpu_start = .;						\
+=======
+	VMLINUX_SYMBOL(__per_cpu_start) = .;				\
+	VMLINUX_SYMBOL(__per_cpu_user_mapped_start) = .;		\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	*(.data..percpu..first)						\
+	. = ALIGN(cacheline);						\
+	*(.data..percpu..user_mapped)					\
+	*(.data..percpu..user_mapped..shared_aligned)			\
+	. = ALIGN(PAGE_SIZE);						\
+	*(.data..percpu..user_mapped..page_aligned)			\
+	VMLINUX_SYMBOL(__per_cpu_user_mapped_end) = .;			\
 	. = ALIGN(PAGE_SIZE);						\
 	*(.data..percpu..page_aligned)					\
 	. = ALIGN(cacheline);						\

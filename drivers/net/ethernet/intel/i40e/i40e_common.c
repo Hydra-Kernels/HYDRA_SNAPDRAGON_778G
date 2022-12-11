@@ -282,8 +282,11 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
 		   void *buffer, u16 buf_len)
 {
 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+<<<<<<< HEAD
 	u32 effective_mask = hw->debug_mask & mask;
 	char prefix[27];
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 len;
 	u8 *buf = (u8 *)buffer;
 
@@ -292,7 +295,11 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
 
 	len = le16_to_cpu(aq_desc->datalen);
 
+<<<<<<< HEAD
 	i40e_debug(hw, mask & I40E_DEBUG_AQ_DESCRIPTOR,
+=======
+	i40e_debug(hw, mask,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		   "AQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
 		   le16_to_cpu(aq_desc->opcode),
 		   le16_to_cpu(aq_desc->flags),

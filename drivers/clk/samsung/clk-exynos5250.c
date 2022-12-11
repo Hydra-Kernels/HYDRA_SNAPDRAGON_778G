@@ -697,6 +697,7 @@ static const struct samsung_pll_rate_table vpll_24mhz_tbl[] __initconst = {
 static const struct samsung_pll_rate_table epll_24mhz_tbl[] __initconst = {
 	/* sorted in descending order */
 	/* PLL_36XX_RATE(rate, m, p, s, k) */
+<<<<<<< HEAD
 	PLL_36XX_RATE(24 * MHZ, 192000000, 64, 2, 2, 0),
 	PLL_36XX_RATE(24 * MHZ, 180633605, 90, 3, 2, 20762),
 	PLL_36XX_RATE(24 * MHZ, 180000000, 90, 3, 2, 0),
@@ -705,6 +706,16 @@ static const struct samsung_pll_rate_table epll_24mhz_tbl[] __initconst = {
 	PLL_36XX_RATE(24 * MHZ, 49152000, 98, 3, 4, 19923),
 	PLL_36XX_RATE(24 * MHZ, 45158401, 90, 3, 4, 20762),
 	PLL_36XX_RATE(24 * MHZ, 32768001, 131, 3, 5, 4719),
+=======
+	PLL_36XX_RATE(192000000, 64, 2, 2, 0),
+	PLL_36XX_RATE(180633605, 90, 3, 2, 20762),
+	PLL_36XX_RATE(180000000, 90, 3, 2, 0),
+	PLL_36XX_RATE(73728000, 98, 2, 4, 19923),
+	PLL_36XX_RATE(67737602, 90, 2, 4, 20762),
+	PLL_36XX_RATE(49152000, 98, 3, 4, 19923),
+	PLL_36XX_RATE(45158401, 90, 3, 4, 20762),
+	PLL_36XX_RATE(32768001, 131, 3, 5, 4719),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ },
 };
 

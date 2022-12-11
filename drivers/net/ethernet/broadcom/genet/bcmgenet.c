@@ -3,6 +3,13 @@
  * Broadcom GENET (Gigabit Ethernet) controller driver
  *
  * Copyright (c) 2014-2017 Broadcom
+<<<<<<< HEAD
+=======
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #define pr_fmt(fmt)				"bcmgenet: " fmt
@@ -1380,6 +1387,15 @@ static unsigned int __bcmgenet_tx_reclaim(struct net_device *dev,
 					  struct bcmgenet_tx_ring *ring)
 {
 	struct bcmgenet_priv *priv = netdev_priv(dev);
+<<<<<<< HEAD
+=======
+	struct device *kdev = &priv->pdev->dev;
+	struct enet_cb *tx_cb_ptr;
+	struct netdev_queue *txq;
+	unsigned int pkts_compl = 0;
+	unsigned int c_index;
+	unsigned int txbds_ready;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int txbds_processed = 0;
 	unsigned int bytes_compl = 0;
 	unsigned int pkts_compl = 0;
@@ -1410,8 +1426,26 @@ static unsigned int __bcmgenet_tx_reclaim(struct net_device *dev,
 					  &priv->tx_cbs[ring->clean_ptr]);
 		if (skb) {
 			pkts_compl++;
+<<<<<<< HEAD
 			bytes_compl += GENET_CB(skb)->bytes_sent;
 			dev_consume_skb_any(skb);
+=======
+			dev->stats.tx_packets++;
+			dev->stats.tx_bytes += tx_cb_ptr->skb->len;
+			dma_unmap_single(kdev,
+					 dma_unmap_addr(tx_cb_ptr, dma_addr),
+					 dma_unmap_len(tx_cb_ptr, dma_len),
+					 DMA_TO_DEVICE);
+			bcmgenet_free_cb(tx_cb_ptr);
+		} else if (dma_unmap_addr(tx_cb_ptr, dma_addr)) {
+			dev->stats.tx_bytes +=
+				dma_unmap_len(tx_cb_ptr, dma_len);
+			dma_unmap_page(kdev,
+				       dma_unmap_addr(tx_cb_ptr, dma_addr),
+				       dma_unmap_len(tx_cb_ptr, dma_len),
+				       DMA_TO_DEVICE);
+			dma_unmap_addr_set(tx_cb_ptr, dma_addr, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		txbds_processed++;
@@ -1483,6 +1517,95 @@ static void bcmgenet_tx_reclaim_all(struct net_device *dev)
 	bcmgenet_tx_reclaim(dev, &priv->tx_rings[DESC_INDEX]);
 }
 
+<<<<<<< HEAD
+=======
+/* Transmits a single SKB (either head of a fragment or a single SKB)
+ * caller must hold priv->lock
+ */
+static int bcmgenet_xmit_single(struct net_device *dev,
+				struct sk_buff *skb,
+				u16 dma_desc_flags,
+				struct bcmgenet_tx_ring *ring)
+{
+	struct bcmgenet_priv *priv = netdev_priv(dev);
+	struct device *kdev = &priv->pdev->dev;
+	struct enet_cb *tx_cb_ptr;
+	unsigned int skb_len;
+	dma_addr_t mapping;
+	u32 length_status;
+	int ret;
+
+	tx_cb_ptr = bcmgenet_get_txcb(priv, ring);
+
+	if (unlikely(!tx_cb_ptr))
+		BUG();
+
+	tx_cb_ptr->skb = skb;
+
+	skb_len = skb_headlen(skb) < ETH_ZLEN ? ETH_ZLEN : skb_headlen(skb);
+
+	mapping = dma_map_single(kdev, skb->data, skb_len, DMA_TO_DEVICE);
+	ret = dma_mapping_error(kdev, mapping);
+	if (ret) {
+		priv->mib.tx_dma_failed++;
+		netif_err(priv, tx_err, dev, "Tx DMA map failed\n");
+		dev_kfree_skb(skb);
+		return ret;
+	}
+
+	dma_unmap_addr_set(tx_cb_ptr, dma_addr, mapping);
+	dma_unmap_len_set(tx_cb_ptr, dma_len, skb_len);
+	length_status = (skb_len << DMA_BUFLENGTH_SHIFT) | dma_desc_flags |
+			(priv->hw_params->qtag_mask << DMA_TX_QTAG_SHIFT) |
+			DMA_TX_APPEND_CRC;
+
+	if (skb->ip_summed == CHECKSUM_PARTIAL)
+		length_status |= DMA_TX_DO_CSUM;
+
+	dmadesc_set(priv, tx_cb_ptr->bd_addr, mapping, length_status);
+
+	return 0;
+}
+
+/* Transmit a SKB fragment */
+static int bcmgenet_xmit_frag(struct net_device *dev,
+			      skb_frag_t *frag,
+			      u16 dma_desc_flags,
+			      struct bcmgenet_tx_ring *ring)
+{
+	struct bcmgenet_priv *priv = netdev_priv(dev);
+	struct device *kdev = &priv->pdev->dev;
+	struct enet_cb *tx_cb_ptr;
+	dma_addr_t mapping;
+	int ret;
+
+	tx_cb_ptr = bcmgenet_get_txcb(priv, ring);
+
+	if (unlikely(!tx_cb_ptr))
+		BUG();
+	tx_cb_ptr->skb = NULL;
+
+	mapping = skb_frag_dma_map(kdev, frag, 0,
+				   skb_frag_size(frag), DMA_TO_DEVICE);
+	ret = dma_mapping_error(kdev, mapping);
+	if (ret) {
+		priv->mib.tx_dma_failed++;
+		netif_err(priv, tx_err, dev, "%s: Tx DMA map failed\n",
+			  __func__);
+		return ret;
+	}
+
+	dma_unmap_addr_set(tx_cb_ptr, dma_addr, mapping);
+	dma_unmap_len_set(tx_cb_ptr, dma_len, frag->size);
+
+	dmadesc_set(priv, tx_cb_ptr->bd_addr, mapping,
+		    (frag->size << DMA_BUFLENGTH_SHIFT) | dma_desc_flags |
+		    (priv->hw_params->qtag_mask << DMA_TX_QTAG_SHIFT));
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Reallocate the SKB to put enough headroom in front of it and insert
  * the transmit checksum offsets in the descriptors
  */
@@ -1959,16 +2082,32 @@ static int bcmgenet_alloc_rx_buffers(struct bcmgenet_priv *priv,
 
 static void bcmgenet_free_rx_buffers(struct bcmgenet_priv *priv)
 {
+<<<<<<< HEAD
 	struct sk_buff *skb;
+=======
+	struct device *kdev = &priv->pdev->dev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct enet_cb *cb;
 	int i;
 
 	for (i = 0; i < priv->num_rx_bds; i++) {
 		cb = &priv->rx_cbs[i];
 
+<<<<<<< HEAD
 		skb = bcmgenet_free_rx_cb(&priv->pdev->dev, cb);
 		if (skb)
 			dev_consume_skb_any(skb);
+=======
+		if (dma_unmap_addr(cb, dma_addr)) {
+			dma_unmap_single(kdev,
+					 dma_unmap_addr(cb, dma_addr),
+					 priv->rx_buf_len, DMA_FROM_DEVICE);
+			dma_unmap_addr_set(cb, dma_addr, 0);
+		}
+
+		if (cb->skb)
+			bcmgenet_free_cb(cb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -3384,6 +3523,7 @@ static void bcmgenet_set_hw_params(struct bcmgenet_priv *priv)
 	 */
 	gphy_rev = reg & 0xffff;
 
+<<<<<<< HEAD
 	if (GENET_IS_V5(priv)) {
 		/* The EPHY revision should come from the MDIO registers of
 		 * the PHY not from GENET.
@@ -3404,6 +3544,22 @@ static void bcmgenet_set_hw_params(struct bcmgenet_priv *priv)
 		priv->gphy_rev = gphy_rev;
 	}
 
+=======
+	/* This is reserved so should require special treatment */
+	if (gphy_rev == 0 || gphy_rev == 0x01ff) {
+		pr_warn("Invalid GPHY revision detected: 0x%04x\n", gphy_rev);
+		return;
+	}
+
+	/* This is the good old scheme, just GPHY major, no minor nor patch */
+	if ((gphy_rev & 0xf0) != 0)
+		priv->gphy_rev = gphy_rev << 8;
+
+	/* This is the new scheme, GPHY major rolls over with 0x10 = rev G0 */
+	else if ((gphy_rev & 0xff00) != 0)
+		priv->gphy_rev = gphy_rev;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_PHYS_ADDR_T_64BIT
 	if (!(params->flags & GENET_HAS_40BITS))
 		pr_warn("GENET does not support 40-bits PA\n");
@@ -3561,7 +3717,13 @@ static int bcmgenet_probe(struct platform_device *pdev)
 	    !strcasecmp(phy_mode_str, "internal"))
 		bcmgenet_power_up(priv, GENET_POWER_PASSIVE);
 
+<<<<<<< HEAD
 	reset_umac(priv);
+=======
+	err = reset_umac(priv);
+	if (err)
+		goto err_clk_disable;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	err = bcmgenet_mii_init(dev);
 	if (err)
@@ -3612,6 +3774,53 @@ static int bcmgenet_remove(struct platform_device *pdev)
 }
 
 #ifdef CONFIG_PM_SLEEP
+<<<<<<< HEAD
+=======
+static int bcmgenet_suspend(struct device *d)
+{
+	struct net_device *dev = dev_get_drvdata(d);
+	struct bcmgenet_priv *priv = netdev_priv(dev);
+	int ret;
+
+	if (!netif_running(dev))
+		return 0;
+
+	bcmgenet_netif_stop(dev);
+
+	if (!device_may_wakeup(d))
+		phy_suspend(priv->phydev);
+
+	netif_device_detach(dev);
+
+	/* Disable MAC receive */
+	umac_enable_set(priv, CMD_RX_EN, false);
+
+	ret = bcmgenet_dma_teardown(priv);
+	if (ret)
+		return ret;
+
+	/* Disable MAC transmit. TX DMA disabled have to done before this */
+	umac_enable_set(priv, CMD_TX_EN, false);
+
+	/* tx reclaim */
+	bcmgenet_tx_reclaim_all(dev);
+	bcmgenet_fini_dma(priv);
+
+	/* Prepare the device for Wake-on-LAN and switch to the slow clock */
+	if (device_may_wakeup(d) && priv->wolopts) {
+		ret = bcmgenet_power_down(priv, GENET_POWER_WOL_MAGIC);
+		clk_prepare_enable(priv->clk_wol);
+	} else if (priv->internal_phy) {
+		ret = bcmgenet_power_down(priv, GENET_POWER_PASSIVE);
+	}
+
+	/* Turn off the clocks */
+	clk_disable_unprepare(priv->clk);
+
+	return ret;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int bcmgenet_resume(struct device *d)
 {
 	struct net_device *dev = dev_get_drvdata(d);
@@ -3665,8 +3874,15 @@ static int bcmgenet_resume(struct device *d)
 	/* Always enable ring 16 - descriptor ring */
 	bcmgenet_enable_dma(priv, dma_ctrl);
 
+<<<<<<< HEAD
 	if (!device_may_wakeup(d))
 		phy_resume(dev->phydev);
+=======
+	netif_device_attach(dev);
+
+	if (!device_may_wakeup(d))
+		phy_resume(priv->phydev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (priv->eee.eee_enabled)
 		bcmgenet_eee_enable_set(dev, true);

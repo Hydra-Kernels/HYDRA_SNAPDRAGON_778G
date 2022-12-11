@@ -36,8 +36,15 @@ static inline int
 arch_futex_atomic_op_inuser(int op, int oparg, int *oval, u32 __user *uaddr)
 {
 	unsigned long int flags;
+<<<<<<< HEAD
 	int oldval, ret;
 	u32 tmp;
+=======
+	u32 val;
+	int oldval = 0, ret;
+
+	pagefault_disable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	_futex_spin_lock_irqsave(uaddr, &flags);
 	pagefault_disable();
@@ -79,6 +86,12 @@ out_pagefault_enable:
 	if (!ret)
 		*oval = oldval;
 
+<<<<<<< HEAD
+=======
+	if (!ret)
+		*oval = oldval;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

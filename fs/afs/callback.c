@@ -338,4 +338,231 @@ void afs_clear_callback_interests(struct afs_net *net, struct afs_server_list *s
 		afs_put_cb_interest(net, slist->servers[i].cb_interest);
 		slist->servers[i].cb_interest = NULL;
 	}
+<<<<<<< HEAD
+=======
+
+	ASSERT(server->cb_promises.rb_node != NULL);
+	rb_erase(&vnode->cb_promise, &server->cb_promises);
+	vnode->cb_promised = false;
+	_leave("");
+}
+
+/*
+ * discard the callback on a deleted item
+ */
+void afs_discard_callback_on_delete(struct afs_vnode *vnode)
+{
+	struct afs_server *server = vnode->server;
+
+	_enter("%d", vnode->cb_promised);
+
+	if (!vnode->cb_promised) {
+		_leave(" [not promised]");
+		return;
+	}
+
+	ASSERT(server != NULL);
+
+	spin_lock(&server->cb_lock);
+	if (vnode->cb_promised) {
+		ASSERT(server->cb_promises.rb_node != NULL);
+		rb_erase(&vnode->cb_promise, &server->cb_promises);
+		vnode->cb_promised = false;
+	}
+	spin_unlock(&server->cb_lock);
+	_leave("");
+}
+
+/*
+ * give up the callback registered for a vnode on the file server when the
+ * inode is being cleared
+ */
+void afs_give_up_callback(struct afs_vnode *vnode)
+{
+	struct afs_server *server = vnode->server;
+
+	DECLARE_WAITQUEUE(myself, current);
+
+	_enter("%d", vnode->cb_promised);
+
+	_debug("GIVE UP INODE %p", &vnode->vfs_inode);
+
+	if (!vnode->cb_promised) {
+		_leave(" [not promised]");
+		return;
+	}
+
+	ASSERT(server != NULL);
+
+	spin_lock(&server->cb_lock);
+	if (vnode->cb_promised && afs_breakring_space(server) == 0) {
+		add_wait_queue(&server->cb_break_waitq, &myself);
+		for (;;) {
+			set_current_state(TASK_UNINTERRUPTIBLE);
+			if (!vnode->cb_promised ||
+			    afs_breakring_space(server) != 0)
+				break;
+			spin_unlock(&server->cb_lock);
+			schedule();
+			spin_lock(&server->cb_lock);
+		}
+		remove_wait_queue(&server->cb_break_waitq, &myself);
+		__set_current_state(TASK_RUNNING);
+	}
+
+	/* of course, it's always possible for the server to break this vnode's
+	 * callback first... */
+	if (vnode->cb_promised)
+		afs_do_give_up_callback(server, vnode);
+
+	spin_unlock(&server->cb_lock);
+	_leave("");
+}
+
+/*
+ * dispatch a deferred give up callbacks operation
+ */
+void afs_dispatch_give_up_callbacks(struct work_struct *work)
+{
+	struct afs_server *server =
+		container_of(work, struct afs_server, cb_break_work.work);
+
+	_enter("");
+
+	/* tell the fileserver to discard the callback promises it has
+	 * - in the event of ENOMEM or some other error, we just forget that we
+	 *   had callbacks entirely, and the server will call us later to break
+	 *   them
+	 */
+	afs_fs_give_up_callbacks(server, &afs_async_call);
+}
+
+/*
+ * flush the outstanding callback breaks on a server
+ */
+void afs_flush_callback_breaks(struct afs_server *server)
+{
+	mod_delayed_work(afs_callback_update_worker, &server->cb_break_work, 0);
+}
+
+#if 0
+/*
+ * update a bunch of callbacks
+ */
+static void afs_callback_updater(struct work_struct *work)
+{
+	struct afs_server *server;
+	struct afs_vnode *vnode, *xvnode;
+	time64_t now;
+	long timeout;
+	int ret;
+
+	server = container_of(work, struct afs_server, updater);
+
+	_enter("");
+
+	now = ktime_get_real_seconds();
+
+	/* find the first vnode to update */
+	spin_lock(&server->cb_lock);
+	for (;;) {
+		if (RB_EMPTY_ROOT(&server->cb_promises)) {
+			spin_unlock(&server->cb_lock);
+			_leave(" [nothing]");
+			return;
+		}
+
+		vnode = rb_entry(rb_first(&server->cb_promises),
+				 struct afs_vnode, cb_promise);
+		if (atomic_read(&vnode->usage) > 0)
+			break;
+		rb_erase(&vnode->cb_promise, &server->cb_promises);
+		vnode->cb_promised = false;
+	}
+
+	timeout = vnode->update_at - now;
+	if (timeout > 0) {
+		queue_delayed_work(afs_vnode_update_worker,
+				   &afs_vnode_update, timeout * HZ);
+		spin_unlock(&server->cb_lock);
+		_leave(" [nothing]");
+		return;
+	}
+
+	list_del_init(&vnode->update);
+	atomic_inc(&vnode->usage);
+	spin_unlock(&server->cb_lock);
+
+	/* we can now perform the update */
+	_debug("update %s", vnode->vldb.name);
+	vnode->state = AFS_VL_UPDATING;
+	vnode->upd_rej_cnt = 0;
+	vnode->upd_busy_cnt = 0;
+
+	ret = afs_vnode_update_record(vl, &vldb);
+	switch (ret) {
+	case 0:
+		afs_vnode_apply_update(vl, &vldb);
+		vnode->state = AFS_VL_UPDATING;
+		break;
+	case -ENOMEDIUM:
+		vnode->state = AFS_VL_VOLUME_DELETED;
+		break;
+	default:
+		vnode->state = AFS_VL_UNCERTAIN;
+		break;
+	}
+
+	/* and then reschedule */
+	_debug("reschedule");
+	vnode->update_at = ktime_get_real_seconds() +
+			afs_vnode_update_timeout;
+
+	spin_lock(&server->cb_lock);
+
+	if (!list_empty(&server->cb_promises)) {
+		/* next update in 10 minutes, but wait at least 1 second more
+		 * than the newest record already queued so that we don't spam
+		 * the VL server suddenly with lots of requests
+		 */
+		xvnode = list_entry(server->cb_promises.prev,
+				    struct afs_vnode, update);
+		if (vnode->update_at <= xvnode->update_at)
+			vnode->update_at = xvnode->update_at + 1;
+		xvnode = list_entry(server->cb_promises.next,
+				    struct afs_vnode, update);
+		timeout = xvnode->update_at - now;
+		if (timeout < 0)
+			timeout = 0;
+	} else {
+		timeout = afs_vnode_update_timeout;
+	}
+
+	list_add_tail(&vnode->update, &server->cb_promises);
+
+	_debug("timeout %ld", timeout);
+	queue_delayed_work(afs_vnode_update_worker,
+			   &afs_vnode_update, timeout * HZ);
+	spin_unlock(&server->cb_lock);
+	afs_put_vnode(vl);
+}
+#endif
+
+/*
+ * initialise the callback update process
+ */
+int __init afs_callback_update_init(void)
+{
+	afs_callback_update_worker =
+		create_singlethread_workqueue("kafs_callbackd");
+	return afs_callback_update_worker ? 0 : -ENOMEM;
+}
+
+/*
+ * shut down the callback update process
+ */
+void afs_callback_update_kill(void)
+{
+	destroy_workqueue(afs_callback_update_worker);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

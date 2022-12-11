@@ -1154,7 +1154,11 @@ ext4_mb_load_buddy_gfp(struct super_block *sb, ext4_group_t group,
 			 * is yet to initialize the same. So
 			 * wait for it to initialize.
 			 */
+<<<<<<< HEAD
 			put_page(page);
+=======
+			page_cache_release(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		page = find_or_create_page(inode->i_mapping, pnum, gfp);
 		if (page) {
 			BUG_ON(page->mapping != inode->i_mapping);
@@ -1190,7 +1194,11 @@ ext4_mb_load_buddy_gfp(struct super_block *sb, ext4_group_t group,
 	page = find_get_page_flags(inode->i_mapping, pnum, FGP_ACCESSED);
 	if (page == NULL || !PageUptodate(page)) {
 		if (page)
+<<<<<<< HEAD
 			put_page(page);
+=======
+			page_cache_release(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		page = find_or_create_page(inode->i_mapping, pnum, gfp);
 		if (page) {
 			BUG_ON(page->mapping != inode->i_mapping);

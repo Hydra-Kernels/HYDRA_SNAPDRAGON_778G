@@ -145,8 +145,11 @@ xfs_dir3_free_write_verify(
 
 const struct xfs_buf_ops xfs_dir3_free_buf_ops = {
 	.name = "xfs_dir3_free",
+<<<<<<< HEAD
 	.magic = { cpu_to_be32(XFS_DIR2_FREE_MAGIC),
 		   cpu_to_be32(XFS_DIR3_FREE_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_dir3_free_read_verify,
 	.verify_write = xfs_dir3_free_write_verify,
 	.verify_struct = xfs_dir3_free_verify,

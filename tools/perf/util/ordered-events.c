@@ -83,7 +83,11 @@ static union perf_event *dup_event(struct ordered_events *oe,
 
 static void __free_dup_event(struct ordered_events *oe, union perf_event *event)
 {
+<<<<<<< HEAD
 	if (event) {
+=======
+	if (event && oe->copy_on_queue) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		oe->cur_alloc_size -= event->header.size;
 		free(event);
 	}

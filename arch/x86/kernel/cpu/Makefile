@@ -22,17 +22,24 @@ obj-y			+= common.o
 obj-y			+= rdrand.o
 obj-y			+= match.o
 obj-y			+= bugs.o
+<<<<<<< HEAD
 obj-y			+= aperfmperf.o
 obj-y			+= cpuid-deps.o
 obj-y			+= umwait.o
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 obj-$(CONFIG_PROC_FS)	+= proc.o
 obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
+<<<<<<< HEAD
 ifdef CONFIG_CPU_SUP_INTEL
 obj-y			+= intel.o intel_pconfig.o tsx.o
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif
+=======
+obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
 obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
 obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o

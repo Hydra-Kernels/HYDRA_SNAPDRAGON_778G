@@ -301,9 +301,12 @@ static struct fq_flow *fq_classify(struct sk_buff *skb, struct fq_sched_data *q)
 				     f->socket_hash != sk->sk_hash)) {
 				f->credit = q->initial_quantum;
 				f->socket_hash = sk->sk_hash;
+<<<<<<< HEAD
 				if (q->rate_enable)
 					smp_store_release(&sk->sk_pacing_status,
 							  SK_PACING_FQ);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				if (fq_flow_is_throttled(f))
 					fq_flow_unset_throttled(q, f);
 				f->time_next_packet = 0ULL;
@@ -845,7 +848,11 @@ static int fq_change(struct Qdisc *sch, struct nlattr *opt,
 		if (!skb)
 			break;
 		drop_len += qdisc_pkt_len(skb);
+<<<<<<< HEAD
 		rtnl_kfree_skbs(skb, skb);
+=======
+		kfree_skb(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		drop_count++;
 	}
 	qdisc_tree_reduce_backlog(sch, drop_count, drop_len);

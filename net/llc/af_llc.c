@@ -336,6 +336,11 @@ static int llc_ui_bind(struct socket *sock, struct sockaddr *uaddr, int addrlen)
 	struct llc_sap *sap;
 	int rc = -EINVAL;
 
+<<<<<<< HEAD
+=======
+	dprintk("%s: binding %02X\n", __func__, addr->sllc_sap);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lock_sock(sk);
 	if (unlikely(!sock_flag(sk, SOCK_ZAPPED) || addrlen != sizeof(*addr)))
 		goto out;
@@ -944,7 +949,11 @@ static int llc_ui_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 	copied = size - hdrlen;
 	rc = -EINVAL;
 	if (copied < 0)
+<<<<<<< HEAD
 		goto out;
+=======
+		goto release;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	release_sock(sk);
 	skb = sock_alloc_send_skb(sk, size, noblock, &rc);
 	lock_sock(sk);

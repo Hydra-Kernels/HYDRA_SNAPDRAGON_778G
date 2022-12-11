@@ -40,7 +40,10 @@
 #include <asm/dsp.h>
 #include <asm/fpu.h>
 #include <asm/irq.h>
+<<<<<<< HEAD
 #include <asm/mips-cps.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/msa.h>
 #include <asm/pgtable.h>
 #include <asm/mipsregs.h>
@@ -212,13 +215,21 @@ static inline int is_ra_save_ins(union mips_instruction *ip, int *poff)
 	 *
 	 * microMIPS is way more fun...
 	 */
+<<<<<<< HEAD
 	if (mm_insn_16bit(ip->word >> 16)) {
+=======
+	if (mm_insn_16bit(ip->halfword[1])) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		switch (ip->mm16_r5_format.opcode) {
 		case mm_swsp16_op:
 			if (ip->mm16_r5_format.rt != 31)
 				return 0;
 
+<<<<<<< HEAD
 			*poff = ip->mm16_r5_format.imm;
+=======
+			*poff = ip->mm16_r5_format.simmediate;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			*poff = (*poff << 2) / sizeof(ulong);
 			return 1;
 
@@ -291,7 +302,11 @@ static inline int is_jump_ins(union mips_instruction *ip)
 	 *
 	 * microMIPS is kind of more fun...
 	 */
+<<<<<<< HEAD
 	if (mm_insn_16bit(ip->word >> 16)) {
+=======
+	if (mm_insn_16bit(ip->halfword[1])) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if ((ip->mm16_r5_format.opcode == mm_pool16c_op &&
 		    (ip->mm16_r5_format.rt & mm_jr16_op) == mm_jr16_op))
 			return 1;
@@ -330,6 +345,7 @@ static inline int is_sp_move_ins(union mips_instruction *ip, int *frame_size)
 	 *
 	 * microMIPS is not more fun...
 	 */
+<<<<<<< HEAD
 	if (mm_insn_16bit(ip->word >> 16)) {
 		if (ip->mm16_r3_format.opcode == mm_pool16d_op &&
 		    ip->mm16_r3_format.simmediate & mm_addiusp_func) {
@@ -354,6 +370,17 @@ static inline int is_sp_move_ins(union mips_instruction *ip, int *frame_size)
 		*frame_size = -ip->i_format.simmediate;
 		return 1;
 	}
+=======
+	if (mm_insn_16bit(ip->halfword[1])) {
+		return (ip->mm16_r3_format.opcode == mm_pool16d_op &&
+			ip->mm16_r3_format.simmediate && mm_addiusp_func) ||
+		       (ip->mm16_r5_format.opcode == mm_pool16d_op &&
+			ip->mm16_r5_format.rt == 29);
+	}
+
+	return ip->mm_i_format.opcode == mm_addiu32_op &&
+	       ip->mm_i_format.rt == 29 && ip->mm_i_format.rs == 29;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 	/* addiu/daddiu sp,sp,-imm */
 	if (ip->i_format.rs != 29 || ip->i_format.rt != 29)
@@ -371,11 +398,17 @@ static inline int is_sp_move_ins(union mips_instruction *ip, int *frame_size)
 static int get_frame_info(struct mips_frame_info *info)
 {
 	bool is_mmips = IS_ENABLED(CONFIG_CPU_MICROMIPS);
+<<<<<<< HEAD
 	union mips_instruction insn, *ip;
 	const unsigned int max_insns = 128;
 	unsigned int last_insn_size = 0;
 	unsigned int i;
 	bool saw_jump = false;
+=======
+	union mips_instruction insn, *ip, *ip_end;
+	const unsigned int max_insns = 128;
+	unsigned int i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	info->pc_offset = -1;
 	info->frame_size = 0;
@@ -384,6 +417,7 @@ static int get_frame_info(struct mips_frame_info *info)
 	if (!ip)
 		goto err;
 
+<<<<<<< HEAD
 	for (i = 0; i < max_insns; i++) {
 		ip = (void *)ip + last_insn_size;
 
@@ -416,12 +450,55 @@ static int get_frame_info(struct mips_frame_info *info)
 			 * at the next instruction, too.
 			 */
 			saw_jump = true;
+=======
+	ip_end = (void *)ip + info->func_size;
+
+	for (i = 0; i < max_insns && ip < ip_end; i++, ip++) {
+		if (is_mmips && mm_insn_16bit(ip->halfword[0])) {
+			insn.halfword[0] = 0;
+			insn.halfword[1] = ip->halfword[0];
+		} else if (is_mmips) {
+			insn.halfword[0] = ip->halfword[1];
+			insn.halfword[1] = ip->halfword[0];
+		} else {
+			insn.word = ip->word;
+		}
+
+		if (is_jump_ins(&insn))
+			break;
+
+		if (!info->frame_size) {
+			if (is_sp_move_ins(&insn))
+			{
+#ifdef CONFIG_CPU_MICROMIPS
+				if (mm_insn_16bit(ip->halfword[0]))
+				{
+					unsigned short tmp;
+
+					if (ip->halfword[0] & mm_addiusp_func)
+					{
+						tmp = (((ip->halfword[0] >> 1) & 0x1ff) << 2);
+						info->frame_size = -(signed short)(tmp | ((tmp & 0x100) ? 0xfe00 : 0));
+					} else {
+						tmp = (ip->halfword[0] >> 1);
+						info->frame_size = -(signed short)(tmp & 0xf);
+					}
+					ip = (void *) &ip->halfword[1];
+					ip--;
+				} else
+#endif
+				info->frame_size = - ip->i_format.simmediate;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 		}
 		if (info->pc_offset == -1 &&
 		    is_ra_save_ins(&insn, &info->pc_offset))
+<<<<<<< HEAD
 			break;
 		if (saw_jump)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 	}
 	if (info->frame_size && info->pc_offset >= 0) /* nested */
@@ -681,21 +758,48 @@ unsigned long arch_align_stack(unsigned long sp)
 	return sp & ALMASK;
 }
 
+<<<<<<< HEAD
 static DEFINE_PER_CPU(call_single_data_t, backtrace_csd);
 static struct cpumask backtrace_csd_busy;
 
 static void handle_backtrace(void *info)
 {
 	nmi_cpu_backtrace(get_irq_regs());
+=======
+static DEFINE_PER_CPU(struct call_single_data, backtrace_csd);
+static struct cpumask backtrace_csd_busy;
+
+static void arch_dump_stack(void *info)
+{
+	struct pt_regs *regs;
+	static arch_spinlock_t lock = __ARCH_SPIN_LOCK_UNLOCKED;
+
+	arch_spin_lock(&lock);
+	regs = get_irq_regs();
+
+	if (regs)
+		show_regs(regs);
+	else
+		dump_stack();
+	arch_spin_unlock(&lock);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cpumask_clear_cpu(smp_processor_id(), &backtrace_csd_busy);
 }
 
 static void raise_backtrace(cpumask_t *mask)
 {
+<<<<<<< HEAD
 	call_single_data_t *csd;
 	int cpu;
 
 	for_each_cpu(cpu, mask) {
+=======
+	struct call_single_data *csd;
+	int cpu;
+
+	for_each_cpu(cpu, cpu_online_mask) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * If we previously sent an IPI to the target CPU & it hasn't
 		 * cleared its bit in the busy cpumask then it didn't handle
@@ -709,6 +813,7 @@ static void raise_backtrace(cpumask_t *mask)
 		}
 
 		csd = &per_cpu(backtrace_csd, cpu);
+<<<<<<< HEAD
 		csd->func = handle_backtrace;
 		smp_call_function_single_async(cpu, csd);
 	}
@@ -717,6 +822,11 @@ static void raise_backtrace(cpumask_t *mask)
 void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
 {
 	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace);
+=======
+		csd->func = arch_dump_stack;
+		smp_call_function_single_async(cpu, csd);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int mips_get_process_fp_mode(struct task_struct *task)
@@ -762,6 +872,18 @@ int mips_set_process_fp_mode(struct task_struct *task, unsigned int value)
 	if (IS_ENABLED(CONFIG_64BIT) && !test_thread_flag(TIF_32BIT_REGS))
 		return -EOPNOTSUPP;
 
+	/* If nothing to change, return right away, successfully.  */
+	if (value == mips_get_process_fp_mode(task))
+		return 0;
+
+	/* Only accept a mode change if 64-bit FP enabled for o32.  */
+	if (!IS_ENABLED(CONFIG_MIPS_O32_FP64_SUPPORT))
+		return -EOPNOTSUPP;
+
+	/* And only for o32 tasks.  */
+	if (IS_ENABLED(CONFIG_64BIT) && !test_thread_flag(TIF_32BIT_REGS))
+		return -EOPNOTSUPP;
+
 	/* Check the value is valid */
 	if (value & ~known_bits)
 		return -EOPNOTSUPP;
@@ -781,7 +903,53 @@ int mips_set_process_fp_mode(struct task_struct *task, unsigned int value)
 	if (!(value & PR_FP_MODE_FR) && raw_cpu_has_fpu && cpu_has_mips_r6)
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 	/* Indicate the new FP mode in each thread */
+=======
+	/* Proceed with the mode switch */
+	preempt_disable();
+
+	/* Save FP & vector context, then disable FPU & MSA */
+	if (task->signal == current->signal)
+		lose_fpu(1);
+
+	/* Prevent any threads from obtaining live FP context */
+	atomic_set(&task->mm->context.fp_mode_switching, 1);
+	smp_mb__after_atomic();
+
+	/*
+	 * If there are multiple online CPUs then wait until all threads whose
+	 * FP mode is about to change have been context switched. This approach
+	 * allows us to only worry about whether an FP mode switch is in
+	 * progress when FP is first used in a tasks time slice. Pretty much all
+	 * of the mode switch overhead can thus be confined to cases where mode
+	 * switches are actually occuring. That is, to here. However for the
+	 * thread performing the mode switch it may take a while...
+	 */
+	if (num_online_cpus() > 1) {
+		spin_lock_irq(&task->sighand->siglock);
+
+		for_each_thread(task, t) {
+			if (t == current)
+				continue;
+
+			switch_count = t->nvcsw + t->nivcsw;
+
+			do {
+				spin_unlock_irq(&task->sighand->siglock);
+				cond_resched();
+				spin_lock_irq(&task->sighand->siglock);
+			} while ((t->nvcsw + t->nivcsw) == switch_count);
+		}
+
+		spin_unlock_irq(&task->sighand->siglock);
+	}
+
+	/*
+	 * There are now no threads of the process with live FP context, so it
+	 * is safe to proceed with the FP mode switch.
+	 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for_each_thread(task, t) {
 		/* Update desired FP register width */
 		if (value & PR_FP_MODE_FR) {
@@ -798,6 +966,7 @@ int mips_set_process_fp_mode(struct task_struct *task, unsigned int value)
 			clear_tsk_thread_flag(t, TIF_HYBRID_FPREGS);
 	}
 
+<<<<<<< HEAD
 	/*
 	 * We need to ensure that all threads in the process have switched mode
 	 * before returning, in order to allow userland to not worry about
@@ -826,6 +995,11 @@ int mips_set_process_fp_mode(struct task_struct *task, unsigned int value)
 	for_each_cpu_and(cpu, &process_cpus, cpu_online_mask)
 		work_on_cpu(cpu, prepare_for_fp_mode_switch, NULL);
 	put_online_cpus();
+=======
+	/* Allow threads to use FP again */
+	atomic_set(&task->mm->context.fp_mode_switching, 0);
+	preempt_enable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

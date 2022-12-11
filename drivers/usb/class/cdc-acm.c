@@ -386,9 +386,20 @@ static void acm_ctrl_irq(struct urb *urb)
 	if (acm->nb_index)
 		dr = (struct usb_cdc_notification *)acm->notification_buffer;
 
+<<<<<<< HEAD
 	/* size = notification-header + (optional) data */
 	expected_size = sizeof(struct usb_cdc_notification) +
 					le16_to_cpu(dr->wLength);
+=======
+	case USB_CDC_NOTIFY_SERIAL_STATE:
+		if (le16_to_cpu(dr->wLength) != 2) {
+			dev_dbg(&acm->control->dev,
+				"%s - malformed serial state\n", __func__);
+			break;
+		}
+
+		newctrl = get_unaligned_le16(data);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (current_size < expected_size) {
 		/* notification is transmitted fragmented, reassemble */
@@ -411,10 +422,41 @@ static void acm_ctrl_irq(struct urb *urb)
 		copy_size = min(current_size,
 				expected_size - acm->nb_index);
 
+<<<<<<< HEAD
 		memcpy(&acm->notification_buffer[acm->nb_index],
 		       urb->transfer_buffer, copy_size);
 		acm->nb_index += copy_size;
 		current_size = acm->nb_index;
+=======
+		if (difference & ACM_CTRL_DSR)
+			acm->iocount.dsr++;
+		if (difference & ACM_CTRL_BRK)
+			acm->iocount.brk++;
+		if (difference & ACM_CTRL_RI)
+			acm->iocount.rng++;
+		if (difference & ACM_CTRL_DCD)
+			acm->iocount.dcd++;
+		if (difference & ACM_CTRL_FRAMING)
+			acm->iocount.frame++;
+		if (difference & ACM_CTRL_PARITY)
+			acm->iocount.parity++;
+		if (difference & ACM_CTRL_OVERRUN)
+			acm->iocount.overrun++;
+		spin_unlock(&acm->read_lock);
+
+		if (difference)
+			wake_up_all(&acm->wioctl);
+
+		break;
+
+	default:
+		dev_dbg(&acm->control->dev,
+			"%s - unknown notification %d received: index %d len %d\n",
+			__func__,
+			dr->bNotificationType, dr->wIndex, dr->wLength);
+
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (current_size >= expected_size) {
@@ -527,6 +569,20 @@ static void acm_read_bulk_callback(struct urb *urb)
 		break;
 	}
 
+<<<<<<< HEAD
+=======
+	if (status) {
+		set_bit(rb->index, &acm->read_urbs_free);
+		dev_dbg(&acm->data->dev, "%s - non-zero urb status: %d\n",
+							__func__, status);
+		if ((status != -ENOENT) || (urb->actual_length == 0))
+			return;
+	}
+
+	usb_mark_last_busy(acm->dev);
+
+	acm_process_read_urb(acm, urb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Make sure URB processing is done before marking as free to avoid
 	 * racing with unthrottle() on another CPU. Matches the barriers
@@ -1373,7 +1429,12 @@ made_compressed_probe:
 	spin_lock_init(&acm->write_lock);
 	spin_lock_init(&acm->read_lock);
 	mutex_init(&acm->mutex);
+<<<<<<< HEAD
 	if (usb_endpoint_xfer_int(epread)) {
+=======
+	acm->is_int_ep = usb_endpoint_xfer_int(epread);
+	if (acm->is_int_ep)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		acm->bInterval = epread->bInterval;
 		acm->in = usb_rcvintpipe(usb_dev, epread->bEndpointAddress);
 	} else {
@@ -1415,6 +1476,7 @@ made_compressed_probe:
 
 		urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
 		urb->transfer_dma = rb->dma;
+<<<<<<< HEAD
 		if (usb_endpoint_xfer_int(epread))
 			usb_fill_int_urb(urb, acm->dev, acm->in, rb->base,
 					 acm->readsize,
@@ -1422,6 +1484,19 @@ made_compressed_probe:
 					 acm->bInterval);
 		else
 			usb_fill_bulk_urb(urb, acm->dev, acm->in, rb->base,
+=======
+		if (acm->is_int_ep) {
+			usb_fill_int_urb(urb, acm->dev,
+					 usb_rcvintpipe(usb_dev, epread->bEndpointAddress),
+					 rb->base,
+					 acm->readsize,
+					 acm_read_bulk_callback, rb,
+					 acm->bInterval);
+		} else {
+			usb_fill_bulk_urb(urb, acm->dev,
+					  usb_rcvbulkpipe(usb_dev, epread->bEndpointAddress),
+					  rb->base,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					  acm->readsize,
 					  acm_read_bulk_callback, rb);
 

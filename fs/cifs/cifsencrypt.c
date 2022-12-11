@@ -309,6 +309,7 @@ int calc_lanman_hash(const char *password, const char *cryptkey, bool encrypt,
 	int rc;
 	char password_with_pad[CIFS_ENCPWD_SIZE] = {0};
 
+<<<<<<< HEAD
 	if (password) {
 		for (len = 0; len < CIFS_ENCPWD_SIZE; len++)
 			if (!password[len])
@@ -316,6 +317,10 @@ int calc_lanman_hash(const char *password, const char *cryptkey, bool encrypt,
 
 		memcpy(password_with_pad, password, len);
 	}
+=======
+	if (password)
+		strncpy(password_with_pad, password, CIFS_ENCPWD_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!encrypt && global_secflags & CIFSSEC_MAY_PLNTXT) {
 		memcpy(lnm_session_key, password_with_pad,
@@ -713,10 +718,16 @@ setup_ntlmv2_rsp(struct cifs_ses *ses, const struct nls_table *nls_cp)
 
 	mutex_lock(&ses->server->srv_mutex);
 
+<<<<<<< HEAD
 	rc = cifs_alloc_hash("hmac(md5)",
 			     &ses->server->secmech.hmacmd5,
 			     &ses->server->secmech.sdeschmacmd5);
 	if (rc) {
+=======
+	rc = crypto_hmacmd5_alloc(ses->server);
+	if (rc) {
+		cifs_dbg(VFS, "could not crypto alloc hmacmd5 rc %d\n", rc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto unlock;
 	}
 

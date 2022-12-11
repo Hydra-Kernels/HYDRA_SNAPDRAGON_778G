@@ -309,12 +309,16 @@ long get_tagged_addr_ctrl(void);
 #define GET_TAGGED_ADDR_CTRL()		get_tagged_addr_ctrl()
 #endif
 
+<<<<<<< HEAD
 /*
  * For CONFIG_GCC_PLUGIN_STACKLEAK
  *
  * These need to be macros because otherwise we get stuck in a nightmare
  * of header definitions for the use of task_stack_page.
  */
+=======
+int cpu_enable_pan(void *__unused);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define current_top_of_stack()							\
 ({										\

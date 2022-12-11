@@ -150,6 +150,7 @@ vmlinux_link()
 			-o ${output}				\
 			-T ${lds} ${objects}
 	else
+<<<<<<< HEAD
 		objects="-Wl,--whole-archive			\
 			${KBUILD_VMLINUX_OBJS}			\
 			-Wl,--no-whole-archive			\
@@ -164,6 +165,14 @@ vmlinux_link()
 			-Wl,-T,${lds}				\
 			${objects}				\
 			-lutil -lrt -lpthread
+=======
+		${CC} ${CFLAGS_vmlinux} -o ${2}                              \
+			-Wl,-T,${lds} ${KBUILD_VMLINUX_INIT}                 \
+			-Wl,--start-group                                    \
+				 ${KBUILD_VMLINUX_MAIN}                      \
+			-Wl,--end-group                                      \
+			-lutil -lrt -lpthread ${1}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rm -f linux
 	fi
 }

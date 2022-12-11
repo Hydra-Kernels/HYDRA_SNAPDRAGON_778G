@@ -396,6 +396,7 @@ static int at24_read(void *priv, unsigned int off, void *val, size_t count)
 	if (unlikely(!count))
 		return count;
 
+<<<<<<< HEAD
 	if (off + count > at24->byte_len)
 		return -EINVAL;
 
@@ -405,6 +406,11 @@ static int at24_read(void *priv, unsigned int off, void *val, size_t count)
 		return ret;
 	}
 
+=======
+	if (off + count > at24->chip.byte_len)
+		return -EINVAL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Read data from chip, protecting against concurrent updates
 	 * from this host, but not from other I2C masters.
@@ -437,8 +443,109 @@ static int at24_write(void *priv, unsigned int off, void *val, size_t count)
 	char *buf = val;
 	int ret;
 
+<<<<<<< HEAD
 	at24 = priv;
 	dev = at24_base_client_dev(at24);
+=======
+	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
+	return at24_read(at24, buf, off, count);
+}
+
+
+/*
+ * Note that if the hardware write-protect pin is pulled high, the whole
+ * chip is normally write protected. But there are plenty of product
+ * variants here, including OTP fuses and partial chip protect.
+ *
+ * We only use page mode writes; the alternative is sloooow. This routine
+ * writes at most one page.
+ */
+static ssize_t at24_eeprom_write(struct at24_data *at24, const char *buf,
+		unsigned offset, size_t count)
+{
+	struct i2c_client *client;
+	struct i2c_msg msg;
+	ssize_t status = 0;
+	unsigned long timeout, write_time;
+	unsigned next_page;
+
+	if (offset + count > at24->chip.byte_len)
+		return -EINVAL;
+
+	/* Get corresponding I2C address and adjust offset */
+	client = at24_translate_offset(at24, &offset);
+
+	/* write_max is at most a page */
+	if (count > at24->write_max)
+		count = at24->write_max;
+
+	/* Never roll over backwards, to the start of this page */
+	next_page = roundup(offset + 1, at24->chip.page_size);
+	if (offset + count > next_page)
+		count = next_page - offset;
+
+	/* If we'll use I2C calls for I/O, set up the message */
+	if (!at24->use_smbus) {
+		int i = 0;
+
+		msg.addr = client->addr;
+		msg.flags = 0;
+
+		/* msg.buf is u8 and casts will mask the values */
+		msg.buf = at24->writebuf;
+		if (at24->chip.flags & AT24_FLAG_ADDR16)
+			msg.buf[i++] = offset >> 8;
+
+		msg.buf[i++] = offset;
+		memcpy(&msg.buf[i], buf, count);
+		msg.len = i + count;
+	}
+
+	/*
+	 * Writes fail if the previous one didn't complete yet. We may
+	 * loop a few times until this one succeeds, waiting at least
+	 * long enough for one entire page write to work.
+	 */
+	timeout = jiffies + msecs_to_jiffies(write_timeout);
+	do {
+		write_time = jiffies;
+		if (at24->use_smbus_write) {
+			switch (at24->use_smbus_write) {
+			case I2C_SMBUS_I2C_BLOCK_DATA:
+				status = i2c_smbus_write_i2c_block_data(client,
+						offset, count, buf);
+				break;
+			case I2C_SMBUS_BYTE_DATA:
+				status = i2c_smbus_write_byte_data(client,
+						offset, buf[0]);
+				break;
+			}
+
+			if (status == 0)
+				status = count;
+		} else {
+			status = i2c_transfer(client->adapter, &msg, 1);
+			if (status == 1)
+				status = count;
+		}
+		dev_dbg(&client->dev, "write %zu@%d --> %zd (%ld)\n",
+				count, offset, status, jiffies);
+
+		if (status == count)
+			return count;
+
+		/* REVISIT: at HZ=100, this is sloooow */
+		msleep(1);
+	} while (time_before(write_time, timeout));
+
+	return -ETIMEDOUT;
+}
+
+static ssize_t at24_write(struct at24_data *at24, const char *buf, loff_t off,
+			  size_t count)
+{
+	ssize_t retval = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(!count))
 		return -EINVAL;

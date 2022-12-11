@@ -212,7 +212,10 @@ static int dw_spi_mmio_remove(struct platform_device *pdev)
 	struct dw_spi_mmio *dwsmmio = platform_get_drvdata(pdev);
 
 	dw_spi_remove_host(&dwsmmio->dws);
+<<<<<<< HEAD
 	clk_disable_unprepare(dwsmmio->pclk);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	clk_disable_unprepare(dwsmmio->clk);
 
 	return 0;

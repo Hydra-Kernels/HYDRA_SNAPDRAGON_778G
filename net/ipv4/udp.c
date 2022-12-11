@@ -870,7 +870,11 @@ static int udp_send_skb(struct sk_buff *skb, struct flowi4 *fl4,
 	if (is_udplite)  				 /*     UDP-Lite      */
 		csum = udplite_csum(skb);
 
+<<<<<<< HEAD
 	else if (sk->sk_no_check_tx) {			 /* UDP csum off */
+=======
+	else if (sk->sk_no_check_tx && !skb_is_gso(skb)) {   /* UDP csum off */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		skb->ip_summed = CHECKSUM_NONE;
 		goto send;
@@ -1046,11 +1050,17 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 	ipc.gso_size = READ_ONCE(up->gso_size);
 
 	if (msg->msg_controllen) {
+<<<<<<< HEAD
 		err = udp_cmsg_send(sk, msg, &ipc.gso_size);
 		if (err > 0)
 			err = ip_cmsg_send(sk, msg, &ipc,
 					   sk->sk_family == AF_INET6);
 		if (unlikely(err < 0)) {
+=======
+		err = ip_cmsg_send(sock_net(sk), msg, &ipc,
+				   sk->sk_family == AF_INET6);
+		if (unlikely(err)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			kfree(ipc.opt);
 			return err;
 		}
@@ -1735,6 +1745,10 @@ int udp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int noblock,
 	int off, err, peeking = flags & MSG_PEEK;
 	int is_udplite = IS_UDPLITE(sk);
 	bool checksum_valid = false;
+<<<<<<< HEAD
+=======
+	bool slow;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (flags & MSG_ERRQUEUE)
 		return ip_recv_error(sk, msg, len, addr_len);
@@ -1758,14 +1772,20 @@ try_again:
 	 * coverage checksum (UDP-Lite), do it before the copy.
 	 */
 
+<<<<<<< HEAD
 	if (copied < ulen || peeking ||
 	    (is_udplite && UDP_SKB_CB(skb)->partial_cov)) {
 		checksum_valid = udp_skb_csum_unnecessary(skb) ||
 				!__udp_lib_checksum_complete(skb);
+=======
+	if (copied < ulen || UDP_SKB_CB(skb)->partial_cov) {
+		checksum_valid = !udp_lib_checksum_complete(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!checksum_valid)
 			goto csum_copy_err;
 	}
 
+<<<<<<< HEAD
 	if (checksum_valid || udp_skb_csum_unnecessary(skb)) {
 		if (udp_skb_is_linear(skb))
 			err = copy_linear_skb(skb, copied, off, &msg->msg_iter);
@@ -1773,6 +1793,14 @@ try_again:
 			err = skb_copy_datagram_msg(skb, off, msg, copied);
 	} else {
 		err = skb_copy_and_csum_datagram_msg(skb, off, msg);
+=======
+	if (checksum_valid || skb_csum_unnecessary(skb))
+		err = skb_copy_datagram_msg(skb, sizeof(struct udphdr),
+					    msg, copied);
+	else {
+		err = skb_copy_and_csum_datagram_msg(skb, sizeof(struct udphdr),
+						     msg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (err == -EINVAL)
 			goto csum_copy_err;
@@ -1811,7 +1839,11 @@ try_again:
 		udp_cmsg_recv(msg, sk, skb);
 
 	if (inet->cmsg_flags)
+<<<<<<< HEAD
 		ip_cmsg_recv_offset(msg, sk, skb, sizeof(struct udphdr), off);
+=======
+		ip_cmsg_recv_offset(msg, skb, sizeof(struct udphdr), off);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	err = copied;
 	if (flags & MSG_TRUNC)
@@ -2025,7 +2057,11 @@ static int udp_queue_rcv_one_skb(struct sock *sk, struct sk_buff *skb)
 		 */
 
 		/* if we're overly short, let UDP handle it */
+<<<<<<< HEAD
 		encap_rcv = READ_ONCE(up->encap_rcv);
+=======
+		encap_rcv = ACCESS_ONCE(up->encap_rcv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (encap_rcv) {
 			int ret;
 
@@ -2459,10 +2495,20 @@ int udp_v4_early_demux(struct sk_buff *skb)
 		if (!in_dev)
 			return 0;
 
+<<<<<<< HEAD
 		ours = ip_check_mc_rcu(in_dev, iph->daddr, iph->saddr,
 				       iph->protocol);
 		if (!ours)
 			return 0;
+=======
+		/* we are supposed to accept bcast packets */
+		if (skb->pkt_type == PACKET_MULTICAST) {
+			ours = ip_check_mc_rcu(in_dev, iph->daddr, iph->saddr,
+					       iph->protocol);
+			if (!ours)
+				return;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		sk = __udp4_lib_mcast_demux_lookup(net, uh->dest, iph->daddr,
 						   uh->source, iph->saddr,

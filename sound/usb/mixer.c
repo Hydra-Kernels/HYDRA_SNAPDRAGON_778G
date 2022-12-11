@@ -188,7 +188,11 @@ static void *find_audio_control_unit(struct mixer_build *state,
 static int snd_usb_copy_string_desc(struct snd_usb_audio *chip,
 				    int index, char *buf, int maxlen)
 {
+<<<<<<< HEAD
 	int len = usb_string(chip->dev, index, buf, maxlen - 1);
+=======
+	int len = usb_string(state->chip->dev, index, buf, maxlen - 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (len < 0)
 		return 0;
@@ -1890,11 +1894,23 @@ static int parse_audio_feature_unit(struct mixer_build *state, int unitid,
 	__u8 *bmaControls;
 
 	if (state->mixer->protocol == UAC_VERSION_1) {
+		if (hdr->bLength < 7) {
+			usb_audio_err(state->chip,
+				      "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
+				      unitid);
+			return -EINVAL;
+		}
 		csize = hdr->bControlSize;
 		channels = (hdr->bLength - 7) / csize - 1;
 		bmaControls = hdr->bmaControls;
 	} else if (state->mixer->protocol == UAC_VERSION_2) {
 		struct uac2_feature_unit_descriptor *ftr = _ftr;
+		if (hdr->bLength < 6) {
+			usb_audio_err(state->chip,
+				      "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
+				      unitid);
+			return -EINVAL;
+		}
 		csize = 4;
 		channels = (hdr->bLength - 6) / 4 - 1;
 		bmaControls = ftr->bmaControls;
@@ -2625,6 +2641,16 @@ static int parse_audio_selector_unit(struct mixer_build *state, int unitid,
 	const struct usbmix_name_map *map;
 	char **namelist;
 
+<<<<<<< HEAD
+=======
+	if (desc->bLength < 5 || !desc->bNrInPins ||
+	    desc->bLength < 5 + desc->bNrInPins) {
+		usb_audio_err(state->chip,
+			"invalid SELECTOR UNIT descriptor %d\n", unitid);
+		return -EINVAL;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for (i = 0; i < desc->bNrInPins; i++) {
 		err = parse_audio_unit(state, desc->baSourceID[i]);
 		if (err < 0)
@@ -2700,6 +2726,7 @@ static int parse_audio_selector_unit(struct mixer_build *state, int unitid,
 	len = check_mapped_name(map, kctl->id.name, sizeof(kctl->id.name));
 	if (!len) {
 		/* no mapping ? */
+<<<<<<< HEAD
 		switch (state->mixer->protocol) {
 		case UAC_VERSION_1:
 		case UAC_VERSION_2:
@@ -2719,14 +2746,29 @@ static int parse_audio_selector_unit(struct mixer_build *state, int unitid,
 		/* ... or pick up the terminal name at next */
 		if (!len)
 			len = get_term_name(state->chip, &state->oterm,
+=======
+		/* if iSelector is given, use it */
+		nameid = uac_selector_unit_iSelector(desc);
+		if (nameid)
+			len = snd_usb_copy_string_desc(state, nameid,
+						       kctl->id.name,
+						       sizeof(kctl->id.name));
+		/* ... or pick up the terminal name at next */
+		if (!len)
+			len = get_term_name(state, &state->oterm,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				    kctl->id.name, sizeof(kctl->id.name), 0);
 		/* ... or use the fixed string "USB" as the last resort */
 		if (!len)
 			strlcpy(kctl->id.name, "USB", sizeof(kctl->id.name));
 
 		/* and add the proper suffix */
+<<<<<<< HEAD
 		if (desc->bDescriptorSubtype == UAC2_CLOCK_SELECTOR ||
 		    desc->bDescriptorSubtype == UAC3_CLOCK_SELECTOR)
+=======
+		if (desc->bDescriptorSubtype == UAC2_CLOCK_SELECTOR)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			append_ctl_name(kctl, " Clock Source");
 		else if ((state->oterm.type & 0xff00) == 0x0100)
 			append_ctl_name(kctl, " Capture Source");
@@ -3568,8 +3610,11 @@ void snd_usb_mixer_disconnect(struct usb_mixer_interface *mixer)
 		usb_kill_urb(mixer->urb);
 	if (mixer->rc_urb)
 		usb_kill_urb(mixer->rc_urb);
+<<<<<<< HEAD
 	if (mixer->private_free)
 		mixer->private_free(mixer);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mixer->disconnected = true;
 }
 

@@ -1457,7 +1457,11 @@ static void kmemleak_scan(void)
 			if (page_count(page) == 0)
 				continue;
 			scan_block(page, page + 1, NULL);
+<<<<<<< HEAD
 			if (!(pfn & 63))
+=======
+			if (!(pfn % (MAX_SCAN_SIZE / sizeof(*page))))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				cond_resched();
 		}
 	}

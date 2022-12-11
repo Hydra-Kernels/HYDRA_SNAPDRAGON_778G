@@ -64,6 +64,33 @@ static int opal_scom_read(uint32_t chip, uint64_t addr, u64 reg, u64 *value)
 		return -EIO;
 	}
 	*value = be64_to_cpu(v);
+<<<<<<< HEAD
+=======
+	return opal_xscom_err_xlate(rc);
+}
+
+static int opal_scom_write(scom_map_t map, u64 reg, u64 value)
+{
+	struct opal_scom_map *m = map;
+	int64_t rc;
+
+	reg = opal_scom_unmangle(m->addr + reg);
+	rc = opal_xscom_write(m->chip, reg, value);
+	return opal_xscom_err_xlate(rc);
+}
+
+static const struct scom_controller opal_scom_controller = {
+	.map	= opal_scom_map,
+	.unmap	= opal_scom_unmap,
+	.read	= opal_scom_read,
+	.write	= opal_scom_write
+};
+
+static int opal_xscom_init(void)
+{
+	if (firmware_has_feature(FW_FEATURE_OPAL))
+		scom_init(&opal_scom_controller);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -370,8 +370,13 @@ int of_regulator_match(struct device *dev, struct device_node *node,
 							   match->desc);
 			if (!match->init_data) {
 				dev_err(dev,
+<<<<<<< HEAD
 					"failed to parse DT for regulator %pOFn\n",
 					child);
+=======
+					"failed to parse DT for regulator %s\n",
+					child->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				of_node_put(child);
 				return -EINVAL;
 			}

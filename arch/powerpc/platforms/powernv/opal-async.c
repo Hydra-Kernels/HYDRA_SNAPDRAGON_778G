@@ -44,6 +44,7 @@ static int __opal_async_get_token(void)
 	int i, token = -EBUSY;
 
 	spin_lock_irqsave(&opal_async_comp_lock, flags);
+<<<<<<< HEAD
 
 	for (i = 0; i < opal_max_async_tokens; i++) {
 		if (opal_async_tokens[i].state == ASYNC_TOKEN_UNALLOCATED) {
@@ -53,6 +54,22 @@ static int __opal_async_get_token(void)
 		}
 	}
 
+=======
+	token = find_first_zero_bit(opal_async_token_map, opal_max_async_tokens);
+	if (token >= opal_max_async_tokens) {
+		token = -EBUSY;
+		goto out;
+	}
+
+	if (!__test_and_clear_bit(token, opal_async_complete_map)) {
+		token = -EBUSY;
+		goto out;
+	}
+
+	__set_bit(token, opal_async_token_map);
+
+out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
 	return token;
 }

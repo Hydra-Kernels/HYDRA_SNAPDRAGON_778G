@@ -1001,14 +1001,23 @@ via the /proc/sys interface:
        Each write syscall must fully contain the sysctl value to be
        written, and multiple writes on the same sysctl file descriptor
        will rewrite the sysctl value, regardless of file position.
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/kernel.rst
    0   Same behavior as above, but warn about processes that perform writes
        to a sysctl file descriptor when the file position is not 0.
    1   (default) Respect file position when writing sysctl strings. Multiple
+=======
+   0 - Same behavior as above, but warn about processes that perform writes
+       to a sysctl file descriptor when the file position is not 0.
+   1 - (default) Respect file position when writing sysctl strings. Multiple
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/kernel.txt
        writes will append to the sysctl value buffer. Anything past the max
        length of the sysctl value buffer will be ignored. Writes to numeric
        sysctl entries must always be at file position 0 and the value must
        be fully contained in the buffer sent in the write syscall.
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/kernel.rst
   ==   ======================================================================
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/kernel.txt
 
 
 softlockup_all_cpu_backtrace:

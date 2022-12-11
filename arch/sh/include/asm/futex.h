@@ -10,6 +10,7 @@
 
 #if !defined(CONFIG_SMP)
 #include <asm/futex-irq.h>
+<<<<<<< HEAD
 #elif defined(CONFIG_CPU_J2)
 #include <asm/futex-cas.h>
 #elif defined(CONFIG_CPU_SH4A)
@@ -17,6 +18,44 @@
 #else
 #error SMP not supported on this configuration.
 #endif
+=======
+
+static inline int arch_futex_atomic_op_inuser(int op, u32 oparg, int *oval,
+		u32 __user *uaddr)
+{
+	int oldval = 0, ret;
+
+	pagefault_disable();
+
+	switch (op) {
+	case FUTEX_OP_SET:
+		ret = atomic_futex_op_xchg_set(oparg, uaddr, &oldval);
+		break;
+	case FUTEX_OP_ADD:
+		ret = atomic_futex_op_xchg_add(oparg, uaddr, &oldval);
+		break;
+	case FUTEX_OP_OR:
+		ret = atomic_futex_op_xchg_or(oparg, uaddr, &oldval);
+		break;
+	case FUTEX_OP_ANDN:
+		ret = atomic_futex_op_xchg_and(~oparg, uaddr, &oldval);
+		break;
+	case FUTEX_OP_XOR:
+		ret = atomic_futex_op_xchg_xor(oparg, uaddr, &oldval);
+		break;
+	default:
+		ret = -ENOSYS;
+		break;
+	}
+
+	pagefault_enable();
+
+	if (!ret)
+		*oval = oldval;
+
+	return ret;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int
 futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,

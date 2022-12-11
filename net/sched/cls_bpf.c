@@ -318,7 +318,16 @@ static void cls_bpf_destroy(struct tcf_proto *tp, bool rtnl_held,
 	list_for_each_entry_safe(prog, tmp, &head->plist, link)
 		__cls_bpf_delete(tp, prog, extack);
 
+<<<<<<< HEAD
 	idr_destroy(&head->handle_idr);
+=======
+	list_for_each_entry_safe(prog, tmp, &head->plist, link) {
+		list_del_rcu(&prog->link);
+		tcf_unbind_filter(tp, &prog->res);
+		call_rcu(&prog->rcu, __cls_bpf_delete_prog);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree_rcu(head, rcu);
 }
 
@@ -326,6 +335,10 @@ static void *cls_bpf_get(struct tcf_proto *tp, u32 handle)
 {
 	struct cls_bpf_head *head = rtnl_dereference(tp->root);
 	struct cls_bpf_prog *prog;
+<<<<<<< HEAD
+=======
+	unsigned long ret = 0UL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	list_for_each_entry(prog, &head->plist, link) {
 		if (prog->handle == handle)

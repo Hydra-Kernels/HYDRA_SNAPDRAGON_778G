@@ -32,7 +32,28 @@ cifs_dump_mem(char *label, void *data, int length)
 		       data, length, true);
 }
 
+<<<<<<< HEAD
 void cifs_dump_detail(void *buf, struct TCP_Server_Info *server)
+=======
+#ifdef CONFIG_CIFS_DEBUG
+void cifs_vfs_err(const char *fmt, ...)
+{
+	struct va_format vaf;
+	va_list args;
+
+	va_start(args, fmt);
+
+	vaf.fmt = fmt;
+	vaf.va = &args;
+
+	pr_err_ratelimited("CIFS VFS: %pV", &vaf);
+
+	va_end(args);
+}
+#endif
+
+void cifs_dump_detail(void *buf)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 #ifdef CONFIG_CIFS_DEBUG2
 	struct smb_hdr *smb = (struct smb_hdr *)buf;
@@ -251,6 +272,7 @@ static int cifs_debug_data_proc_show(struct seq_file *m, void *v)
 	list_for_each(tmp1, &cifs_tcp_ses_list) {
 		server = list_entry(tmp1, struct TCP_Server_Info,
 				    tcp_ses_list);
+<<<<<<< HEAD
 
 #ifdef CONFIG_CIFS_SMB_DIRECT
 		if (!server->rdma)
@@ -333,6 +355,9 @@ skip_rdma:
 		if (server->posix_ext_supported)
 			seq_printf(m, " posix");
 
+=======
+		seq_printf(m, "\nNumber of credits: %d", server->credits);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		i++;
 		list_for_each(tmp2, &server->smb_ses_list) {
 			ses = list_entry(tmp2, struct cifs_ses,
@@ -736,8 +761,11 @@ static ssize_t cifsFYI_proc_write(struct file *file, const char __user *buffer,
 		cifsFYI = bv;
 	else if ((c[0] > '1') && (c[0] <= '9'))
 		cifsFYI = (int) (c[0] - '0'); /* see cifs_debug.h for meanings */
+<<<<<<< HEAD
 	else
 		return -EINVAL;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return count;
 }

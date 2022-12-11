@@ -127,8 +127,12 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	struct snd_soc_pcm_runtime *fe = cstream->private_data;
 	struct snd_pcm_substream *fe_substream =
 		 fe->pcm->streams[cstream->direction].substream;
+<<<<<<< HEAD
 	struct snd_soc_component *component;
 	struct snd_soc_dai *cpu_dai = fe->cpu_dai;
+=======
+	struct snd_soc_platform *platform = fe->platform;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct snd_soc_dpcm *dpcm;
 	struct snd_soc_dapm_widget_list *list;
 	int stream;
@@ -585,6 +589,7 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 	struct snd_soc_pcm_runtime *fe = cstream->private_data;
 	struct snd_pcm_substream *fe_substream =
 		 fe->pcm->streams[cstream->direction].substream;
+<<<<<<< HEAD
 	struct snd_soc_dai *cpu_dai = fe->cpu_dai;
 #ifdef CONFIG_AUDIO_QGKI
 	struct snd_soc_component *component;
@@ -597,6 +602,10 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 #else
 	int ret, stream;
 #endif
+=======
+	struct snd_soc_platform *platform = fe->platform;
+	int ret = 0, stream;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (cstream->direction == SND_COMPRESS_PLAYBACK)
 		stream = SNDRV_PCM_STREAM_PLAYBACK;
@@ -1094,15 +1103,43 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 	    snd_soc_dai_stream_valid(cpu_dai,   SNDRV_PCM_STREAM_CAPTURE))
 		capture = 1;
 
+<<<<<<< HEAD
+=======
+	if (codec_dai->driver->playback.channels_min)
+		playback = 1;
+	if (codec_dai->driver->capture.channels_min)
+		capture = 1;
+
+	capture = capture && cpu_dai->driver->capture.channels_min;
+	playback = playback && cpu_dai->driver->playback.channels_min;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Compress devices are unidirectional so only one of the directions
 	 * should be set, check for that (xor)
 	 */
 	if (playback + capture != 1) {
+<<<<<<< HEAD
 		dev_err(rtd->card->dev,
 			"Compress ASoC: Invalid direction for P %d, C %d\n",
 			playback, capture);
 		return -EINVAL;
+=======
+		dev_err(rtd->card->dev, "Invalid direction for compress P %d, C %d\n",
+				playback, capture);
+		return -EINVAL;
+	}
+
+	if(playback)
+		direction = SND_COMPRESS_PLAYBACK;
+	else
+		direction = SND_COMPRESS_CAPTURE;
+
+	compr = kzalloc(sizeof(*compr), GFP_KERNEL);
+	if (compr == NULL) {
+		snd_printk(KERN_ERR "Cannot allocate compr\n");
+		return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (playback)

@@ -444,11 +444,16 @@ void nfs_advise_use_readdirplus(struct inode *dir)
  */
 void nfs_force_use_readdirplus(struct inode *dir)
 {
+<<<<<<< HEAD
 	struct nfs_inode *nfsi = NFS_I(dir);
 
 	if (nfs_server_capable(dir, NFS_CAP_READDIRPLUS) &&
 	    !list_empty(&nfsi->open_files)) {
 		set_bit(NFS_INO_ADVISE_RDPLUS, &nfsi->flags);
+=======
+	if (!list_empty(&NFS_I(dir)->open_files)) {
+		nfs_advise_use_readdirplus(dir);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		invalidate_mapping_pages(dir->i_mapping, 0, -1);
 	}
 }
@@ -565,7 +570,11 @@ int nfs_readdir_page_filler(nfs_readdir_descriptor_t *desc, struct nfs_entry *en
 
 		count++;
 
+<<<<<<< HEAD
 		if (desc->plus)
+=======
+		if (desc->plus != 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			nfs_prime_dcache(file_dentry(desc->file), entry);
 
 		status = nfs_readdir_add_to_array(entry, page);
@@ -845,6 +854,12 @@ int uncached_readdir(nfs_readdir_descriptor_t *desc)
 	dfprintk(DIRCACHE, "NFS: %s: returns %d\n",
 			__func__, status);
 	return status;
+<<<<<<< HEAD
+=======
+ out_release:
+	cache_page_release(desc);
+	goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* The file offset position represents the dirent entry number.  A
@@ -878,6 +893,10 @@ static int nfs_readdir(struct file *file, struct dir_context *ctx)
 	desc->decode = NFS_PROTO(inode)->decode_dirent;
 	desc->plus = nfs_use_readdirplus(inode, ctx);
 
+<<<<<<< HEAD
+=======
+	nfs_block_sillyrename(dentry);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ctx->pos == 0 || nfs_attribute_cache_expired(inode))
 		res = nfs_revalidate_mapping(inode, file->f_mapping);
 	if (res < 0)
@@ -1240,9 +1259,17 @@ nfs_do_lookup_revalidate(struct inode *dir, struct dentry *dentry,
 	    nfs_check_verifier(dir, dentry, flags & LOOKUP_RCU)) {
 		error = nfs_lookup_verify_inode(inode, flags);
 		if (error) {
+<<<<<<< HEAD
 			if (error == -ESTALE)
 				nfs_mark_dir_for_revalidate(dir);
 			goto out_bad;
+=======
+			if (flags & LOOKUP_RCU)
+				return -ECHILD;
+			if (error == -ESTALE)
+				goto out_zap_parent;
+			goto out_error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		nfs_advise_use_readdirplus(dir);
 		goto out_valid;
@@ -1257,6 +1284,70 @@ nfs_do_lookup_revalidate(struct inode *dir, struct dentry *dentry,
 	trace_nfs_lookup_revalidate_enter(dir, dentry, flags);
 	error = nfs_lookup_revalidate_dentry(dir, dentry, inode);
 	trace_nfs_lookup_revalidate_exit(dir, dentry, flags, error);
+<<<<<<< HEAD
+=======
+	if (error == -ESTALE || error == -ENOENT)
+		goto out_bad;
+	if (error)
+		goto out_error;
+	if (nfs_compare_fh(NFS_FH(inode), fhandle))
+		goto out_bad;
+	if ((error = nfs_refresh_inode(inode, fattr)) != 0)
+		goto out_bad;
+
+	nfs_setsecurity(inode, fattr, label);
+
+	nfs_free_fattr(fattr);
+	nfs_free_fhandle(fhandle);
+	nfs4_label_free(label);
+
+out_set_verifier:
+	nfs_set_verifier(dentry, nfs_save_change_attribute(dir));
+ out_valid:
+	/* Success: notify readdir to use READDIRPLUS */
+	nfs_advise_use_readdirplus(dir);
+ out_valid_noent:
+	if (flags & LOOKUP_RCU) {
+		if (parent != ACCESS_ONCE(dentry->d_parent))
+			return -ECHILD;
+	} else
+		dput(parent);
+	dfprintk(LOOKUPCACHE, "NFS: %s(%pd2) is valid\n",
+			__func__, dentry);
+	return 1;
+out_zap_parent:
+	nfs_zap_caches(dir);
+ out_bad:
+	WARN_ON(flags & LOOKUP_RCU);
+	nfs_free_fattr(fattr);
+	nfs_free_fhandle(fhandle);
+	nfs4_label_free(label);
+	nfs_mark_for_revalidate(dir);
+	if (inode && S_ISDIR(inode->i_mode)) {
+		/* Purge readdir caches. */
+		nfs_zap_caches(inode);
+		/*
+		 * We can't d_drop the root of a disconnected tree:
+		 * its d_hash is on the s_anon list and d_drop() would hide
+		 * it from shrink_dcache_for_unmount(), leading to busy
+		 * inodes on unmount and further oopses.
+		 */
+		if (IS_ROOT(dentry))
+			goto out_valid;
+	}
+	dput(parent);
+	dfprintk(LOOKUPCACHE, "NFS: %s(%pd2) is invalid\n",
+			__func__, dentry);
+	return 0;
+out_error:
+	WARN_ON(flags & LOOKUP_RCU);
+	nfs_free_fattr(fattr);
+	nfs_free_fhandle(fhandle);
+	nfs4_label_free(label);
+	dput(parent);
+	dfprintk(LOOKUPCACHE, "NFS: %s(%pd2) lookup returned error %d\n",
+			__func__, dentry, error);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return error;
 out_valid:
 	return nfs_lookup_revalidate_done(dir, dentry, inode, 1);
@@ -1609,7 +1700,11 @@ int nfs_atomic_open(struct inode *dir, struct dentry *dentry,
 		d_drop(dentry);
 		switch (err) {
 		case -ENOENT:
+<<<<<<< HEAD
 			d_splice_alias(NULL, dentry);
+=======
+			d_add(dentry, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			nfs_set_verifier(dentry, nfs_save_change_attribute(dir));
 			break;
 		case -EISDIR:
@@ -2579,6 +2674,7 @@ EXPORT_SYMBOL_GPL(nfs_may_open);
 static int nfs_execute_ok(struct inode *inode, int mask)
 {
 	struct nfs_server *server = NFS_SERVER(inode);
+<<<<<<< HEAD
 	int ret = 0;
 
 	if (S_ISDIR(inode->i_mode))
@@ -2588,6 +2684,14 @@ static int nfs_execute_ok(struct inode *inode, int mask)
 			return -ECHILD;
 		ret = __nfs_revalidate_inode(server, inode);
 	}
+=======
+	int ret;
+
+	if (mask & MAY_NOT_BLOCK)
+		ret = nfs_revalidate_inode_rcu(server, inode);
+	else
+		ret = nfs_revalidate_inode(server, inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret == 0 && !execute_ok(inode))
 		ret = -EACCES;
 	return ret;

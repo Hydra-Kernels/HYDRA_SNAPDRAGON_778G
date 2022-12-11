@@ -1641,6 +1641,7 @@ static noinline ssize_t btrfs_buffered_write(struct kiocb *iocb,
 		reserve_bytes = round_up(write_bytes + sector_offset,
 				fs_info->sectorsize);
 
+<<<<<<< HEAD
 		extent_changeset_release(data_reserved);
 		ret = btrfs_check_data_free_space(inode, &data_reserved, pos,
 						  write_bytes);
@@ -1667,6 +1668,29 @@ static noinline ssize_t btrfs_buffered_write(struct kiocb *iocb,
 				break;
 			}
 		}
+=======
+		if ((BTRFS_I(inode)->flags & (BTRFS_INODE_NODATACOW |
+					      BTRFS_INODE_PREALLOC)) &&
+		    check_can_nocow(inode, pos, &write_bytes) > 0) {
+			/*
+			 * For nodata cow case, no need to reserve
+			 * data space.
+			 */
+			only_release_metadata = true;
+			/*
+			 * our prealloc extent may be smaller than
+			 * write_bytes, so scale down.
+			 */
+			num_pages = DIV_ROUND_UP(write_bytes + offset,
+						 PAGE_CACHE_SIZE);
+			reserve_bytes = num_pages << PAGE_CACHE_SHIFT;
+			goto reserve_metadata;
+		}
+
+		ret = btrfs_check_data_free_space(inode, pos, write_bytes);
+		if (ret < 0)
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		WARN_ON(reserve_bytes == 0);
 		ret = btrfs_delalloc_reserve_metadata(BTRFS_I(inode),

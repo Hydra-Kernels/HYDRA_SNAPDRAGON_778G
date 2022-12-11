@@ -517,6 +517,19 @@ int tsc200x_probe(struct device *dev, int irq, const struct input_id *tsc_id,
 
 	input_dev->phys = ts->phys;
 	input_dev->id = *tsc_id;
+<<<<<<< HEAD
+=======
+	input_dev->dev.parent = dev;
+	input_dev->evbit[0] = BIT(EV_ABS) | BIT(EV_KEY);
+	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+
+	input_set_abs_params(input_dev, ABS_X, 0, max_x, fudge_x, 0);
+	input_set_abs_params(input_dev, ABS_Y, 0, max_y, fudge_y, 0);
+	input_set_abs_params(input_dev, ABS_PRESSURE, 0, max_p, fudge_p, 0);
+
+	if (np)
+		touchscreen_parse_properties(input_dev, false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	input_dev->open = tsc200x_open;
 	input_dev->close = tsc200x_close;

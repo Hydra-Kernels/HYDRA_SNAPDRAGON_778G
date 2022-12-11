@@ -1863,7 +1863,11 @@ static ssize_t ath10k_write_pktlog_filter(struct file *file,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (filter == ar->pktlog_filter) {
+=======
+	if (filter == ar->debug.pktlog_filter) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = count;
 		goto out;
 	}

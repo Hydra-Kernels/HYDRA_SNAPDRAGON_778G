@@ -399,6 +399,7 @@ static int vtg_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	vtg->irq = platform_get_irq(pdev, 0);
 	if (vtg->irq < 0) {
 		DRM_ERROR("Failed to get VTG interrupt\n");
@@ -413,6 +414,30 @@ static int vtg_probe(struct platform_device *pdev)
 	if (ret < 0) {
 		DRM_ERROR("Failed to register VTG interrupt\n");
 		return ret;
+=======
+	np = of_parse_phandle(pdev->dev.of_node, "st,slave", 0);
+	if (np) {
+		vtg->slave = of_vtg_find(np);
+
+		if (!vtg->slave)
+			return -EPROBE_DEFER;
+	} else {
+		vtg->irq = platform_get_irq(pdev, 0);
+		if (IS_ERR_VALUE(vtg->irq)) {
+			DRM_ERROR("Failed to get VTG interrupt\n");
+			return vtg->irq;
+		}
+
+		RAW_INIT_NOTIFIER_HEAD(&vtg->notifier_list);
+
+		ret = devm_request_threaded_irq(dev, vtg->irq, vtg_irq,
+				vtg_irq_thread, IRQF_ONESHOT,
+				dev_name(dev), vtg);
+		if (IS_ERR_VALUE(ret)) {
+			DRM_ERROR("Failed to register VTG interrupt\n");
+			return ret;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	platform_set_drvdata(pdev, vtg);

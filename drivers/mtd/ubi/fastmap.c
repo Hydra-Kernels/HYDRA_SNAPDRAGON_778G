@@ -295,7 +295,11 @@ static int update_vol(struct ubi_device *ubi, struct ubi_attach_info *ai,
 			aeb->copy_flag = new_vh->copy_flag;
 			aeb->scrub = new_aeb->scrub;
 			aeb->sqnum = new_aeb->sqnum;
+<<<<<<< HEAD
 			ubi_free_aeb(ai, new_aeb);
+=======
+			kmem_cache_free(ai->aeb_slab_cache, new_aeb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* new_aeb is older */
 		} else {
@@ -818,6 +822,7 @@ static int find_fm_anchor(struct ubi_attach_info *ai)
 	return ret;
 }
 
+<<<<<<< HEAD
 static struct ubi_ainf_peb *clone_aeb(struct ubi_attach_info *ai,
 				      struct ubi_ainf_peb *old)
 {
@@ -836,6 +841,8 @@ static struct ubi_ainf_peb *clone_aeb(struct ubi_attach_info *ai,
 	return new;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * ubi_scan_fastmap - scan the fastmap.
  * @ubi: UBI device object
@@ -855,7 +862,11 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	struct ubi_vid_hdr *vh;
 	struct ubi_ec_hdr *ech;
 	struct ubi_fastmap_layout *fm;
+<<<<<<< HEAD
 	struct ubi_ainf_peb *aeb;
+=======
+	struct ubi_ainf_peb *tmp_aeb, *aeb;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int i, used_blocks, pnum, fm_anchor, ret = 0;
 	size_t fm_size;
 	__be32 crc, tmp_crc;
@@ -865,6 +876,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	if (fm_anchor < 0)
 		return UBI_NO_FASTMAP;
 
+<<<<<<< HEAD
 	/* Copy all (possible) fastmap blocks into our new attach structure. */
 	list_for_each_entry(aeb, &scan_ai->fastmap, u.list) {
 		struct ubi_ainf_peb *new;
@@ -875,6 +887,11 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 
 		list_add(&new->u.list, &ai->fastmap);
 	}
+=======
+	/* Move all (possible) fastmap blocks into our new attach structure. */
+	list_for_each_entry_safe(aeb, tmp_aeb, &scan_ai->fastmap, u.list)
+		list_move_tail(&aeb->u.list, &ai->fastmap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	down_write(&ubi->fm_protect);
 	memset(ubi->fm_buf, 0, ubi->fm_size);
@@ -1543,6 +1560,17 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 		return 0;
 	}
 
+<<<<<<< HEAD
+=======
+	ret = ubi_ensure_anchor_pebs(ubi);
+	if (ret) {
+		up_write(&ubi->fm_eba_sem);
+		up_write(&ubi->work_sem);
+		up_write(&ubi->fm_protect);
+		return ret;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	new_fm = kzalloc(sizeof(*new_fm), GFP_KERNEL);
 	if (!new_fm) {
 		up_write(&ubi->fm_eba_sem);

@@ -718,6 +718,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
 		uncached_logk(LOGK_IRQ, (void *)(uintptr_t)irqnr);
 		if (static_branch_likely(&supports_deactivate_key))
 			gic_write_eoir(irqnr);
+<<<<<<< HEAD
 		else
 			isb();
 
@@ -728,6 +729,23 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
 					"unexpected HW IRQ %u", irqnr);
 
 			gic_deactivate_unhandled(irqnr);
+=======
+			if (static_key_true(&supports_deactivate))
+				gic_write_dir(irqnr);
+#ifdef CONFIG_SMP
+			/*
+			 * Unlike GICv2, we don't need an smp_rmb() here.
+			 * The control dependency from gic_read_iar to
+			 * the ISB in gic_write_eoir is enough to ensure
+			 * that any shared data read by handle_IPI will
+			 * be read after the ACK.
+			 */
+			handle_IPI(irqnr, regs);
+#else
+			WARN_ONCE(true, "Unexpected SGI received!\n");
+#endif
+			continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		return;
 	}
@@ -805,6 +823,7 @@ static void __init gic_dist_init(void)
 	 * do the right thing if the kernel is running in secure mode,
 	 * but that's not the intended use case anyway.
 	 */
+<<<<<<< HEAD
 	for (i = 32; i < GIC_LINE_NR; i += 32)
 		writel_relaxed(~0, base + GICD_IGROUPR + i / 8);
 
@@ -825,6 +844,12 @@ static void __init gic_dist_init(void)
 
 	/* Now do the common stuff, and wait for the distributor to drain */
 	gic_dist_config(base, GIC_LINE_NR, gic_dist_wait_for_rwp);
+=======
+	for (i = 32; i < gic_data.irq_nr; i += 32)
+		writel_relaxed(~0, base + GICD_IGROUPR + i / 8);
+
+	gic_dist_config(base, gic_data.irq_nr, gic_dist_wait_for_rwp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Enable distributor with ARE, Group1 */
 	writel_relaxed(GICD_CTLR_ARE_NS | GICD_CTLR_ENABLE_G1A | GICD_CTLR_ENABLE_G1,
@@ -1098,8 +1123,14 @@ static void gic_cpu_init(void)
 	rbase = gic_data_rdist_sgi_base();
 
 	/* Configure SGIs/PPIs as non-secure Group-1 */
+<<<<<<< HEAD
 	for (i = 0; i < gic_data.ppi_nr + 16; i += 32)
 		writel_relaxed(~0, rbase + GICR_IGROUPR0 + i / 8);
+=======
+	writel_relaxed(~0, rbase + GICR_IGROUPR0);
+
+	gic_cpu_config(rbase, gic_redist_wait_for_rwp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	gic_cpu_config(rbase, gic_data.ppi_nr + 16, gic_redist_wait_for_rwp);
 
@@ -1210,11 +1241,14 @@ static int gic_set_affinity(struct irq_data *d, const struct cpumask *mask_val,
 	int enabled;
 	u64 val;
 
+<<<<<<< HEAD
 	if (force)
 		cpu = cpumask_first(mask_val);
 	else
 		cpu = cpumask_any_and(mask_val, cpu_online_mask);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (cpu >= nr_cpu_ids)
 		return -EINVAL;
 

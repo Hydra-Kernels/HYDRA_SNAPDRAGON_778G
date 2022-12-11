@@ -1736,7 +1736,11 @@ static int bcm_enet_probe(struct platform_device *pdev)
 	}
 	ret = clk_prepare_enable(priv->mac_clk);
 	if (ret)
+<<<<<<< HEAD
 		goto out;
+=======
+		goto out_put_clk_mac;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* initialize default and fetch platform data */
 	priv->rx_ring_size = BCMENET_DEF_RX_DESC;
@@ -1774,7 +1778,11 @@ static int bcm_enet_probe(struct platform_device *pdev)
 		}
 		ret = clk_prepare_enable(priv->phy_clk);
 		if (ret)
+<<<<<<< HEAD
 			goto out_disable_clk_mac;
+=======
+			goto out_put_clk_phy;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* do minimal hardware init to be able to probe mii bus */
@@ -1866,10 +1874,24 @@ out_free_mdio:
 out_uninit_hw:
 	/* turn off mdc clock */
 	enet_writel(priv, 0, ENET_MIISC_REG);
+<<<<<<< HEAD
 	clk_disable_unprepare(priv->phy_clk);
 
 out_disable_clk_mac:
 	clk_disable_unprepare(priv->mac_clk);
+=======
+	if (priv->phy_clk)
+		clk_disable_unprepare(priv->phy_clk);
+
+out_put_clk_phy:
+	if (priv->phy_clk)
+		clk_put(priv->phy_clk);
+
+out_disable_clk_mac:
+	clk_disable_unprepare(priv->mac_clk);
+out_put_clk_mac:
+	clk_put(priv->mac_clk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	free_netdev(dev);
 	return ret;
@@ -2696,7 +2718,11 @@ static int bcm_enetsw_probe(struct platform_device *pdev)
 	}
 	ret = clk_prepare_enable(priv->mac_clk);
 	if (ret)
+<<<<<<< HEAD
 		goto out;
+=======
+		goto out_put_clk;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	priv->rx_chan = 0;
 	priv->tx_chan = 1;
@@ -2726,6 +2752,18 @@ static int bcm_enetsw_probe(struct platform_device *pdev)
 
 out_disable_clk:
 	clk_disable_unprepare(priv->mac_clk);
+<<<<<<< HEAD
+=======
+
+out_put_clk:
+	clk_put(priv->mac_clk);
+
+out_unmap:
+	iounmap(priv->base);
+
+out_release_mem:
+	release_mem_region(res_mem->start, resource_size(res_mem));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	free_netdev(dev);
 	return ret;
@@ -2744,6 +2782,9 @@ static int bcm_enetsw_remove(struct platform_device *pdev)
 	unregister_netdev(dev);
 
 	clk_disable_unprepare(priv->mac_clk);
+
+	clk_disable_unprepare(priv->mac_clk);
+	clk_put(priv->mac_clk);
 
 	free_netdev(dev);
 	return 0;

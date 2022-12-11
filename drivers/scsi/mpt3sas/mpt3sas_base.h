@@ -453,9 +453,12 @@ struct MPT3SAS_DEVICE {
 	u8	configured_lun;
 	u8	block;
 	u8	tlr_snoop_check;
+<<<<<<< HEAD
 	u8	ignore_delay_remove;
 	/* Iopriority Command Handling */
 	u8	ncq_prio_enable;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Bug workaround for SATL handling: the mpt2/3sas firmware
 	 * doesn't return BUSY or TASK_SET_FULL for subsequent
@@ -467,7 +470,10 @@ struct MPT3SAS_DEVICE {
 	 * thing while a SATL command is pending.
 	 */
 	unsigned long ata_command_pending;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #define MPT3_CMD_NOT_USED	0x8000	/* free */
@@ -827,7 +833,11 @@ struct chain_lookup {
  * @smid: system message id
  * @cb_idx: callback index
  * @direct_io: To indicate whether I/O is direct (WARPDRIVE)
+<<<<<<< HEAD
  * @chain_list: list of associated firmware chain tracker
+=======
+ * @tracker_list: list of free request (ioc->free_list)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @msix_io: IO's msix
  */
 struct scsiio_tracker {
@@ -837,6 +847,10 @@ struct scsiio_tracker {
 	u8	direct_io;
 	struct pcie_sg_list pcie_sg_list;
 	struct list_head chain_list;
+<<<<<<< HEAD
+=======
+	struct list_head tracker_list;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16     msix_io;
 };
 
@@ -1512,6 +1526,16 @@ void mpt3sas_base_clear_st(struct MPT3SAS_ADAPTER *ioc,
 
 u16 mpt3sas_base_get_smid(struct MPT3SAS_ADAPTER *ioc, u8 cb_idx);
 void mpt3sas_base_free_smid(struct MPT3SAS_ADAPTER *ioc, u16 smid);
+<<<<<<< HEAD
+=======
+void mpt3sas_base_put_smid_scsi_io(struct MPT3SAS_ADAPTER *ioc, u16 smid,
+	u16 handle);
+void mpt3sas_base_put_smid_fast_path(struct MPT3SAS_ADAPTER *ioc, u16 smid,
+	u16 handle);
+void mpt3sas_base_put_smid_hi_priority(struct MPT3SAS_ADAPTER *ioc,
+	u16 smid, u16 msix_task);
+void mpt3sas_base_put_smid_default(struct MPT3SAS_ADAPTER *ioc, u16 smid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void mpt3sas_base_initialize_callback_handler(void);
 u8 mpt3sas_base_register_callback_handler(MPT_CALLBACK cb_func);
 void mpt3sas_base_release_callback_handler(u8 cb_idx);

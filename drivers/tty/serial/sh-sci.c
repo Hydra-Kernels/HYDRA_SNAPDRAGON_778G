@@ -151,6 +151,7 @@ struct sci_port {
 	struct hrtimer			rx_timer;
 	unsigned int			rx_timeout;	/* microseconds */
 #endif
+<<<<<<< HEAD
 	unsigned int			rx_frame;
 	int				rx_trigger;
 	struct timer_list		rx_fifo_timer;
@@ -159,6 +160,8 @@ struct sci_port {
 
 	bool has_rtscts;
 	bool autorts;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #define SCI_NPORTS CONFIG_SERIAL_SH_SCI_NR_UARTS
@@ -199,6 +202,7 @@ static const struct sci_port_params sci_port_params[SCIx_NR_REGTYPES] = {
 	 * Common definitions for legacy IrDA ports.
 	 */
 	[SCIx_IRDA_REGTYPE] = {
+<<<<<<< HEAD
 		.regs = {
 			[SCSMR]		= { 0x00,  8 },
 			[SCBRR]		= { 0x02,  8 },
@@ -215,6 +219,23 @@ static const struct sci_port_params sci_port_params[SCIx_NR_REGTYPES] = {
 		.sampling_rate_mask = SCI_SR(32),
 		.error_mask = SCI_DEFAULT_ERROR_MASK | SCI_ORER,
 		.error_clear = SCI_ERROR_CLEAR & ~SCI_ORER,
+=======
+		[SCSMR]		= { 0x00,  8 },
+		[SCBRR]		= { 0x02,  8 },
+		[SCSCR]		= { 0x04,  8 },
+		[SCxTDR]	= { 0x06,  8 },
+		[SCxSR]		= { 0x08, 16 },
+		[SCxRDR]	= { 0x0a,  8 },
+		[SCFCR]		= { 0x0c,  8 },
+		[SCFDR]		= { 0x0e, 16 },
+		[SCTFDR]	= sci_reg_invalid,
+		[SCRFDR]	= sci_reg_invalid,
+		[SCSPTR]	= sci_reg_invalid,
+		[SCLSR]		= sci_reg_invalid,
+		[HSSRR]		= sci_reg_invalid,
+		[SCPCR]		= sci_reg_invalid,
+		[SCPDR]		= sci_reg_invalid,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 
 	/*
@@ -1669,6 +1690,7 @@ static void sci_free_dma(struct uart_port *port)
 
 static void sci_flush_buffer(struct uart_port *port)
 {
+<<<<<<< HEAD
 	struct sci_port *s = to_sci_port(port);
 
 	/*
@@ -1681,6 +1703,13 @@ static void sci_flush_buffer(struct uart_port *port)
 		dmaengine_terminate_async(s->chan_tx);
 		s->cookie_tx = -EINVAL;
 	}
+=======
+	/*
+	 * In uart_flush_buffer(), the xmit circular buffer has just been
+	 * cleared, so we have to reset tx_dma_len accordingly.
+	 */
+	to_sci_port(port)->tx_dma_len = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #else /* !CONFIG_SERIAL_SH_SCI_DMA */
 static inline void sci_request_dma(struct uart_port *port)
@@ -2175,6 +2204,14 @@ static int sci_startup(struct uart_port *port)
 		sci_free_dma(port);
 		return ret;
 	}
+<<<<<<< HEAD
+=======
+
+	spin_lock_irqsave(&port->lock, flags);
+	sci_start_tx(port);
+	sci_start_rx(port);
+	spin_unlock_irqrestore(&port->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -2210,8 +2247,11 @@ static void sci_shutdown(struct uart_port *port)
 	}
 #endif
 
+<<<<<<< HEAD
 	if (s->rx_trigger > 1 && s->rx_fifo_timeout > 0)
 		del_timer_sync(&s->rx_fifo_timer);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sci_free_irq(s);
 	sci_free_dma(port);
 }
@@ -3029,6 +3069,7 @@ static void serial_console_write(struct console *co, const char *s,
 	unsigned long flags;
 	int locked = 1;
 
+<<<<<<< HEAD
 #if defined(SUPPORT_SYSRQ)
 	if (port->sysrq)
 		locked = 0;
@@ -3037,6 +3078,13 @@ static void serial_console_write(struct console *co, const char *s,
 	if (oops_in_progress)
 		locked = spin_trylock_irqsave(&port->lock, flags);
 	else
+=======
+	if (port->sysrq)
+		locked = 0;
+	else if (oops_in_progress)
+		locked = spin_trylock_irqsave(&port->lock, flags);
+	else
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_lock_irqsave(&port->lock, flags);
 
 	/* first save SCSCR then disable interrupts, keep clock source */
@@ -3164,7 +3212,10 @@ static int sci_remove(struct platform_device *dev)
 	struct sci_port *port = platform_get_drvdata(dev);
 	unsigned int type = port->port.type;	/* uart_remove_... clears it */
 
+<<<<<<< HEAD
 	sci_ports_in_use &= ~BIT(port->port.line);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	uart_remove_one_port(&sci_uart_driver, &port->port);
 
 	sci_cleanup_single(port);
@@ -3357,6 +3408,7 @@ static int sci_probe(struct platform_device *dev)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (sp->port.fifosize > 1) {
 		ret = device_create_file(&dev->dev, &dev_attr_rx_fifo_trigger);
 		if (ret)
@@ -3374,6 +3426,8 @@ static int sci_probe(struct platform_device *dev)
 		}
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_SH_STANDARD_BIOS
 	sh_bios_gdb_detach();
 #endif

@@ -670,7 +670,11 @@ blk_status_t btrfs_submit_compressed_read(struct inode *inode, struct bio *bio,
 
 			ret = btrfs_map_bio(fs_info, comp_bio, mirror_num, 0);
 			if (ret) {
+<<<<<<< HEAD
 				comp_bio->bi_status = ret;
+=======
+				comp_bio->bi_error = ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				bio_endio(comp_bio);
 			}
 
@@ -695,7 +699,11 @@ blk_status_t btrfs_submit_compressed_read(struct inode *inode, struct bio *bio,
 
 	ret = btrfs_map_bio(fs_info, comp_bio, mirror_num, 0);
 	if (ret) {
+<<<<<<< HEAD
 		comp_bio->bi_status = ret;
+=======
+		comp_bio->bi_error = ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		bio_endio(comp_bio);
 	}
 

@@ -144,7 +144,12 @@ nvkm_ramht_new(struct nvkm_device *device, u32 size, u32 align,
 	struct nvkm_ramht *ramht;
 	int ret, i;
 
+<<<<<<< HEAD
 	if (!(ramht = *pramht = vzalloc(struct_size(ramht, data, (size >> 3)))))
+=======
+	if (!(ramht = *pramht = vzalloc(sizeof(*ramht) +
+					(size >> 3) * sizeof(*ramht->data))))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENOMEM;
 
 	ramht->device = device;

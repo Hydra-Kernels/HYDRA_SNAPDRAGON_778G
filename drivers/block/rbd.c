@@ -1596,11 +1596,135 @@ __rbd_obj_add_osd_request(struct rbd_obj_request *obj_req,
 	return req;
 }
 
+<<<<<<< HEAD
+=======
+static void rbd_osd_req_format_read(struct rbd_obj_request *obj_request)
+{
+	struct rbd_img_request *img_request = obj_request->img_request;
+	struct ceph_osd_request *osd_req = obj_request->osd_req;
+	u64 snap_id;
+
+	rbd_assert(osd_req != NULL);
+
+	snap_id = img_request ? img_request->snap_id : CEPH_NOSNAP;
+	ceph_osdc_build_request(osd_req, obj_request->offset,
+			NULL, snap_id, NULL);
+}
+
+static void rbd_osd_req_format_write(struct rbd_obj_request *obj_request)
+{
+	struct rbd_img_request *img_request = obj_request->img_request;
+	struct ceph_osd_request *osd_req = obj_request->osd_req;
+	struct ceph_snap_context *snapc;
+	struct timespec mtime = CURRENT_TIME;
+
+	rbd_assert(osd_req != NULL);
+
+	snapc = img_request ? img_request->snapc : NULL;
+	ceph_osdc_build_request(osd_req, obj_request->offset,
+			snapc, CEPH_NOSNAP, &mtime);
+}
+
+/*
+ * Create an osd request.  A read request has one osd op (read).
+ * A write request has either one (watch) or two (hint+write) osd ops.
+ * (All rbd data writes are prefixed with an allocation hint op, but
+ * technically osd watch is a write request, hence this distinction.)
+ */
+static struct ceph_osd_request *rbd_osd_req_create(
+					struct rbd_device *rbd_dev,
+					enum obj_operation_type op_type,
+					unsigned int num_ops,
+					struct rbd_obj_request *obj_request)
+{
+	struct ceph_snap_context *snapc = NULL;
+	struct ceph_osd_client *osdc;
+	struct ceph_osd_request *osd_req;
+
+	if (obj_request_img_data_test(obj_request) &&
+		(op_type == OBJ_OP_DISCARD || op_type == OBJ_OP_WRITE)) {
+		struct rbd_img_request *img_request = obj_request->img_request;
+		if (op_type == OBJ_OP_WRITE) {
+			rbd_assert(img_request_write_test(img_request));
+		} else {
+			rbd_assert(img_request_discard_test(img_request));
+		}
+		snapc = img_request->snapc;
+	}
+
+	rbd_assert(num_ops == 1 || ((op_type == OBJ_OP_WRITE) && num_ops == 2));
+
+	/* Allocate and initialize the request, for the num_ops ops */
+
+	osdc = &rbd_dev->rbd_client->client->osdc;
+	osd_req = ceph_osdc_alloc_request(osdc, snapc, num_ops, false,
+					  GFP_NOIO);
+	if (!osd_req)
+		return NULL;	/* ENOMEM */
+
+	if (op_type == OBJ_OP_WRITE || op_type == OBJ_OP_DISCARD)
+		osd_req->r_flags = CEPH_OSD_FLAG_WRITE | CEPH_OSD_FLAG_ONDISK;
+	else
+		osd_req->r_flags = CEPH_OSD_FLAG_READ;
+
+	osd_req->r_callback = rbd_osd_req_callback;
+	osd_req->r_priv = obj_request;
+
+	osd_req->r_base_oloc.pool = ceph_file_layout_pg_pool(rbd_dev->layout);
+	ceph_oid_set_name(&osd_req->r_base_oid, obj_request->object_name);
+
+	return osd_req;
+}
+
+/*
+ * Create a copyup osd request based on the information in the object
+ * request supplied.  A copyup request has two or three osd ops, a
+ * copyup method call, potentially a hint op, and a write or truncate
+ * or zero op.
+ */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct ceph_osd_request *
 rbd_obj_add_osd_request(struct rbd_obj_request *obj_req, int num_ops)
 {
+<<<<<<< HEAD
 	return __rbd_obj_add_osd_request(obj_req, obj_req->img_request->snapc,
 					 num_ops);
+=======
+	struct rbd_img_request *img_request;
+	struct ceph_snap_context *snapc;
+	struct rbd_device *rbd_dev;
+	struct ceph_osd_client *osdc;
+	struct ceph_osd_request *osd_req;
+	int num_osd_ops = 3;
+
+	rbd_assert(obj_request_img_data_test(obj_request));
+	img_request = obj_request->img_request;
+	rbd_assert(img_request);
+	rbd_assert(img_request_write_test(img_request) ||
+			img_request_discard_test(img_request));
+
+	if (img_request_discard_test(img_request))
+		num_osd_ops = 2;
+
+	/* Allocate and initialize the request, for all the ops */
+
+	snapc = img_request->snapc;
+	rbd_dev = img_request->rbd_dev;
+	osdc = &rbd_dev->rbd_client->client->osdc;
+	osd_req = ceph_osdc_alloc_request(osdc, snapc, num_osd_ops,
+						false, GFP_NOIO);
+	if (!osd_req)
+		return NULL;	/* ENOMEM */
+
+	osd_req->r_flags = CEPH_OSD_FLAG_WRITE | CEPH_OSD_FLAG_ONDISK;
+	osd_req->r_callback = rbd_osd_req_callback;
+	osd_req->r_priv = obj_request;
+
+	osd_req->r_base_oloc.pool = ceph_file_layout_pg_pool(rbd_dev->layout);
+	ceph_oid_set_name(&osd_req->r_base_oid, obj_request->object_name);
+
+	return osd_req;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct rbd_obj_request *rbd_obj_request_create(void)
@@ -2056,10 +2180,49 @@ static int rbd_object_map_open(struct rbd_device *rbd_dev)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	ret = rbd_object_map_load(rbd_dev);
 	if (ret) {
 		rbd_object_map_unlock(rbd_dev);
 		return ret;
+=======
+			rbd_assert(length <= (u64)UINT_MAX);
+			clone_size = (unsigned int)length;
+			obj_request->bio_list =
+					bio_chain_clone_range(&bio_list,
+								&bio_offset,
+								clone_size,
+								GFP_NOIO);
+			if (!obj_request->bio_list)
+				goto out_unwind;
+		} else if (type == OBJ_REQUEST_PAGES) {
+			unsigned int page_count;
+
+			obj_request->pages = pages;
+			page_count = (u32)calc_pages_for(offset, length);
+			obj_request->page_count = page_count;
+			if ((offset + length) & ~PAGE_MASK)
+				page_count--;	/* more on last page */
+			pages += page_count;
+		}
+
+		osd_req = rbd_osd_req_create(rbd_dev, op_type,
+					(op_type == OBJ_OP_WRITE) ? 2 : 1,
+					obj_request);
+		if (!osd_req)
+			goto out_unwind;
+
+		obj_request->osd_req = osd_req;
+		obj_request->callback = rbd_img_obj_callback;
+		obj_request->img_offset = img_offset;
+
+		rbd_img_obj_request_fill(obj_request, osd_req, op_type, 0);
+
+		rbd_img_request_get(img_request);
+
+		img_offset += length;
+		resid -= length;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -2097,7 +2260,50 @@ static int rbd_object_map_update_finish(struct rbd_obj_request *obj_req,
 	/*
 	 * Nothing to do for a snapshot object map.
 	 */
+<<<<<<< HEAD
 	if (osd_req->r_num_ops == 1)
+=======
+	img_offset = obj_request->img_offset - obj_request->offset;
+	length = (u64)1 << rbd_dev->header.obj_order;
+
+	/*
+	 * There is no defined parent data beyond the parent
+	 * overlap, so limit what we read at that boundary if
+	 * necessary.
+	 */
+	if (img_offset + length > rbd_dev->parent_overlap) {
+		rbd_assert(img_offset < rbd_dev->parent_overlap);
+		length = rbd_dev->parent_overlap - img_offset;
+	}
+
+	/*
+	 * Allocate a page array big enough to receive the data read
+	 * from the parent.
+	 */
+	page_count = (u32)calc_pages_for(0, length);
+	pages = ceph_alloc_page_vector(page_count, GFP_NOIO);
+	if (IS_ERR(pages)) {
+		result = PTR_ERR(pages);
+		pages = NULL;
+		goto out_err;
+	}
+
+	result = -ENOMEM;
+	parent_request = rbd_parent_request_create(obj_request,
+						img_offset, length);
+	if (!parent_request)
+		goto out_err;
+
+	result = rbd_img_request_fill(parent_request, OBJ_REQUEST_PAGES, pages);
+	if (result)
+		goto out_err;
+	parent_request->copyup_pages = pages;
+	parent_request->copyup_page_count = page_count;
+
+	parent_request->callback = rbd_img_obj_parent_read_full_callback;
+	result = rbd_img_request_submit(parent_request);
+	if (!result)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	/*
@@ -2324,7 +2530,13 @@ static int rbd_osd_setup_stat(struct ceph_osd_request *osd_req, int which)
 	 *         le32 tv_nsec;
 	 *     } mtime;
 	 */
+<<<<<<< HEAD
 	pages = ceph_alloc_page_vector(1, GFP_NOIO);
+=======
+	size = sizeof (__le64) + sizeof (__le32) + sizeof (__le32);
+	page_count = (u32)calc_pages_for(0, size);
+	pages = ceph_alloc_page_vector(page_count, GFP_NOIO);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(pages))
 		return PTR_ERR(pages);
 
@@ -5157,9 +5369,15 @@ static int rbd_init_disk(struct rbd_device *rbd_dev)
 	blk_queue_max_hw_sectors(q, objset_bytes >> SECTOR_SHIFT);
 	q->limits.max_sectors = queue_max_hw_sectors(q);
 	blk_queue_max_segments(q, USHRT_MAX);
+<<<<<<< HEAD
 	blk_queue_max_segment_size(q, UINT_MAX);
 	blk_queue_io_min(q, rbd_dev->opts->alloc_size);
 	blk_queue_io_opt(q, rbd_dev->opts->alloc_size);
+=======
+	blk_queue_max_segment_size(q, segment_size);
+	blk_queue_io_min(q, segment_size);
+	blk_queue_io_opt(q, segment_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (rbd_dev->opts->trim) {
 		blk_queue_flag_set(QUEUE_FLAG_DISCARD, q);

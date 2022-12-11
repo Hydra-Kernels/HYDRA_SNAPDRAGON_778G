@@ -1056,6 +1056,11 @@ static int usb_serial_probe(struct usb_interface *interface,
 			dev_err(ddev, "Error registering port device, continuing\n");
 	}
 
+<<<<<<< HEAD
+=======
+	serial->disconnected = 0;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (num_ports > 0)
 		usb_serial_console_init(serial->port[0]->minor);
 exit:

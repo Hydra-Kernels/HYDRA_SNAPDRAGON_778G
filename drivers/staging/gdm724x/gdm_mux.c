@@ -657,8 +657,19 @@ static int __init gdm_usb_mux_init(void)
 
 static void __exit gdm_usb_mux_exit(void)
 {
+<<<<<<< HEAD
 	usb_deregister(&gdm_mux_driver);
 	unregister_lte_tty_driver();
+=======
+	if (mux_rx_wq) {
+		flush_workqueue(mux_rx_wq);
+		destroy_workqueue(mux_rx_wq);
+	}
+
+	usb_deregister(&gdm_mux_driver);
+	unregister_lte_tty_driver();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 module_init(gdm_usb_mux_init);

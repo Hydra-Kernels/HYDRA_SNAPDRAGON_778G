@@ -84,8 +84,28 @@ struct switchdev_obj_port_vlan {
 #define SWITCHDEV_OBJ_PORT_VLAN(OBJ) \
 	container_of((OBJ), struct switchdev_obj_port_vlan, obj)
 
+<<<<<<< HEAD
 /* SWITCHDEV_OBJ_ID_PORT_MDB */
 struct switchdev_obj_port_mdb {
+=======
+/* SWITCHDEV_OBJ_ID_IPV4_FIB */
+struct switchdev_obj_ipv4_fib {
+	struct switchdev_obj obj;
+	u32 dst;
+	int dst_len;
+	struct fib_info *fi;
+	u8 tos;
+	u8 type;
+	u32 nlflags;
+	u32 tb_id;
+};
+
+#define SWITCHDEV_OBJ_IPV4_FIB(obj) \
+	container_of(obj, struct switchdev_obj_ipv4_fib, obj)
+
+/* SWITCHDEV_OBJ_ID_PORT_FDB */
+struct switchdev_obj_port_fdb {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct switchdev_obj obj;
 	unsigned char addr[ETH_ALEN];
 	u16 vid;

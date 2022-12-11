@@ -13,7 +13,10 @@
 #include <linux/workqueue.h>
 #include <linux/jiffies.h>
 #include <linux/rtnetlink.h>
+<<<<<<< HEAD
 #include <linux/netlink.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <net/switchdev.h>
 #include <net/vxlan.h>
 
@@ -661,6 +664,7 @@ static int mlxsw_sp_port_attr_br_ageing_set(struct mlxsw_sp_port *mlxsw_sp_port,
 		else
 			return 0;
 	}
+<<<<<<< HEAD
 
 	return mlxsw_sp_ageing_set(mlxsw_sp, ageing_time);
 }
@@ -697,6 +701,8 @@ static int mlxsw_sp_port_attr_mrouter_set(struct mlxsw_sp_port *mlxsw_sp_port,
 
 	if (switchdev_trans_ph_prepare(trans))
 		return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	bridge_port = mlxsw_sp_bridge_port_find(mlxsw_sp_port->mlxsw_sp->bridge,
 						orig_dev);
@@ -2743,6 +2749,7 @@ static void mlxsw_sp_fdb_notify_work(struct work_struct *work)
 	mlxsw_sp = bridge->mlxsw_sp;
 
 	rtnl_lock();
+<<<<<<< HEAD
 	mlxsw_reg_sfn_pack(sfn_pl);
 	err = mlxsw_reg_query(mlxsw_sp->core, MLXSW_REG(sfn), sfn_pl);
 	if (err) {
@@ -2752,6 +2759,21 @@ static void mlxsw_sp_fdb_notify_work(struct work_struct *work)
 	num_rec = mlxsw_reg_sfn_num_rec_get(sfn_pl);
 	for (i = 0; i < num_rec; i++)
 		mlxsw_sp_fdb_notify_rec_process(mlxsw_sp, sfn_pl, i);
+=======
+	do {
+		mlxsw_reg_sfn_pack(sfn_pl);
+		err = mlxsw_reg_query(mlxsw_sp->core, MLXSW_REG(sfn), sfn_pl);
+		if (err) {
+			dev_err_ratelimited(mlxsw_sp->bus_info->dev, "Failed to get FDB notifications\n");
+			break;
+		}
+		num_rec = mlxsw_reg_sfn_num_rec_get(sfn_pl);
+		for (i = 0; i < num_rec; i++)
+			mlxsw_sp_fdb_notify_rec_process(mlxsw_sp, sfn_pl, i);
+
+	} while (num_rec);
+	rtnl_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out:
 	rtnl_unlock();

@@ -336,7 +336,11 @@ static int recv_pkt(struct sk_buff *skb, struct net_device *dev,
 
 		local_skb->dev = dev;
 
+<<<<<<< HEAD
 		ret = iphc_decompress(local_skb, dev, peer);
+=======
+		ret = iphc_decompress(local_skb, dev, chan);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret < 0) {
 			BT_DBG("iphc_decompress failed: %d", ret);
 			kfree_skb(local_skb);

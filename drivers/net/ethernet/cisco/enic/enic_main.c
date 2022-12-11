@@ -1981,9 +1981,16 @@ static int enic_open(struct net_device *netdev)
 
 err_out_free_rq:
 	for (i = 0; i < enic->rq_count; i++) {
+<<<<<<< HEAD
 		ret = vnic_rq_disable(&enic->rq[i]);
 		if (!ret)
 			vnic_rq_clean(&enic->rq[i], enic_free_rq_buf);
+=======
+		err = vnic_rq_disable(&enic->rq[i]);
+		if (err)
+			return err;
+		vnic_rq_clean(&enic->rq[i], enic_free_rq_buf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	enic_dev_notify_unset(enic);
 err_out_free_intr:

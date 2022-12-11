@@ -305,18 +305,32 @@ int usbip_recv(struct socket *sock, void *buf, int size)
 	struct kvec iov = {.iov_base = buf, .iov_len = size};
 	struct msghdr msg = {.msg_flags = MSG_NOSIGNAL};
 	int total = 0;
+<<<<<<< HEAD
 
 	if (!sock || !buf || !size)
 		return -EINVAL;
 
 	iov_iter_kvec(&msg.msg_iter, READ, &iov, 1, size);
 
+=======
+	/* for blocks of if (usbip_dbg_flag_xmit) */
+	char *bp = buf;
+	int osize = size;
+
+	if (!sock || !buf || !size)
+		return -EINVAL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	usbip_dbg_xmit("enter\n");
 
 	do {
 		sock->sk->sk_allocation = GFP_NOIO;
 
+<<<<<<< HEAD
 		result = sock_recvmsg(sock, &msg, MSG_WAITALL);
+=======
+		result = kernel_recvmsg(sock, &msg, &iov, 1, size, MSG_WAITALL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (result <= 0)
 			goto err;
 
@@ -705,6 +719,7 @@ int usbip_recv_xbuff(struct usbip_device *ud, struct urb *urb)
 	if (!(size > 0))
 		return 0;
 
+<<<<<<< HEAD
 	if (size > urb->transfer_buffer_length)
 		/* should not happen, probably malicious packet */
 		goto error;
@@ -730,6 +745,27 @@ int usbip_recv_xbuff(struct usbip_device *ud, struct urb *urb)
 
 			if (!copy)
 				break;
+=======
+	if (size > urb->transfer_buffer_length) {
+		/* should not happen, probably malicious packet */
+		if (ud->side == USBIP_STUB) {
+			usbip_event_add(ud, SDEV_EVENT_ERROR_TCP);
+			return 0;
+		} else {
+			usbip_event_add(ud, VDEV_EVENT_ERROR_TCP);
+			return -EPIPE;
+		}
+	}
+
+	ret = usbip_recv(ud->tcp_socket, urb->transfer_buffer, size);
+	if (ret != size) {
+		dev_err(&urb->dev->dev, "recv xbuf, %d\n", ret);
+		if (ud->side == USBIP_STUB) {
+			usbip_event_add(ud, SDEV_EVENT_ERROR_TCP);
+		} else {
+			usbip_event_add(ud, VDEV_EVENT_ERROR_TCP);
+			return -EPIPE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (ret != size)

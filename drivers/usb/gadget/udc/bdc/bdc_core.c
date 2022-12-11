@@ -527,6 +527,7 @@ static int bdc_probe(struct platform_device *pdev)
 	bdc->dev = dev;
 	dev_dbg(dev, "bdc->regs: %p irq=%d\n", bdc->regs, bdc->irq);
 
+<<<<<<< HEAD
 	bdc->num_phys = of_count_phandle_with_args(dev->of_node,
 						"phys", "#phy-cells");
 	if (bdc->num_phys > 0) {
@@ -556,6 +557,8 @@ static int bdc_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	temp = bdc_readl(bdc->regs, BDC_BDCCAP1);
 	if ((temp & BDC_P64) &&
 			!dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64))) {

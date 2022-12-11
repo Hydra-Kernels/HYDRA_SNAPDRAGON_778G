@@ -256,7 +256,11 @@ static struct resource *additional_memory_resource(phys_addr_t size)
 		return NULL;
 
 	res->name = "System RAM";
+<<<<<<< HEAD
 	res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
+=======
+	res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = allocate_resource(&iomem_resource, res,
 				size, 0, -1,

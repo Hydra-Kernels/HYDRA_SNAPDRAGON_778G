@@ -258,6 +258,7 @@ static void decon_commit(struct exynos_drm_crtc *crtc)
 	decon_set_bits(ctx, DECON_VIDCON0, VIDCON0_ENVID | VIDCON0_ENVID_F, ~0);
 
 	decon_set_bits(ctx, DECON_UPDATE, STANDALONE_UPDATE_F, ~0);
+<<<<<<< HEAD
 }
 
 static void decon_win_set_bldeq(struct decon_context *ctx, unsigned int win,
@@ -313,6 +314,8 @@ static void decon_win_set_bldmod(struct decon_context *ctx, unsigned int win,
 			       VIDOSDxC_ALPHA0_RGB_MASK, val);
 		decon_set_bits(ctx, DECON_BLENDCON, BLEND_NEW, BLEND_NEW);
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void decon_win_set_pixfmt(struct decon_context *ctx, unsigned int win,

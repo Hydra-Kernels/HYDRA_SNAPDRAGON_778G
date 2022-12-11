@@ -2122,6 +2122,11 @@ static int at_xdmac_remove(struct platform_device *pdev)
 	dma_async_device_unregister(&atxdmac->dma);
 	clk_disable_unprepare(atxdmac->clk);
 
+<<<<<<< HEAD
+=======
+	synchronize_irq(atxdmac->irq);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	free_irq(atxdmac->irq, atxdmac);
 
 	for (i = 0; i < atxdmac->dma.chancnt; i++) {

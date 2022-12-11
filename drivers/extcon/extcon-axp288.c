@@ -205,6 +205,7 @@ static bool axp288_get_vbus_attach(struct axp288_extcon_info *info)
 		return false;
 	}
 
+<<<<<<< HEAD
 	return !!(pwr_stat & PS_STAT_VBUS_VALID);
 }
 
@@ -216,6 +217,9 @@ static int axp288_handle_chrg_det_event(struct axp288_extcon_info *info)
 	bool vbus_attach = false;
 
 	vbus_attach = axp288_get_vbus_attach(info);
+=======
+	vbus_attach = (pwr_stat & PS_STAT_VBUS_VALID);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!vbus_attach)
 		goto no_vbus;
 

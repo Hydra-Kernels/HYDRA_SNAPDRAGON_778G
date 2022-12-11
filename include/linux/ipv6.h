@@ -286,9 +286,13 @@ struct ipv6_pinfo {
 						 */
 				dontfrag:1,
 				autoflowlabel:1,
+<<<<<<< HEAD
 				autoflowlabel_set:1,
 				mc_all:1,
 				rtalert_isolate:1;
+=======
+				autoflowlabel_set:1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__u8			min_hopcount;
 	__u8			tclass;
 	__be32			rcv_flowinfo;

@@ -417,13 +417,30 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
 }
 
 /**
+<<<<<<< HEAD
  * batadv_tt_orig_list_entry_free_rcu() - free the orig_entry
  * @rcu: rcu pointer of the orig_entry
  */
 static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+=======
+ * batadv_tt_orig_list_entry_release - release tt orig entry from lists and
+ *  queue for free after rcu grace period
+ * @orig_entry: tt orig entry to be free'd
+ */
+static void
+batadv_tt_orig_list_entry_release(struct batadv_tt_orig_list_entry *orig_entry)
+{
+	batadv_orig_node_free_ref(orig_entry->orig_node);
+	kfree_rcu(orig_entry, rcu);
+}
+
+static void
+batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct batadv_tt_orig_list_entry *orig_entry;
 
+<<<<<<< HEAD
 	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
 
 	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
@@ -443,6 +460,9 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
 
 	batadv_orig_node_put(orig_entry->orig_node);
 	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+=======
+	batadv_tt_orig_list_entry_release(orig_entry);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

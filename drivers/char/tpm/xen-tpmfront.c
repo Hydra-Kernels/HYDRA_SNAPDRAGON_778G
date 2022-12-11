@@ -363,6 +363,10 @@ static int tpmfront_probe(struct xenbus_device *dev,
 
 	rv = setup_ring(dev, priv);
 	if (rv) {
+<<<<<<< HEAD
+=======
+		chip = dev_get_drvdata(&dev->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ring_free(priv);
 		return rv;
 	}

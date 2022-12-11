@@ -84,9 +84,14 @@
 
 #define NUMBER_OF_SMB2_COMMANDS	0x0013
 
+<<<<<<< HEAD
 /* 52 transform hdr + 64 hdr + 88 create rsp */
 #define SMB2_TRANSFORM_HEADER_SIZE 52
 #define MAX_SMB2_HDR_SIZE 204
+=======
+/* 4 len + 52 transform hdr + 64 hdr + 56 create rsp */
+#define MAX_SMB2_HDR_SIZE 0x00b0
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define SMB2_PROTO_NUMBER cpu_to_le32(0x424d53fe)
 #define SMB2_TRANSFORM_PROTO_NUM cpu_to_le32(0x424d53fd)

@@ -409,8 +409,12 @@ static struct pid *good_sigevent(sigevent_t * event)
 
 	switch (event->sigev_notify) {
 	case SIGEV_SIGNAL | SIGEV_THREAD_ID:
+<<<<<<< HEAD
 		pid = find_vpid(event->sigev_notify_thread_id);
 		rtn = pid_task(pid, PIDTYPE_PID);
+=======
+		rtn = find_task_by_vpid(event->sigev_notify_thread_id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!rtn || !same_thread_group(rtn, current))
 			return NULL;
 		/* FALLTHRU */
@@ -420,7 +424,11 @@ static struct pid *good_sigevent(sigevent_t * event)
 			return NULL;
 		/* FALLTHRU */
 	case SIGEV_NONE:
+<<<<<<< HEAD
 		return pid;
+=======
+		return task_pid(rtn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		return NULL;
 	}
@@ -652,6 +660,7 @@ void common_timer_get(struct k_itimer *timr, struct itimerspec64 *cur_setting)
 	iv = timr->it_interval;
 
 	/* interval timer ? */
+<<<<<<< HEAD
 	if (iv) {
 		cur_setting->it_interval = ktime_to_timespec64(iv);
 	} else if (!timr->it_active) {
@@ -662,11 +671,20 @@ void common_timer_get(struct k_itimer *timr, struct itimerspec64 *cur_setting)
 		if (!sig_none)
 			return;
 	}
+=======
+	if (iv.tv64)
+		cur_setting->it_interval = ktime_to_timespec(iv);
+	else if (!hrtimer_active(timer) && timr->it_sigev_notify != SIGEV_NONE)
+		return;
+
+	now = timer->base->get_time();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * The timespec64 based conversion is suboptimal, but it's not
 	 * worth to implement yet another callback.
 	 */
+<<<<<<< HEAD
 	kc->clock_get(timr->it_clock, &ts64);
 	now = timespec64_to_ktime(ts64);
 
@@ -678,13 +696,24 @@ void common_timer_get(struct k_itimer *timr, struct itimerspec64 *cur_setting)
 		timr->it_overrun += kc->timer_forward(timr, now);
 
 	remaining = kc->timer_remaining(timr, now);
+=======
+	if (iv.tv64 && (timr->it_requeue_pending & REQUEUE_PENDING ||
+			timr->it_sigev_notify == SIGEV_NONE))
+		timr->it_overrun += (unsigned int) hrtimer_forward(timer, now, iv);
+
+	remaining = __hrtimer_expires_remaining_adjusted(timer, now);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Return 0 only, when the timer is expired and not pending */
 	if (remaining <= 0) {
 		/*
 		 * A single shot SIGEV_NONE timer must return 0, when
 		 * it is expired !
 		 */
+<<<<<<< HEAD
 		if (!sig_none)
+=======
+		if (timr->it_sigev_notify != SIGEV_NONE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			cur_setting->it_value.tv_nsec = 1;
 	} else {
 		cur_setting->it_value = ktime_to_timespec64(remaining);
@@ -800,6 +829,7 @@ static void common_hrtimer_arm(struct k_itimer *timr, ktime_t expires,
 		hrtimer_start_expires(timer, HRTIMER_MODE_ABS);
 }
 
+<<<<<<< HEAD
 static int common_hrtimer_try_to_cancel(struct k_itimer *timr)
 {
 	return hrtimer_try_to_cancel(&timr->it.real.timer);
@@ -862,6 +892,14 @@ int common_timer_set(struct k_itimer *timr, int flags,
 
 	/* Switch off the timer when it_value is zero */
 	if (!new_setting->it_value.tv_sec && !new_setting->it_value.tv_nsec)
+=======
+	/* SIGEV_NONE timers are not queued ! See common_timer_get */
+	if (timr->it_sigev_notify == SIGEV_NONE) {
+		/* Setup correct expiry time for relative timers */
+		if (mode == HRTIMER_MODE_REL) {
+			hrtimer_add_expires(timer, timer->base->get_time());
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	timr->it_interval = timespec64_to_ktime(new_setting->it_interval);

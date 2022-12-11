@@ -313,7 +313,11 @@ static void bgmac_dma_rx_enable(struct bgmac *bgmac,
 	/* preserve ONLY bits 16-17 from current hardware value */
 	ctl &= BGMAC_DMA_RX_ADDREXT_MASK;
 
+<<<<<<< HEAD
 	if (bgmac->feature_flags & BGMAC_FEAT_RX_MASK_SETUP) {
+=======
+	if (bgmac->core->id.rev >= 4) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ctl &= ~BGMAC_DMA_RX_BL_MASK;
 		ctl |= BGMAC_DMA_RX_BL_128 << BGMAC_DMA_RX_BL_SHIFT;
 
@@ -468,9 +472,14 @@ static int bgmac_dma_rx_read(struct bgmac *bgmac, struct bgmac_dma_ring *ring,
 
 			skb = build_skb(buf, BGMAC_RX_ALLOC_SIZE);
 			if (unlikely(!skb)) {
+<<<<<<< HEAD
 				netdev_err(bgmac->net_dev, "build_skb failed\n");
 				put_page(virt_to_head_page(buf));
 				bgmac->net_dev->stats.rx_errors++;
+=======
+				bgmac_err(bgmac, "build_skb failed\n");
+				put_page(virt_to_head_page(buf));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 			}
 			skb_put(skb, BGMAC_RX_FRAME_OFFSET +
@@ -1199,6 +1208,11 @@ static int bgmac_open(struct net_device *net_dev)
 
 	netif_start_queue(net_dev);
 
+<<<<<<< HEAD
+=======
+	netif_start_queue(net_dev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -1467,6 +1481,11 @@ struct bgmac *bgmac_alloc(struct device *dev)
 {
 	struct net_device *net_dev;
 	struct bgmac *bgmac;
+
+	/* This (reset &) enable is not preset in specs or reference driver but
+	 * Broadcom does it in arch PCI code when enabling fake PCI device.
+	 */
+	bcma_core_enable(core, 0);
 
 	/* Allocation and references */
 	net_dev = devm_alloc_etherdev(dev, sizeof(*bgmac));

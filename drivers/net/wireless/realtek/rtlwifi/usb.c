@@ -1018,7 +1018,11 @@ int rtl_usb_probe(struct usb_interface *intf,
 	}
 	rtlpriv = hw->priv;
 	rtlpriv->hw = hw;
+<<<<<<< HEAD
 	rtlpriv->usb_data = kcalloc(RTL_USB_MAX_RX_COUNT, sizeof(u32),
+=======
+	rtlpriv->usb_data = kzalloc(RTL_USB_MAX_RX_COUNT * sizeof(u32),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				    GFP_KERNEL);
 	if (!rtlpriv->usb_data) {
 		ieee80211_free_hw(hw);

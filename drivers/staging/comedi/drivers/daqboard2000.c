@@ -675,7 +675,29 @@ static int db2k_8255_cb(struct comedi_device *dev, int dir, int port, int data,
 	return readw(dev->mmio + iobase + port * 2);
 }
 
+<<<<<<< HEAD
 static int db2k_auto_attach(struct comedi_device *dev, unsigned long context)
+=======
+static const void *daqboard2000_find_boardinfo(struct comedi_device *dev,
+					       struct pci_dev *pcidev)
+{
+	const struct daq200_boardtype *board;
+	int i;
+
+	if (pcidev->subsystem_vendor != PCI_VENDOR_ID_IOTECH)
+		return NULL;
+
+	for (i = 0; i < ARRAY_SIZE(boardtypes); i++) {
+		board = &boardtypes[i];
+		if (pcidev->subsystem_device == board->id)
+			return board;
+	}
+	return NULL;
+}
+
+static int daqboard2000_auto_attach(struct comedi_device *dev,
+				    unsigned long context_unused)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct pci_dev *pcidev = comedi_to_pci_dev(dev);
 	const struct db2k_boardtype *board;

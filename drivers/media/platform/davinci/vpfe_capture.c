@@ -1613,6 +1613,44 @@ unlock_out:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+
+static long vpfe_param_handler(struct file *file, void *priv,
+		bool valid_prio, unsigned int cmd, void *param)
+{
+	struct vpfe_device *vpfe_dev = video_drvdata(file);
+	int ret = 0;
+
+	v4l2_dbg(2, debug, &vpfe_dev->v4l2_dev, "vpfe_param_handler\n");
+
+	if (vpfe_dev->started) {
+		/* only allowed if streaming is not started */
+		v4l2_dbg(1, debug, &vpfe_dev->v4l2_dev,
+			"device already started\n");
+		return -EBUSY;
+	}
+
+	ret = mutex_lock_interruptible(&vpfe_dev->lock);
+	if (ret)
+		return ret;
+
+	switch (cmd) {
+	case VPFE_CMD_S_CCDC_RAW_PARAMS:
+		ret = -EINVAL;
+		v4l2_warn(&vpfe_dev->v4l2_dev,
+			"VPFE_CMD_S_CCDC_RAW_PARAMS not supported\n");
+		break;
+	default:
+		ret = -ENOTTY;
+	}
+unlock_out:
+	mutex_unlock(&vpfe_dev->lock);
+	return ret;
+}
+
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* vpfe capture ioctl operations */
 static const struct v4l2_ioctl_ops vpfe_ioctl_ops = {
 	.vidioc_querycap	 = vpfe_querycap,

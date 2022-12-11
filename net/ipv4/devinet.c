@@ -357,8 +357,11 @@ static void __inet_del_ifa(struct in_device *in_dev,
 
 	ASSERT_RTNL();
 
+<<<<<<< HEAD
 	ifa1 = rtnl_dereference(*ifap);
 	last_prim = rtnl_dereference(in_dev->ifa_list);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (in_dev->dead)
 		goto no_promotions;
 
@@ -1502,6 +1505,14 @@ skip:
 	}
 }
 
+<<<<<<< HEAD
+=======
+static bool inetdev_valid_mtu(unsigned int mtu)
+{
+	return mtu >= IPV4_MIN_MTU;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void inetdev_send_gratuitous_arp(struct net_device *dev,
 					struct in_device *in_dev)
 

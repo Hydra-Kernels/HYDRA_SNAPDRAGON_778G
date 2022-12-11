@@ -874,7 +874,11 @@ void intel_gtt_insert_sg_entries(struct sg_table *st,
 			j++;
 		}
 	}
+<<<<<<< HEAD
 	readl(intel_private.gtt + j - 1);
+=======
+	wmb();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (intel_private.driver->chipset_flush)
 		intel_private.driver->chipset_flush();
 }

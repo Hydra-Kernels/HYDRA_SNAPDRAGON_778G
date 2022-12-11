@@ -1062,6 +1062,7 @@ static int qca_send_power_pulse(struct hci_uart *hu, bool on)
 	 * save power. Disabling hardware flow control is mandatory while
 	 * sending power pulses to SoC.
 	 */
+<<<<<<< HEAD
 	bt_dev_dbg(hu->hdev, "sending power pulse %02x to controller", cmd);
 
 	serdev_device_write_flush(hu->serdev);
@@ -1223,6 +1224,11 @@ static int qca_wcn3990_init(struct hci_uart *hu)
 	}
 
 	hci_uart_set_flow_control(hu, false);
+=======
+	set_current_state(TASK_UNINTERRUPTIBLE);
+	schedule_timeout(msecs_to_jiffies(BAUDRATE_SETTLE_TIMEOUT_MS));
+	set_current_state(TASK_RUNNING);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

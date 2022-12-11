@@ -152,12 +152,23 @@ static bool __tcp_fastopen_cookie_gen_cipher(struct request_sock *req,
 	if (req->rsk_ops->family == AF_INET6) {
 		const struct ipv6hdr *ip6h = ipv6_hdr(syn);
 
+<<<<<<< HEAD
 		foc->val[0] = cpu_to_le64(siphash(&ip6h->saddr,
 					  sizeof(ip6h->saddr) +
 					  sizeof(ip6h->daddr),
 					  key));
 		foc->len = TCP_FASTOPEN_COOKIE_SIZE;
 		return true;
+=======
+		if (__tcp_fastopen_cookie_gen(&ip6h->saddr, &tmp)) {
+			struct in6_addr *buf = &tmp.addr;
+			int i;
+
+			for (i = 0; i < 4; i++)
+				buf->s6_addr32[i] ^= ip6h->daddr.s6_addr32[i];
+			return __tcp_fastopen_cookie_gen(buf, foc);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 #endif
 	return false;

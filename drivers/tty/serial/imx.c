@@ -2227,7 +2227,11 @@ static int imx_uart_probe(struct platform_device *pdev)
 	else if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	if (sport->port.line >= ARRAY_SIZE(imx_uart_ports)) {
+=======
+	if (sport->port.line >= ARRAY_SIZE(imx_ports)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_err(&pdev->dev, "serial%d out of range\n",
 			sport->port.line);
 		return -EINVAL;
@@ -2456,12 +2460,21 @@ static void imx_uart_enable_wakeup(struct imx_port *sport, bool on)
 	imx_uart_writel(sport, ucr3, UCR3);
 
 	if (sport->have_rtscts) {
+<<<<<<< HEAD
 		u32 ucr1 = imx_uart_readl(sport, UCR1);
 		if (on)
 			ucr1 |= UCR1_RTSDEN;
 		else
 			ucr1 &= ~UCR1_RTSDEN;
 		imx_uart_writel(sport, ucr1, UCR1);
+=======
+		val = readl(sport->port.membase + UCR1);
+		if (on)
+			val |= UCR1_RTSDEN;
+		else
+			val &= ~UCR1_RTSDEN;
+		writel(val, sport->port.membase + UCR1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

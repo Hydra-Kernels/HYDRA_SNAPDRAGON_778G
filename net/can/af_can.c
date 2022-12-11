@@ -438,9 +438,15 @@ static struct hlist_head *can_rcv_list_find(canid_t *can_id, canid_t *mask,
  *  -ENOMEM on missing cache mem to create subscription entry
  *  -ENODEV unknown device
  */
+<<<<<<< HEAD
 int can_rx_register(struct net *net, struct net_device *dev, canid_t can_id,
 		    canid_t mask, void (*func)(struct sk_buff *, void *),
 		    void *data, char *ident, struct sock *sk)
+=======
+int can_rx_register(struct net_device *dev, canid_t can_id, canid_t mask,
+		    void (*func)(struct sk_buff *, void *), void *data,
+		    char *ident, struct sock *sk)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct receiver *rcv;
 	struct hlist_head *rcv_list;
@@ -465,6 +471,7 @@ int can_rx_register(struct net *net, struct net_device *dev, canid_t can_id,
 	dev_rcv_lists = can_dev_rcv_lists_find(net, dev);
 	rcv_list = can_rcv_list_find(&can_id, &mask, dev_rcv_lists);
 
+<<<<<<< HEAD
 	rcv->can_id = can_id;
 	rcv->mask = mask;
 	rcv->matches = 0;
@@ -472,6 +479,15 @@ int can_rx_register(struct net *net, struct net_device *dev, canid_t can_id,
 	rcv->data = data;
 	rcv->ident = ident;
 	rcv->sk = sk;
+=======
+		r->can_id  = can_id;
+		r->mask    = mask;
+		r->matches = 0;
+		r->func    = func;
+		r->data    = data;
+		r->ident   = ident;
+		r->sk      = sk;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	hlist_add_head_rcu(&rcv->list, rcv_list);
 	dev_rcv_lists->entries++;
@@ -488,10 +504,17 @@ EXPORT_SYMBOL(can_rx_register);
 /* can_rx_delete_receiver - rcu callback for single receiver entry removal */
 static void can_rx_delete_receiver(struct rcu_head *rp)
 {
+<<<<<<< HEAD
 	struct receiver *rcv = container_of(rp, struct receiver, rcu);
 	struct sock *sk = rcv->sk;
 
 	kmem_cache_free(rcv_cache, rcv);
+=======
+	struct receiver *r = container_of(rp, struct receiver, rcu);
+	struct sock *sk = r->sk;
+
+	kmem_cache_free(rcv_cache, r);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sk)
 		sock_put(sk);
 }
@@ -559,10 +582,17 @@ void can_rx_unregister(struct net *net, struct net_device *dev, canid_t can_id,
 	spin_unlock_bh(&net->can.rcvlists_lock);
 
 	/* schedule the receiver item for deletion */
+<<<<<<< HEAD
 	if (rcv) {
 		if (rcv->sk)
 			sock_hold(rcv->sk);
 		call_rcu(&rcv->rcu, can_rx_delete_receiver);
+=======
+	if (r) {
+		if (r->sk)
+			sock_hold(r->sk);
+		call_rcu(&r->rcu, can_rx_delete_receiver);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 EXPORT_SYMBOL(can_rx_unregister);
@@ -684,11 +714,19 @@ static int can_rcv(struct sk_buff *skb, struct net_device *dev,
 		goto free_skb;
 	}
 
+<<<<<<< HEAD
 	/* This check is made separately since cfd->len would be uninitialized if skb->len = 0. */
 	if (unlikely(cfd->len > CAN_MAX_DLEN)) {
 		pr_warn_once("PF_CAN: dropped non conform CAN skbuff: dev type %d, len %d, datalen %d\n",
 			     dev->type, skb->len, cfd->len);
 		goto free_skb;
+=======
+	if (unlikely(dev->type != ARPHRD_CAN || skb->len != CAN_MTU ||
+		     cfd->len > CAN_MAX_DLEN)) {
+		pr_warn_once("PF_CAN: dropped non conform CAN skbuf: dev type %d, len %d, datalen %d\n",
+			     dev->type, skb->len, cfd->len);
+		goto drop;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	can_receive(skb, dev);
@@ -710,11 +748,19 @@ static int canfd_rcv(struct sk_buff *skb, struct net_device *dev,
 		goto free_skb;
 	}
 
+<<<<<<< HEAD
 	/* This check is made separately since cfd->len would be uninitialized if skb->len = 0. */
 	if (unlikely(cfd->len > CANFD_MAX_DLEN)) {
 		pr_warn_once("PF_CAN: dropped non conform CAN FD skbuff: dev type %d, len %d, datalen %d\n",
 			     dev->type, skb->len, cfd->len);
 		goto free_skb;
+=======
+	if (unlikely(dev->type != ARPHRD_CAN || skb->len != CANFD_MTU ||
+		     cfd->len > CANFD_MAX_DLEN)) {
+		pr_warn_once("PF_CAN: dropped non conform CAN FD skbuf: dev type %d, len %d, datalen %d\n",
+			     dev->type, skb->len, cfd->len);
+		goto drop;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	can_receive(skb, dev);

@@ -175,7 +175,11 @@
 #define NearBranch  ((u64)1 << 52)  /* Near branches */
 #define No16	    ((u64)1 << 53)  /* No 16 bit operand */
 #define IncSP       ((u64)1 << 54)  /* SP is incremented before ModRM calc */
+<<<<<<< HEAD
 #define TwoMemOp    ((u64)1 << 55)  /* Instruction has two memory operand */
+=======
+#define Aligned16   ((u64)1 << 55)  /* Aligned to 16 byte boundary (e.g. FXSAVE) */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define DstXacc     (DstAccLo | SrcAccHi | SrcWrite)
 
@@ -473,7 +477,11 @@ FOP_END;
 
 /*
  * XXX: inoutclob user must know where the argument is being expanded.
+<<<<<<< HEAD
  *      Relying on CONFIG_CC_HAS_ASM_GOTO would allow us to remove _fault.
+=======
+ *      Relying on CC_HAVE_ASM_GOTO would allow us to remove _fault.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 #define asm_safe(insn, inoutclob...) \
 ({ \
@@ -682,6 +690,7 @@ static void set_segment_selector(struct x86_emulate_ctxt *ctxt, u16 selector,
  */
 static unsigned insn_alignment(struct x86_emulate_ctxt *ctxt, unsigned size)
 {
+<<<<<<< HEAD
 	u64 alignment = ctxt->d & AlignMask;
 
 	if (likely(size < 16))
@@ -697,6 +706,21 @@ static unsigned insn_alignment(struct x86_emulate_ctxt *ctxt, unsigned size)
 	default:
 		return size;
 	}
+=======
+	if (likely(size < 16))
+		return 1;
+
+	if (ctxt->d & Aligned)
+		return size;
+	else if (ctxt->d & Unaligned)
+		return 1;
+	else if (ctxt->d & Avx)
+		return 1;
+	else if (ctxt->d & Aligned16)
+		return 16;
+	else
+		return size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static __always_inline int __linearize(struct x86_emulate_ctxt *ctxt,
@@ -717,8 +741,12 @@ static __always_inline int __linearize(struct x86_emulate_ctxt *ctxt,
 	switch (mode) {
 	case X86EMUL_MODE_PROT64:
 		*linear = la;
+<<<<<<< HEAD
 		va_bits = ctxt_virt_addr_bits(ctxt);
 		if (get_canonical(la, va_bits) != la)
+=======
+		if (is_noncanonical_address(la))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto bad;
 
 		*max_size = min_t(u64, ~0u, (1ull << va_bits) - la);
@@ -1554,7 +1582,11 @@ static int read_interrupt_descriptor(struct x86_emulate_ctxt *ctxt,
 		return emulate_gp(ctxt, index << 3 | 0x2);
 
 	addr = dt.address + index * 8;
+<<<<<<< HEAD
 	return linear_read_system(ctxt, addr, desc, sizeof(*desc));
+=======
+	return linear_read_system(ctxt, addr, desc, sizeof *desc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void get_descriptor_table_ptr(struct x86_emulate_ctxt *ctxt,
@@ -1631,7 +1663,11 @@ static int write_segment_descriptor(struct x86_emulate_ctxt *ctxt,
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
 
+<<<<<<< HEAD
 	return linear_write_system(ctxt, addr, desc, sizeof(*desc));
+=======
+	return linear_write_system(ctxt, addr, desc, sizeof *desc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int __load_segment_descriptor(struct x86_emulate_ctxt *ctxt,
@@ -2497,10 +2533,17 @@ static int rsm_load_state_32(struct x86_emulate_ctxt *ctxt,
 	u32 val, cr0, cr3, cr4;
 	int i;
 
+<<<<<<< HEAD
 	cr0 =                      GET_SMSTATE(u32, smstate, 0x7ffc);
 	cr3 =                      GET_SMSTATE(u32, smstate, 0x7ff8);
 	ctxt->eflags =             GET_SMSTATE(u32, smstate, 0x7ff4) | X86_EFLAGS_FIXED;
 	ctxt->_eip =               GET_SMSTATE(u32, smstate, 0x7ff0);
+=======
+	cr0 =                      GET_SMSTATE(u32, smbase, 0x7ffc);
+	cr3 =                      GET_SMSTATE(u32, smbase, 0x7ff8);
+	ctxt->eflags =             GET_SMSTATE(u32, smbase, 0x7ff4) | X86_EFLAGS_FIXED;
+	ctxt->_eip =               GET_SMSTATE(u32, smbase, 0x7ff0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < 8; i++)
 		*reg_write(ctxt, i) = GET_SMSTATE(u32, smstate, 0x7fd0 + i * 4);
@@ -2565,11 +2608,19 @@ static int rsm_load_state_64(struct x86_emulate_ctxt *ctxt,
 	val = GET_SMSTATE(u32, smstate, 0x7f60);
 	ctxt->ops->set_dr(ctxt, 7, (val & DR7_VOLATILE) | DR7_FIXED_1);
 
+<<<<<<< HEAD
 	cr0 =                       GET_SMSTATE(u64, smstate, 0x7f58);
 	cr3 =                       GET_SMSTATE(u64, smstate, 0x7f50);
 	cr4 =                       GET_SMSTATE(u64, smstate, 0x7f48);
 	ctxt->ops->set_smbase(ctxt, GET_SMSTATE(u32, smstate, 0x7f00));
 	val =                       GET_SMSTATE(u64, smstate, 0x7ed0);
+=======
+	cr0 =                       GET_SMSTATE(u64, smbase, 0x7f58);
+	cr3 =                       GET_SMSTATE(u64, smbase, 0x7f50);
+	cr4 =                       GET_SMSTATE(u64, smbase, 0x7f48);
+	ctxt->ops->set_smbase(ctxt, GET_SMSTATE(u32, smbase, 0x7f00));
+	val =                       GET_SMSTATE(u64, smbase, 0x7ed0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ctxt->ops->set_msr(ctxt, MSR_EFER, val & ~EFER_LMA);
 
 	selector =                  GET_SMSTATE(u32, smstate, 0x7e90);
@@ -2686,8 +2737,16 @@ static int em_rsm(struct x86_emulate_ctxt *ctxt)
 		return X86EMUL_UNHANDLEABLE;
 	}
 
+<<<<<<< HEAD
 	ctxt->ops->post_leave_smm(ctxt);
 
+=======
+	if ((ctxt->ops->get_hflags(ctxt) & X86EMUL_SMM_INSIDE_NMI_MASK) == 0)
+		ctxt->ops->set_nmi_mask(ctxt, false);
+
+	ctxt->ops->set_hflags(ctxt, ctxt->ops->get_hflags(ctxt) &
+		~(X86EMUL_SMM_INSIDE_NMI_MASK | X86EMUL_SMM_MASK));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return X86EMUL_CONTINUE;
 }
 
@@ -3135,17 +3194,29 @@ static int task_switch_16(struct x86_emulate_ctxt *ctxt,
 	int ret;
 	u32 new_tss_base = get_desc_base(new_desc);
 
+<<<<<<< HEAD
 	ret = linear_read_system(ctxt, old_tss_base, &tss_seg, sizeof(tss_seg));
+=======
+	ret = linear_read_system(ctxt, old_tss_base, &tss_seg, sizeof tss_seg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
 	save_state_to_tss16(ctxt, &tss_seg);
 
+<<<<<<< HEAD
 	ret = linear_write_system(ctxt, old_tss_base, &tss_seg, sizeof(tss_seg));
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
 	ret = linear_read_system(ctxt, new_tss_base, &tss_seg, sizeof(tss_seg));
+=======
+	ret = linear_write_system(ctxt, old_tss_base, &tss_seg, sizeof tss_seg);
+	if (ret != X86EMUL_CONTINUE)
+		return ret;
+
+	ret = linear_read_system(ctxt, new_tss_base, &tss_seg, sizeof tss_seg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
@@ -3154,7 +3225,11 @@ static int task_switch_16(struct x86_emulate_ctxt *ctxt,
 
 		ret = linear_write_system(ctxt, new_tss_base,
 					  &tss_seg.prev_task_link,
+<<<<<<< HEAD
 					  sizeof(tss_seg.prev_task_link));
+=======
+					  sizeof tss_seg.prev_task_link);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret != X86EMUL_CONTINUE)
 			return ret;
 	}
@@ -3276,7 +3351,11 @@ static int task_switch_32(struct x86_emulate_ctxt *ctxt,
 	u32 eip_offset = offsetof(struct tss_segment_32, eip);
 	u32 ldt_sel_offset = offsetof(struct tss_segment_32, ldt_selector);
 
+<<<<<<< HEAD
 	ret = linear_read_system(ctxt, old_tss_base, &tss_seg, sizeof(tss_seg));
+=======
+	ret = linear_read_system(ctxt, old_tss_base, &tss_seg, sizeof tss_seg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
@@ -3288,7 +3367,11 @@ static int task_switch_32(struct x86_emulate_ctxt *ctxt,
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
+<<<<<<< HEAD
 	ret = linear_read_system(ctxt, new_tss_base, &tss_seg, sizeof(tss_seg));
+=======
+	ret = linear_read_system(ctxt, new_tss_base, &tss_seg, sizeof tss_seg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != X86EMUL_CONTINUE)
 		return ret;
 
@@ -3297,7 +3380,11 @@ static int task_switch_32(struct x86_emulate_ctxt *ctxt,
 
 		ret = linear_write_system(ctxt, new_tss_base,
 					  &tss_seg.prev_task_link,
+<<<<<<< HEAD
 					  sizeof(tss_seg.prev_task_link));
+=======
+					  sizeof tss_seg.prev_task_link);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret != X86EMUL_CONTINUE)
 			return ret;
 	}
@@ -4068,7 +4155,11 @@ static int check_fxsr(struct x86_emulate_ctxt *ctxt)
 {
 	u32 eax = 1, ebx, ecx = 0, edx;
 
+<<<<<<< HEAD
 	ctxt->ops->get_cpuid(ctxt, &eax, &ebx, &ecx, &edx, false);
+=======
+	ctxt->ops->get_cpuid(ctxt, &eax, &ebx, &ecx, &edx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!(edx & FFL(FXSR)))
 		return emulate_ud(ctxt);
 
@@ -4086,6 +4177,7 @@ static int check_fxsr(struct x86_emulate_ctxt *ctxt)
 }
 
 /*
+<<<<<<< HEAD
  * Hardware doesn't save and restore XMM 0-7 without CR4.OSFXSR, but does save
  * and restore MXCSR.
  */
@@ -4105,6 +4197,8 @@ static inline size_t fxstate_size(struct x86_emulate_ctxt *ctxt)
 }
 
 /*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * FXSAVE and FXRSTOR have 4 different formats depending on execution mode,
  *  1) 16 bit mode
  *  2) 32 bit mode
@@ -4125,21 +4219,34 @@ static inline size_t fxstate_size(struct x86_emulate_ctxt *ctxt)
 static int em_fxsave(struct x86_emulate_ctxt *ctxt)
 {
 	struct fxregs_state fx_state;
+<<<<<<< HEAD
+=======
+	size_t size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int rc;
 
 	rc = check_fxsr(ctxt);
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
 
+<<<<<<< HEAD
 	emulator_get_fpu();
 
 	rc = asm_safe("fxsave %[fx]", , [fx] "+m"(fx_state));
 
 	emulator_put_fpu();
+=======
+	ctxt->ops->get_fpu(ctxt);
+
+	rc = asm_safe("fxsave %[fx]", , [fx] "+m"(fx_state));
+
+	ctxt->ops->put_fpu(ctxt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
 
+<<<<<<< HEAD
 	return segmented_write_std(ctxt, ctxt->memop.addr.mem, &fx_state,
 		                   fxstate_size(ctxt));
 }
@@ -4160,6 +4267,42 @@ static noinline int fxregs_fixup(struct fxregs_state *fx_state,
 	rc = asm_safe("fxsave %[fx]", , [fx] "+m"(fx_tmp));
 	memcpy((void *)fx_state + used_size, (void *)&fx_tmp + used_size,
 	       __fxstate_size(16) - used_size);
+=======
+	if (ctxt->ops->get_cr(ctxt, 4) & X86_CR4_OSFXSR)
+		size = offsetof(struct fxregs_state, xmm_space[8 * 16/4]);
+	else
+		size = offsetof(struct fxregs_state, xmm_space[0]);
+
+	return segmented_write_std(ctxt, ctxt->memop.addr.mem, &fx_state, size);
+}
+
+static int fxrstor_fixup(struct x86_emulate_ctxt *ctxt,
+		struct fxregs_state *new)
+{
+	int rc = X86EMUL_CONTINUE;
+	struct fxregs_state old;
+
+	rc = asm_safe("fxsave %[fx]", , [fx] "+m"(old));
+	if (rc != X86EMUL_CONTINUE)
+		return rc;
+
+	/*
+	 * 64 bit host will restore XMM 8-15, which is not correct on non-64
+	 * bit guests.  Load the current values in order to preserve 64 bit
+	 * XMMs after fxrstor.
+	 */
+#ifdef CONFIG_X86_64
+	/* XXX: accessing XMM 8-15 very awkwardly */
+	memcpy(&new->xmm_space[8 * 16/4], &old.xmm_space[8 * 16/4], 8 * 16);
+#endif
+
+	/*
+	 * Hardware doesn't save and restore XMM 0-7 without CR4.OSFXSR, but
+	 * does save and restore MXCSR.
+	 */
+	if (!(ctxt->ops->get_cr(ctxt, 4) & X86_CR4_OSFXSR))
+		memcpy(new->xmm_space, old.xmm_space, 8 * 16);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return rc;
 }
@@ -4168,12 +4311,16 @@ static int em_fxrstor(struct x86_emulate_ctxt *ctxt)
 {
 	struct fxregs_state fx_state;
 	int rc;
+<<<<<<< HEAD
 	size_t size;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rc = check_fxsr(ctxt);
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
 
+<<<<<<< HEAD
 	size = fxstate_size(ctxt);
 	rc = segmented_read_std(ctxt, ctxt->memop.addr.mem, &fx_state, size);
 	if (rc != X86EMUL_CONTINUE)
@@ -4191,16 +4338,34 @@ static int em_fxrstor(struct x86_emulate_ctxt *ctxt)
 		rc = emulate_gp(ctxt, 0);
 		goto out;
 	}
+=======
+	rc = segmented_read_std(ctxt, ctxt->memop.addr.mem, &fx_state, 512);
+	if (rc != X86EMUL_CONTINUE)
+		return rc;
+
+	if (fx_state.mxcsr >> 16)
+		return emulate_gp(ctxt, 0);
+
+	ctxt->ops->get_fpu(ctxt);
+
+	if (ctxt->mode < X86EMUL_MODE_PROT64)
+		rc = fxrstor_fixup(ctxt, &fx_state);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (rc == X86EMUL_CONTINUE)
 		rc = asm_safe("fxrstor %[fx]", : [fx] "m"(fx_state));
 
+<<<<<<< HEAD
 out:
 	emulator_put_fpu();
+=======
+	ctxt->ops->put_fpu(ctxt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return rc;
 }
 
+<<<<<<< HEAD
 static int em_xsetbv(struct x86_emulate_ctxt *ctxt)
 {
 	u32 eax, ecx, edx;
@@ -4215,6 +4380,8 @@ static int em_xsetbv(struct x86_emulate_ctxt *ctxt)
 	return X86EMUL_CONTINUE;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static bool valid_cr(int nr)
 {
 	switch (nr) {
@@ -5513,9 +5680,15 @@ static int flush_pending_x87_faults(struct x86_emulate_ctxt *ctxt)
 {
 	int rc;
 
+<<<<<<< HEAD
 	emulator_get_fpu();
 	rc = asm_safe("fwait");
 	emulator_put_fpu();
+=======
+	ctxt->ops->get_fpu(ctxt);
+	rc = asm_safe("fwait");
+	ctxt->ops->put_fpu(ctxt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(rc != X86EMUL_CONTINUE))
 		return emulate_exception(ctxt, MF_VECTOR, 0, false);
@@ -5536,10 +5709,16 @@ static int fastop(struct x86_emulate_ctxt *ctxt, void (*fop)(struct fastop *))
 
 	if (!(ctxt->d & ByteOp))
 		fop += __ffs(ctxt->dst.bytes) * FASTOP_SIZE;
+<<<<<<< HEAD
 
 	asm("push %[flags]; popf; " CALL_NOSPEC " ; pushf; pop %[flags]\n"
 	    : "+a"(ctxt->dst.val), "+d"(ctxt->src.val), [flags]"+D"(flags),
 	      [thunk_target]"+S"(fop), ASM_CALL_CONSTRAINT
+=======
+	asm("push %[flags]; popf; " CALL_NOSPEC "; pushf; pop %[flags]\n"
+	    : "+a"(ctxt->dst.val), "+d"(ctxt->src.val), [flags]"+D"(flags),
+	      [thunk_target]"+S"(fop)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    : "c"(ctxt->src2.val));
 
 	ctxt->eflags = (ctxt->eflags & ~EFLAGS_MASK) | (flags & EFLAGS_MASK);

@@ -30,6 +30,11 @@ struct esp_output_extra {
 	__be32 seqhi;
 	u32 esphoff;
 };
+<<<<<<< HEAD
+=======
+
+#define ESP_SKB_CB(__skb) ((struct esp_skb_cb *)&((__skb)->cb[0]))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define ESP_SKB_CB(__skb) ((struct esp_skb_cb *)&((__skb)->cb[0]))
 
@@ -169,6 +174,7 @@ static void esp_output_restore_header(struct sk_buff *skb)
 
 	esp_restore_header(skb, skb_transport_offset(skb) + extra->esphoff -
 				sizeof(__be32));
+<<<<<<< HEAD
 }
 
 static struct ip_esp_hdr *esp_output_set_extra(struct sk_buff *skb,
@@ -199,6 +205,8 @@ static struct ip_esp_hdr *esp_output_set_extra(struct sk_buff *skb,
 	esph->spi = x->id.spi;
 
 	return esph;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void esp_output_done_esn(struct crypto_async_request *base, int err)
@@ -211,6 +219,73 @@ static void esp_output_done_esn(struct crypto_async_request *base, int err)
 
 static void esp_output_fill_trailer(u8 *tail, int tfclen, int plen, __u8 proto)
 {
+<<<<<<< HEAD
+=======
+	int err;
+	struct esp_output_extra *extra;
+	struct ip_esp_hdr *esph;
+	struct crypto_aead *aead;
+	struct aead_request *req;
+	struct scatterlist *sg;
+	struct sk_buff *trailer;
+	void *tmp;
+	u8 *iv;
+	u8 *tail;
+	int blksize;
+	int clen;
+	int alen;
+	int plen;
+	int ivlen;
+	int tfclen;
+	int nfrags;
+	int assoclen;
+	int extralen;
+	__be64 seqno;
+
+	/* skb is pure payload to encrypt */
+
+	aead = x->data;
+	alen = crypto_aead_authsize(aead);
+	ivlen = crypto_aead_ivsize(aead);
+
+	tfclen = 0;
+	if (x->tfcpad) {
+		struct xfrm_dst *dst = (struct xfrm_dst *)skb_dst(skb);
+		u32 padto;
+
+		padto = min(x->tfcpad, esp4_get_mtu(x, dst->child_mtu_cached));
+		if (skb->len < padto)
+			tfclen = padto - skb->len;
+	}
+	blksize = ALIGN(crypto_aead_blocksize(aead), 4);
+	clen = ALIGN(skb->len + 2 + tfclen, blksize);
+	plen = clen - skb->len - tfclen;
+
+	err = skb_cow_data(skb, tfclen + plen + alen, &trailer);
+	if (err < 0)
+		goto error;
+	nfrags = err;
+
+	assoclen = sizeof(*esph);
+	extralen = 0;
+
+	if (x->props.flags & XFRM_STATE_ESN) {
+		extralen += sizeof(*extra);
+		assoclen += sizeof(__be32);
+	}
+
+	tmp = esp_alloc_tmp(aead, nfrags, extralen);
+	if (!tmp) {
+		err = -ENOMEM;
+		goto error;
+	}
+
+	extra = esp_tmp_extra(tmp);
+	iv = esp_tmp_iv(aead, tmp, extralen);
+	req = esp_tmp_req(aead, iv);
+	sg = esp_req_sg(aead, req);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Fill padding... */
 	if (tfclen) {
 		memset(tail, 0, tfclen);
@@ -438,12 +513,41 @@ int esp_output_tail(struct xfrm_state *x, struct sk_buff *skb, struct esp_info *
 			goto error_free;
 	}
 
+<<<<<<< HEAD
 	if ((x->props.flags & XFRM_STATE_ESN))
+=======
+	esph->seq_no = htonl(XFRM_SKB_CB(skb)->seq.output.low);
+
+	aead_request_set_callback(req, 0, esp_output_done, skb);
+
+	/* For ESN we move the header forward by 4 bytes to
+	 * accomodate the high bits.  We will move it back after
+	 * encryption.
+	 */
+	if ((x->props.flags & XFRM_STATE_ESN)) {
+		extra->esphoff = (unsigned char *)esph -
+				 skb_transport_header(skb);
+		esph = (struct ip_esp_hdr *)((unsigned char *)esph - 4);
+		extra->seqhi = esph->spi;
+		esph->seq_no = htonl(XFRM_SKB_CB(skb)->seq.output.hi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		aead_request_set_callback(req, 0, esp_output_done_esn, skb);
 	else
 		aead_request_set_callback(req, 0, esp_output_done, skb);
 
+<<<<<<< HEAD
 	aead_request_set_crypt(req, sg, dsg, ivlen + esp->clen, iv);
+=======
+	esph->spi = x->id.spi;
+
+	sg_init_table(sg, nfrags);
+	err = skb_to_sgvec(skb, sg,
+		           (unsigned char *)esph - skb->data,
+		           assoclen + ivlen + clen + alen);
+	if (unlikely(err < 0))
+		goto error;
+	aead_request_set_crypt(req, sg, sg, ivlen + clen, iv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	aead_request_set_ad(req, assoclen);
 
 	memset(iv, 0, ivlen);
@@ -749,6 +853,7 @@ skip_cow:
 	req = esp_tmp_req(aead, iv);
 	sg = esp_req_sg(aead, req);
 
+<<<<<<< HEAD
 	esp_input_set_header(skb, seqhi);
 
 	sg_init_table(sg, nfrags);
@@ -764,6 +869,30 @@ skip_cow:
 		aead_request_set_callback(req, 0, esp_input_done_esn, skb);
 	else
 		aead_request_set_callback(req, 0, esp_input_done, skb);
+=======
+	skb->ip_summed = CHECKSUM_NONE;
+
+	esph = (struct ip_esp_hdr *)skb->data;
+
+	aead_request_set_callback(req, 0, esp_input_done, skb);
+
+	/* For ESN we move the header forward by 4 bytes to
+	 * accomodate the high bits.  We will move it back after
+	 * decryption.
+	 */
+	if ((x->props.flags & XFRM_STATE_ESN)) {
+		esph = (void *)skb_push(skb, 4);
+		*seqhi = esph->spi;
+		esph->spi = esph->seq_no;
+		esph->seq_no = XFRM_SKB_CB(skb)->seq.input.hi;
+		aead_request_set_callback(req, 0, esp_input_done_esn, skb);
+	}
+
+	sg_init_table(sg, nfrags);
+	err = skb_to_sgvec(skb, sg, 0, skb->len);
+	if (unlikely(err < 0))
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	aead_request_set_crypt(req, sg, sg, elen + ivlen, iv);
 	aead_request_set_ad(req, assoclen);

@@ -180,7 +180,34 @@ struct page *balloon_page_dequeue(struct balloon_dev_info *b_dev_info)
 	LIST_HEAD(pages);
 	int n_pages;
 
+<<<<<<< HEAD
 	n_pages = balloon_page_list_dequeue(b_dev_info, &pages, 1);
+=======
+	dequeued_page = false;
+	spin_lock_irqsave(&b_dev_info->pages_lock, flags);
+	list_for_each_entry_safe(page, tmp, &b_dev_info->pages, lru) {
+		/*
+		 * Block others from accessing the 'page' while we get around
+		 * establishing additional references and preparing the 'page'
+		 * to be released by the balloon driver.
+		 */
+		if (trylock_page(page)) {
+#ifdef CONFIG_BALLOON_COMPACTION
+			if (!PagePrivate(page)) {
+				/* raced with isolation */
+				unlock_page(page);
+				continue;
+			}
+#endif
+			balloon_page_delete(page);
+			__count_vm_event(BALLOON_DEFLATE);
+			unlock_page(page);
+			dequeued_page = true;
+			break;
+		}
+	}
+	spin_unlock_irqrestore(&b_dev_info->pages_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (n_pages != 1) {
 		/*

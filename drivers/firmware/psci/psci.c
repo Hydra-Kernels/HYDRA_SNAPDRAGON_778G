@@ -536,6 +536,7 @@ static int __init psci_0_1_init(struct device_node *np)
 	return 0;
 }
 
+<<<<<<< HEAD:drivers/firmware/psci/psci.c
 #ifdef CONFIG_QGKI_PSCI_OSI_SUPPORT
 static int psci_set_osi_mode(void)
 {
@@ -579,6 +580,8 @@ static int __init psci_1_0_init(struct device_node *np)
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/firmware/psci.c
 static const struct of_device_id psci_of_match[] __initconst = {
 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},

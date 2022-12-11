@@ -25,6 +25,7 @@ config KEYS_COMPAT
 	def_bool y
 	depends on COMPAT && KEYS
 
+<<<<<<< HEAD
 config KEYS_REQUEST_CACHE
 	bool "Enable temporary caching of the last request_key() result"
 	depends on KEYS
@@ -43,6 +44,8 @@ config KEYS_REQUEST_CACHE
 	  key.  Pathwalk will call multiple methods for each dentry traversed
 	  (permission, d_revalidate, lookup, getxattr, getacl, ...).
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config PERSISTENT_KEYRINGS
 	bool "Enable register of persistent per-UID keyrings"
 	depends on KEYS

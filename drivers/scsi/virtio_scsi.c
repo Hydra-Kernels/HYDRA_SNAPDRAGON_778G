@@ -544,7 +544,10 @@ static int virtscsi_queuecommand(struct Scsi_Host *shost,
 	struct virtio_scsi *vscsi = shost_priv(shost);
 	struct virtio_scsi_vq *req_vq = virtscsi_pick_vq_mq(vscsi, sc);
 	struct virtio_scsi_cmd *cmd = scsi_cmd_priv(sc);
+<<<<<<< HEAD
 	bool kick;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long flags;
 	int req_size;
 	int ret;
@@ -574,8 +577,12 @@ static int virtscsi_queuecommand(struct Scsi_Host *shost,
 		req_size = sizeof(cmd->req.cmd);
 	}
 
+<<<<<<< HEAD
 	kick = (sc->flags & SCMD_LAST) != 0;
 	ret = virtscsi_add_cmd(req_vq, cmd, req_size, sizeof(cmd->resp.cmd), kick);
+=======
+	ret = virtscsi_kick_cmd(req_vq, cmd, req_size, sizeof(cmd->resp.cmd));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret == -EIO) {
 		cmd->resp.cmd.response = VIRTIO_SCSI_S_BAD_TARGET;
 		spin_lock_irqsave(&req_vq->vq_lock, flags);
@@ -583,6 +590,64 @@ static int virtscsi_queuecommand(struct Scsi_Host *shost,
 		spin_unlock_irqrestore(&req_vq->vq_lock, flags);
 	} else if (ret != 0) {
 		return SCSI_MLQUEUE_HOST_BUSY;
+<<<<<<< HEAD
+=======
+	}
+	return 0;
+}
+
+static int virtscsi_queuecommand_single(struct Scsi_Host *sh,
+					struct scsi_cmnd *sc)
+{
+	struct virtio_scsi *vscsi = shost_priv(sh);
+	struct virtio_scsi_target_state *tgt =
+				scsi_target(sc->device)->hostdata;
+
+	atomic_inc(&tgt->reqs);
+	return virtscsi_queuecommand(vscsi, &vscsi->req_vqs[0], sc);
+}
+
+static struct virtio_scsi_vq *virtscsi_pick_vq_mq(struct virtio_scsi *vscsi,
+						  struct scsi_cmnd *sc)
+{
+	u32 tag = blk_mq_unique_tag(sc->request);
+	u16 hwq = blk_mq_unique_tag_to_hwq(tag);
+
+	return &vscsi->req_vqs[hwq];
+}
+
+static struct virtio_scsi_vq *virtscsi_pick_vq(struct virtio_scsi *vscsi,
+					       struct virtio_scsi_target_state *tgt)
+{
+	struct virtio_scsi_vq *vq;
+	unsigned long flags;
+	u32 queue_num;
+
+	local_irq_save(flags);
+	if (atomic_inc_return(&tgt->reqs) > 1) {
+		unsigned long seq;
+
+		do {
+			seq = read_seqcount_begin(&tgt->tgt_seq);
+			vq = tgt->req_vq;
+		} while (read_seqcount_retry(&tgt->tgt_seq, seq));
+	} else {
+		/* no writes can be concurrent because of atomic_t */
+		write_seqcount_begin(&tgt->tgt_seq);
+
+		/* keep previous req_vq if a reader just arrived */
+		if (unlikely(atomic_read(&tgt->reqs) > 1)) {
+			vq = tgt->req_vq;
+			goto unlock;
+		}
+
+		queue_num = smp_processor_id();
+		while (unlikely(queue_num >= vscsi->num_queues))
+			queue_num -= vscsi->num_queues;
+		tgt->req_vq = vq = &vscsi->req_vqs[queue_num];
+ unlock:
+		write_seqcount_end(&tgt->tgt_seq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }
@@ -736,11 +801,40 @@ static struct scsi_host_template virtscsi_host_template = {
 	.change_queue_depth = virtscsi_change_queue_depth,
 	.eh_abort_handler = virtscsi_abort,
 	.eh_device_reset_handler = virtscsi_device_reset,
+<<<<<<< HEAD
 	.eh_timed_out = virtscsi_eh_timed_out,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.slave_alloc = virtscsi_device_alloc,
 
 	.dma_boundary = UINT_MAX,
+<<<<<<< HEAD
 	.map_queues = virtscsi_map_queues,
+=======
+	.use_clustering = ENABLE_CLUSTERING,
+	.target_alloc = virtscsi_target_alloc,
+	.target_destroy = virtscsi_target_destroy,
+	.track_queue_depth = 1,
+};
+
+static struct scsi_host_template virtscsi_host_template_multi = {
+	.module = THIS_MODULE,
+	.name = "Virtio SCSI HBA",
+	.proc_name = "virtio_scsi",
+	.this_id = -1,
+	.cmd_size = sizeof(struct virtio_scsi_cmd),
+	.queuecommand = virtscsi_queuecommand_multi,
+	.change_queue_depth = virtscsi_change_queue_depth,
+	.eh_abort_handler = virtscsi_abort,
+	.eh_device_reset_handler = virtscsi_device_reset,
+
+	.slave_alloc = virtscsi_device_alloc,
+	.can_queue = 1024,
+	.dma_boundary = UINT_MAX,
+	.use_clustering = ENABLE_CLUSTERING,
+	.target_alloc = virtscsi_target_alloc,
+	.target_destroy = virtscsi_target_destroy,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.track_queue_depth = 1,
 	.force_blk_mq = 1,
 };

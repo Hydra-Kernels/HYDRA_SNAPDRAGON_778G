@@ -327,6 +327,16 @@ static SENSOR_DEVICE_ATTR_RW(in4_max, in_max, 4);
 
 #define DIV_FROM_REG(val) (1 << (val))
 #define FAN_FROM_REG(val, div) ((val) == 0 ? 0 : (480000 / ((val) << (div))))
+<<<<<<< HEAD
+=======
+
+#define FAN_BASE(div)		(480000 >> (div))
+#define FAN_CLAMP(val, div)	clamp_val(val, FAN_BASE(div) / 255, \
+					  FAN_BASE(div))
+#define FAN_TO_REG(val, div)	((val) == 0 ? 0 : \
+				 DIV_ROUND_CLOSEST(480000, \
+						FAN_CLAMP(val, div) << (div)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define FAN_BASE(div)		(480000 >> (div))
 #define FAN_CLAMP(val, div)	clamp_val(val, FAN_BASE(div) / 255, \

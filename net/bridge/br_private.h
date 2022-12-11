@@ -371,6 +371,15 @@ struct net_bridge {
 
 #ifdef CONFIG_BRIDGE_IGMP_SNOOPING
 
+<<<<<<< HEAD
+=======
+	u8				multicast_disabled:1;
+	u8				multicast_querier:1;
+	u8				multicast_query_use_ifaddr:1;
+	u8				has_ipv6_addr:1;
+
+	u32				hash_elasticity;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32				hash_max;
 
 	u32				multicast_last_member_count;
@@ -724,8 +733,13 @@ __br_multicast_querier_exists(struct net_bridge *br,
 {
 	bool own_querier_enabled;
 
+<<<<<<< HEAD
 	if (br_opt_get(br, BROPT_MULTICAST_QUERIER)) {
 		if (is_ipv6 && !br_opt_get(br, BROPT_HAS_IPV6_ADDR))
+=======
+	if (br->multicast_querier) {
+		if (is_ipv6 && !br->has_ipv6_addr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			own_querier_enabled = false;
 		else
 			own_querier_enabled = true;

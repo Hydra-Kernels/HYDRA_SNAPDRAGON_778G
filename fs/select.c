@@ -655,7 +655,14 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 			goto out_nofds;
 
 		alloc_size = 6 * size;
+<<<<<<< HEAD
 		bits = kvmalloc(alloc_size, GFP_KERNEL);
+=======
+		bits = kmalloc(alloc_size, GFP_KERNEL|__GFP_NOWARN);
+		if (!bits && alloc_size > PAGE_SIZE)
+			bits = vmalloc(alloc_size);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!bits)
 			goto out_nofds;
 	}

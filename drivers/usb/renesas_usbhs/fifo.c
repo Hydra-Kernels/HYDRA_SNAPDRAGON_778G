@@ -279,8 +279,13 @@ static void usbhsf_fifo_clear(struct usbhs_pipe *pipe,
 	if (!usbhs_pipe_is_dcp(pipe)) {
 		/*
 		 * This driver checks the pipe condition first to avoid -EBUSY
+<<<<<<< HEAD
 		 * from usbhsf_fifo_barrier() if the pipe is RX direction and
 		 * empty.
+=======
+		 * from usbhsf_fifo_barrier() with about 10 msec delay in
+		 * the interrupt handler if the pipe is RX direction and empty.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 */
 		if (usbhs_pipe_is_dir_in(pipe))
 			ret = usbhs_pipe_is_accessible(pipe);
@@ -822,11 +827,20 @@ static void usbhsf_dma_xfer_preparing(struct usbhs_pkt *pkt)
 	struct dma_chan *chan;
 	struct device *dev = usbhs_priv_to_dev(priv);
 	enum dma_transfer_direction dir;
+<<<<<<< HEAD
 	dma_cookie_t cookie;
 
 	fifo = usbhs_pipe_to_fifo(pipe);
 	if (!fifo)
 		return;
+=======
+	unsigned long flags;
+
+	usbhs_lock(priv, flags);
+	fifo = usbhs_pipe_to_fifo(pipe);
+	if (!fifo)
+		goto xfer_work_end;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	chan = usbhsf_dma_chan_get(fifo, pkt);
 	dir = usbhs_pipe_is_dir_in(pipe) ? DMA_DEV_TO_MEM : DMA_MEM_TO_DEV;
@@ -835,7 +849,7 @@ static void usbhsf_dma_xfer_preparing(struct usbhs_pkt *pkt)
 					pkt->trans, dir,
 					DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
 	if (!desc)
-		return;
+		goto xfer_work_end;
 
 	desc->callback_result	= usbhsf_dma_complete;
 	desc->callback_param	= pkt;
@@ -843,7 +857,7 @@ static void usbhsf_dma_xfer_preparing(struct usbhs_pkt *pkt)
 	cookie = dmaengine_submit(desc);
 	if (cookie < 0) {
 		dev_err(dev, "Failed to submit dma descriptor\n");
-		return;
+		goto xfer_work_end;
 	}
 
 	dev_dbg(dev, "  %s %d (%d/ %d)\n",
@@ -854,6 +868,9 @@ static void usbhsf_dma_xfer_preparing(struct usbhs_pkt *pkt)
 	dma_async_issue_pending(chan);
 	usbhsf_dma_start(pipe, fifo);
 	usbhs_pipe_enable(pipe);
+
+xfer_work_end:
+	usbhs_unlock(priv, flags);
 }
 
 static void xfer_work(struct work_struct *work)
@@ -917,6 +934,7 @@ static int usbhsf_dma_prepare_push(struct usbhs_pkt *pkt, int *is_done)
 	pkt->trans = len;
 
 	usbhsf_tx_irq_ctrl(pipe, 0);
+<<<<<<< HEAD
 	/* FIXME: Workaound for usb dmac that driver can be used in atomic */
 	if (usbhs_get_dparam(priv, has_usb_dmac)) {
 		usbhsf_dma_xfer_preparing(pkt);
@@ -924,6 +942,10 @@ static int usbhsf_dma_prepare_push(struct usbhs_pkt *pkt, int *is_done)
 		INIT_WORK(&pkt->work, xfer_work);
 		schedule_work(&pkt->work);
 	}
+=======
+	INIT_WORK(&pkt->work, xfer_work);
+	schedule_work(&pkt->work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

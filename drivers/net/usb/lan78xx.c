@@ -1712,12 +1712,16 @@ static void lan78xx_init_mac_address(struct lan78xx_net *dev)
 				  "MAC address set to random addr");
 		}
 
+<<<<<<< HEAD
 		addr_lo = addr[0] | (addr[1] << 8) |
 			  (addr[2] << 16) | (addr[3] << 24);
 		addr_hi = addr[4] | (addr[5] << 8);
 
 		ret = lan78xx_write_reg(dev, RX_ADDRL, addr_lo);
 		ret = lan78xx_write_reg(dev, RX_ADDRH, addr_hi);
+=======
+		tasklet_schedule(&dev->bh);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = lan78xx_write_reg(dev, MAF_LO(0), addr_lo);

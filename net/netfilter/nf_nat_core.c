@@ -1194,8 +1194,19 @@ static void __exit nf_nat_cleanup(void)
 
 	nf_ct_extend_unregister(&nat_extend);
 	nf_ct_helper_expectfn_unregister(&follow_master_nat);
+<<<<<<< HEAD
 	RCU_INIT_POINTER(nf_nat_hook, NULL);
 
+=======
+	RCU_INIT_POINTER(nfnetlink_parse_nat_setup_hook, NULL);
+#ifdef CONFIG_XFRM
+	RCU_INIT_POINTER(nf_nat_decode_session_hook, NULL);
+#endif
+	synchronize_rcu();
+
+	for (i = 0; i < NFPROTO_NUMPROTO; i++)
+		kfree(nf_nat_l4protos[i]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	synchronize_net();
 	kvfree(nf_nat_bysource);
 	unregister_pernet_subsys(&nat_net_ops);

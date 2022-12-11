@@ -161,8 +161,11 @@ static const char *const sctp_timer_tbl[] = {
 /* Lookup timer debug name. */
 const char *sctp_tname(const union sctp_subtype id)
 {
+<<<<<<< HEAD
 	BUILD_BUG_ON(SCTP_EVENT_TIMEOUT_MAX + 1 != ARRAY_SIZE(sctp_timer_tbl));
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (id.timeout < ARRAY_SIZE(sctp_timer_tbl))
 		return sctp_timer_tbl[id.timeout];
 	return "unknown_timer";

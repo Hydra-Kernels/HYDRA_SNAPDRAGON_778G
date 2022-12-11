@@ -814,7 +814,11 @@ static __maybe_unused int usbhsc_resume(struct device *dev)
 	struct usbhs_priv *priv = dev_get_drvdata(dev);
 	struct platform_device *pdev = usbhs_priv_to_pdev(priv);
 
+<<<<<<< HEAD
 	if (!usbhs_get_dparam(priv, runtime_pwctrl)) {
+=======
+	if (!usbhsc_flags_has(priv, USBHSF_RUNTIME_PWCTRL)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		usbhsc_power_ctrl(priv, 1);
 		usbhs_mod_autonomy_mode(priv);
 	}

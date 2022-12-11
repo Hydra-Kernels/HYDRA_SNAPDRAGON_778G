@@ -883,14 +883,34 @@ static int garmin_init_session(struct usb_serial_port *port)
 	dev_dbg(&port->dev, "%s - starting session ...\n", __func__);
 	garmin_data_p->state = STATE_ACTIVE;
 
+<<<<<<< HEAD
 	for (i = 0; i < 3; i++) {
 		status = garmin_write_bulk(port, GARMIN_START_SESSION_REQ,
 				sizeof(GARMIN_START_SESSION_REQ), 0);
 		if (status < 0)
 			goto err_kill_urbs;
+=======
+		for (i = 0; i < 3; i++) {
+			status = garmin_write_bulk(port,
+					GARMIN_START_SESSION_REQ,
+					sizeof(GARMIN_START_SESSION_REQ), 0);
+
+			if (status < 0)
+				goto err_kill_urbs;
+		}
+
+		if (status > 0)
+			status = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
+
+err_kill_urbs:
+	usb_kill_anchored_urbs(&garmin_data_p->write_urbs);
+	usb_kill_urb(port->interrupt_in_urb);
+
+	return status;
 
 err_kill_urbs:
 	usb_kill_anchored_urbs(&garmin_data_p->write_urbs);

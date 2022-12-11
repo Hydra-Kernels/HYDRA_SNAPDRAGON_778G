@@ -466,6 +466,22 @@ static void sama5d3_ddr_standby(void)
 	at91_ramc_write(0, AT91_DDRSDRC_LPR, saved_lpr0);
 }
 
+static void sama5d3_ddr_standby(void)
+{
+	u32 lpr0;
+	u32 saved_lpr0;
+
+	saved_lpr0 = at91_ramc_read(0, AT91_DDRSDRC_LPR);
+	lpr0 = saved_lpr0 & ~AT91_DDRSDRC_LPCB;
+	lpr0 |= AT91_DDRSDRC_LPCB_POWER_DOWN;
+
+	at91_ramc_write(0, AT91_DDRSDRC_LPR, lpr0);
+
+	cpu_do_idle();
+
+	at91_ramc_write(0, AT91_DDRSDRC_LPR, saved_lpr0);
+}
+
 /* We manage both DDRAM/SDRAM controllers, we need more than one value to
  * remember.
  */
@@ -496,6 +512,7 @@ static void at91sam9_sdram_standby(void)
 		at91_ramc_write(1, AT91_SDRAMC_LPR, saved_lpr1);
 }
 
+<<<<<<< HEAD
 struct ramc_info {
 	void (*idle)(void);
 	unsigned int memctrl;
@@ -513,6 +530,13 @@ static const struct of_device_id ramc_ids[] __initconst = {
 	{ .compatible = "atmel,at91sam9260-sdramc", .data = &ramc_infos[1] },
 	{ .compatible = "atmel,at91sam9g45-ddramc", .data = &ramc_infos[2] },
 	{ .compatible = "atmel,sama5d3-ddramc", .data = &ramc_infos[3] },
+=======
+static const struct of_device_id ramc_ids[] __initconst = {
+	{ .compatible = "atmel,at91rm9200-sdramc", .data = at91rm9200_standby },
+	{ .compatible = "atmel,at91sam9260-sdramc", .data = at91sam9_sdram_standby },
+	{ .compatible = "atmel,at91sam9g45-ddramc", .data = at91_ddr_standby },
+	{ .compatible = "atmel,sama5d3-ddramc", .data = sama5d3_ddr_standby },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ /*sentinel*/ }
 };
 

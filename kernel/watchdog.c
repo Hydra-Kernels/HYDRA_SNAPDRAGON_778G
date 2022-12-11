@@ -332,8 +332,49 @@ bool is_hardlockup(void)
 	if (__this_cpu_read(hrtimer_interrupts_saved) == hrint)
 		return true;
 
+<<<<<<< HEAD
 	__this_cpu_write(hrtimer_interrupts_saved, hrint);
 	return false;
+=======
+	/* check for a hardlockup
+	 * This is done by making sure our timer interrupt
+	 * is incrementing.  The timer interrupt should have
+	 * fired multiple times before we overflow'd.  If it hasn't
+	 * then this is a good indication the cpu is stuck
+	 */
+	if (is_hardlockup()) {
+		int this_cpu = smp_processor_id();
+
+		/* only print hardlockups once */
+		if (__this_cpu_read(hard_watchdog_warn) == true)
+			return;
+
+		pr_emerg("Watchdog detected hard LOCKUP on cpu %d", this_cpu);
+		print_modules();
+		print_irqtrace_events(current);
+		if (regs)
+			show_regs(regs);
+		else
+			dump_stack();
+
+		/*
+		 * Perform all-CPU dump only once to avoid multiple hardlockups
+		 * generating interleaving traces
+		 */
+		if (sysctl_hardlockup_all_cpu_backtrace &&
+				!test_and_set_bit(0, &hardlockup_allcpu_dumped))
+			trigger_allbutself_cpu_backtrace();
+
+		if (hardlockup_panic)
+			panic("Hard LOCKUP");
+
+		__this_cpu_write(hard_watchdog_warn, true);
+		return;
+	}
+
+	__this_cpu_write(hard_watchdog_warn, false);
+	return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void watchdog_interrupt_count(void)
@@ -724,8 +765,44 @@ static int proc_watchdog_common(int which, struct ctl_table *table, int write,
 	} else {
 		old = READ_ONCE(*param);
 		err = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+<<<<<<< HEAD
 		if (!err && old != READ_ONCE(*param))
 			proc_watchdog_update();
+=======
+		if (err)
+			goto out;
+
+		/*
+		 * There is a race window between fetching the current value
+		 * from 'watchdog_enabled' and storing the new value. During
+		 * this race window, watchdog_nmi_enable() can sneak in and
+		 * clear the NMI_WATCHDOG_ENABLED bit in 'watchdog_enabled'.
+		 * The 'cmpxchg' detects this race and the loop retries.
+		 */
+		do {
+			old = watchdog_enabled;
+			/*
+			 * If the parameter value is not zero set the
+			 * corresponding bit(s), else clear it(them).
+			 */
+			if (*watchdog_param)
+				new = old | which;
+			else
+				new = old & ~which;
+		} while (cmpxchg(&watchdog_enabled, old, new) != old);
+
+		/*
+		 * Update the run state of the lockup detectors. There is _no_
+		 * need to check the value returned by proc_watchdog_update()
+		 * and to restore the previous value of 'watchdog_enabled' as
+		 * both lockup detectors are disabled if proc_watchdog_update()
+		 * returns an error.
+		 */
+		if (old == new)
+			goto out;
+
+		err = proc_watchdog_update();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	mutex_unlock(&watchdog_mutex);
 	return err;
@@ -769,7 +846,7 @@ int proc_soft_watchdog(struct ctl_table *table, int write,
 int proc_watchdog_thresh(struct ctl_table *table, int write,
 			 void __user *buffer, size_t *lenp, loff_t *ppos)
 {
-	int err, old;
+	int err, old, new;
 
 	mutex_lock(&watchdog_mutex);
 
@@ -779,7 +856,26 @@ int proc_watchdog_thresh(struct ctl_table *table, int write,
 	if (!err && write && old != READ_ONCE(watchdog_thresh))
 		proc_watchdog_update();
 
+<<<<<<< HEAD
 	mutex_unlock(&watchdog_mutex);
+=======
+	/*
+	 * Update the sample period. Restore on failure.
+	 */
+	new = ACCESS_ONCE(watchdog_thresh);
+	if (old == new)
+		goto out;
+
+	set_sample_period();
+	err = proc_watchdog_update();
+	if (err) {
+		watchdog_thresh = old;
+		set_sample_period();
+	}
+out:
+	mutex_unlock(&watchdog_proc_mutex);
+	put_online_cpus();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 

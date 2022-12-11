@@ -273,6 +273,9 @@ struct css_set {
 	/* dead and being drained, ignore for migration */
 	bool dead;
 
+	/* dead and being drained, ignore for migration */
+	bool dead;
+
 	/* For RCU-protected deletion */
 	struct rcu_head rcu_head;
 };
@@ -642,9 +645,15 @@ struct cgroup_subsys {
 	void (*cancel_attach)(struct cgroup_taskset *tset);
 	void (*attach)(struct cgroup_taskset *tset);
 	void (*post_attach)(void);
+<<<<<<< HEAD
 	int (*can_fork)(struct task_struct *task);
 	void (*cancel_fork)(struct task_struct *task);
 	void (*fork)(struct task_struct *task);
+=======
+	int (*can_fork)(struct task_struct *task, void **priv_p);
+	void (*cancel_fork)(struct task_struct *task, void *priv);
+	void (*fork)(struct task_struct *task, void *priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	void (*exit)(struct task_struct *task);
 	void (*release)(struct task_struct *task);
 	void (*bind)(struct cgroup_subsys_state *root_css);

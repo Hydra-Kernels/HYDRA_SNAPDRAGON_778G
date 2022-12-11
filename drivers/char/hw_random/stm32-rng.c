@@ -32,7 +32,10 @@ struct stm32_rng_private {
 	void __iomem *base;
 	struct clk *clk;
 	struct reset_control *rst;
+<<<<<<< HEAD
 	bool ced;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static int stm32_rng_read(struct hwrng *rng, void *data, size_t max, bool wait)
@@ -141,8 +144,11 @@ static int stm32_rng_probe(struct platform_device *ofdev)
 		reset_control_deassert(priv->rst);
 	}
 
+<<<<<<< HEAD
 	priv->ced = of_property_read_bool(np, "clock-error-detect");
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dev_set_drvdata(dev, priv);
 
 	priv->rng.name = dev_driver_string(dev),

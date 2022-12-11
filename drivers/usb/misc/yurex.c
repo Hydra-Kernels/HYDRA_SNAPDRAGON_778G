@@ -408,7 +408,11 @@ static ssize_t yurex_read(struct file *file, char __user *buffer, size_t count,
 	dev = file->private_data;
 
 	mutex_lock(&dev->io_mutex);
+<<<<<<< HEAD
 	if (dev->disconnected) {		/* already disconnected */
+=======
+	if (!dev->interface) {		/* already disconnected */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		mutex_unlock(&dev->io_mutex);
 		return -ENODEV;
 	}
@@ -418,9 +422,12 @@ static ssize_t yurex_read(struct file *file, char __user *buffer, size_t count,
 	spin_unlock_irqrestore(&dev->lock, flags);
 	mutex_unlock(&dev->io_mutex);
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(len >= sizeof(in_buffer)))
 		return -EIO;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return simple_read_from_buffer(buffer, count, ppos, in_buffer, len);
 }
 

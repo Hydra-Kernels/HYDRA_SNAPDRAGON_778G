@@ -170,9 +170,15 @@ continue_block:
 
 	## branch into array
 	lea	jump_table(%rip), bufp
+<<<<<<< HEAD
 	movzwq  (bufp, %rax, 2), len
 	lea	crc_array(%rip), bufp
 	lea     (bufp, len, 1), bufp
+=======
+	movzxw  (bufp, %rax, 2), len
+	offset=crc_array-jump_table
+	lea     offset(bufp, len, 1), bufp
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	JMP_NOSPEC bufp
 
 	################################################################

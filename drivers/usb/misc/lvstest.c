@@ -402,9 +402,16 @@ static int lvs_rh_probe(struct usb_interface *intf,
 	hdev = interface_to_usbdev(intf);
 	desc = intf->cur_altsetting;
 
+<<<<<<< HEAD
 	ret = usb_find_int_in_endpoint(desc, &endpoint);
 	if (ret)
 		return ret;
+=======
+	if (desc->desc.bNumEndpoints < 1)
+		return -ENODEV;
+
+	endpoint = &desc->endpoint[0].desc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* valid only for SS root hub */
 	if (hdev->descriptor.bDeviceProtocol != USB_HUB_PR_SS || hdev->parent) {

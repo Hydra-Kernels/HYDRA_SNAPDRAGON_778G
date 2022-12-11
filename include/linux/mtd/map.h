@@ -298,7 +298,11 @@ void map_destroy(struct mtd_info *mtd);
 ({									\
 	int i, ret = 1;							\
 	for (i = 0; i < map_words(map); i++) {				\
+<<<<<<< HEAD
 		if (((val1).x[i] & (val2).x[i]) != (val3).x[i]) {	\
+=======
+		if (((val1).x[i] & (val2).x[i]) != (val2).x[i]) {	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ret = 0;					\
 			break;						\
 		}							\

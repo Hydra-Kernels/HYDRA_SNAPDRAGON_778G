@@ -142,6 +142,7 @@ static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
 #endif
 }
 
+<<<<<<< HEAD
 static int set_up_temporary_text_mapping(pgd_t *pgd_base)
 {
 	pgd_t *pgd;
@@ -168,6 +169,8 @@ static int set_up_temporary_text_mapping(pgd_t *pgd_base)
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 asmlinkage int swsusp_arch_resume(void)
 {
 	int error;

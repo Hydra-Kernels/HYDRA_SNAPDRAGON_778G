@@ -477,7 +477,13 @@ static int ctr_encrypt(struct skcipher_request *req)
 		kernel_neon_end();
 		err = skcipher_walk_done(&walk, walk.nbytes % AES_BLOCK_SIZE);
 	}
+<<<<<<< HEAD
 	if (walk.nbytes) {
+=======
+	if (walk.nbytes % AES_BLOCK_SIZE) {
+		u8 *tdst = walk.dst.virt.addr + blocks * AES_BLOCK_SIZE;
+		u8 *tsrc = walk.src.virt.addr + blocks * AES_BLOCK_SIZE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		u8 __aligned(8) tail[AES_BLOCK_SIZE];
 		unsigned int nbytes = walk.nbytes;
 		u8 *tdst = walk.dst.virt.addr;

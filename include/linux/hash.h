@@ -22,6 +22,7 @@
 #endif
 
 /*
+<<<<<<< HEAD
  * This hash multiplies the input by a large odd number and takes the
  * high bits.  Since multiplication propagates changes to the most
  * significant end only, it is essential that the high bits of the
@@ -44,6 +45,44 @@
 #ifdef CONFIG_HAVE_ARCH_HASH
 /* This header may use the GOLDEN_RATIO_xx constants */
 #include <asm/hash.h>
+=======
+ * The above primes are actively bad for hashing, since they are
+ * too sparse. The 32-bit one is mostly ok, the 64-bit one causes
+ * real problems. Besides, the "prime" part is pointless for the
+ * multiplicative hash.
+ *
+ * Although a random odd number will do, it turns out that the golden
+ * ratio phi = (sqrt(5)-1)/2, or its negative, has particularly nice
+ * properties.
+ *
+ * These are the negative, (1 - phi) = (phi^2) = (3 - sqrt(5))/2.
+ * (See Knuth vol 3, section 6.4, exercise 9.)
+ */
+#define GOLDEN_RATIO_32 0x61C88647
+#define GOLDEN_RATIO_64 0x61C8864680B583EBull
+
+static __always_inline u64 hash_64(u64 val, unsigned int bits)
+{
+	u64 hash = val;
+
+#if BITS_PER_LONG == 64
+	hash = hash * GOLDEN_RATIO_64;
+#else
+	/*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
+	u64 n = hash;
+	n <<= 18;
+	hash -= n;
+	n <<= 33;
+	hash -= n;
+	n <<= 3;
+	hash += n;
+	n <<= 3;
+	hash -= n;
+	n <<= 4;
+	hash += n;
+	n <<= 2;
+	hash += n;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /*

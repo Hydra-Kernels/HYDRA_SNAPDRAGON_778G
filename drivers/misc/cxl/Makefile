@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 # SPDX-License-Identifier: GPL-2.0
 ccflags-y			:= $(call cc-disable-warning, unused-const-variable)
 ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+=======
+ccflags-y := -Werror $(call cc-disable-warning, unused-const-variable)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 cxl-y				+= main.o file.o irq.o fault.o native.o
 cxl-y				+= context.o sysfs.o pci.o trace.o

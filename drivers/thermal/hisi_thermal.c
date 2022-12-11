@@ -644,10 +644,18 @@ static int hisi_thermal_suspend(struct device *dev)
 static int hisi_thermal_resume(struct device *dev)
 {
 	struct hisi_thermal_data *data = dev_get_drvdata(dev);
+<<<<<<< HEAD
 	int i, ret = 0;
 
 	for (i = 0; i < data->nr_sensors; i++)
 		ret |= data->ops->enable_sensor(&data->sensor[i]);
+=======
+	int ret;
+
+	ret = clk_prepare_enable(data->clk);
+	if (ret)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

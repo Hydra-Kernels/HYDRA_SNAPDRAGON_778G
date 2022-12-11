@@ -118,7 +118,53 @@ int want_old_faultaround_pte = 1;
  *   ->tasklist_lock            (memory_failure, collect_procs_ao)
  */
 
+<<<<<<< HEAD
 static void page_cache_delete(struct address_space *mapping,
+=======
+static int page_cache_tree_insert(struct address_space *mapping,
+				  struct page *page, void **shadowp)
+{
+	struct radix_tree_node *node;
+	void **slot;
+	int error;
+
+	error = __radix_tree_create(&mapping->page_tree, page->index,
+				    &node, &slot);
+	if (error)
+		return error;
+	if (*slot) {
+		void *p;
+
+		p = radix_tree_deref_slot_protected(slot, &mapping->tree_lock);
+		if (!radix_tree_exceptional_entry(p))
+			return -EEXIST;
+		if (shadowp)
+			*shadowp = p;
+		mapping->nrshadows--;
+		if (node)
+			workingset_node_shadows_dec(node);
+	}
+	radix_tree_replace_slot(slot, page);
+	mapping->nrpages++;
+	if (node) {
+		workingset_node_pages_inc(node);
+		/*
+		 * Don't track node that contains actual pages.
+		 *
+		 * Avoid acquiring the list_lru lock if already
+		 * untracked.  The list_empty() test is safe as
+		 * node->private_list is protected by
+		 * mapping->tree_lock.
+		 */
+		if (!list_empty(&node->private_list))
+			list_lru_del(&workingset_shadow_nodes,
+				     &node->private_list);
+	}
+	return 0;
+}
+
+static void page_cache_tree_delete(struct address_space *mapping,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				   struct page *page, void *shadow)
 {
 	XA_STATE(xas, &mapping->i_pages, page->index);
@@ -141,6 +187,14 @@ static void page_cache_delete(struct address_space *mapping,
 
 	page->mapping = NULL;
 	/* Leave page->index set: truncation lookup relies upon it */
+
+	if (!node) {
+		/*
+		 * We need a node to properly account shadow
+		 * entries. Don't plant any without. XXX
+		 */
+		shadow = NULL;
+	}
 
 	if (shadow) {
 		mapping->nrexceptional += nr;
@@ -835,9 +889,18 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 	VM_BUG_ON_PAGE(!PageLocked(new), new);
 	VM_BUG_ON_PAGE(new->mapping, new);
 
+<<<<<<< HEAD
 	get_page(new);
 	new->mapping = mapping;
 	new->index = offset;
+=======
+	error = radix_tree_preload(gfp_mask & GFP_RECLAIM_MASK);
+	if (!error) {
+		struct address_space *mapping = old->mapping;
+		void (*freepage)(struct page *);
+		struct mem_cgroup *memcg;
+		unsigned long flags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	xas_lock_irqsave(&xas, flags);
 	xas_store(&xas, new);
@@ -858,6 +921,7 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 		freepage(old);
 	put_page(old);
 
+<<<<<<< HEAD
 	return 0;
 }
 EXPORT_SYMBOL_GPL(replace_page_cache_page);
@@ -866,6 +930,38 @@ noinline int __add_to_page_cache_locked(struct page *page,
 					struct address_space *mapping,
 					pgoff_t offset, gfp_t gfp_mask,
 					void **shadowp)
+=======
+		memcg = mem_cgroup_begin_page_stat(old);
+		spin_lock_irqsave(&mapping->tree_lock, flags);
+		__delete_from_page_cache(old, NULL, memcg);
+		error = page_cache_tree_insert(mapping, new, NULL);
+		BUG_ON(error);
+
+		/*
+		 * hugetlb pages do not participate in page cache accounting.
+		 */
+		if (!PageHuge(new))
+			__inc_zone_page_state(new, NR_FILE_PAGES);
+		if (PageSwapBacked(new))
+			__inc_zone_page_state(new, NR_SHMEM);
+		spin_unlock_irqrestore(&mapping->tree_lock, flags);
+		mem_cgroup_end_page_stat(memcg);
+		mem_cgroup_replace_page(old, new);
+		radix_tree_preload_end();
+		if (freepage)
+			freepage(old);
+		page_cache_release(old);
+	}
+
+	return error;
+}
+EXPORT_SYMBOL_GPL(replace_page_cache_page);
+
+static int __add_to_page_cache_locked(struct page *page,
+				      struct address_space *mapping,
+				      pgoff_t offset, gfp_t gfp_mask,
+				      void **shadowp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	XA_STATE(xas, &mapping->i_pages, offset);
 	int huge = PageHuge(page);
@@ -883,7 +979,18 @@ noinline int __add_to_page_cache_locked(struct page *page,
 			return error;
 	}
 
+<<<<<<< HEAD
 	get_page(page);
+=======
+	error = radix_tree_maybe_preload(gfp_mask & GFP_RECLAIM_MASK);
+	if (error) {
+		if (!huge)
+			mem_cgroup_cancel_charge(page, memcg);
+		return error;
+	}
+
+	page_cache_get(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	page->mapping = mapping;
 	page->index = offset;
 	gfp_mask &= GFP_RECLAIM_MASK;
@@ -2095,16 +2202,20 @@ find_page:
 					index, last_index - index);
 		}
 		if (!PageUptodate(page)) {
+<<<<<<< HEAD
 			if (iocb->ki_flags & IOCB_NOWAIT) {
 				put_page(page);
 				goto would_block;
 			}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * See comment in do_read_cache_page on why
 			 * wait_on_page_locked is used to avoid unnecessarily
 			 * serialisations and why it's safe.
 			 */
+<<<<<<< HEAD
 			error = wait_on_page_locked_killable(page);
 			if (unlikely(error))
 				goto readpage_error;
@@ -2112,6 +2223,13 @@ find_page:
 				goto page_ok;
 
 			if (inode->i_blkbits == PAGE_SHIFT ||
+=======
+			wait_on_page_locked_killable(page);
+			if (PageUptodate(page))
+				goto page_ok;
+
+			if (inode->i_blkbits == PAGE_CACHE_SHIFT ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					!mapping->a_ops->is_partially_uptodate)
 				goto page_not_up_to_date;
 			/* pipes can't handle partially uptodate pages */
@@ -2374,12 +2492,17 @@ EXPORT_SYMBOL(generic_file_read_iter);
  * if it couldn't lock the page.  If we did have to drop the mmap_sem then fpin
  * will point to the pinned file and needs to be fput()'ed at a later point.
  */
+<<<<<<< HEAD
 static int lock_page_maybe_drop_mmap(struct vm_fault *vmf, struct page *page,
 				     struct file **fpin)
+=======
+static int page_cache_read(struct file *file, pgoff_t offset, gfp_t gfp_mask)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (trylock_page(page))
 		return 1;
 
+<<<<<<< HEAD
 	/*
 	 * NOTE! This will make us return with VM_FAULT_RETRY, but with
 	 * the mmap_sem still held. That's how FAULT_FLAG_RETRY_NOWAIT
@@ -2404,6 +2527,24 @@ static int lock_page_maybe_drop_mmap(struct vm_fault *vmf, struct page *page,
 	} else
 		__lock_page(page);
 	return 1;
+=======
+	do {
+		page = __page_cache_alloc(gfp_mask|__GFP_COLD);
+		if (!page)
+			return -ENOMEM;
+
+		ret = add_to_page_cache_lru(page, mapping, offset, gfp_mask);
+		if (ret == 0)
+			ret = mapping->a_ops->readpage(file, page);
+		else if (ret == -EEXIST)
+			ret = 0; /* losing race to add is OK */
+
+		page_cache_release(page);
+
+	} while (ret == AOP_TRUNCATED_PAGE);
+
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 
@@ -2593,6 +2734,33 @@ retry_find:
 	vmf->page = page;
 	return ret | VM_FAULT_LOCKED;
 
+<<<<<<< HEAD
+=======
+no_cached_page:
+	/*
+	 * We're only likely to ever get here if MADV_RANDOM is in
+	 * effect.
+	 */
+	error = page_cache_read(file, offset, vmf->gfp_mask);
+
+	/*
+	 * The page we want has now been added to the page cache.
+	 * In the unlikely event that someone removed it in the
+	 * meantime, we'll just come back here and read it again.
+	 */
+	if (error >= 0)
+		goto retry_find;
+
+	/*
+	 * An error return from page_cache_read can result if the
+	 * system is low on memory, or a problem occurs while trying
+	 * to schedule I/O.
+	 */
+	if (error == -ENOMEM)
+		return VM_FAULT_OOM;
+	return VM_FAULT_SIGBUS;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 page_not_uptodate:
 	/*
 	 * Umm, take care of errors if the page isn't up-to-date.
@@ -2806,19 +2974,31 @@ static struct page *do_read_cache_page(struct address_space *mapping,
 repeat:
 	page = find_get_page(mapping, index);
 	if (!page) {
+<<<<<<< HEAD
 		page = __page_cache_alloc(gfp);
+=======
+		page = __page_cache_alloc(gfp | __GFP_COLD);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!page)
 			return ERR_PTR(-ENOMEM);
 		err = add_to_page_cache_lru(page, mapping, index, gfp);
 		if (unlikely(err)) {
+<<<<<<< HEAD
 			put_page(page);
 			if (err == -EEXIST)
 				goto repeat;
 			/* Presumably ENOMEM for xarray node */
+=======
+			page_cache_release(page);
+			if (err == -EEXIST)
+				goto repeat;
+			/* Presumably ENOMEM for radix tree node */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return ERR_PTR(err);
 		}
 
 filler:
+<<<<<<< HEAD
 		if (filler)
 			err = filler(data, page);
 		else
@@ -2826,6 +3006,11 @@ filler:
 
 		if (err < 0) {
 			put_page(page);
+=======
+		err = filler(data, page);
+		if (err < 0) {
+			page_cache_release(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return ERR_PTR(err);
 		}
 
@@ -2878,7 +3063,11 @@ filler:
 	/* Case c or d, restart the operation */
 	if (!page->mapping) {
 		unlock_page(page);
+<<<<<<< HEAD
 		put_page(page);
+=======
+		page_cache_release(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto repeat;
 	}
 
@@ -2887,6 +3076,7 @@ filler:
 		unlock_page(page);
 		goto out;
 	}
+<<<<<<< HEAD
 
 	/*
 	 * A previous I/O error may have been due to temporary
@@ -2895,6 +3085,8 @@ filler:
 	 * set again if read page fails.
 	 */
 	ClearPageError(page);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	goto filler;
 
 out:

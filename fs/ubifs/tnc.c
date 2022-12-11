@@ -23,7 +23,11 @@
 #include "ubifs.h"
 
 static int try_read_node(const struct ubifs_info *c, void *buf, int type,
+<<<<<<< HEAD
 			 struct ubifs_zbranch *zbr);
+=======
+			 int len, int lnum, int offs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int fallible_read_node(struct ubifs_info *c, const union ubifs_key *key,
 			      struct ubifs_zbranch *zbr, void *node);
 

@@ -901,6 +901,7 @@ static struct pcie_link_state *alloc_pcie_link_state(struct pci_dev *pdev)
 
 	INIT_LIST_HEAD(&link->sibling);
 	link->pdev = pdev;
+<<<<<<< HEAD
 	link->downstream = pci_function_0(pdev->subordinate);
 
 	/*
@@ -913,6 +914,15 @@ static struct pcie_link_state *alloc_pcie_link_state(struct pci_dev *pdev)
 	if (pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT ||
 	    pci_pcie_type(pdev) == PCI_EXP_TYPE_PCIE_BRIDGE ||
 	    !pdev->bus->parent->self) {
+=======
+
+	/*
+	 * Root Ports and PCI/PCI-X to PCIe Bridges are roots of PCIe
+	 * hierarchies.
+	 */
+	if (pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT ||
+	    pci_pcie_type(pdev) == PCI_EXP_TYPE_PCIE_BRIDGE) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		link->root = link;
 	} else {
 		struct pcie_link_state *parent;
@@ -925,6 +935,10 @@ static struct pcie_link_state *alloc_pcie_link_state(struct pci_dev *pdev)
 
 		link->parent = parent;
 		link->root = link->parent->root;
+<<<<<<< HEAD
+=======
+		list_add(&link->link, &parent->children);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	list_add(&link->sibling, &link_list);

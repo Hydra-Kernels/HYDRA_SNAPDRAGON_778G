@@ -2119,7 +2119,15 @@ static int try_flush_caps(struct inode *inode, u64 *ptid)
 
 retry:
 	spin_lock(&ci->i_ceph_lock);
+<<<<<<< HEAD
 retry_locked:
+=======
+	if (ci->i_ceph_flags & CEPH_I_NOFLUSH) {
+		spin_unlock(&ci->i_ceph_lock);
+		dout("try_flush_caps skipping %p I_NOFLUSH set\n", inode);
+		goto out;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ci->i_dirty_caps && ci->i_auth_cap) {
 		struct ceph_cap *cap = ci->i_auth_cap;
 		int delayed;

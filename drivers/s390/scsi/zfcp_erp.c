@@ -4,7 +4,11 @@
  *
  * Error Recovery Procedures (ERP).
  *
+<<<<<<< HEAD
  * Copyright IBM Corp. 2002, 2017
+=======
+ * Copyright IBM Corp. 2002, 2016
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #define KMSG_COMPONENT "zfcp"
@@ -25,6 +29,7 @@ enum zfcp_erp_act_flags {
 	ZFCP_STATUS_ERP_NO_REF		= 0x00800000,
 };
 
+<<<<<<< HEAD
 /*
  * Eyecatcher pseudo flag to bitwise or-combine with enum zfcp_erp_act_type.
  * Used to indicate that an ERP action could not be set up despite a detected
@@ -37,6 +42,46 @@ enum zfcp_erp_act_flags {
  * ZFCP_STATUS_COMMON_ERP_FAILED.
  */
 #define ZFCP_ERP_ACTION_FAILED		0xe0
+=======
+enum zfcp_erp_steps {
+	ZFCP_ERP_STEP_UNINITIALIZED	= 0x0000,
+	ZFCP_ERP_STEP_FSF_XCONFIG	= 0x0001,
+	ZFCP_ERP_STEP_PHYS_PORT_CLOSING	= 0x0010,
+	ZFCP_ERP_STEP_PORT_CLOSING	= 0x0100,
+	ZFCP_ERP_STEP_PORT_OPENING	= 0x0800,
+	ZFCP_ERP_STEP_LUN_CLOSING	= 0x1000,
+	ZFCP_ERP_STEP_LUN_OPENING	= 0x2000,
+};
+
+/**
+ * enum zfcp_erp_act_type - Type of ERP action object.
+ * @ZFCP_ERP_ACTION_REOPEN_LUN: LUN recovery.
+ * @ZFCP_ERP_ACTION_REOPEN_PORT: Port recovery.
+ * @ZFCP_ERP_ACTION_REOPEN_PORT_FORCED: Forced port recovery.
+ * @ZFCP_ERP_ACTION_REOPEN_ADAPTER: Adapter recovery.
+ * @ZFCP_ERP_ACTION_NONE: Eyecatcher pseudo flag to bitwise or-combine with
+ *			  either of the first four enum values.
+ *			  Used to indicate that an ERP action could not be
+ *			  set up despite a detected need for some recovery.
+ * @ZFCP_ERP_ACTION_FAILED: Eyecatcher pseudo flag to bitwise or-combine with
+ *			    either of the first four enum values.
+ *			    Used to indicate that ERP not needed because
+ *			    the object has ZFCP_STATUS_COMMON_ERP_FAILED.
+ */
+enum zfcp_erp_act_type {
+	ZFCP_ERP_ACTION_REOPEN_LUN         = 1,
+	ZFCP_ERP_ACTION_REOPEN_PORT	   = 2,
+	ZFCP_ERP_ACTION_REOPEN_PORT_FORCED = 3,
+	ZFCP_ERP_ACTION_REOPEN_ADAPTER     = 4,
+	ZFCP_ERP_ACTION_NONE		   = 0xc0,
+	ZFCP_ERP_ACTION_FAILED		   = 0xe0,
+};
+
+enum zfcp_erp_act_state {
+	ZFCP_ERP_ACTION_RUNNING = 1,
+	ZFCP_ERP_ACTION_READY   = 2,
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 enum zfcp_erp_act_result {
 	ZFCP_ERP_SUCCEEDED = 0,
@@ -117,11 +162,19 @@ static void zfcp_erp_action_dismiss_adapter(struct zfcp_adapter *adapter)
 	}
 }
 
+<<<<<<< HEAD
 static enum zfcp_erp_act_type zfcp_erp_handle_failed(
 	enum zfcp_erp_act_type want, struct zfcp_adapter *adapter,
 	struct zfcp_port *port,	struct scsi_device *sdev)
 {
 	enum zfcp_erp_act_type need = want;
+=======
+static int zfcp_erp_handle_failed(int want, struct zfcp_adapter *adapter,
+				  struct zfcp_port *port,
+				  struct scsi_device *sdev)
+{
+	int need = want;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct zfcp_scsi_dev *zsdev;
 
 	switch (want) {
@@ -152,13 +205,23 @@ static enum zfcp_erp_act_type zfcp_erp_handle_failed(
 				adapter, ZFCP_STATUS_COMMON_ERP_FAILED);
 		}
 		break;
+<<<<<<< HEAD
+=======
+	default:
+		need = 0;
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return need;
 }
 
+<<<<<<< HEAD
 static enum zfcp_erp_act_type zfcp_erp_required_act(enum zfcp_erp_act_type want,
 				 struct zfcp_adapter *adapter,
+=======
+static int zfcp_erp_required_act(int want, struct zfcp_adapter *adapter,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 struct zfcp_port *port,
 				 struct scsi_device *sdev)
 {
@@ -271,7 +334,11 @@ static struct zfcp_erp_action *zfcp_erp_setup_act(enum zfcp_erp_act_type need,
 	memset(&erp_action->timer, 0, sizeof(erp_action->timer));
 	erp_action->step = ZFCP_ERP_STEP_UNINITIALIZED;
 	erp_action->fsf_req_id = 0;
+<<<<<<< HEAD
 	erp_action->type = need;
+=======
+	erp_action->action = need;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	erp_action->status = act_status;
 
 	return erp_action;
@@ -294,6 +361,10 @@ static void zfcp_erp_action_enqueue(enum zfcp_erp_act_type want,
 
 	if (!adapter->erp_thread) {
 		need = ZFCP_ERP_ACTION_NONE; /* marker for trace */
+<<<<<<< HEAD
+=======
+		retval = -EIO;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 
@@ -314,8 +385,12 @@ static void zfcp_erp_action_enqueue(enum zfcp_erp_act_type want,
 	zfcp_dbf_rec_trig(dbftag, adapter, port, sdev, want, need);
 }
 
+<<<<<<< HEAD
 void zfcp_erp_port_forced_no_port_dbf(char *dbftag,
 				      struct zfcp_adapter *adapter,
+=======
+void zfcp_erp_port_forced_no_port_dbf(char *id, struct zfcp_adapter *adapter,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				      u64 port_name, u32 port_id)
 {
 	unsigned long flags;
@@ -329,20 +404,34 @@ void zfcp_erp_port_forced_no_port_dbf(char *dbftag,
 	atomic_set(&tmpport.status, -1); /* unknown */
 	tmpport.wwpn = port_name;
 	tmpport.d_id = port_id;
+<<<<<<< HEAD
 	zfcp_dbf_rec_trig(dbftag, adapter, &tmpport, NULL,
+=======
+	zfcp_dbf_rec_trig(id, adapter, &tmpport, NULL,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			  ZFCP_ERP_ACTION_REOPEN_PORT_FORCED,
 			  ZFCP_ERP_ACTION_NONE);
 	write_unlock_irqrestore(&adapter->erp_lock, flags);
 }
 
+<<<<<<< HEAD
 static void _zfcp_erp_adapter_reopen(struct zfcp_adapter *adapter,
 				    int clear_mask, char *dbftag)
+=======
+static int _zfcp_erp_adapter_reopen(struct zfcp_adapter *adapter,
+				    int clear_mask, char *id)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	zfcp_erp_adapter_block(adapter, clear_mask);
 	zfcp_scsi_schedule_rports_block(adapter);
 
+<<<<<<< HEAD
 	zfcp_erp_action_enqueue(ZFCP_ERP_ACTION_REOPEN_ADAPTER,
 				adapter, NULL, NULL, dbftag, 0);
+=======
+	return zfcp_erp_action_enqueue(ZFCP_ERP_ACTION_REOPEN_ADAPTER,
+				       adapter, NULL, NULL, id, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -361,7 +450,11 @@ void zfcp_erp_adapter_reopen(struct zfcp_adapter *adapter, int clear,
 
 	write_lock_irqsave(&adapter->erp_lock, flags);
 	zfcp_erp_action_enqueue(ZFCP_ERP_ACTION_REOPEN_ADAPTER, adapter,
+<<<<<<< HEAD
 				NULL, NULL, dbftag, 0);
+=======
+				NULL, NULL, id, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	write_unlock_irqrestore(&adapter->erp_lock, flags);
 }
 
@@ -429,8 +522,13 @@ static void _zfcp_erp_port_reopen(struct zfcp_port *port, int clear,
 	zfcp_erp_port_block(port, clear);
 	zfcp_scsi_schedule_rport_block(port);
 
+<<<<<<< HEAD
 	zfcp_erp_action_enqueue(ZFCP_ERP_ACTION_REOPEN_PORT,
 				port->adapter, port, NULL, dbftag, 0);
+=======
+	return zfcp_erp_action_enqueue(ZFCP_ERP_ACTION_REOPEN_PORT,
+				       port->adapter, port, NULL, id, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1371,9 +1469,12 @@ static void zfcp_erp_try_rport_unblock(struct zfcp_port *port)
 		struct zfcp_scsi_dev *zsdev = sdev_to_zfcp(sdev);
 		int lun_status;
 
+<<<<<<< HEAD
 		if (sdev->sdev_state == SDEV_DEL ||
 		    sdev->sdev_state == SDEV_CANCEL)
 			continue;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (zsdev->port != port)
 			continue;
 		/* LUN under port of interest */
@@ -1401,8 +1502,12 @@ static void zfcp_erp_try_rport_unblock(struct zfcp_port *port)
 	write_unlock_irqrestore(&adapter->erp_lock, flags);
 }
 
+<<<<<<< HEAD
 static void zfcp_erp_action_cleanup(struct zfcp_erp_action *act,
 				    enum zfcp_erp_act_result result)
+=======
+static void zfcp_erp_action_cleanup(struct zfcp_erp_action *act, int result)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct zfcp_adapter *adapter = act->adapter;
 	struct zfcp_port *port = act->port;

@@ -728,7 +728,10 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
 
 	if (!err) {
 		ops->cur_blink_jiffies = HZ / 5;
+<<<<<<< HEAD:drivers/video/fbdev/core/fbcon.c
 		ops->info = info;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/video/console/fbcon.c
 		info->fbcon_par = ops;
 
 		if (vc)
@@ -979,7 +982,10 @@ static const char *fbcon_startup(void)
 	ops->graphics = 1;
 	ops->cur_rotate = -1;
 	ops->cur_blink_jiffies = HZ / 5;
+<<<<<<< HEAD:drivers/video/fbdev/core/fbcon.c
 	ops->info = info;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/video/console/fbcon.c
 	info->fbcon_par = ops;
 
 	p->con_rotate = initial_rotation;
@@ -1216,7 +1222,11 @@ finished:
 	if (free_font)
 		vc->vc_font.data = NULL;
 
+<<<<<<< HEAD:drivers/video/fbdev/core/fbcon.c
 	if (vc->vc_hi_font_mask && vc->vc_screenbuf)
+=======
+	if (vc->vc_hi_font_mask)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/video/console/fbcon.c
 		set_vc_hi_font(vc, false);
 
 	if (!con_is_bound(&fb_con))
@@ -2410,11 +2420,21 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
 {
 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
 	struct fbcon_ops *ops = info->fbcon_par;
+<<<<<<< HEAD:drivers/video/fbdev/core/fbcon.c
 	struct fbcon_display *p = &fb_display[vc->vc_num];
+=======
+	struct display *p = &fb_display[vc->vc_num];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/video/console/fbcon.c
 	int resize;
 	int cnt;
 	char *old_data = NULL;
 
+<<<<<<< HEAD:drivers/video/fbdev/core/fbcon.c
+=======
+	if (CON_IS_VISIBLE(vc) && softback_lines)
+		fbcon_set_origin(vc);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/video/console/fbcon.c
 	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
 	if (p->userfont)
 		old_data = vc->vc_font.data;

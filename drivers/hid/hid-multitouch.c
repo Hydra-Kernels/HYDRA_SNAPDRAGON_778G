@@ -49,6 +49,7 @@ MODULE_LICENSE("GPL");
 #include "hid-ids.h"
 
 /* quirks to control the device */
+<<<<<<< HEAD
 #define MT_QUIRK_NOT_SEEN_MEANS_UP	BIT(0)
 #define MT_QUIRK_SLOT_IS_CONTACTID	BIT(1)
 #define MT_QUIRK_CYPRESS		BIT(2)
@@ -70,12 +71,29 @@ MODULE_LICENSE("GPL");
 #define MT_QUIRK_WIN8_PTP_BUTTONS	BIT(18)
 #define MT_QUIRK_SEPARATE_APP_REPORT	BIT(19)
 #define MT_QUIRK_FORCE_MULTI_INPUT	BIT(20)
+=======
+#define MT_QUIRK_NOT_SEEN_MEANS_UP	(1 << 0)
+#define MT_QUIRK_SLOT_IS_CONTACTID	(1 << 1)
+#define MT_QUIRK_CYPRESS		(1 << 2)
+#define MT_QUIRK_SLOT_IS_CONTACTNUMBER	(1 << 3)
+#define MT_QUIRK_ALWAYS_VALID		(1 << 4)
+#define MT_QUIRK_VALID_IS_INRANGE	(1 << 5)
+#define MT_QUIRK_VALID_IS_CONFIDENCE	(1 << 6)
+#define MT_QUIRK_CONFIDENCE		(1 << 7)
+#define MT_QUIRK_SLOT_IS_CONTACTID_MINUS_ONE	(1 << 8)
+#define MT_QUIRK_NO_AREA		(1 << 9)
+#define MT_QUIRK_IGNORE_DUPLICATES	(1 << 10)
+#define MT_QUIRK_HOVERING		(1 << 11)
+#define MT_QUIRK_CONTACT_CNT_ACCURATE	(1 << 12)
+#define MT_QUIRK_FORCE_GET_FEATURE	(1 << 13)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define MT_INPUTMODE_TOUCHSCREEN	0x02
 #define MT_INPUTMODE_TOUCHPAD		0x03
 
 #define MT_BUTTONTYPE_CLICKPAD		0
 
+<<<<<<< HEAD
 enum latency_mode {
 	HID_LATENCY_NORMAL = 0,
 	HID_LATENCY_HIGH = 1,
@@ -134,6 +152,14 @@ struct mt_application {
 	int prev_scantime;		/* scantime reported previously */
 
 	bool have_contact_count;
+=======
+struct mt_slot {
+	__s32 x, y, cx, cy, p, w, h;
+	__s32 contactid;	/* the device ContactID assigned to this slot */
+	bool touch_state;	/* is the touch valid? */
+	bool inrange_state;	/* is the finger in proximity of the sensor? */
+	bool confidence_state;  /* is the touch made by a finger? */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct mt_class {
@@ -424,6 +450,10 @@ static const struct attribute_group mt_attribute_group = {
 
 static void mt_get_feature(struct hid_device *hdev, struct hid_report *report)
 {
+<<<<<<< HEAD
+=======
+	struct mt_device *td = hid_get_drvdata(hdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret;
 	u32 size = hid_report_len(report);
 	u8 *buf;
@@ -460,6 +490,31 @@ static void mt_feature_mapping(struct hid_device *hdev,
 	struct mt_device *td = hid_get_drvdata(hdev);
 
 	switch (usage->hid) {
+<<<<<<< HEAD
+=======
+	case HID_DG_INPUTMODE:
+		/* Ignore if value index is out of bounds. */
+		if (usage->usage_index >= field->report_count) {
+			dev_err(&hdev->dev, "HID_DG_INPUTMODE out of range\n");
+			break;
+		}
+
+		if (td->inputmode < 0) {
+			td->inputmode = field->report->id;
+			td->inputmode_index = usage->usage_index;
+		} else {
+			/*
+			 * Some elan panels wrongly declare 2 input mode
+			 * features, and silently ignore when we set the
+			 * value in the second field. Skip the second feature
+			 * and hope for the best.
+			 */
+			dev_info(&hdev->dev,
+				 "Ignoring the extra HID_DG_INPUTMODE\n");
+		}
+
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case HID_DG_CONTACTMAX:
 		mt_get_feature(hdev, field->report);
 
@@ -769,6 +824,7 @@ static int mt_touch_input_mapping(struct hid_device *hdev, struct hid_input *hi,
 			MT_STORE_FIELD(inrange_state);
 			return 1;
 		case HID_DG_CONFIDENCE:
+<<<<<<< HEAD
 			if ((cls->name == MT_CLS_WIN_8 ||
 				cls->name == MT_CLS_WIN_8_DUAL) &&
 				(field->application == HID_DG_TOUCHPAD ||
@@ -782,6 +838,12 @@ static int mt_touch_input_mapping(struct hid_device *hdev, struct hid_input *hi,
 						     MT_TOOL_PALM, 0, 0);
 
 			MT_STORE_FIELD(confidence_state);
+=======
+			if (cls->name == MT_CLS_WIN_8 &&
+				field->application == HID_DG_TOUCHPAD)
+				cls->quirks |= MT_QUIRK_CONFIDENCE;
+			mt_store_field(usage, td, hi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return 1;
 		case HID_DG_TIPSWITCH:
 			if (field->application != HID_GD_SYSTEM_MULTIAXIS)
@@ -909,11 +971,44 @@ static void mt_release_pending_palms(struct mt_device *td,
 	int slotnum;
 	bool need_sync = false;
 
+<<<<<<< HEAD
 	for_each_set_bit(slotnum, app->pending_palm_slots, td->maxcontacts) {
 		clear_bit(slotnum, app->pending_palm_slots);
+=======
+	if (td->curvalid || (td->mtclass.quirks & MT_QUIRK_ALWAYS_VALID)) {
+		int active;
+		int slotnum = mt_compute_slot(td, input);
+		struct mt_slot *s = &td->curdata;
+		struct input_mt *mt = input->mt;
+
+		if (slotnum < 0 || slotnum >= td->maxcontacts)
+			return;
+
+		if ((td->mtclass.quirks & MT_QUIRK_IGNORE_DUPLICATES) && mt) {
+			struct input_mt_slot *slot = &mt->slots[slotnum];
+			if (input_mt_is_active(slot) &&
+			    input_mt_is_used(mt, slot))
+				return;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+		if (!(td->mtclass.quirks & MT_QUIRK_CONFIDENCE))
+			s->confidence_state = 1;
+		active = (s->touch_state || s->inrange_state) &&
+							s->confidence_state;
 
 		input_mt_slot(input, slotnum);
+<<<<<<< HEAD
 		input_mt_report_slot_state(input, MT_TOOL_PALM, false);
+=======
+		input_mt_report_slot_state(input, MT_TOOL_FINGER, active);
+		if (active) {
+			/* this finger is in proximity of the sensor */
+			int wide = (s->w > s->h);
+			/* divided by two to match visual scale of touch */
+			int major = max(s->w, s->h) >> 1;
+			int minor = min(s->w, s->h) >> 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		need_sync = true;
 	}
@@ -993,8 +1088,59 @@ static int mt_process_slot(struct mt_device *td, struct input_dev *input,
 	int slotnum;
 	int tool = MT_TOOL_FINGER;
 
+<<<<<<< HEAD
 	if (!slot)
 		return -EINVAL;
+=======
+	if (hid->claimed & HID_CLAIMED_INPUT) {
+		switch (usage->hid) {
+		case HID_DG_INRANGE:
+			if (quirks & MT_QUIRK_VALID_IS_INRANGE)
+				td->curvalid = value;
+			if (quirks & MT_QUIRK_HOVERING)
+				td->curdata.inrange_state = value;
+			break;
+		case HID_DG_TIPSWITCH:
+			if (quirks & MT_QUIRK_NOT_SEEN_MEANS_UP)
+				td->curvalid = value;
+			td->curdata.touch_state = value;
+			break;
+		case HID_DG_CONFIDENCE:
+			if (quirks & MT_QUIRK_CONFIDENCE)
+				td->curdata.confidence_state = value;
+			if (quirks & MT_QUIRK_VALID_IS_CONFIDENCE)
+				td->curvalid = value;
+			break;
+		case HID_DG_CONTACTID:
+			td->curdata.contactid = value;
+			break;
+		case HID_DG_TIPPRESSURE:
+			td->curdata.p = value;
+			break;
+		case HID_GD_X:
+			if (usage->code == ABS_MT_TOOL_X)
+				td->curdata.cx = value;
+			else
+				td->curdata.x = value;
+			break;
+		case HID_GD_Y:
+			if (usage->code == ABS_MT_TOOL_Y)
+				td->curdata.cy = value;
+			else
+				td->curdata.y = value;
+			break;
+		case HID_DG_WIDTH:
+			td->curdata.w = value;
+			break;
+		case HID_DG_HEIGHT:
+			td->curdata.h = value;
+			break;
+		case HID_DG_CONTACTCOUNT:
+			break;
+		case HID_DG_TOUCH:
+			/* do nothing */
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if ((quirks & MT_QUIRK_CONTACT_CNT_ACCURATE) &&
 	    app->num_received >= app->num_expected)
@@ -1427,7 +1573,10 @@ static bool mt_need_to_apply_feature(struct hid_device *hdev,
 	unsigned int index = usage->usage_index;
 	char *buf;
 	u32 report_len;
+<<<<<<< HEAD
 	int max;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	switch (usage->hid) {
 	case HID_DG_INPUTMODE:

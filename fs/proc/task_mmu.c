@@ -317,7 +317,12 @@ static int do_maps_open(struct inode *inode, struct file *file,
  * Indicate if the VMA is a stack for the given task; for
  * /proc/PID/maps that is the stack of the main task.
  */
+<<<<<<< HEAD
 static int is_stack(struct vm_area_struct *vma)
+=======
+static int is_stack(struct proc_maps_private *priv,
+		    struct vm_area_struct *vma)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * We make no effort to guess what a given thread considers to be
@@ -326,6 +331,7 @@ static int is_stack(struct vm_area_struct *vma)
 	 */
 	return vma->vm_start <= vma->vm_mm->start_stack &&
 		vma->vm_end >= vma->vm_mm->start_stack;
+<<<<<<< HEAD
 }
 
 static void show_vma_header_prefix(struct seq_file *m,
@@ -346,6 +352,8 @@ static void show_vma_header_prefix(struct seq_file *m,
 	seq_put_hex_ll(m, ":", MINOR(dev), 2);
 	seq_put_decimal_ull(m, " ", ino);
 	seq_putc(m, ' ');
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void
@@ -369,7 +377,21 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 
 	start = vma->vm_start;
 	end = vma->vm_end;
+<<<<<<< HEAD
 	show_vma_header_prefix(m, start, end, flags, pgoff, dev, ino);
+=======
+
+	seq_setwidth(m, 25 + sizeof(void *) * 6 - 1);
+	seq_printf(m, "%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu ",
+			start,
+			end,
+			flags & VM_READ ? 'r' : '-',
+			flags & VM_WRITE ? 'w' : '-',
+			flags & VM_EXEC ? 'x' : '-',
+			flags & VM_MAYSHARE ? 's' : 'p',
+			pgoff,
+			MAJOR(dev), MINOR(dev), ino);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Print the dentry name for named mappings, and a
@@ -400,6 +422,7 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 			goto done;
 		}
 
+<<<<<<< HEAD
 		if (is_stack(vma)) {
 			name = "[stack]";
 			goto done;
@@ -409,6 +432,10 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 			seq_pad(m, ' ');
 			seq_print_vma_name(m, vma);
 		}
+=======
+		if (is_stack(priv, vma))
+			name = "[stack]";
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 done:
@@ -1083,7 +1110,18 @@ static inline void clear_soft_dirty(struct vm_area_struct *vma,
 static inline void clear_soft_dirty_pmd(struct vm_area_struct *vma,
 		unsigned long addr, pmd_t *pmdp)
 {
+<<<<<<< HEAD
 	pmd_t old, pmd = *pmdp;
+=======
+	pmd_t pmd = *pmdp;
+
+	/* See comment in change_huge_pmd() */
+	pmdp_invalidate(vma, addr, pmdp);
+	if (pmd_dirty(*pmdp))
+		pmd = pmd_mkdirty(pmd);
+	if (pmd_young(*pmdp))
+		pmd = pmd_mkyoung(pmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (pmd_present(pmd)) {
 		/* See comment in change_huge_pmd() */
@@ -2005,8 +2043,12 @@ static int gather_pte_stats(pmd_t *pmd, unsigned long addr,
 	pte_t *pte;
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+<<<<<<< HEAD
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+=======
+	if (pmd_trans_huge_lock(pmd, vma, &ptl) == 1) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct page *page;
 
 		page = can_gather_numa_stats_pmd(*pmd, vma, addr);
@@ -2101,7 +2143,11 @@ static int show_numa_map(struct seq_file *m, void *v)
 		seq_file_path(m, file, "\n\t= ");
 	} else if (vma->vm_start <= mm->brk && vma->vm_end >= mm->start_brk) {
 		seq_puts(m, " heap");
+<<<<<<< HEAD
 	} else if (is_stack(vma)) {
+=======
+	} else if (is_stack(proc_priv, vma)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		seq_puts(m, " stack");
 	}
 

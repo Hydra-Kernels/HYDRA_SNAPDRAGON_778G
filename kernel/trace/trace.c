@@ -1582,11 +1582,17 @@ update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu,
 	else
 		ring_buffer_record_off(tr->max_buffer.buffer);
 
+<<<<<<< HEAD
 #ifdef CONFIG_TRACER_SNAPSHOT
 	if (tr->cond_snapshot && !tr->cond_snapshot->update(tr, cond_data))
 		goto out_unlock;
 #endif
 	swap(tr->trace_buffer.buffer, tr->max_buffer.buffer);
+=======
+	buf = tr->trace_buffer.buffer;
+	tr->trace_buffer.buffer = tr->max_buffer.buffer;
+	tr->max_buffer.buffer = buf;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	__update_max_tr(tr, tsk, cpu);
 
@@ -2644,6 +2650,7 @@ void trace_buffer_unlock_commit_regs(struct trace_array *tr,
 {
 	__buffer_unlock_commit(buffer, event);
 
+<<<<<<< HEAD
 	/*
 	 * If regs is not set, then skip the necessary functions.
 	 * Note, we can still get here via blktrace, wakeup tracer
@@ -2652,6 +2659,10 @@ void trace_buffer_unlock_commit_regs(struct trace_array *tr,
 	 */
 	ftrace_trace_stack(tr, buffer, flags, regs ? 0 : STACK_SKIP, pc, regs);
 	ftrace_trace_userstack(tr, buffer, flags, pc);
+=======
+	ftrace_trace_stack(tr, buffer, flags, 0, pc, regs);
+	ftrace_trace_userstack(buffer, flags, pc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -4311,7 +4322,11 @@ static int tracing_open(struct inode *inode, struct file *file)
 		if (cpu == RING_BUFFER_ALL_CPUS)
 			tracing_reset_online_cpus(trace_buf);
 		else
+<<<<<<< HEAD
 			tracing_reset_cpu(trace_buf, cpu);
+=======
+			tracing_reset(trace_buf, cpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (file->f_mode & FMODE_READ) {
@@ -7782,12 +7797,21 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
 		return ret;
 
  out_reg:
+<<<<<<< HEAD
 	ret = tracing_alloc_snapshot_instance(tr);
 	if (ret < 0)
 		goto out;
 
 	ret = register_ftrace_function_probe(glob, tr, ops, count);
 
+=======
+	ret = alloc_snapshot(&global_trace);
+	if (ret < 0)
+		goto out;
+
+	ret = register_ftrace_function_probe(glob, ops, count);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  out:
 	return ret < 0 ? ret : 0;
 }

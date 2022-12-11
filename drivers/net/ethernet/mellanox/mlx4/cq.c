@@ -451,7 +451,11 @@ void mlx4_cq_free(struct mlx4_dev *dev, struct mlx4_cq *cq)
 	    priv->eq_table.eq[MLX4_EQ_ASYNC].irq)
 		synchronize_irq(priv->eq_table.eq[MLX4_EQ_ASYNC].irq);
 
+<<<<<<< HEAD
 	if (refcount_dec_and_test(&cq->refcount))
+=======
+	if (atomic_dec_and_test(&cq->refcount))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		complete(&cq->free);
 	wait_for_completion(&cq->free);
 

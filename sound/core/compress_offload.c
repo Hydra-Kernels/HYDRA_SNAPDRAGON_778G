@@ -1026,7 +1026,10 @@ static long snd_compr_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 		retval = snd_compr_get_codec_caps(stream, arg);
 		break;
 #endif
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case _IOC_NR(SNDRV_COMPRESS_SET_PARAMS):
 		retval = snd_compr_set_params(stream, arg);
 		break;

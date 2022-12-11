@@ -581,8 +581,12 @@ struct dst_entry *inet_csk_route_req(const struct sock *sk,
 	struct ip_options_rcu *opt;
 	struct rtable *rt;
 
+<<<<<<< HEAD
 	rcu_read_lock();
 	opt = rcu_dereference(ireq->ireq_opt);
+=======
+	opt = ireq_opt_deref(ireq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	flowi4_init_output(fl4, ireq->ir_iif, ireq->ir_mark,
 			   RT_CONN_FLAGS(sk), RT_SCOPE_UNIVERSE,
@@ -639,7 +643,11 @@ struct dst_entry *inet_csk_route_child_sock(const struct sock *sk,
 route_err:
 	ip_rt_put(rt);
 no_route:
+<<<<<<< HEAD
 	__IP_INC_STATS(net, IPSTATS_MIB_OUTNOROUTES);
+=======
+	IP_INC_STATS_BH(net, IPSTATS_MIB_OUTNOROUTES);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(inet_csk_route_child_sock);
@@ -833,6 +841,8 @@ struct sock *inet_csk_clone_lock(const struct sock *sk,
 
 		/* listeners have SOCK_RCU_FREE, not the children */
 		sock_reset_flag(newsk, SOCK_RCU_FREE);
+
+		inet_sk(newsk)->mc_list = NULL;
 
 		inet_sk(newsk)->mc_list = NULL;
 

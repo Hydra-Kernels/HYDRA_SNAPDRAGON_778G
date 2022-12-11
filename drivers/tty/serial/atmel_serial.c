@@ -281,6 +281,16 @@ static bool atmel_use_dma_rx(struct uart_port *port)
 }
 
 static bool atmel_use_fifo(struct uart_port *port)
+<<<<<<< HEAD
+=======
+{
+	struct atmel_uart_port *atmel_port = to_atmel_uart_port(port);
+
+	return atmel_port->fifo_size;
+}
+
+static unsigned int atmel_get_lines_status(struct uart_port *port)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct atmel_uart_port *atmel_port = to_atmel_uart_port(port);
 
@@ -568,7 +578,10 @@ static void atmel_stop_tx(struct uart_port *port)
 	 * is fully transmitted.
 	 */
 	atmel_uart_writel(port, ATMEL_US_CR, ATMEL_US_TXDIS);
+<<<<<<< HEAD
 	atmel_port->tx_stopped = true;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Disable interrupts */
 	atmel_uart_writel(port, ATMEL_US_IDR, atmel_port->tx_done_mask);
@@ -593,7 +606,12 @@ static void atmel_start_tx(struct uart_port *port)
 		return;
 
 	if (atmel_use_pdc_tx(port) || atmel_use_dma_tx(port))
+<<<<<<< HEAD
 		if (atmel_uart_is_half_duplex(port))
+=======
+		if ((port->rs485.flags & SER_RS485_ENABLED) &&
+		    !(port->rs485.flags & SER_RS485_RX_DURING_TX))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			atmel_stop_rx(port);
 
 	if (atmel_use_pdc_tx(port))
@@ -605,7 +623,10 @@ static void atmel_start_tx(struct uart_port *port)
 
 	/* re-enable the transmitter */
 	atmel_uart_writel(port, ATMEL_US_CR, ATMEL_US_TXEN);
+<<<<<<< HEAD
 	atmel_port->tx_stopped = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -890,6 +911,7 @@ static void atmel_complete_tx_dma(void *arg)
 	 * remaining data from the beginning of xmit->buf to xmit->head.
 	 */
 	if (!uart_circ_empty(xmit))
+<<<<<<< HEAD
 		atmel_tasklet_schedule(atmel_port, &atmel_port->tasklet_tx);
 	else if (atmel_uart_is_half_duplex(port)) {
 		/*
@@ -899,6 +921,13 @@ static void atmel_complete_tx_dma(void *arg)
 		atmel_port->hd_start_rx = true;
 		atmel_uart_writel(port, ATMEL_US_IER,
 				  atmel_port->tx_done_mask);
+=======
+		tasklet_schedule(&atmel_port->tasklet);
+	else if ((port->rs485.flags & SER_RS485_ENABLED) &&
+		 !(port->rs485.flags & SER_RS485_RX_DURING_TX)) {
+		/* DMA done, stop TX, start RX for RS485 */
+		atmel_start_rx(port);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	spin_unlock_irqrestore(&port->lock, flags);
@@ -2571,7 +2600,10 @@ static void atmel_console_write(struct console *co, const char *s, u_int count)
 
 	/* Make sure that tx path is actually able to send characters */
 	atmel_uart_writel(port, ATMEL_US_CR, ATMEL_US_TXEN);
+<<<<<<< HEAD
 	atmel_port->tx_stopped = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	uart_console_write(port, s, count, atmel_console_putchar);
 

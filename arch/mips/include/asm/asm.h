@@ -46,7 +46,10 @@
 		.type	symbol, @function;		\
 		.ent	symbol, 0;			\
 symbol:		.frame	sp, 0, ra;			\
+<<<<<<< HEAD
 		.cfi_startproc;				\
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.insn
 
 /*
@@ -59,7 +62,10 @@ symbol:		.frame	sp, 0, ra;			\
 		.type	symbol, @function;		\
 		.ent	symbol, 0;			\
 symbol:		.frame	sp, framesize, rpc;		\
+<<<<<<< HEAD
 		.cfi_startproc;				\
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.insn
 
 /*

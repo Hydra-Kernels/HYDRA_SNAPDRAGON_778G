@@ -227,7 +227,11 @@ static struct usb_gadget_strings *midi_strings[] = {
 static inline struct usb_request *midi_alloc_ep_req(struct usb_ep *ep,
 						    unsigned length)
 {
+<<<<<<< HEAD
 	return alloc_ep_req(ep, length);
+=======
+	return alloc_ep_req(ep, length, length);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const uint8_t f_midi_cin_length[] = {
@@ -395,8 +399,14 @@ static int f_midi_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	/* allocate a bunch of read buffers and queue them all at once. */
 	for (i = 0; i < midi->qlen && err == 0; i++) {
 		struct usb_request *req =
+<<<<<<< HEAD
 			midi_alloc_ep_req(midi->out_ep, midi->buflen);
 
+=======
+			midi_alloc_ep_req(midi->out_ep,
+				max_t(unsigned, midi->buflen,
+					bulk_out_desc.wMaxPacketSize));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (req == NULL)
 			return -ENOMEM;
 

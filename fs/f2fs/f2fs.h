@@ -3261,7 +3261,12 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi);
 /*
  * hash.c
  */
+<<<<<<< HEAD
 void f2fs_hash_filename(const struct inode *dir, struct f2fs_filename *fname);
+=======
+f2fs_hash_t f2fs_dentry_hash(const struct qstr *name_info,
+				struct f2fs_filename *fname);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * node.c
@@ -4151,4 +4156,71 @@ static inline bool is_journalled_quota(struct f2fs_sb_info *sbi)
 #define EFSBADCRC	EBADMSG		/* Bad CRC detected */
 #define EFSCORRUPTED	EUCLEAN		/* Filesystem is corrupted */
 
+<<<<<<< HEAD
 #endif /* _LINUX_F2FS_H */
+=======
+/* crypt.c */
+extern struct kmem_cache *f2fs_crypt_info_cachep;
+bool f2fs_valid_contents_enc_mode(uint32_t);
+uint32_t f2fs_validate_encryption_key_size(uint32_t, uint32_t);
+struct f2fs_crypto_ctx *f2fs_get_crypto_ctx(struct inode *);
+void f2fs_release_crypto_ctx(struct f2fs_crypto_ctx *);
+struct page *f2fs_encrypt(struct inode *, struct page *);
+int f2fs_decrypt(struct f2fs_crypto_ctx *, struct page *);
+int f2fs_decrypt_one(struct inode *, struct page *);
+void f2fs_end_io_crypto_work(struct f2fs_crypto_ctx *, struct bio *);
+
+/* crypto_key.c */
+void f2fs_free_encryption_info(struct inode *, struct f2fs_crypt_info *);
+
+/* crypto_fname.c */
+bool f2fs_valid_filenames_enc_mode(uint32_t);
+u32 f2fs_fname_crypto_round_up(u32, u32);
+int f2fs_fname_crypto_alloc_buffer(struct inode *, u32, struct f2fs_str *);
+int f2fs_fname_disk_to_usr(struct inode *, f2fs_hash_t *,
+			const struct f2fs_str *, struct f2fs_str *);
+int f2fs_fname_usr_to_disk(struct inode *, const struct qstr *,
+			struct f2fs_str *);
+
+#ifdef CONFIG_F2FS_FS_ENCRYPTION
+void f2fs_restore_and_release_control_page(struct page **);
+void f2fs_restore_control_page(struct page *);
+
+int __init f2fs_init_crypto(void);
+int f2fs_crypto_initialize(void);
+void f2fs_exit_crypto(void);
+
+int f2fs_has_encryption_key(struct inode *);
+
+int f2fs_get_encryption_info(struct inode *inode);
+
+void f2fs_fname_crypto_free_buffer(struct f2fs_str *);
+int f2fs_fname_setup_filename(struct inode *, const struct qstr *,
+				int lookup, struct f2fs_filename *);
+void f2fs_fname_free_filename(struct f2fs_filename *);
+#else
+static inline void f2fs_restore_and_release_control_page(struct page **p) { }
+static inline void f2fs_restore_control_page(struct page *p) { }
+
+static inline int __init f2fs_init_crypto(void) { return 0; }
+static inline void f2fs_exit_crypto(void) { }
+
+static inline int f2fs_has_encryption_key(struct inode *i) { return 0; }
+static inline int f2fs_get_encryption_info(struct inode *i) { return 0; }
+static inline void f2fs_fname_crypto_free_buffer(struct f2fs_str *p) { }
+
+static inline int f2fs_fname_setup_filename(struct inode *dir,
+					const struct qstr *iname,
+					int lookup, struct f2fs_filename *fname)
+{
+	memset(fname, 0, sizeof(struct f2fs_filename));
+	fname->usr_fname = iname;
+	fname->disk_name.name = (unsigned char *)iname->name;
+	fname->disk_name.len = iname->len;
+	return 0;
+}
+
+static inline void f2fs_fname_free_filename(struct f2fs_filename *fname) { }
+#endif
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

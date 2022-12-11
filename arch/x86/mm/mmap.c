@@ -106,7 +106,18 @@ static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 static unsigned long mmap_legacy_base(unsigned long rnd,
 				      unsigned long task_size)
 {
+<<<<<<< HEAD
 	return __TASK_UNMAPPED_BASE(task_size) + rnd;
+=======
+	unsigned long gap = rlimit(RLIMIT_STACK);
+
+	if (gap < MIN_GAP)
+		gap = MIN_GAP;
+	else if (gap > MAX_GAP)
+		gap = MAX_GAP;
+
+	return PAGE_ALIGN(TASK_SIZE - gap - rnd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -124,9 +135,19 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 		*base = mmap_base(random_factor, task_size, rlim_stack);
 }
 
+<<<<<<< HEAD
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
 	if (mmap_is_legacy())
+=======
+	if (current->flags & PF_RANDOMIZE)
+		random_factor = arch_mmap_rnd();
+
+	mm->mmap_legacy_base = TASK_UNMAPPED_BASE + random_factor;
+
+	if (mmap_is_legacy()) {
+		mm->mmap_base = mm->mmap_legacy_base;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		mm->get_unmapped_area = arch_get_unmapped_area;
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
@@ -168,6 +189,7 @@ const char *arch_vma_name(struct vm_area_struct *vma)
 	return NULL;
 }
 
+<<<<<<< HEAD
 /**
  * mmap_address_hint_valid - Validate the address hint of mmap
  * @addr:	Address hint
@@ -228,6 +250,8 @@ int valid_mmap_phys_addr_range(unsigned long pfn, size_t count)
 	return phys_addr_valid(addr + count - 1);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * Only allow root to set high MMIO mappings to PROT_NONE.
  * This prevents an unpriv. user to set them to PROT_NONE and invert
@@ -244,7 +268,11 @@ bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 	/* If it's real memory always allow */
 	if (pfn_valid(pfn))
 		return true;
+<<<<<<< HEAD
 	if (pfn >= l1tf_pfn_limit() && !capable(CAP_SYS_ADMIN))
+=======
+	if (pfn > l1tf_pfn_limit() && !capable(CAP_SYS_ADMIN))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return false;
 	return true;
 }

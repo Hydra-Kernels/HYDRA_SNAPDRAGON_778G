@@ -407,6 +407,7 @@ void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
 	if (regs->msr & MSR_PR)
 		return;
 
+<<<<<<< HEAD
 	/*
 	 * Now test if the interrupt has hit a range that may be using
 	 * HSPRG1 without having RI=0 (i.e., an HSRR interrupt). The
@@ -432,6 +433,22 @@ void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
 			nip < (unsigned long)(end_virt_trampolines - kbase))
 		goto nonrecoverable;
 	return;
+=======
+	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+		handled = cur_cpu_spec->machine_check_early(regs);
+	return handled;
+}
+
+long hmi_exception_realmode(struct pt_regs *regs)
+{
+	__this_cpu_inc(irq_stat.hmi_exceptions);
+
+	if (ppc_md.hmi_exception_early)
+		ppc_md.hmi_exception_early(regs);
+
+	return 0;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 nonrecoverable:
 	regs->msr &= ~MSR_RI;

@@ -517,8 +517,16 @@ unsigned int comedi_nsamples_left(struct comedi_subdevice *s,
 	unsigned long long scans_left;
 	unsigned long long samples_left;
 
+<<<<<<< HEAD
 	if (cmd->stop_src != TRIG_COUNT)
 		return nsamples;
+=======
+	if (cmd->stop_src == TRIG_COUNT) {
+		unsigned int scans_left = __comedi_nscans_left(s, cmd->stop_arg);
+		unsigned int scan_pos =
+		    comedi_bytes_to_samples(s, async->scan_progress);
+		unsigned long long samples_left = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	scans_left = __comedi_nscans_left(s, cmd->stop_arg);
 	if (!scans_left)

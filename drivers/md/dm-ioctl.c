@@ -1893,7 +1893,11 @@ static int ctl_ioctl(struct file *file, uint command, struct dm_ioctl __user *us
 		goto out;
 
 	param->data_size = offsetof(struct dm_ioctl, data);
+<<<<<<< HEAD
 	r = fn(file, param, input_param_size);
+=======
+	r = fn(param, input_param_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unlikely(param->flags & DM_BUFFER_FULL_FLAG) &&
 	    unlikely(ioctl_flags & IOCTL_FLAGS_NO_PARAMS))

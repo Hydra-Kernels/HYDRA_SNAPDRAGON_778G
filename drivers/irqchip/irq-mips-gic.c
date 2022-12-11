@@ -787,7 +787,16 @@ static int __init gic_of_init(struct device_node *node,
 		bitmap_set(ipi_resrv, gic_shared_intrs - num_ipis, num_ipis);
 	}
 
+<<<<<<< HEAD
 	bitmap_copy(ipi_available, ipi_resrv, GIC_MAX_INTRS);
+=======
+	if (mips_cm_present()) {
+		write_gcr_gic_base(gic_base | CM_GCR_GIC_BASE_GICEN_MSK);
+		/* Ensure GIC region is enabled before trying to access it */
+		__sync();
+	}
+	gic_present = true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	board_bind_eic_interrupt = &gic_bind_eic_interrupt;
 

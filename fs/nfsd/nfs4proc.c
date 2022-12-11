@@ -2019,10 +2019,17 @@ nfsd4_proc_compound(struct svc_rqst *rqstp)
 			goto out;
 		}
 		if (!op->status) {
+<<<<<<< HEAD
 			if (op->opdesc->op_set_currentstateid)
 				op->opdesc->op_set_currentstateid(cstate, &op->u);
 
 			if (op->opdesc->op_flags & OP_CLEAR_STATEID)
+=======
+			if (opdesc->op_set_currentstateid)
+				opdesc->op_set_currentstateid(cstate, &op->u);
+
+			if (opdesc->op_flags & OP_CLEAR_STATEID)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				clear_current_stateid(cstate);
 
 			if (need_wrongsec_check(rqstp))

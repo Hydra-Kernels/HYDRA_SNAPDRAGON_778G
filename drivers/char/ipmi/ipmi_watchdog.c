@@ -527,12 +527,21 @@ static void panic_halt_ipmi_set_timeout(void)
 	while (atomic_read(&panic_done_count) != 0)
 		ipmi_poll_interface(watchdog_user);
 	atomic_add(1, &panic_done_count);
+<<<<<<< HEAD
 	rv = __ipmi_set_timeout(&panic_halt_smi_msg,
+=======
+	rv = i_ipmi_set_timeout(&panic_halt_smi_msg,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				&panic_halt_recv_msg,
 				&send_heartbeat_now);
 	if (rv) {
 		atomic_sub(1, &panic_done_count);
+<<<<<<< HEAD
 		pr_warn("Unable to extend the watchdog timeout\n");
+=======
+		printk(KERN_WARNING PFX
+		       "Unable to extend the watchdog timeout.");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		if (send_heartbeat_now)
 			panic_halt_ipmi_heartbeat();

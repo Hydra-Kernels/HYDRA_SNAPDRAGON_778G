@@ -112,6 +112,7 @@ static const struct coefficients adm1075_coefficients[] = {
 	[2] = { 404, 20475, -1 },	/* current, irange50 */
 	[3] = { 8549, 0, -1 },		/* power, irange25 */
 	[4] = { 4279, 0, -1 },		/* power, irange50 */
+<<<<<<< HEAD
 };
 
 static const struct coefficients adm1272_coefficients[] = {
@@ -125,6 +126,8 @@ static const struct coefficients adm1272_coefficients[] = {
 	[7] = { 10535, 0, -3 },		/* power, vrange 100V, irange 30mV */
 	[8] = { 42, 31871, -1 },	/* temperature */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static const struct coefficients adm1275_coefficients[] = {

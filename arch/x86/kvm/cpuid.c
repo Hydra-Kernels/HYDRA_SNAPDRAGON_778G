@@ -117,6 +117,13 @@ int kvm_update_cpuid(struct kvm_vcpu *vcpu)
 	if (best && (best->eax & (F(XSAVES) | F(XSAVEC))))
 		best->ebx = xstate_required_size(vcpu->arch.xcr0, true);
 
+<<<<<<< HEAD
+=======
+	vcpu->arch.eager_fpu = use_eager_fpu();
+	if (vcpu->arch.eager_fpu)
+		kvm_x86_ops->fpu_activate(vcpu);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * The existing code assumes virtual address is 48-bit or 57-bit in the
 	 * canonical address checks; exit if it is ever changed.
@@ -443,6 +450,11 @@ static inline int __do_cpuid_func(struct kvm_cpuid_entry2 *entry, u32 function,
 	unsigned f_lm = 0;
 #endif
 	unsigned f_rdtscp = kvm_x86_ops->rdtscp_supported() ? F(RDTSCP) : 0;
+<<<<<<< HEAD
+=======
+	unsigned f_invpcid = kvm_x86_ops->invpcid_supported() ? F(INVPCID) : 0;
+	unsigned f_mpx = kvm_mpx_supported() ? F(MPX) : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned f_xsaves = kvm_x86_ops->xsaves_supported() ? F(XSAVES) : 0;
 	unsigned f_intel_pt = kvm_x86_ops->pt_supported() ? F(INTEL_PT) : 0;
 
@@ -659,8 +671,13 @@ static inline int __do_cpuid_func(struct kvm_cpuid_entry2 *entry, u32 function,
 
 			do_host_cpuid(&entry[i], function, idx);
 			if (idx == 1) {
+<<<<<<< HEAD
 				entry[i].eax &= kvm_cpuid_D_1_eax_x86_features;
 				cpuid_mask(&entry[i].eax, CPUID_D_1_EAX);
+=======
+				entry[i].eax &= kvm_supported_word10_x86_features;
+				cpuid_mask(&entry[i].eax, 10);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				entry[i].ebx = 0;
 				if (entry[i].eax & (F(XSAVES)|F(XSAVEC)))
 					entry[i].ebx =
@@ -1007,6 +1024,7 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 	struct kvm_cpuid_entry2 *max;
 	bool found;
 
+<<<<<<< HEAD
 	entry = kvm_find_cpuid_entry(vcpu, function, index);
 	found = entry;
 	/*
@@ -1029,6 +1047,14 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 		*ecx = entry->ecx;
 		*edx = entry->edx;
 	} else {
+=======
+	if (best) {
+		*eax = best->eax;
+		*ebx = best->ebx;
+		*ecx = best->ecx;
+		*edx = best->edx;
+	} else
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*eax = *ebx = *ecx = *edx = 0;
 		/*
 		 * When leaf 0BH or 1FH is defined, CL is pass-through

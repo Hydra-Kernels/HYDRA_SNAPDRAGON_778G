@@ -379,6 +379,7 @@ static ssize_t valid_zones_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
 	struct memory_block *mem = to_memory_block(dev);
+<<<<<<< HEAD
 	unsigned long start_pfn = section_nr_to_pfn(mem->start_section_nr);
 	unsigned long nr_pages = PAGES_PER_SECTION * sections_per_block;
 	unsigned long valid_start_pfn, valid_end_pfn;
@@ -405,6 +406,35 @@ static ssize_t valid_zones_show(struct device *dev,
 	nid = mem->nid;
 	default_zone = zone_for_pfn_range(MMOP_ONLINE_KEEP, nid, start_pfn, nr_pages);
 	strcat(buf, default_zone->name);
+=======
+	unsigned long start_pfn, end_pfn;
+	unsigned long valid_start, valid_end;
+	unsigned long nr_pages = PAGES_PER_SECTION * sections_per_block;
+	struct zone *zone;
+
+	start_pfn = section_nr_to_pfn(mem->start_section_nr);
+	end_pfn = start_pfn + nr_pages;
+
+	/* The block contains more than one zone can not be offlined. */
+	if (!test_pages_in_a_zone(start_pfn, end_pfn, &valid_start, &valid_end))
+		return sprintf(buf, "none\n");
+
+	zone = page_zone(pfn_to_page(valid_start));
+
+	if (zone_idx(zone) == ZONE_MOVABLE - 1) {
+		/*The mem block is the last memoryblock of this zone.*/
+		if (valid_end == zone_end_pfn(zone))
+			return sprintf(buf, "%s %s\n",
+					zone->name, (zone + 1)->name);
+	}
+
+	if (zone_idx(zone) == ZONE_MOVABLE) {
+		/*The mem block is the first memoryblock of ZONE_MOVABLE.*/
+		if (valid_start == zone->zone_start_pfn)
+			return sprintf(buf, "%s %s\n",
+					zone->name, (zone - 1)->name);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	print_allowed_zone(buf, nid, start_pfn, nr_pages, MMOP_ONLINE_KERNEL,
 			default_zone);

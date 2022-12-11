@@ -1263,6 +1263,10 @@ static void mvneta_port_disable(struct mvneta_port *pp)
 	val &= ~MVNETA_GMAC0_PORT_ENABLE;
 	mvreg_write(pp, MVNETA_GMAC_CTRL_0, val);
 
+	pp->link = 0;
+	pp->duplex = -1;
+	pp->speed = 0;
+
 	udelay(200);
 }
 
@@ -3229,11 +3233,17 @@ static void mvneta_start_dev(struct mvneta_port *pp)
 	/* start the Rx/Tx activity */
 	mvneta_port_enable(pp);
 
+<<<<<<< HEAD
 	if (!pp->neta_armada3700) {
 		/* Enable polling on the port */
 		for_each_online_cpu(cpu) {
 			struct mvneta_pcpu_port *port =
 				per_cpu_ptr(pp->ports, cpu);
+=======
+	/* Enable polling on the port */
+	for_each_online_cpu(cpu) {
+		struct mvneta_pcpu_port *port = per_cpu_ptr(pp->ports, cpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			napi_enable(&port->napi);
 		}
@@ -3258,10 +3268,15 @@ static void mvneta_stop_dev(struct mvneta_port *pp)
 
 	phylink_stop(pp->phylink);
 
+<<<<<<< HEAD
 	if (!pp->neta_armada3700) {
 		for_each_online_cpu(cpu) {
 			struct mvneta_pcpu_port *port =
 				per_cpu_ptr(pp->ports, cpu);
+=======
+	for_each_online_cpu(cpu) {
+		struct mvneta_pcpu_port *port = per_cpu_ptr(pp->ports, cpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			napi_disable(&port->napi);
 		}
@@ -3947,6 +3962,7 @@ static int mvneta_stop(struct net_device *dev)
 {
 	struct mvneta_port *pp = netdev_priv(dev);
 
+<<<<<<< HEAD
 	if (!pp->neta_armada3700) {
 		/* Inform that we are stopping so we don't want to setup the
 		 * driver for new CPUs in the notifiers. The code of the
@@ -3972,6 +3988,13 @@ static int mvneta_stop(struct net_device *dev)
 		free_irq(dev->irq, pp);
 	}
 
+=======
+	mvneta_stop_dev(pp);
+	mvneta_mdio_remove(pp);
+	unregister_cpu_notifier(&pp->cpu_notifier);
+	on_each_cpu(mvneta_percpu_disable, pp, true);
+	free_percpu_irq(dev->irq, pp->ports);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mvneta_cleanup_rxqs(pp);
 	mvneta_cleanup_txqs(pp);
 
@@ -4724,7 +4747,11 @@ static int mvneta_probe(struct platform_device *pdev)
 			NETIF_F_TSO | NETIF_F_RXCSUM;
 	dev->hw_features |= dev->features;
 	dev->vlan_features |= dev->features;
+<<<<<<< HEAD
 	dev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
+=======
+	dev->priv_flags |= IFF_UNICAST_FLT | IFF_LIVE_ADDR_CHANGE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dev->gso_max_segs = MVNETA_MAX_TSO_SEGS;
 
 	/* MTU range: 68 - 9676 */

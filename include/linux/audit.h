@@ -12,6 +12,7 @@
 #include <linux/sched.h>
 #include <linux/ptrace.h>
 #include <uapi/linux/audit.h>
+#include <linux/tty.h>
 
 #define AUDIT_INO_UNSET ((unsigned long)-1)
 #define AUDIT_DEV_UNSET ((dev_t)-1)
@@ -359,6 +360,41 @@ static inline void audit_ptrace(struct task_struct *t)
 }
 
 				/* Private API (for audit.c only) */
+<<<<<<< HEAD
+=======
+extern unsigned int audit_serial(void);
+extern int auditsc_get_stamp(struct audit_context *ctx,
+			      struct timespec *t, unsigned int *serial);
+extern int audit_set_loginuid(kuid_t loginuid);
+
+static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
+{
+	return tsk->loginuid;
+}
+
+static inline unsigned int audit_get_sessionid(struct task_struct *tsk)
+{
+	return tsk->sessionid;
+}
+
+static inline struct tty_struct *audit_get_tty(struct task_struct *tsk)
+{
+	struct tty_struct *tty = NULL;
+	unsigned long flags;
+
+	spin_lock_irqsave(&tsk->sighand->siglock, flags);
+	if (tsk->signal)
+		tty = tty_kref_get(tsk->signal->tty);
+	spin_unlock_irqrestore(&tsk->sighand->siglock, flags);
+	return tty;
+}
+
+static inline void audit_put_tty(struct tty_struct *tty)
+{
+	tty_kref_put(tty);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void __audit_ipc_obj(struct kern_ipc_perm *ipcp);
 extern void __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, umode_t mode);
 extern void __audit_bprm(struct linux_binprm *bprm);
@@ -570,8 +606,29 @@ static inline void audit_core_dumps(long signr)
 { }
 static inline void audit_seccomp(unsigned long syscall, long signr, int code)
 { }
+<<<<<<< HEAD
 static inline void audit_seccomp_actions_logged(const char *names,
 						const char *old_names, int res)
+=======
+static inline int auditsc_get_stamp(struct audit_context *ctx,
+			      struct timespec *t, unsigned int *serial)
+{
+	return 0;
+}
+static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
+{
+	return INVALID_UID;
+}
+static inline unsigned int audit_get_sessionid(struct task_struct *tsk)
+{
+	return -1;
+}
+static inline struct tty_struct *audit_get_tty(struct task_struct *tsk)
+{
+	return NULL;
+}
+static inline void audit_put_tty(struct tty_struct *tty)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 { }
 static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
 { }

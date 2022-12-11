@@ -398,6 +398,252 @@ static void qxl_crtc_destroy(struct drm_crtc *crtc)
 	kfree(qxl_crtc);
 }
 
+<<<<<<< HEAD
+=======
+static int qxl_crtc_page_flip(struct drm_crtc *crtc,
+                              struct drm_framebuffer *fb,
+                              struct drm_pending_vblank_event *event,
+                              uint32_t page_flip_flags)
+{
+	struct drm_device *dev = crtc->dev;
+	struct qxl_device *qdev = dev->dev_private;
+	struct qxl_crtc *qcrtc = to_qxl_crtc(crtc);
+	struct qxl_framebuffer *qfb_src = to_qxl_framebuffer(fb);
+	struct qxl_framebuffer *qfb_old = to_qxl_framebuffer(crtc->primary->fb);
+	struct qxl_bo *bo_old = gem_to_qxl_bo(qfb_old->obj);
+	struct qxl_bo *bo = gem_to_qxl_bo(qfb_src->obj);
+	unsigned long flags;
+	struct drm_clip_rect norect = {
+	    .x1 = 0,
+	    .y1 = 0,
+	    .x2 = fb->width,
+	    .y2 = fb->height
+	};
+	int inc = 1;
+	int one_clip_rect = 1;
+	int ret = 0;
+
+	crtc->primary->fb = fb;
+	bo_old->is_primary = false;
+	bo->is_primary = true;
+
+	ret = qxl_bo_reserve(bo, false);
+	if (ret)
+		return ret;
+	ret = qxl_bo_pin(bo, bo->type, NULL);
+	qxl_bo_unreserve(bo);
+	if (ret)
+		return ret;
+
+	qxl_draw_dirty_fb(qdev, qfb_src, bo, 0, 0,
+			  &norect, one_clip_rect, inc);
+
+	drm_vblank_get(dev, qcrtc->index);
+
+	if (event) {
+		spin_lock_irqsave(&dev->event_lock, flags);
+		drm_send_vblank_event(dev, qcrtc->index, event);
+		spin_unlock_irqrestore(&dev->event_lock, flags);
+	}
+	drm_vblank_put(dev, qcrtc->index);
+
+	ret = qxl_bo_reserve(bo, false);
+	if (!ret) {
+		qxl_bo_unpin(bo);
+		qxl_bo_unreserve(bo);
+	}
+
+	return 0;
+}
+
+static int
+qxl_hide_cursor(struct qxl_device *qdev)
+{
+	struct qxl_release *release;
+	struct qxl_cursor_cmd *cmd;
+	int ret;
+
+	ret = qxl_alloc_release_reserved(qdev, sizeof(*cmd), QXL_RELEASE_CURSOR_CMD,
+					 &release, NULL);
+	if (ret)
+		return ret;
+
+	ret = qxl_release_reserve_list(release, true);
+	if (ret) {
+		qxl_release_free(qdev, release);
+		return ret;
+	}
+
+	cmd = (struct qxl_cursor_cmd *)qxl_release_map(qdev, release);
+	cmd->type = QXL_CURSOR_HIDE;
+	qxl_release_unmap(qdev, release, &cmd->release_info);
+
+	qxl_push_cursor_ring_release(qdev, release, QXL_CMD_CURSOR, false);
+	qxl_release_fence_buffer_objects(release);
+	return 0;
+}
+
+static int qxl_crtc_cursor_set2(struct drm_crtc *crtc,
+				struct drm_file *file_priv,
+				uint32_t handle,
+				uint32_t width,
+				uint32_t height, int32_t hot_x, int32_t hot_y)
+{
+	struct drm_device *dev = crtc->dev;
+	struct qxl_device *qdev = dev->dev_private;
+	struct qxl_crtc *qcrtc = to_qxl_crtc(crtc);
+	struct drm_gem_object *obj;
+	struct qxl_cursor *cursor;
+	struct qxl_cursor_cmd *cmd;
+	struct qxl_bo *cursor_bo, *user_bo;
+	struct qxl_release *release;
+	void *user_ptr;
+
+	int size = 64*64*4;
+	int ret = 0;
+	if (!handle)
+		return qxl_hide_cursor(qdev);
+
+	obj = drm_gem_object_lookup(crtc->dev, file_priv, handle);
+	if (!obj) {
+		DRM_ERROR("cannot find cursor object\n");
+		return -ENOENT;
+	}
+
+	user_bo = gem_to_qxl_bo(obj);
+
+	ret = qxl_bo_reserve(user_bo, false);
+	if (ret)
+		goto out_unref;
+
+	ret = qxl_bo_pin(user_bo, QXL_GEM_DOMAIN_CPU, NULL);
+	qxl_bo_unreserve(user_bo);
+	if (ret)
+		goto out_unref;
+
+	ret = qxl_bo_kmap(user_bo, &user_ptr);
+	if (ret)
+		goto out_unpin;
+
+	ret = qxl_alloc_release_reserved(qdev, sizeof(*cmd),
+					 QXL_RELEASE_CURSOR_CMD,
+					 &release, NULL);
+	if (ret)
+		goto out_kunmap;
+
+	ret = qxl_alloc_bo_reserved(qdev, release, sizeof(struct qxl_cursor) + size,
+			   &cursor_bo);
+	if (ret)
+		goto out_free_release;
+
+	ret = qxl_release_reserve_list(release, false);
+	if (ret)
+		goto out_free_bo;
+
+	ret = qxl_bo_kmap(cursor_bo, (void **)&cursor);
+	if (ret)
+		goto out_backoff;
+
+	cursor->header.unique = 0;
+	cursor->header.type = SPICE_CURSOR_TYPE_ALPHA;
+	cursor->header.width = 64;
+	cursor->header.height = 64;
+	cursor->header.hot_spot_x = hot_x;
+	cursor->header.hot_spot_y = hot_y;
+	cursor->data_size = size;
+	cursor->chunk.next_chunk = 0;
+	cursor->chunk.prev_chunk = 0;
+	cursor->chunk.data_size = size;
+
+	memcpy(cursor->chunk.data, user_ptr, size);
+
+	qxl_bo_kunmap(cursor_bo);
+
+	qxl_bo_kunmap(user_bo);
+
+	qcrtc->cur_x += qcrtc->hot_spot_x - hot_x;
+	qcrtc->cur_y += qcrtc->hot_spot_y - hot_y;
+	qcrtc->hot_spot_x = hot_x;
+	qcrtc->hot_spot_y = hot_y;
+
+	cmd = (struct qxl_cursor_cmd *)qxl_release_map(qdev, release);
+	cmd->type = QXL_CURSOR_SET;
+	cmd->u.set.position.x = qcrtc->cur_x + qcrtc->hot_spot_x;
+	cmd->u.set.position.y = qcrtc->cur_y + qcrtc->hot_spot_y;
+
+	cmd->u.set.shape = qxl_bo_physical_address(qdev, cursor_bo, 0);
+
+	cmd->u.set.visible = 1;
+	qxl_release_unmap(qdev, release, &cmd->release_info);
+
+	qxl_push_cursor_ring_release(qdev, release, QXL_CMD_CURSOR, false);
+	qxl_release_fence_buffer_objects(release);
+
+	/* finish with the userspace bo */
+	ret = qxl_bo_reserve(user_bo, false);
+	if (!ret) {
+		qxl_bo_unpin(user_bo);
+		qxl_bo_unreserve(user_bo);
+	}
+	drm_gem_object_unreference_unlocked(obj);
+
+	qxl_bo_unref(&cursor_bo);
+
+	return ret;
+
+out_backoff:
+	qxl_release_backoff_reserve_list(release);
+out_free_bo:
+	qxl_bo_unref(&cursor_bo);
+out_free_release:
+	qxl_release_free(qdev, release);
+out_kunmap:
+	qxl_bo_kunmap(user_bo);
+out_unpin:
+	qxl_bo_unpin(user_bo);
+out_unref:
+	drm_gem_object_unreference_unlocked(obj);
+	return ret;
+}
+
+static int qxl_crtc_cursor_move(struct drm_crtc *crtc,
+				int x, int y)
+{
+	struct drm_device *dev = crtc->dev;
+	struct qxl_device *qdev = dev->dev_private;
+	struct qxl_crtc *qcrtc = to_qxl_crtc(crtc);
+	struct qxl_release *release;
+	struct qxl_cursor_cmd *cmd;
+	int ret;
+
+	ret = qxl_alloc_release_reserved(qdev, sizeof(*cmd), QXL_RELEASE_CURSOR_CMD,
+				   &release, NULL);
+	if (ret)
+		return ret;
+
+	ret = qxl_release_reserve_list(release, true);
+	if (ret) {
+		qxl_release_free(qdev, release);
+		return ret;
+	}
+
+	qcrtc->cur_x = x;
+	qcrtc->cur_y = y;
+
+	cmd = (struct qxl_cursor_cmd *)qxl_release_map(qdev, release);
+	cmd->type = QXL_CURSOR_MOVE;
+	cmd->u.position.x = qcrtc->cur_x + qcrtc->hot_spot_x;
+	cmd->u.position.y = qcrtc->cur_y + qcrtc->hot_spot_y;
+	qxl_release_unmap(qdev, release, &cmd->release_info);
+
+	qxl_push_cursor_ring_release(qdev, release, QXL_CMD_CURSOR, false);
+	qxl_release_fence_buffer_objects(release);
+
+	return 0;
+}
+
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const struct drm_crtc_funcs qxl_crtc_funcs = {
 	.set_config = drm_atomic_helper_set_config,
 	.destroy = qxl_crtc_destroy,

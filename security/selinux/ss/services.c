@@ -860,6 +860,7 @@ int security_bounded_transition(struct selinux_state *state,
 	int index;
 	int rc;
 
+<<<<<<< HEAD
 	if (!state->initialized)
 		return 0;
 
@@ -867,6 +868,12 @@ int security_bounded_transition(struct selinux_state *state,
 
 	policydb = &state->ss->policydb;
 	sidtab = state->ss->sidtab;
+=======
+	if (!ss_initialized)
+		return 0;
+
+	read_lock(&policy_rwlock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rc = -EINVAL;
 	old_context = sidtab_search(sidtab, old_sid);
@@ -1522,7 +1529,11 @@ static int security_context_to_sid_core(struct selinux_state *state,
 	if (!scontext2)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (!state->initialized) {
+=======
+	if (!ss_initialized) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		int i;
 
 		for (i = 1; i < SECINITSID_NUM; i++) {

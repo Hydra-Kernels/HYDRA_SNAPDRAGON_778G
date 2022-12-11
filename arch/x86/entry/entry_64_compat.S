@@ -14,6 +14,8 @@
 #include <asm/irqflags.h>
 #include <asm/asm.h>
 #include <asm/smap.h>
+#include <asm/pgtable_types.h>
+#include <asm/kaiser.h>
 #include <linux/linkage.h>
 #include <linux/err.h>
 
@@ -48,11 +50,16 @@
  */
 ENTRY(entry_SYSENTER_compat)
 	/* Interrupts are off on entry. */
+<<<<<<< HEAD
 	SWAPGS
 
 	/* We are about to clobber %rsp anyway, clobbering here is OK */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
 
+=======
+	SWAPGS_UNSAFE_STACK
+	SWITCH_KERNEL_CR3_NO_STACK
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
 
 	/*
@@ -85,6 +92,7 @@ ENTRY(entry_SYSENTER_compat)
 	pushq	%rcx			/* pt_regs->cx */
 	pushq	$-ENOSYS		/* pt_regs->ax */
 	pushq   $0			/* pt_regs->r8  = 0 */
+<<<<<<< HEAD
 	xorl	%r8d, %r8d		/* nospec   r8 */
 	pushq   $0			/* pt_regs->r9  = 0 */
 	xorl	%r9d, %r9d		/* nospec   r9 */
@@ -92,11 +100,21 @@ ENTRY(entry_SYSENTER_compat)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+=======
+	xorq	%r8, %r8		/* nospec   r8 */
+	pushq   $0			/* pt_regs->r9  = 0 */
+	xorq	%r9, %r9		/* nospec   r9 */
+	pushq   $0			/* pt_regs->r10 = 0 */
+	xorq	%r10, %r10		/* nospec   r10 */
+	pushq   $0			/* pt_regs->r11 = 0 */
+	xorq	%r11, %r11		/* nospec   r11 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp (will be overwritten) */
 	xorl	%ebp, %ebp		/* nospec   rbp */
 	pushq   $0			/* pt_regs->r12 = 0 */
+<<<<<<< HEAD
 	xorl	%r12d, %r12d		/* nospec   r12 */
 	pushq   $0			/* pt_regs->r13 = 0 */
 	xorl	%r13d, %r13d		/* nospec   r13 */
@@ -104,6 +122,15 @@ ENTRY(entry_SYSENTER_compat)
 	xorl	%r14d, %r14d		/* nospec   r14 */
 	pushq   $0			/* pt_regs->r15 = 0 */
 	xorl	%r15d, %r15d		/* nospec   r15 */
+=======
+	xorq	%r12, %r12		/* nospec   r12 */
+	pushq   $0			/* pt_regs->r13 = 0 */
+	xorq	%r13, %r13		/* nospec   r13 */
+	pushq   $0			/* pt_regs->r14 = 0 */
+	xorq	%r14, %r14		/* nospec   r14 */
+	pushq   $0			/* pt_regs->r15 = 0 */
+	xorq	%r15, %r15		/* nospec   r15 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cld
 
 	/*
@@ -198,7 +225,12 @@ ENDPROC(entry_SYSENTER_compat)
  */
 ENTRY(entry_SYSCALL_compat)
 	/* Interrupts are off on entry. */
+<<<<<<< HEAD
 	swapgs
+=======
+	SWAPGS_UNSAFE_STACK
+	SWITCH_KERNEL_CR3_NO_STACK
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Stash user ESP */
 	movl	%esp, %r8d
@@ -227,6 +259,7 @@ GLOBAL(entry_SYSCALL_compat_after_hwframe)
 	xorl	%ecx, %ecx		/* nospec   cx */
 	pushq	$-ENOSYS		/* pt_regs->ax */
 	pushq   $0			/* pt_regs->r8  = 0 */
+<<<<<<< HEAD
 	xorl	%r8d, %r8d		/* nospec   r8 */
 	pushq   $0			/* pt_regs->r9  = 0 */
 	xorl	%r9d, %r9d		/* nospec   r9 */
@@ -234,11 +267,21 @@ GLOBAL(entry_SYSCALL_compat_after_hwframe)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+=======
+	xorq	%r8, %r8		/* nospec   r8 */
+	pushq   $0			/* pt_regs->r9  = 0 */
+	xorq	%r9, %r9		/* nospec   r9 */
+	pushq   $0			/* pt_regs->r10 = 0 */
+	xorq	%r10, %r10		/* nospec   r10 */
+	pushq   $0			/* pt_regs->r11 = 0 */
+	xorq	%r11, %r11		/* nospec   r11 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp (will be overwritten) */
 	xorl	%ebp, %ebp		/* nospec   rbp */
 	pushq   $0			/* pt_regs->r12 = 0 */
+<<<<<<< HEAD
 	xorl	%r12d, %r12d		/* nospec   r12 */
 	pushq   $0			/* pt_regs->r13 = 0 */
 	xorl	%r13d, %r13d		/* nospec   r13 */
@@ -246,6 +289,15 @@ GLOBAL(entry_SYSCALL_compat_after_hwframe)
 	xorl	%r14d, %r14d		/* nospec   r14 */
 	pushq   $0			/* pt_regs->r15 = 0 */
 	xorl	%r15d, %r15d		/* nospec   r15 */
+=======
+	xorq	%r12, %r12		/* nospec   r12 */
+	pushq   $0			/* pt_regs->r13 = 0 */
+	xorq	%r13, %r13		/* nospec   r13 */
+	pushq   $0			/* pt_regs->r14 = 0 */
+	xorq	%r14, %r14		/* nospec   r14 */
+	pushq   $0			/* pt_regs->r15 = 0 */
+	xorq	%r15, %r15		/* nospec   r15 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * User mode is traced as though IRQs are on, and SYSENTER
@@ -267,6 +319,7 @@ sysret32_from_system_call:
 	 */
 	STACKLEAK_ERASE
 	TRACE_IRQS_ON			/* User mode traces as IRQs on. */
+	SWITCH_USER_CR3
 	movq	RBX(%rsp), %rbx		/* pt_regs->rbx */
 	movq	RBP(%rsp), %rbp		/* pt_regs->rbp */
 	movq	EFLAGS(%rsp), %r11	/* pt_regs->flags (in r11) */
@@ -343,8 +396,13 @@ ENTRY(entry_INT80_compat)
 	/*
 	 * Interrupts are off on entry.
 	 */
+<<<<<<< HEAD
+=======
+	PARAVIRT_ADJUST_EXCEPTION_FRAME
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ASM_CLAC			/* Do this early to minimize exposure */
 	SWAPGS
+	SWITCH_KERNEL_CR3_NO_STACK
 
 	/*
 	 * User tracing code (ptrace or signal handlers) might assume that
@@ -381,6 +439,7 @@ ENTRY(entry_INT80_compat)
 	pushq	%rcx			/* pt_regs->cx */
 	xorl	%ecx, %ecx		/* nospec   cx */
 	pushq	$-ENOSYS		/* pt_regs->ax */
+<<<<<<< HEAD
 	pushq   %r8			/* pt_regs->r8 */
 	xorl	%r8d, %r8d		/* nospec   r8 */
 	pushq   %r9			/* pt_regs->r9 */
@@ -389,11 +448,22 @@ ENTRY(entry_INT80_compat)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   %r11			/* pt_regs->r11 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+=======
+	pushq   $0			/* pt_regs->r8  = 0 */
+	xorq	%r8, %r8		/* nospec   r8 */
+	pushq   $0			/* pt_regs->r9  = 0 */
+	xorq	%r9, %r9		/* nospec   r9 */
+	pushq   $0			/* pt_regs->r10 = 0 */
+	xorq	%r10, %r10		/* nospec   r10 */
+	pushq   $0			/* pt_regs->r11 = 0 */
+	xorq	%r11, %r11		/* nospec   r11 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp */
 	xorl	%ebp, %ebp		/* nospec   rbp */
 	pushq   %r12                    /* pt_regs->r12 */
+<<<<<<< HEAD
 	xorl	%r12d, %r12d		/* nospec   r12 */
 	pushq   %r13                    /* pt_regs->r13 */
 	xorl	%r13d, %r13d		/* nospec   r13 */
@@ -401,6 +471,15 @@ ENTRY(entry_INT80_compat)
 	xorl	%r14d, %r14d		/* nospec   r14 */
 	pushq   %r15                    /* pt_regs->r15 */
 	xorl	%r15d, %r15d		/* nospec   r15 */
+=======
+	xorq	%r12, %r12		/* nospec   r12 */
+	pushq   %r13                    /* pt_regs->r13 */
+	xorq	%r13, %r13		/* nospec   r13 */
+	pushq   %r14                    /* pt_regs->r14 */
+	xorq	%r14, %r14		/* nospec   r14 */
+	pushq   %r15                    /* pt_regs->r15 */
+	xorq	%r15, %r15		/* nospec   r15 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cld
 
 	/*
@@ -415,5 +494,11 @@ ENTRY(entry_INT80_compat)
 
 	/* Go back to user mode. */
 	TRACE_IRQS_ON
+<<<<<<< HEAD
 	jmp	swapgs_restore_regs_and_return_to_usermode
+=======
+	SWITCH_USER_CR3
+	SWAPGS
+	jmp	restore_regs_and_iret
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 END(entry_INT80_compat)

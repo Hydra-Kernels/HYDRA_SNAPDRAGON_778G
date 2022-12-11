@@ -41,12 +41,79 @@ static void xdr_dump_bad(const __be32 *bp)
 	__be32 x[4];
 	int i;
 
+<<<<<<< HEAD
 	pr_notice("AFS XDR: Bad status record\n");
 	for (i = 0; i < 5 * 4 * 4; i += 16) {
 		memcpy(x, bp, 16);
 		bp += 4;
 		pr_notice("%03x: %08x %08x %08x %08x\n",
 			  i, ntohl(x[0]), ntohl(x[1]), ntohl(x[2]), ntohl(x[3]));
+=======
+#define EXTRACT(DST)				\
+	do {					\
+		u32 x = ntohl(*bp++);		\
+		changed |= DST - x;		\
+		DST = x;			\
+	} while (0)
+
+	status->if_version = ntohl(*bp++);
+	EXTRACT(status->type);
+	EXTRACT(status->nlink);
+	size = ntohl(*bp++);
+	data_version = ntohl(*bp++);
+	EXTRACT(status->author);
+	owner = make_kuid(&init_user_ns, ntohl(*bp++));
+	changed |= !uid_eq(owner, status->owner);
+	status->owner = owner;
+	EXTRACT(status->caller_access); /* call ticket dependent */
+	EXTRACT(status->anon_access);
+	EXTRACT(status->mode);
+	EXTRACT(status->parent.vnode);
+	EXTRACT(status->parent.unique);
+	bp++; /* seg size */
+	status->mtime_client = ntohl(*bp++);
+	status->mtime_server = ntohl(*bp++);
+	group = make_kgid(&init_user_ns, ntohl(*bp++));
+	changed |= !gid_eq(group, status->group);
+	status->group = group;
+	bp++; /* sync counter */
+	data_version |= (u64) ntohl(*bp++) << 32;
+	EXTRACT(status->lock_count);
+	size |= (u64) ntohl(*bp++) << 32;
+	bp++; /* spare 4 */
+	*_bp = bp;
+
+	if (size != status->size) {
+		status->size = size;
+		changed |= true;
+	}
+	status->mode &= S_IALLUGO;
+
+	_debug("vnode time %lx, %lx",
+	       status->mtime_client, status->mtime_server);
+
+	if (vnode) {
+		status->parent.vid = vnode->fid.vid;
+		if (changed && !test_bit(AFS_VNODE_UNSET, &vnode->flags)) {
+			_debug("vnode changed");
+			i_size_write(&vnode->vfs_inode, size);
+			vnode->vfs_inode.i_uid = status->owner;
+			vnode->vfs_inode.i_gid = status->group;
+			vnode->vfs_inode.i_generation = vnode->fid.unique;
+			set_nlink(&vnode->vfs_inode, status->nlink);
+
+			mode = vnode->vfs_inode.i_mode;
+			mode &= ~S_IALLUGO;
+			mode |= status->mode;
+			barrier();
+			vnode->vfs_inode.i_mode = mode;
+		}
+
+		vnode->vfs_inode.i_ctime.tv_sec	= status->mtime_client;
+		vnode->vfs_inode.i_mtime	= vnode->vfs_inode.i_ctime;
+		vnode->vfs_inode.i_atime	= vnode->vfs_inode.i_ctime;
+		vnode->vfs_inode.i_version	= data_version;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	memcpy(x, bp, 4);
@@ -66,6 +133,7 @@ static void xdr_decode_AFSFetchStatus(const __be32 **_bp,
 	u64 data_version, size;
 	u32 type, abort_code;
 
+<<<<<<< HEAD
 	abort_code = ntohl(xdr->abort_code);
 
 	if (xdr->if_version != htonl(AFS_FSTATUS_VERSION)) {
@@ -132,6 +200,13 @@ bad:
 	xdr_dump_bad(*_bp);
 	afs_protocol_error(call, -EBADMSG, afs_eproto_bad_status);
 	goto advance;
+=======
+	vnode->cb_version	= ntohl(*bp++);
+	vnode->cb_expiry	= ntohl(*bp++);
+	vnode->cb_type		= ntohl(*bp++);
+	vnode->cb_expires	= vnode->cb_expiry + ktime_get_real_seconds();
+	*_bp = bp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static time64_t xdr_decode_expiry(struct afs_call *call, u32 expiry)
@@ -654,7 +729,11 @@ int afs_fs_create(struct afs_fs_cursor *fc,
 		bp = (void *) bp + padsz;
 	}
 	*bp++ = htonl(AFS_SET_MODE | AFS_SET_MTIME);
+<<<<<<< HEAD
 	*bp++ = htonl(dvnode->vfs_inode.i_mtime.tv_sec); /* mtime */
+=======
+	*bp++ = htonl(vnode->vfs_inode.i_mtime.tv_sec); /* mtime */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	*bp++ = 0; /* owner */
 	*bp++ = 0; /* group */
 	*bp++ = htonl(mode & S_IALLUGO); /* unix mode */
@@ -942,7 +1021,11 @@ int afs_fs_symlink(struct afs_fs_cursor *fc,
 		bp = (void *) bp + c_padsz;
 	}
 	*bp++ = htonl(AFS_SET_MODE | AFS_SET_MTIME);
+<<<<<<< HEAD
 	*bp++ = htonl(dvnode->vfs_inode.i_mtime.tv_sec); /* mtime */
+=======
+	*bp++ = htonl(vnode->vfs_inode.i_mtime.tv_sec); /* mtime */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	*bp++ = 0; /* owner */
 	*bp++ = 0; /* group */
 	*bp++ = htonl(S_IRWXUGO); /* unix mode */
@@ -1181,9 +1264,12 @@ int afs_fs_store_data(struct afs_fs_cursor *fc, struct address_space *mapping,
 	if (test_bit(AFS_SERVER_FL_IS_YFS, &fc->cbi->server->flags))
 		return yfs_fs_store_data(fc, mapping, first, last, offset, to, scb);
 
+<<<<<<< HEAD
 	_enter(",%x,{%llx:%llu},,",
 	       key_serial(fc->key), vnode->fid.vid, vnode->fid.vnode);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	size = (loff_t)to - (loff_t)offset;
 	if (first != last)
 		size += (loff_t)(last - first) << PAGE_SHIFT;

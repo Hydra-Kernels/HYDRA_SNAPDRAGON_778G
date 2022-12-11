@@ -47,6 +47,7 @@
 #define COMPAT_PTRACE_GETHBPREGS	29
 #define COMPAT_PTRACE_SETHBPREGS	30
 
+<<<<<<< HEAD
 /* SPSR_ELx bits for exceptions taken from AArch32 */
 #define PSR_AA32_MODE_MASK	0x0000001f
 #define PSR_AA32_MODE_USR	0x00000010
@@ -72,6 +73,32 @@
 #define PSR_AA32_N_BIT		0x80000000
 #define PSR_AA32_IT_MASK	0x0600fc00	/* If-Then execution state mask */
 #define PSR_AA32_GE_MASK	0x000f0000
+=======
+/* AArch32 CPSR bits */
+#define COMPAT_PSR_MODE_MASK	0x0000001f
+#define COMPAT_PSR_MODE_USR	0x00000010
+#define COMPAT_PSR_MODE_FIQ	0x00000011
+#define COMPAT_PSR_MODE_IRQ	0x00000012
+#define COMPAT_PSR_MODE_SVC	0x00000013
+#define COMPAT_PSR_MODE_ABT	0x00000017
+#define COMPAT_PSR_MODE_HYP	0x0000001a
+#define COMPAT_PSR_MODE_UND	0x0000001b
+#define COMPAT_PSR_MODE_SYS	0x0000001f
+#define COMPAT_PSR_T_BIT	0x00000020
+#define COMPAT_PSR_E_BIT	0x00000200
+#define COMPAT_PSR_F_BIT	0x00000040
+#define COMPAT_PSR_I_BIT	0x00000080
+#define COMPAT_PSR_A_BIT	0x00000100
+#define COMPAT_PSR_E_BIT	0x00000200
+#define COMPAT_PSR_J_BIT	0x01000000
+#define COMPAT_PSR_Q_BIT	0x08000000
+#define COMPAT_PSR_V_BIT	0x10000000
+#define COMPAT_PSR_C_BIT	0x20000000
+#define COMPAT_PSR_Z_BIT	0x40000000
+#define COMPAT_PSR_N_BIT	0x80000000
+#define COMPAT_PSR_IT_MASK	0x0600fc00	/* If-Then execution state mask */
+#define COMPAT_PSR_GE_MASK	0x000f0000
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_CPU_BIG_ENDIAN
 #define PSR_AA32_ENDSTATE	PSR_AA32_E_BIT
@@ -168,6 +195,7 @@ struct pt_regs {
 		};
 	};
 	u64 orig_x0;
+<<<<<<< HEAD
 #ifdef __AARCH64EB__
 	u32 unused2;
 	s32 syscallno;
@@ -180,6 +208,11 @@ struct pt_regs {
 	/* Only valid when ARM64_HAS_IRQ_PRIO_MASKING is enabled. */
 	u64 pmr_save;
 	u64 stackframe[2];
+=======
+	u64 syscallno;
+	u64 orig_addr_limit;
+	u64 unused;	// maintain 16 byte alignment
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static inline bool in_syscall(struct pt_regs const *regs)
@@ -271,6 +304,7 @@ static inline u64 regs_get_register(struct pt_regs *regs, unsigned int offset)
 	return val;
 }
 
+<<<<<<< HEAD
 /*
  * Read a register given an architectural register index r.
  * This handles the common case where 31 means XZR, not SP.
@@ -338,6 +372,11 @@ static inline unsigned long regs_get_kernel_argument(struct pt_regs *regs,
 		return pt_regs_read_reg(regs, n);
 	return 0;
 }
+=======
+/* We must avoid circular header include via sched.h */
+struct task_struct;
+int valid_user_regs(struct user_pt_regs *regs, struct task_struct *task);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* We must avoid circular header include via sched.h */
 struct task_struct;

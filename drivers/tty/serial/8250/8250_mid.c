@@ -24,7 +24,11 @@
 #define PCI_DEVICE_ID_INTEL_DNV_UART	0x19d8
 
 /* Intel MID Specific registers */
+<<<<<<< HEAD
 #define INTEL_MID_UART_FISR		0x08
+=======
+#define INTEL_MID_UART_DNV_FISR		0x08
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define INTEL_MID_UART_PS		0x30
 #define INTEL_MID_UART_MUL		0x34
 #define INTEL_MID_UART_DIV		0x38
@@ -127,6 +131,7 @@ static int tng_setup(struct mid8250 *mid, struct uart_port *p)
 static int dnv_handle_irq(struct uart_port *p)
 {
 	struct mid8250 *mid = p->private_data;
+<<<<<<< HEAD
 	struct uart_8250_port *up = up_to_u8250p(p);
 	unsigned int fisr = serial_port_in(p, INTEL_MID_UART_FISR);
 	u32 status;
@@ -151,6 +156,18 @@ static int dnv_handle_irq(struct uart_port *p)
 	if (fisr & BIT(0))
 		ret |= serial8250_handle_irq(p, serial_port_in(p, UART_IIR));
 	return IRQ_RETVAL(ret);
+=======
+	unsigned int fisr = serial_port_in(p, INTEL_MID_UART_DNV_FISR);
+	int ret = IRQ_NONE;
+
+	if (fisr & BIT(2))
+		ret |= hsu_dma_irq(&mid->dma_chip, 1);
+	if (fisr & BIT(1))
+		ret |= hsu_dma_irq(&mid->dma_chip, 0);
+	if (fisr & BIT(0))
+		ret |= serial8250_handle_irq(p, serial_port_in(p, UART_IIR));
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define DNV_DMA_CHAN_OFFSET 0x80

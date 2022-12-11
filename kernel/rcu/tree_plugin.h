@@ -2095,6 +2095,7 @@ static void nocb_cb_wait(struct rcu_data *rdp)
 	bool needwake_gp = false;
 	struct rcu_node *rnp = rdp->mynode;
 
+<<<<<<< HEAD
 	local_irq_save(flags);
 	rcu_momentary_dyntick_idle();
 	local_irq_restore(flags);
@@ -2144,6 +2145,38 @@ static int rcu_nocb_cb_kthread(void *arg)
 	for (;;) {
 		nocb_cb_wait(rdp);
 		cond_resched_tasks_rcu_qs();
+=======
+		/* Each pass through the following loop invokes a callback. */
+		trace_rcu_batch_start(rdp->rsp->name,
+				      atomic_long_read(&rdp->nocb_q_count_lazy),
+				      atomic_long_read(&rdp->nocb_q_count), -1);
+		c = cl = 0;
+		while (list) {
+			next = list->next;
+			/* Wait for enqueuing to complete, if needed. */
+			while (next == NULL && &list->next != tail) {
+				trace_rcu_nocb_wake(rdp->rsp->name, rdp->cpu,
+						    TPS("WaitQueue"));
+				schedule_timeout_interruptible(1);
+				trace_rcu_nocb_wake(rdp->rsp->name, rdp->cpu,
+						    TPS("WokeQueue"));
+				next = list->next;
+			}
+			debug_rcu_head_unqueue(list);
+			local_bh_disable();
+			if (__rcu_reclaim(rdp->rsp->name, list))
+				cl++;
+			c++;
+			local_bh_enable();
+			cond_resched_rcu_qs();
+			list = next;
+		}
+		trace_rcu_batch_end(rdp->rsp->name, c, !!list, 0, 0, 1);
+		smp_mb__before_atomic();  /* _add after CB invocation. */
+		atomic_long_add(-c, &rdp->nocb_q_count);
+		atomic_long_add(-cl, &rdp->nocb_q_count_lazy);
+		rdp->n_nocbs_invoked += c;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }

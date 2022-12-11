@@ -40,9 +40,13 @@ enum {
 
 #ifdef __KERNEL__
 
+<<<<<<< HEAD
 #ifndef arch_set_restart_data
 #define arch_set_restart_data(restart) do { } while (0)
 #endif
+=======
+#define THREADINFO_GFP		(GFP_KERNEL | __GFP_NOTRACK | __GFP_ZERO)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline long set_restart_fn(struct restart_block *restart,
 					long (*fn)(struct restart_block *))

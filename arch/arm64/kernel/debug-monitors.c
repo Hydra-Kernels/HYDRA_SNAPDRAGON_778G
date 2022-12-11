@@ -132,9 +132,23 @@ static int clear_os_lock(unsigned int cpu)
 
 static int debug_monitors_init(void)
 {
+<<<<<<< HEAD
 	return cpuhp_setup_state(CPUHP_AP_ARM64_DEBUG_MONITORS_STARTING,
 				 "arm64/debug_monitors:starting",
 				 clear_os_lock, NULL);
+=======
+	cpu_notifier_register_begin();
+
+	/* Clear the OS lock. */
+	on_each_cpu(clear_os_lock, NULL, 1);
+	isb();
+
+	/* Register hotplug handler. */
+	__register_cpu_notifier(&os_lock_nb);
+
+	cpu_notifier_register_done();
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 postcore_initcall(debug_monitors_init);
 
@@ -176,13 +190,26 @@ static void unregister_debug_hook(struct list_head *node)
 	synchronize_rcu();
 }
 
+<<<<<<< HEAD
 void register_user_step_hook(struct step_hook *hook)
 {
 	register_debug_hook(&hook->node, &user_step_hook);
+=======
+/* EL1 Single Step Handler hooks */
+static LIST_HEAD(step_hook);
+static DEFINE_SPINLOCK(step_hook_lock);
+
+void register_step_hook(struct step_hook *hook)
+{
+	spin_lock(&step_hook_lock);
+	list_add_rcu(&hook->node, &step_hook);
+	spin_unlock(&step_hook_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void unregister_user_step_hook(struct step_hook *hook)
 {
+<<<<<<< HEAD
 	unregister_debug_hook(&hook->node);
 }
 
@@ -194,6 +221,12 @@ void register_kernel_step_hook(struct step_hook *hook)
 void unregister_kernel_step_hook(struct step_hook *hook)
 {
 	unregister_debug_hook(&hook->node);
+=======
+	spin_lock(&step_hook_lock);
+	list_del_rcu(&hook->node);
+	spin_unlock(&step_hook_lock);
+	synchronize_rcu();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -208,6 +241,7 @@ static int call_step_hook(struct pt_regs *regs, unsigned int esr)
 	struct list_head *list;
 	int retval = DBG_HOOK_ERROR;
 
+<<<<<<< HEAD
 	list = user_mode(regs) ? &user_step_hook : &kernel_step_hook;
 
 	/*
@@ -215,11 +249,21 @@ static int call_step_hook(struct pt_regs *regs, unsigned int esr)
 	 * entirely not preemptible, and we can use rcu list safely here.
 	 */
 	list_for_each_entry_rcu(hook, list, node)	{
+=======
+	rcu_read_lock();
+
+	list_for_each_entry_rcu(hook, &step_hook, node)	{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		retval = hook->fn(regs, esr);
 		if (retval == DBG_HOOK_HANDLED)
 			break;
 	}
 
+<<<<<<< HEAD
+=======
+	rcu_read_unlock();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return retval;
 }
 NOKPROBE_SYMBOL(call_step_hook);

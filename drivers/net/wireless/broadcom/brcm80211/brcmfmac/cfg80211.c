@@ -2533,7 +2533,11 @@ static void brcmf_fill_bss_param(struct brcmf_if *ifp, struct station_info *si)
 	err = brcmf_fil_cmd_data_get(ifp, BRCMF_C_GET_BSS_INFO, buf,
 				     WL_BSS_INFO_MAX);
 	if (err) {
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 		bphy_err(drvr, "Failed to get bss info (%d)\n", err);
+=======
+		brcmf_err("Failed to get bss info (%d)\n", err);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 		goto out_kfree;
 	}
 	si->filled |= BIT_ULL(NL80211_STA_INFO_BSS_PARAM);
@@ -2549,6 +2553,7 @@ static void brcmf_fill_bss_param(struct brcmf_if *ifp, struct station_info *si)
 
 out_kfree:
 	kfree(buf);
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 }
 
 static s32
@@ -2598,6 +2603,8 @@ brcmf_cfg80211_get_station_ibss(struct brcmf_if *ifp,
 	sinfo->tx_failed  = le32_to_cpu(pktcnt.tx_bad_pkt);
 
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 }
 
 static s32
@@ -3141,7 +3148,11 @@ brcmf_cfg80211_escan_handler(struct brcmf_if *ifp,
 	if (status == BRCMF_E_STATUS_PARTIAL) {
 		brcmf_dbg(SCAN, "ESCAN Partial result\n");
 		if (e->datalen < sizeof(*escan_result_le)) {
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 			bphy_err(drvr, "invalid event data length\n");
+=======
+			brcmf_err("invalid event data length\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 			goto exit;
 		}
 		escan_result_le = (struct brcmf_escan_result_le *) data;
@@ -3155,6 +3166,14 @@ brcmf_cfg80211_escan_handler(struct brcmf_if *ifp,
 		    escan_buflen < sizeof(*escan_result_le)) {
 			bphy_err(drvr, "Invalid escan buffer length: %d\n",
 				 escan_buflen);
+			goto exit;
+		}
+		escan_buflen = le32_to_cpu(escan_result_le->buflen);
+		if (escan_buflen > WL_ESCAN_BUF_SIZE ||
+		    escan_buflen > e->datalen ||
+		    escan_buflen < sizeof(*escan_result_le)) {
+			brcmf_err("Invalid escan buffer length: %d\n",
+				  escan_buflen);
 			goto exit;
 		}
 		if (le16_to_cpu(escan_result_le->bss_count) != 1) {
@@ -3174,8 +3193,13 @@ brcmf_cfg80211_escan_handler(struct brcmf_if *ifp,
 
 		bi_length = le32_to_cpu(bss_info_le->length);
 		if (bi_length != escan_buflen -	WL_ESCAN_RESULTS_FIXED_SIZE) {
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 			bphy_err(drvr, "Ignoring invalid bss_info length: %d\n",
 				 bi_length);
+=======
+			brcmf_err("Ignoring invalid bss_info length: %d\n",
+				  bi_length);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 			goto exit;
 		}
 
@@ -4744,7 +4768,11 @@ static int brcmf_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *ndev)
 			bphy_err(drvr, "BRCMF_C_DOWN error %d\n", err);
 		err = brcmf_fil_cmd_int_set(ifp, BRCMF_C_SET_AP, 0);
 		if (err < 0)
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 			bphy_err(drvr, "setting AP mode failed %d\n", err);
+=======
+			brcmf_err("setting AP mode failed %d\n", err);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 		if (brcmf_feat_is_enabled(ifp, BRCMF_FEAT_MBSS))
 			brcmf_fil_iovar_int_set(ifp, "mbss", 0);
 		brcmf_fil_cmd_int_set(ifp, BRCMF_C_SET_REGULATORY,
@@ -4925,7 +4953,11 @@ brcmf_cfg80211_mgmt_tx(struct wiphy *wiphy, struct wireless_dev *wdev,
 					GFP_KERNEL);
 	} else if (ieee80211_is_action(mgmt->frame_control)) {
 		if (len > BRCMF_FIL_ACTION_FRAME_SIZE + DOT11_MGMT_HDR_LEN) {
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
 			bphy_err(drvr, "invalid action frame length\n");
+=======
+			brcmf_err("invalid action frame length\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/cfg80211.c
 			err = -EINVAL;
 			goto exit;
 		}

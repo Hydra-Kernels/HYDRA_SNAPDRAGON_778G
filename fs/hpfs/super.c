@@ -482,7 +482,11 @@ static int hpfs_remount_fs(struct super_block *s, int *flags, char *data)
 	sbi->sb_eas = eas; sbi->sb_chk = chk; sbi->sb_chkdsk = chkdsk;
 	sbi->sb_err = errs; sbi->sb_timeshift = timeshift;
 
+<<<<<<< HEAD
 	if (!(*flags & SB_RDONLY)) mark_dirty(s, 1);
+=======
+	if (!(*flags & MS_RDONLY)) mark_dirty(s, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	hpfs_unlock(s);
 	return 0;

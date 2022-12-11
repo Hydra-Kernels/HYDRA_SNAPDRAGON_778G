@@ -194,7 +194,19 @@ xfs_bulkstat_iwalk(
 	xfs_ino_t		ino,
 	void			*data)
 {
+<<<<<<< HEAD
 	int			error;
+=======
+	xfs_buf_t		*agbp;	/* agi header buffer */
+	xfs_agino_t		agino;	/* inode # in allocation group */
+	xfs_agnumber_t		agno;	/* allocation group number */
+	xfs_btree_cur_t		*cur;	/* btree cursor for ialloc btree */
+	xfs_inobt_rec_incore_t	*irbuf;	/* start of irec buffer */
+	int			nirbuf;	/* size of irbuf */
+	int			ubcount; /* size of user's buffer */
+	struct xfs_bulkstat_agichunk ac;
+	int			error = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	error = xfs_bulkstat_one_int(mp, tp, ino, data);
 	/* bulkstat just skips over missing inodes */
@@ -227,6 +239,7 @@ xfs_bulkstat_already_done(
 	       startino != XFS_AGINO_TO_INO(mp, agno, agino);
 }
 
+<<<<<<< HEAD
 /* Return stat information in bulk (by-inode) for the filesystem. */
 int
 xfs_bulkstat(
@@ -249,6 +262,12 @@ xfs_bulkstat(
 
 	error = xfs_iwalk(breq->mp, NULL, breq->startino, breq->flags,
 			xfs_bulkstat_iwalk, breq->icount, &bc);
+=======
+	irbuf = kmem_zalloc_large(PAGE_SIZE * 4, KM_SLEEP);
+	if (!irbuf)
+		return -ENOMEM;
+	nirbuf = (PAGE_SIZE * 4) / sizeof(*irbuf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kmem_free(bc.buf);
 

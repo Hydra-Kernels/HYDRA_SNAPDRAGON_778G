@@ -174,6 +174,7 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	ALTINSTR_REPLACEMENT(newinstr1, feature1, 1)			\
 	ALTINSTR_REPLACEMENT(newinstr2, feature2, 2)			\
 	".popsection\n"
+<<<<<<< HEAD
 
 #define ALTERNATIVE_3(oldinsn, newinsn1, feat1, newinsn2, feat2, newinsn3, feat3) \
 	OLDINSTR_3(oldinsn, 1, 2, 3)						\
@@ -187,6 +188,8 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	ALTINSTR_REPLACEMENT(newinsn2, feat2, 2)				\
 	ALTINSTR_REPLACEMENT(newinsn3, feat3, 3)				\
 	".popsection\n"
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Alternative instructions for different CPU types or capabilities.
@@ -270,6 +273,8 @@ static inline int alternatives_text_reserved(void *start, void *end)
  * alternative_{input,io,call}()
  */
 #define ASM_NO_INPUT_CLOBBER(clbr...) "i" (0) : clbr
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* __ASSEMBLY__ */
 

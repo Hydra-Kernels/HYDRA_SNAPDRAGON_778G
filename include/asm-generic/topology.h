@@ -48,7 +48,11 @@
   #ifdef CONFIG_NEED_MULTIPLE_NODES
     #define cpumask_of_node(node)	((node) == 0 ? cpu_online_mask : cpu_none_mask)
   #else
+<<<<<<< HEAD
     #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
+=======
+    #define cpumask_of_node(node)	((void)node, cpu_online_mask)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
   #endif
 #endif
 #ifndef pcibus_to_node

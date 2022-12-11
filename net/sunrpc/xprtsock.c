@@ -826,9 +826,19 @@ static int xs_sendpages(struct socket *sock, struct sockaddr *addr, int addrlen,
 	if (unlikely(!sock))
 		return -ENOTSOCK;
 
+<<<<<<< HEAD
 	want = xdr->head[0].iov_len + rmsize;
 	if (base < want) {
 		unsigned int len = want - base;
+=======
+	if (base != 0) {
+		addr = NULL;
+		addrlen = 0;
+	}
+
+	if (base < xdr->head[0].iov_len || addr != NULL) {
+		unsigned int len = xdr->head[0].iov_len - base;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		remainder -= len;
 		if (remainder == 0)
 			msg.msg_flags &= ~MSG_MORE;
@@ -869,6 +879,16 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+static void xs_nospace_callback(struct rpc_task *task)
+{
+	struct sock_xprt *transport = container_of(task->tk_rqstp->rq_xprt, struct sock_xprt, xprt);
+
+	transport->inet->sk_write_pending--;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * xs_nospace - handle transmit was incomplete
  * @req: pointer to RPC request
@@ -893,7 +913,11 @@ static int xs_nospace(struct rpc_rqst *req)
 	if (xprt_connected(xprt)) {
 		/* wait for more buffer space */
 		sk->sk_write_pending++;
+<<<<<<< HEAD
 		xprt_wait_for_buffer_space(xprt);
+=======
+		xprt_wait_for_buffer_space(task, xs_nospace_callback);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else
 		ret = -ENOTCONN;
 
@@ -1576,7 +1600,10 @@ static void xs_tcp_state_change(struct sock *sk)
 static void xs_write_space(struct sock *sk)
 {
 	struct socket_wq *wq;
+<<<<<<< HEAD
 	struct sock_xprt *transport;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct rpc_xprt *xprt;
 
 	if (!sk->sk_socket)
@@ -1585,14 +1612,21 @@ static void xs_write_space(struct sock *sk)
 
 	if (unlikely(!(xprt = xprt_from_sock(sk))))
 		return;
+<<<<<<< HEAD
 	transport = container_of(xprt, struct sock_xprt, xprt);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rcu_read_lock();
 	wq = rcu_dereference(sk->sk_wq);
 	if (!wq || test_and_clear_bit(SOCKWQ_ASYNC_NOSPACE, &wq->flags) == 0)
 		goto out;
 
+<<<<<<< HEAD
 	xs_run_error_worker(transport, XPRT_SOCK_WAKE_WRITE);
 	sk->sk_write_pending--;
+=======
+	xprt_write_space(xprt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	rcu_read_unlock();
 }

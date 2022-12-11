@@ -1353,9 +1353,18 @@ static int ethtool_get_regs(struct net_device *dev, char __user *useraddr)
 	if (regs.len > reglen)
 		regs.len = reglen;
 
+<<<<<<< HEAD
 	regbuf = vzalloc(reglen);
 	if (!regbuf)
 		return -ENOMEM;
+=======
+	regbuf = NULL;
+	if (reglen) {
+		regbuf = vzalloc(reglen);
+		if (!regbuf)
+			return -ENOMEM;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (regs.len < reglen)
 		reglen = regs.len;

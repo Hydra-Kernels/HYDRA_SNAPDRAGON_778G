@@ -320,6 +320,7 @@ pte_t *huge_pte_offset(struct mm_struct *mm,
 void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
 		     pte_t *ptep, pte_t entry)
 {
+<<<<<<< HEAD
 	unsigned int nptes, orig_shift, shift;
 	unsigned long i, size;
 	pte_t orig;
@@ -351,6 +352,34 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
 	if (size == HPAGE_SIZE)
 		maybe_tlb_batch_add(mm, addr + REAL_HPAGE_SIZE, ptep, orig, 0,
 				    orig_shift);
+=======
+	int i;
+	pte_t orig[2];
+	unsigned long nptes;
+
+	if (!pte_present(*ptep) && pte_present(entry))
+		mm->context.hugetlb_pte_count++;
+
+	addr &= HPAGE_MASK;
+
+	nptes = 1 << HUGETLB_PAGE_ORDER;
+	orig[0] = *ptep;
+	orig[1] = *(ptep + nptes / 2);
+	for (i = 0; i < nptes; i++) {
+		*ptep = entry;
+		ptep++;
+		addr += PAGE_SIZE;
+		pte_val(entry) += PAGE_SIZE;
+	}
+
+	/* Issue TLB flush at REAL_HPAGE_SIZE boundaries */
+	addr -= REAL_HPAGE_SIZE;
+	ptep -= nptes / 2;
+	maybe_tlb_batch_add(mm, addr, ptep, orig[1], 0);
+	addr -= REAL_HPAGE_SIZE;
+	ptep -= nptes / 2;
+	maybe_tlb_batch_add(mm, addr, ptep, orig[0], 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
@@ -359,6 +388,11 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	unsigned int i, nptes, orig_shift, shift;
 	unsigned long size;
 	pte_t entry;
+<<<<<<< HEAD
+=======
+	int i;
+	unsigned long nptes;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	entry = *ptep;
 	size = huge_tte_to_size(entry);
@@ -375,6 +409,7 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	orig_shift = pte_none(entry) ? PAGE_SHIFT : huge_tte_to_shift(entry);
 
 	if (pte_present(entry))
+<<<<<<< HEAD
 		mm->context.hugetlb_pte_count -= nptes;
 
 	addr &= ~(size - 1);
@@ -386,6 +421,25 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	if (size == HPAGE_SIZE)
 		maybe_tlb_batch_add(mm, addr + REAL_HPAGE_SIZE, ptep, entry, 0,
 				    orig_shift);
+=======
+		mm->context.hugetlb_pte_count--;
+
+	addr &= HPAGE_MASK;
+	nptes = 1 << HUGETLB_PAGE_ORDER;
+	for (i = 0; i < nptes; i++) {
+		*ptep = __pte(0UL);
+		addr += PAGE_SIZE;
+		ptep++;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	/* Issue TLB flush at REAL_HPAGE_SIZE boundaries */
+	addr -= REAL_HPAGE_SIZE;
+	ptep -= nptes / 2;
+	maybe_tlb_batch_add(mm, addr, ptep, entry, 0);
+	addr -= REAL_HPAGE_SIZE;
+	ptep -= nptes / 2;
+	maybe_tlb_batch_add(mm, addr, ptep, entry, 0);
 
 	return entry;
 }

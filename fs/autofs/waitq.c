@@ -160,16 +160,27 @@ static void autofs_notify_daemon(struct autofs_sb_info *sbi,
 
 	mutex_unlock(&sbi->wq_mutex);
 
+<<<<<<< HEAD:fs/autofs/waitq.c
 	switch (ret = autofs_write(sbi, pipe, &pkt, pktsz)) {
+=======
+	switch (ret = autofs4_write(sbi, pipe, &pkt, pktsz)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/autofs4/waitq.c
 	case 0:
 		break;
 	case -ENOMEM:
 	case -ERESTARTSYS:
 		/* Just fail this one */
+<<<<<<< HEAD:fs/autofs/waitq.c
 		autofs_wait_release(sbi, wq->wait_queue_token, ret);
 		break;
 	default:
 		autofs_catatonic_mode(sbi);
+=======
+		autofs4_wait_release(sbi, wq->wait_queue_token, ret);
+		break;
+	default:
+		autofs4_catatonic_mode(sbi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/autofs4/waitq.c
 		break;
 	}
 	fput(pipe);

@@ -627,8 +627,23 @@ xfs_getbmap(
 		goto out_unlock_ilock;
 	}
 
+<<<<<<< HEAD
 	while (!xfs_getbmap_full(bmv)) {
 		xfs_trim_extent(&got, first_bno, len);
+=======
+			/*
+			 * delayed allocation extents that start beyond EOF can
+			 * occur due to speculative EOF allocation when the
+			 * delalloc extent is larger than the largest freespace
+			 * extent at conversion time. These extents cannot be
+			 * converted by data writeback, so can exist here even
+			 * if we are not supposed to be finding delalloc
+			 * extents.
+			 */
+			if (map[i].br_startblock == DELAYSTARTBLOCK &&
+			    map[i].br_startoff < XFS_B_TO_FSB(mp, XFS_ISIZE(ip)))
+				ASSERT((iflags & BMV_IF_DELALLOC) != 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * Report an entry for a hole if this extent doesn't directly
@@ -1713,6 +1728,7 @@ xfs_swap_extents(
 	struct xfs_inode	*tip,	/* tmp inode */
 	struct xfs_swapext	*sxp)
 {
+<<<<<<< HEAD
 	struct xfs_mount	*mp = ip->i_mount;
 	struct xfs_trans	*tp;
 	struct xfs_bstat	*sbp = &sxp->sx_stat;
@@ -1721,6 +1737,25 @@ xfs_swap_extents(
 	int			lock_flags;
 	uint64_t		f;
 	int			resblks = 0;
+=======
+	xfs_mount_t	*mp = ip->i_mount;
+	xfs_trans_t	*tp;
+	xfs_bstat_t	*sbp = &sxp->sx_stat;
+	xfs_ifork_t	*tempifp, *ifp, *tifp;
+	xfs_extnum_t	nextents;
+	int		src_log_flags, target_log_flags;
+	int		error = 0;
+	int		aforkblks = 0;
+	int		taforkblks = 0;
+	__uint64_t	tmp;
+	int		lock_flags;
+
+	tempifp = kmem_alloc(sizeof(xfs_ifork_t), KM_MAYFAIL);
+	if (!tempifp) {
+		error = -ENOMEM;
+		goto out;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Lock the inodes against other IO, page faults and truncate to
@@ -1871,6 +1906,7 @@ xfs_swap_extents(
 		swap(ip->i_cnextents, tip->i_cnextents);
 		swap(ip->i_cowfp, tip->i_cowfp);
 
+<<<<<<< HEAD
 		if (ip->i_cowfp && ip->i_cowfp->if_bytes)
 			xfs_inode_set_cowblocks_tag(ip);
 		else
@@ -1879,6 +1915,74 @@ xfs_swap_extents(
 			xfs_inode_set_cowblocks_tag(tip);
 		else
 			xfs_inode_clear_cowblocks_tag(tip);
+=======
+	/*
+	 * Fix the on-disk inode values
+	 */
+	tmp = (__uint64_t)ip->i_d.di_nblocks;
+	ip->i_d.di_nblocks = tip->i_d.di_nblocks - taforkblks + aforkblks;
+	tip->i_d.di_nblocks = tmp + taforkblks - aforkblks;
+
+	tmp = (__uint64_t) ip->i_d.di_nextents;
+	ip->i_d.di_nextents = tip->i_d.di_nextents;
+	tip->i_d.di_nextents = tmp;
+
+	tmp = (__uint64_t) ip->i_d.di_format;
+	ip->i_d.di_format = tip->i_d.di_format;
+	tip->i_d.di_format = tmp;
+
+	/*
+	 * The extents in the source inode could still contain speculative
+	 * preallocation beyond EOF (e.g. the file is open but not modified
+	 * while defrag is in progress). In that case, we need to copy over the
+	 * number of delalloc blocks the data fork in the source inode is
+	 * tracking beyond EOF so that when the fork is truncated away when the
+	 * temporary inode is unlinked we don't underrun the i_delayed_blks
+	 * counter on that inode.
+	 */
+	ASSERT(tip->i_delayed_blks == 0);
+	tip->i_delayed_blks = ip->i_delayed_blks;
+	ip->i_delayed_blks = 0;
+
+	switch (ip->i_d.di_format) {
+	case XFS_DINODE_FMT_EXTENTS:
+		/* If the extents fit in the inode, fix the
+		 * pointer.  Otherwise it's already NULL or
+		 * pointing to the extent.
+		 */
+		nextents = ip->i_df.if_bytes / (uint)sizeof(xfs_bmbt_rec_t);
+		if (nextents <= XFS_INLINE_EXTS) {
+			ifp->if_u1.if_extents =
+				ifp->if_u2.if_inline_ext;
+		}
+		src_log_flags |= XFS_ILOG_DEXT;
+		break;
+	case XFS_DINODE_FMT_BTREE:
+		ASSERT(ip->i_d.di_version < 3 ||
+		       (src_log_flags & XFS_ILOG_DOWNER));
+		src_log_flags |= XFS_ILOG_DBROOT;
+		break;
+	}
+
+	switch (tip->i_d.di_format) {
+	case XFS_DINODE_FMT_EXTENTS:
+		/* If the extents fit in the inode, fix the
+		 * pointer.  Otherwise it's already NULL or
+		 * pointing to the extent.
+		 */
+		nextents = tip->i_df.if_bytes / (uint)sizeof(xfs_bmbt_rec_t);
+		if (nextents <= XFS_INLINE_EXTS) {
+			tifp->if_u1.if_extents =
+				tifp->if_u2.if_inline_ext;
+		}
+		target_log_flags |= XFS_ILOG_DEXT;
+		break;
+	case XFS_DINODE_FMT_BTREE:
+		target_log_flags |= XFS_ILOG_DBROOT;
+		ASSERT(tip->i_d.di_version < 3 ||
+		       (target_log_flags & XFS_ILOG_DOWNER));
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	xfs_trans_log_inode(tp, ip,  src_log_flags);

@@ -39,6 +39,9 @@ struct mm_struct init_mm = {
 	.arg_lock	=  __SPIN_LOCK_UNLOCKED(init_mm.arg_lock),
 	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
 	.user_ns	= &init_user_ns,
+<<<<<<< HEAD
 	.cpu_bitmap	= CPU_BITS_NONE,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	INIT_MM_CONTEXT(init_mm)
 };

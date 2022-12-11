@@ -89,8 +89,12 @@ static int mq_init(struct Qdisc *sch, struct nlattr *opt,
 		dev_queue = netdev_get_tx_queue(dev, ntx);
 		qdisc = qdisc_create_dflt(dev_queue, get_default_qdisc_ops(dev, ntx),
 					  TC_H_MAKE(TC_H_MAJ(sch->handle),
+<<<<<<< HEAD
 						    TC_H_MIN(ntx + 1)),
 					  extack);
+=======
+						    TC_H_MIN(ntx + 1)));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!qdisc)
 			return -ENOMEM;
 		priv->qdiscs[ntx] = qdisc;
@@ -98,8 +102,11 @@ static int mq_init(struct Qdisc *sch, struct nlattr *opt,
 	}
 
 	sch->flags |= TCQ_F_MQROOT;
+<<<<<<< HEAD
 
 	mq_offload(sch, TC_MQ_CREATE);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

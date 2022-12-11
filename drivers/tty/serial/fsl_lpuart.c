@@ -2408,6 +2408,23 @@ static int lpuart_probe(struct platform_device *pdev)
 	if (!sport)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	pdev->dev.coherent_dma_mask = 0;
+
+	ret = of_alias_get_id(np, "serial");
+	if (ret < 0) {
+		dev_err(&pdev->dev, "failed to get alias id, errno %d\n", ret);
+		return ret;
+	}
+	if (ret >= ARRAY_SIZE(lpuart_ports)) {
+		dev_err(&pdev->dev, "serial%d out of range\n", ret);
+		return -EINVAL;
+	}
+	sport->port.line = ret;
+	sport->lpuart32 = of_device_is_compatible(np, "fsl,ls1021a-lpuart");
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	sport->port.membase = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(sport->port.membase))

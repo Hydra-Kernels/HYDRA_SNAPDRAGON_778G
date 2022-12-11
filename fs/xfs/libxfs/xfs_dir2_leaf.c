@@ -195,20 +195,30 @@ xfs_dir3_leaf_write_verify(
 
 const struct xfs_buf_ops xfs_dir3_leaf1_buf_ops = {
 	.name = "xfs_dir3_leaf1",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_DIR2_LEAF1_MAGIC),
 		     cpu_to_be16(XFS_DIR3_LEAF1_MAGIC) },
 	.verify_read = xfs_dir3_leaf_read_verify,
 	.verify_write = xfs_dir3_leaf_write_verify,
 	.verify_struct = xfs_dir3_leaf_verify,
+=======
+	.verify_read = xfs_dir3_leaf1_read_verify,
+	.verify_write = xfs_dir3_leaf1_write_verify,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 const struct xfs_buf_ops xfs_dir3_leafn_buf_ops = {
 	.name = "xfs_dir3_leafn",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_DIR2_LEAFN_MAGIC),
 		     cpu_to_be16(XFS_DIR3_LEAFN_MAGIC) },
 	.verify_read = xfs_dir3_leaf_read_verify,
 	.verify_write = xfs_dir3_leaf_write_verify,
 	.verify_struct = xfs_dir3_leaf_verify,
+=======
+	.verify_read = xfs_dir3_leafn_read_verify,
+	.verify_write = xfs_dir3_leafn_write_verify,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 int

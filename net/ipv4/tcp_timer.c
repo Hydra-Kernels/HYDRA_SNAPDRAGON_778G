@@ -112,6 +112,7 @@ static void tcp_write_err(struct sock *sk)
  *  @sk:        pointer to current socket
  *  @do_reset:  send a last packet with reset flag
  *
+<<<<<<< HEAD
  *  Do not allow orphaned sockets to eat all our resources.
  *  This is direct violation of TCP specs, but it is required
  *  to prevent DoS attacks. It is called when a retransmission timeout
@@ -130,6 +131,21 @@ static void tcp_write_err(struct sock *sk)
  *     limit.
  *  2. If we have strong memory pressure.
  *  3. If our net namespace is exiting.
+=======
+ * Also close if our net namespace is exiting; in that case there is no
+ * hope of ever communicating again since all netns interfaces are already
+ * down (or about to be down), and we need to release our dst references,
+ * which have been moved to the netns loopback interface, so the namespace
+ * can finish exiting.  This condition is only possible if we are a kernel
+ * socket, as those do not hold references to the namespace.
+ *
+ * Criteria is still not confirmed experimentally and may change.
+ * We kill the socket, if:
+ * 1. If number of orphaned sockets exceeds an administratively configured
+ *    limit.
+ * 2. If we have strong memory pressure.
+ * 3. If our net namespace is exiting.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 static int tcp_out_of_resources(struct sock *sk, bool do_reset)
 {

@@ -102,7 +102,15 @@ test_delete()
 		exit 1
 	fi
 
+<<<<<<< HEAD
 	file_cleanup $file
+=======
+	rm $file 2>/dev/null
+	if [ $? -ne 0 ]; then
+		chattr -i $file
+		rm $file
+	fi
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if [ -e $file ]; then
 		echo "$file couldn't be deleted" >&2
@@ -156,7 +164,15 @@ test_valid_filenames()
 			echo "$file could not be created" >&2
 			ret=1
 		else
+<<<<<<< HEAD
 			file_cleanup $file
+=======
+			rm $file 2>/dev/null
+			if [ $? -ne 0 ]; then
+				chattr -i $file
+				rm $file
+			fi
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fi
 	done
 
@@ -189,7 +205,15 @@ test_invalid_filenames()
 
 		if [ -e $file ]; then
 			echo "Creating $file should have failed" >&2
+<<<<<<< HEAD
 			file_cleanup $file
+=======
+			rm $file 2>/dev/null
+			if [ $? -ne 0 ]; then
+				chattr -i $file
+				rm $file
+			fi
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ret=1
 		fi
 	done

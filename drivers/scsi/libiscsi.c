@@ -1525,9 +1525,20 @@ check_mgmt:
 		}
 		rc = iscsi_prep_scsi_cmd_pdu(conn->task);
 		if (rc) {
+<<<<<<< HEAD
 			if (rc == -ENOMEM || rc == -EACCES)
 				fail_scsi_task(conn->task, DID_IMM_RETRY);
 			else
+=======
+			if (rc == -ENOMEM || rc == -EACCES) {
+				spin_lock_bh(&conn->taskqueuelock);
+				list_add_tail(&conn->task->running,
+					      &conn->cmdqueue);
+				conn->task = NULL;
+				spin_unlock_bh(&conn->taskqueuelock);
+				goto done;
+			} else
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				fail_scsi_task(conn->task, DID_ABORT);
 			spin_lock_bh(&conn->taskqueuelock);
 			continue;
@@ -1669,7 +1680,10 @@ int iscsi_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *sc)
 				sc->result = DID_NO_CONNECT << 16;
 				break;
 			}
+<<<<<<< HEAD
 			/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case ISCSI_STATE_IN_RECOVERY:
 			reason = FAILURE_SESSION_IN_RECOVERY;
 			sc->result = DID_IMM_RETRY << 16;
@@ -1961,7 +1975,11 @@ enum blk_eh_timer_return iscsi_eh_cmd_timed_out(struct scsi_cmnd *sc)
 		if (unlikely(system_state != SYSTEM_RUNNING)) {
 			sc->result = DID_NO_CONNECT << 16;
 			ISCSI_DBG_EH(session, "sc on shutdown, handled\n");
+<<<<<<< HEAD
 			rc = BLK_EH_DONE;
+=======
+			rc = BLK_EH_HANDLED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto done;
 		}
 		/*

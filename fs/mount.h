@@ -17,7 +17,11 @@ struct mnt_namespace {
 	u64 event;
 	unsigned int		mounts; /* # of mounts in the namespace */
 	unsigned int		pending_mounts;
+<<<<<<< HEAD
 } __randomize_layout;
+=======
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct mnt_pcp {
 	int mnt_count;
@@ -58,10 +62,14 @@ struct mount {
 	struct mount *mnt_master;	/* slave is on master->mnt_slave_list */
 	struct mnt_namespace *mnt_ns;	/* containing namespace */
 	struct mountpoint *mnt_mp;	/* where is it mounted */
+<<<<<<< HEAD
 	union {
 		struct hlist_node mnt_mp_list;	/* list mounts with the same mountpoint */
 		struct hlist_node mnt_umount;
 	};
+=======
+	struct hlist_node mnt_mp_list;	/* list mounts with the same mountpoint */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct list_head mnt_umounting; /* list entry for umount propagation */
 #ifdef CONFIG_FSNOTIFY
 	struct fsnotify_mark_connector __rcu *mnt_fsnotify_marks;

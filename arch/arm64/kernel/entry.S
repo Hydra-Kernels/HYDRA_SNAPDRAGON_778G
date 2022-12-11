@@ -17,11 +17,15 @@
 #include <asm/cpufeature.h>
 #include <asm/errno.h>
 #include <asm/esr.h>
+<<<<<<< HEAD
 #include <asm/irq.h>
 #include <asm/memory.h>
 #include <asm/mmu.h>
 #include <asm/processor.h>
 #include <asm/ptrace.h>
+=======
+#include <asm/memory.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/thread_info.h>
 #include <asm/asm-uaccess.h>
 #include <asm/unistd.h>
@@ -178,6 +182,7 @@ alternative_cb_end
 #endif
 	.else
 	add	x21, sp, #S_FRAME_SIZE
+<<<<<<< HEAD
 	get_current_task tsk
 	/* Save the task's original addr_limit and set USER_DS */
 	ldr	x20, [tsk, #TSK_TI_ADDR_LIMIT]
@@ -185,6 +190,14 @@ alternative_cb_end
 	mov	x20, #USER_DS
 	str	x20, [tsk, #TSK_TI_ADDR_LIMIT]
 	/* No need to reset PSTATE.UAO, hardware's already set it to 0 for us */
+=======
+	get_thread_info tsk
+	/* Save the task's original addr_limit and set USER_DS (TASK_SIZE_64) */
+	ldr	x20, [tsk, #TI_ADDR_LIMIT]
+	str	x20, [sp, #S_ORIG_ADDR_LIMIT]
+	mov	x20, #TASK_SIZE_64
+	str	x20, [tsk, #TI_ADDR_LIMIT]
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.endif /* \el == 0 */
 	mrs	x22, elr_el1
 	mrs	x23, spsr_el1
@@ -260,6 +273,7 @@ alternative_else_nop_endif
 
 	.macro	kernel_exit, el
 	.if	\el != 0
+<<<<<<< HEAD
 	disable_daif
 
 	/* Restore the task's original addr_limit. */
@@ -277,6 +291,13 @@ alternative_if ARM64_HAS_IRQ_PRIO_MASKING
 	dsb	sy
 alternative_else_nop_endif
 
+=======
+	/* Restore the task's original addr_limit. */
+	ldr	x20, [sp, #S_ORIG_ADDR_LIMIT]
+	str	x20, [tsk, #TI_ADDR_LIMIT]
+	.endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ldp	x21, x22, [sp, #S_PC]		// load ELR, SPSR
 	.if	\el == 0
 	ct_user_enter
@@ -625,8 +646,17 @@ el1_da:
 	 * Data abort handling
 	 */
 	mrs	x3, far_el1
+<<<<<<< HEAD
 	inherit_daif	pstate=x23, tmp=x2
 	untagged_addr	x0, x3
+=======
+	enable_dbg
+	// re-enable interrupts if they were enabled in the aborted context
+	tbnz	x23, #7, 1f			// PSR_I_BIT
+	enable_irq
+1:
+	clear_address_tag x0, x3
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mov	x2, sp				// struct pt_regs
 	bl	do_mem_abort
 
@@ -828,9 +858,16 @@ el0_da:
 	 * Data abort handling
 	 */
 	mrs	x26, far_el1
+<<<<<<< HEAD
 	ct_user_exit_irqoff
 	enable_daif
 	untagged_addr	x0, x26
+=======
+	// enable interrupts before calling the main handler
+	enable_dbg_and_irq
+	ct_user_exit
+	clear_address_tag x0, x26
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mov	x1, x25
 	mov	x2, sp
 	bl	do_mem_abort

@@ -160,7 +160,11 @@ static int tbf_segment(struct sk_buff *skb, struct Qdisc *sch,
 		skb_mark_not_on_list(segs);
 		qdisc_skb_cb(segs)->pkt_len = segs->len;
 		len += segs->len;
+<<<<<<< HEAD
 		ret = qdisc_enqueue(segs, q->qdisc, to_free);
+=======
+		ret = qdisc_enqueue(segs, q->qdisc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret != NET_XMIT_SUCCESS) {
 			if (net_xmit_drop_count(ret))
 				qdisc_qstats_drop(sch);
@@ -387,8 +391,14 @@ static int tbf_change(struct Qdisc *sch, struct nlattr *opt,
 
 	sch_tree_lock(sch);
 	if (child) {
+<<<<<<< HEAD
 		qdisc_tree_flush_backlog(q->qdisc);
 		qdisc_put(q->qdisc);
+=======
+		qdisc_tree_reduce_backlog(q->qdisc, q->qdisc->q.qlen,
+					  q->qdisc->qstats.backlog);
+		qdisc_destroy(q->qdisc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		q->qdisc = child;
 	}
 	q->limit = qopt->limit;

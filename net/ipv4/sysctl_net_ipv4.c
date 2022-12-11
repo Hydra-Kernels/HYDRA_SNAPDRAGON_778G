@@ -303,6 +303,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
 				 void __user *buffer, size_t *lenp,
 				 loff_t *ppos)
 {
+<<<<<<< HEAD
 	struct net *net = container_of(table->data, struct net,
 	    ipv4.sysctl_tcp_fastopen);
 	/* maxlen to print the list of keys in hex (*2), with dashes
@@ -315,11 +316,19 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
 	__le32 key[TCP_FASTOPEN_KEY_BUF_LENGTH / sizeof(__le32)];
 	char *backup_data;
 	int ret, i = 0, off = 0, n_keys;
+=======
+	struct ctl_table tbl = { .maxlen = (TCP_FASTOPEN_KEY_LENGTH * 2 + 10) };
+	struct tcp_fastopen_context *ctxt;
+	u32  user_key[4]; /* 16 bytes, matching TCP_FASTOPEN_KEY_LENGTH */
+	__le32 key[4];
+	int ret, i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	tbl.data = kmalloc(tbl.maxlen, GFP_KERNEL);
 	if (!tbl.data)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	n_keys = tcp_fastopen_get_cipher(net, NULL, (u64 *)key);
 	if (!n_keys) {
 		memset(&key[0], 0, TCP_FASTOPEN_KEY_LENGTH);
@@ -340,6 +349,21 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
 			off += snprintf(tbl.data + off, tbl.maxlen - off, ",");
 	}
 
+=======
+	rcu_read_lock();
+	ctxt = rcu_dereference(tcp_fastopen_ctx);
+	if (ctxt)
+		memcpy(key, ctxt->key, TCP_FASTOPEN_KEY_LENGTH);
+	else
+		memset(key, 0, sizeof(key));
+	rcu_read_unlock();
+
+	for (i = 0; i < ARRAY_SIZE(key); i++)
+		user_key[i] = le32_to_cpu(key[i]);
+
+	snprintf(tbl.data, tbl.maxlen, "%08x-%08x-%08x-%08x",
+		user_key[0], user_key[1], user_key[2], user_key[3]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = proc_dostring(&tbl, write, buffer, lenp, ppos);
 
 	if (write && ret == 0) {
@@ -352,6 +376,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
 			ret = -EINVAL;
 			goto bad_key;
 		}
+<<<<<<< HEAD
 		if (backup_data) {
 			if (sscanf_key(backup_data, key + 4)) {
 				ret = -EINVAL;
@@ -363,6 +388,24 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
 	}
 
 bad_key:
+=======
+		/* Generate a dummy secret but don't publish it. This
+		 * is needed so we don't regenerate a new key on the
+		 * first invocation of tcp_fastopen_cookie_gen
+		 */
+		tcp_fastopen_init_key_once(false);
+
+		for (i = 0; i < ARRAY_SIZE(user_key); i++)
+			key[i] = cpu_to_le32(user_key[i]);
+
+		tcp_fastopen_reset_cipher(key, TCP_FASTOPEN_KEY_LENGTH);
+	}
+
+bad_key:
+	pr_debug("proc FO key set 0x%x-%x-%x-%x <- 0x%s: %u\n",
+		 user_key[0], user_key[1], user_key[2], user_key[3],
+	       (char *)tbl.data, ret);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(tbl.data);
 	return ret;
 }

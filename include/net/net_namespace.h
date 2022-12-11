@@ -272,7 +272,11 @@ int net_eq(const struct net *net1, const struct net *net2)
 
 static inline int check_net(const struct net *net)
 {
+<<<<<<< HEAD
 	return refcount_read(&net->count) != 0;
+=======
+	return atomic_read(&net->count) != 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void net_drop_ns(void *);

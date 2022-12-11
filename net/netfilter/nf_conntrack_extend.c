@@ -37,7 +37,42 @@ void nf_ct_ext_destroy(struct nf_conn *ct)
 }
 EXPORT_SYMBOL(nf_ct_ext_destroy);
 
+<<<<<<< HEAD
 void *nf_ct_ext_add(struct nf_conn *ct, enum nf_ct_ext_id id, gfp_t gfp)
+=======
+static void *
+nf_ct_ext_create(struct nf_ct_ext **ext, enum nf_ct_ext_id id,
+		 size_t var_alloc_len, gfp_t gfp)
+{
+	unsigned int off, len;
+	struct nf_ct_ext_type *t;
+	size_t alloc_size;
+
+	rcu_read_lock();
+	t = rcu_dereference(nf_ct_ext_types[id]);
+	if (!t) {
+		rcu_read_unlock();
+		return NULL;
+	}
+
+	off = ALIGN(sizeof(struct nf_ct_ext), t->align);
+	len = off + t->len + var_alloc_len;
+	alloc_size = t->alloc_size + var_alloc_len;
+	rcu_read_unlock();
+
+	*ext = kzalloc(alloc_size, gfp);
+	if (!*ext)
+		return NULL;
+
+	(*ext)->offset[id] = off;
+	(*ext)->len = len;
+
+	return (void *)(*ext) + off;
+}
+
+void *__nf_ct_ext_add_length(struct nf_conn *ct, enum nf_ct_ext_id id,
+			     size_t var_alloc_len, gfp_t gfp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned int newlen, newoff, oldlen, alloc;
 	struct nf_ct_ext *old, *new;

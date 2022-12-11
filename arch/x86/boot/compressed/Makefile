@@ -26,7 +26,11 @@ KCOV_INSTRUMENT		:= n
 targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma \
 	vmlinux.bin.xz vmlinux.bin.lzo vmlinux.bin.lz4
 
+<<<<<<< HEAD
 KBUILD_CFLAGS := -m$(BITS) -O2
+=======
+KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 KBUILD_CFLAGS += -fno-strict-aliasing $(call cc-option, -fPIE, -fPIC)
 KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
 cflags-$(CONFIG_X86_32) := -march=i386
@@ -45,18 +49,33 @@ KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
 GCOV_PROFILE := n
 UBSAN_SANITIZE :=n
 
+<<<<<<< HEAD
 KBUILD_LDFLAGS := -m elf_$(UTS_MACHINE)
 # Compressed kernel should be built as PIE since it may be loaded at any
 # address by the bootloader.
 ifeq ($(CONFIG_X86_32),y)
 KBUILD_LDFLAGS += $(call ld-option, -pie) $(call ld-option, --no-dynamic-linker)
+=======
+LDFLAGS := -m elf_$(UTS_MACHINE)
+ifeq ($(CONFIG_RELOCATABLE),y)
+# If kernel is relocatable, build compressed kernel as PIE.
+ifeq ($(CONFIG_X86_32),y)
+LDFLAGS += $(call ld-option, -pie) $(call ld-option, --no-dynamic-linker)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 else
 # To build 64-bit compressed kernel as PIE, we disable relocation
 # overflow check to avoid relocation overflow error with a new linker
 # command-line option, -z noreloc-overflow.
+<<<<<<< HEAD
 KBUILD_LDFLAGS += $(shell $(LD) --help 2>&1 | grep -q "\-z noreloc-overflow" \
 	&& echo "-z noreloc-overflow -pie --no-dynamic-linker")
 endif
+=======
+LDFLAGS += $(shell $(LD) --help 2>&1 | grep -q "\-z noreloc-overflow" \
+	&& echo "-z noreloc-overflow -pie --no-dynamic-linker")
+endif
+endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 LDFLAGS_vmlinux := -T
 
 hostprogs-y	:= mkpiggy

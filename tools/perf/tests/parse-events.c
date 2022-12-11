@@ -1889,7 +1889,11 @@ static int test_pmu_events(void)
 	}
 
 	while (!ret && (ent = readdir(dir))) {
+<<<<<<< HEAD
 		struct evlist_test e = { .id = 0, };
+=======
+		struct evlist_test e;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		char name[2 * NAME_MAX + 1 + 12 + 3];
 
 		/* Names containing . are special and cannot be used directly */

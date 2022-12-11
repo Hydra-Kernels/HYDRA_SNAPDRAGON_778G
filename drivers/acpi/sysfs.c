@@ -651,7 +651,11 @@ static void acpi_global_event_handler(u32 event_type, acpi_handle device,
 static int get_status(u32 index, acpi_event_status *ret,
 		      acpi_handle *handle)
 {
+<<<<<<< HEAD
 	acpi_status status;
+=======
+	int result;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (index >= num_gpes + ACPI_NUM_FIXED_EVENTS)
 		return -EINVAL;
@@ -661,7 +665,11 @@ static int get_status(u32 index, acpi_event_status *ret,
 		if (ACPI_FAILURE(status)) {
 			ACPI_EXCEPTION((AE_INFO, AE_NOT_FOUND,
 					"Invalid GPE 0x%x", index));
+<<<<<<< HEAD
 			return -ENXIO;
+=======
+			return result;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		status = acpi_get_gpe_status(*handle, index, ret);
 	} else {
@@ -670,7 +678,11 @@ static int get_status(u32 index, acpi_event_status *ret,
 	if (ACPI_FAILURE(status))
 		return -EIO;
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return result;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static ssize_t counter_show(struct kobject *kobj,

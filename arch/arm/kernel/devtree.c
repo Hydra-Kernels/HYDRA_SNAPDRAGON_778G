@@ -83,7 +83,11 @@ void __init arm_dt_init_cpu_maps(void)
 	if (!cpus)
 		return;
 
+<<<<<<< HEAD
 	for_each_of_cpu_node(cpu) {
+=======
+	for_each_child_of_node(cpus, cpu) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		const __be32 *cell;
 		int prop_bytes;
 		u32 hwid;
@@ -96,7 +100,12 @@ void __init arm_dt_init_cpu_maps(void)
 		 */
 		cell = of_get_property(cpu, "reg", &prop_bytes);
 		if (!cell || prop_bytes < sizeof(*cell)) {
+<<<<<<< HEAD
 			pr_debug(" * %pOF missing reg property\n", cpu);
+=======
+			pr_debug(" * %s missing reg property\n",
+				     cpu->full_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			of_node_put(cpu);
 			return;
 		}

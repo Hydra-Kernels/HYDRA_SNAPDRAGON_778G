@@ -769,10 +769,17 @@ static void __init ic_bootp_init_ext(u8 *e)
  */
 static inline void __init ic_bootp_init(void)
 {
+<<<<<<< HEAD
 	/* Re-initialise all name servers and NTP servers to NONE, in case any
 	 * were set via the "ip=" or "nfsaddrs=" kernel command line parameters:
 	 * any IP addresses specified there will already have been decoded but
 	 * are no longer needed
+=======
+	/* Re-initialise all name servers to NONE, in case any were set via the
+	 * "ip=" or "nfsaddrs=" kernel command line parameters: any IP addresses
+	 * specified there will already have been decoded but are no longer
+	 * needed
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 	ic_nameservers_predef();
 	ic_ntp_servers_predef();
@@ -1443,6 +1450,7 @@ static int __init ip_auto_config(void)
 	int err;
 	unsigned int i;
 
+<<<<<<< HEAD
 	/* Initialise all name servers and NTP servers to NONE (but only if the
 	 * "ip=" or "nfsaddrs=" kernel command line parameters weren't decoded,
 	 * otherwise we'll overwrite the IP addresses specified there)
@@ -1451,6 +1459,14 @@ static int __init ip_auto_config(void)
 		ic_nameservers_predef();
 		ic_ntp_servers_predef();
 	}
+=======
+	/* Initialise all name servers to NONE (but only if the "ip=" or
+	 * "nfsaddrs=" kernel command line parameters weren't decoded, otherwise
+	 * we'll overwrite the IP addresses specified there)
+	 */
+	if (ic_set_manually == 0)
+		ic_nameservers_predef();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_PROC_FS
 	proc_create_single("pnp", 0444, init_net.proc_net, pnp_seq_show);
@@ -1691,7 +1707,11 @@ static int __init ip_auto_config_setup(char *addrs)
 		return 1;
 	}
 
+<<<<<<< HEAD
 	/* Initialise all name servers and NTP servers to NONE */
+=======
+	/* Initialise all name servers to NONE */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ic_nameservers_predef();
 	ic_ntp_servers_predef();
 

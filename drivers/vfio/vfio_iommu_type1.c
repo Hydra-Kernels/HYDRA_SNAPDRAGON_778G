@@ -175,6 +175,7 @@ static void vfio_unlink_dma(struct vfio_iommu *iommu, struct vfio_dma *old)
 	rb_erase(&old->node, &iommu->dma_list);
 }
 
+<<<<<<< HEAD
 /*
  * Helper Functions for host iova-pfn list
  */
@@ -287,6 +288,34 @@ static int vfio_lock_acct(struct vfio_dma *dma, long npage, bool async)
 
 	if (async)
 		mmput(mm);
+=======
+static int vfio_lock_acct(long npage, bool *lock_cap)
+{
+	int ret = 0;
+
+	if (!npage)
+		return 0;
+
+	if (!current->mm)
+		return -ESRCH; /* process exited */
+
+	down_write(&current->mm->mmap_sem);
+	if (npage > 0) {
+		if (lock_cap ? !*lock_cap : !capable(CAP_IPC_LOCK)) {
+			unsigned long limit;
+
+			limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+
+			if (current->mm->locked_vm + npage > limit)
+				ret = -ENOMEM;
+		}
+	}
+
+	if (!ret)
+		current->mm->locked_vm += npage;
+
+	up_write(&current->mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }
@@ -439,8 +468,14 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
 				  long npage, unsigned long *pfn_base,
 				  unsigned long limit)
 {
+<<<<<<< HEAD
 	unsigned long pfn = 0;
 	long ret, pinned = 0, lock_acct = 0;
+=======
+	unsigned long pfn = 0, limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+	bool lock_cap = capable(CAP_IPC_LOCK);
+	long ret, i = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool rsvd;
 	dma_addr_t iova = vaddr - dma->vaddr + dma->iova;
 
@@ -473,9 +508,14 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
 		goto out;
 
 	/* Lock all the consecutive pages from pfn_base */
+<<<<<<< HEAD
 	for (vaddr += PAGE_SIZE, iova += PAGE_SIZE; pinned < npage;
 	     pinned++, vaddr += PAGE_SIZE, iova += PAGE_SIZE) {
 		ret = vaddr_get_pfn(current->mm, vaddr, dma->prot, &pfn);
+=======
+	for (vaddr += PAGE_SIZE; i < npage; i++, vaddr += PAGE_SIZE) {
+		ret = vaddr_get_pfn(vaddr, prot, &pfn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret)
 			break;
 
@@ -485,6 +525,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
 			break;
 		}
 
+<<<<<<< HEAD
 		if (!rsvd && !vfio_find_vpfn(dma, iova)) {
 			if (!dma->lock_cap &&
 			    current->mm->locked_vm + lock_acct + 1 > limit) {
@@ -495,11 +536,35 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
 				goto unpin_out;
 			}
 			lock_acct++;
+=======
+		if (!rsvd && !lock_cap &&
+		    current->mm->locked_vm + i + 1 > limit) {
+			put_pfn(pfn, prot);
+			pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n",
+				__func__, limit << PAGE_SHIFT);
+			ret = -ENOMEM;
+			goto unpin_out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
 out:
+<<<<<<< HEAD
 	ret = vfio_lock_acct(dma, lock_acct, false);
+=======
+	if (!rsvd)
+		ret = vfio_lock_acct(i, &lock_cap);
+
+unpin_out:
+	if (ret) {
+		if (!rsvd) {
+			for (pfn = *pfn_base ; i ; pfn++, i--)
+				put_pfn(pfn, prot);
+		}
+
+		return ret;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 unpin_out:
 	if (ret) {
@@ -530,7 +595,11 @@ static long vfio_unpin_pages_remote(struct vfio_dma *dma, dma_addr_t iova,
 	}
 
 	if (do_accounting)
+<<<<<<< HEAD
 		vfio_lock_acct(dma, locked - unlocked, true);
+=======
+		vfio_lock_acct(-unlocked, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return unlocked;
 }
@@ -861,6 +930,7 @@ static long vfio_unmap_unpin(struct vfio_iommu *iommu, struct vfio_dma *dma,
 		}
 	}
 
+<<<<<<< HEAD
 	dma->iommu_mapped = false;
 
 	if (unmapped_region_cnt) {
@@ -873,6 +943,9 @@ static long vfio_unmap_unpin(struct vfio_iommu *iommu, struct vfio_dma *dma,
 		return 0;
 	}
 	return unlocked;
+=======
+	vfio_lock_acct(-unlocked, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void vfio_remove_dma(struct vfio_iommu *iommu, struct vfio_dma *dma)
@@ -2362,6 +2435,7 @@ static long vfio_iommu_type1_ioctl(void *iommu_data,
 
 		info.iova_pgsizes = vfio_pgsize_bitmap(iommu);
 
+<<<<<<< HEAD
 		ret = vfio_iommu_iova_build_caps(iommu, &caps);
 
 		if (!ret)
@@ -2389,6 +2463,8 @@ static long vfio_iommu_type1_ioctl(void *iommu_data,
 			kfree(caps.buf);
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return copy_to_user((void __user *)arg, &info, minsz) ?
 			-EFAULT : 0;
 

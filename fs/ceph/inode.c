@@ -1542,7 +1542,11 @@ static int fill_readdir_cache(struct inode *dir, struct dentry *dn,
 		unlock_page(ctl->page);
 		ctl->dentries = kmap(ctl->page);
 		if (idx == 0)
+<<<<<<< HEAD
 			memset(ctl->dentries, 0, PAGE_SIZE);
+=======
+			memset(ctl->dentries, 0, PAGE_CACHE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (req->r_dir_release_cnt == atomic64_read(&ci->i_release_count) &&
@@ -1991,7 +1995,14 @@ static const struct inode_operations ceph_symlink_iops = {
 	.listxattr = ceph_listxattr,
 };
 
+<<<<<<< HEAD
 int __ceph_setattr(struct inode *inode, struct iattr *attr)
+=======
+/*
+ * setattr
+ */
+int __ceph_setattr(struct dentry *dentry, struct iattr *attr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	unsigned int ia_valid = attr->ia_valid;
@@ -2205,6 +2216,7 @@ int __ceph_setattr(struct inode *inode, struct iattr *attr)
 	return err;
 }
 
+<<<<<<< HEAD
 /*
  * setattr
  */
@@ -2233,6 +2245,16 @@ int ceph_setattr(struct dentry *dentry, struct iattr *attr)
 
 	if (err >= 0 && (attr->ia_valid & ATTR_MODE))
 		err = posix_acl_chmod(inode, attr->ia_mode);
+=======
+int ceph_setattr(struct dentry *dentry, struct iattr *attr)
+{
+	int err;
+
+	err = __ceph_setattr(dentry, attr);
+
+	if (err >= 0 && (attr->ia_valid & ATTR_MODE))
+		err = posix_acl_chmod(d_inode(dentry), attr->ia_mode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return err;
 }

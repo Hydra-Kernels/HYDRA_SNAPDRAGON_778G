@@ -680,6 +680,7 @@ static int caam_probe(struct platform_device *pdev)
 	 * In case of SoCs with Management Complex, MC f/w performs
 	 * the configuration.
 	 */
+<<<<<<< HEAD
 	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-mc");
 	ctrlpriv->mc_en = !!np;
 	of_node_put(np);
@@ -690,6 +691,11 @@ static int caam_probe(struct platform_device *pdev)
 			      MCFGR_WDENABLE | MCFGR_LARGE_BURST);
 
 	handle_imx6_err005766(&ctrl->mcr);
+=======
+	clrsetbits_32(&ctrl->mcr, MCFGR_AWCACHE_MASK, MCFGR_AWCACHE_CACH |
+		      MCFGR_AWCACHE_BUFF | MCFGR_WDENABLE |
+		      (sizeof(dma_addr_t) == sizeof(u64) ? MCFGR_LONG_PTR : 0));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 *  Read the Compile Time paramters and SCFGR to determine

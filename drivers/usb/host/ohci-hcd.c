@@ -75,7 +75,10 @@ static const char	hcd_name [] = "ohci_hcd";
 
 #define	STATECHANGE_DELAY	msecs_to_jiffies(300)
 #define	IO_WATCHDOG_DELAY	msecs_to_jiffies(275)
+<<<<<<< HEAD
 #define	IO_WATCHDOG_OFF		0xffffff00
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "ohci.h"
 #include "pci-quirks.h"
@@ -457,7 +460,11 @@ static int ohci_init (struct ohci_hcd *ohci)
 	struct usb_hcd *hcd = ohci_to_hcd(ohci);
 
 	/* Accept arbitrarily long scatter-gather lists */
+<<<<<<< HEAD
 	if (!hcd->localmem_pool)
+=======
+	if (!(hcd->driver->flags & HCD_LOCAL_MEM))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		hcd->self.sg_tablesize = ~0;
 
 	if (distrust_firmware)

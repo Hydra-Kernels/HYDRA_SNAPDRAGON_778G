@@ -188,7 +188,11 @@ int vmw_get_cap_3d_ioctl(struct drm_device *dev, void *data,
 	struct vmw_fpriv *vmw_fp = vmw_fpriv(file_priv);
 
 	if (unlikely(arg->pad64 != 0 || arg->max_size == 0)) {
+<<<<<<< HEAD
 		VMW_DEBUG_USER("Illegal GET_3D_CAP argument.\n");
+=======
+		DRM_ERROR("Illegal GET_3D_CAP argument.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 

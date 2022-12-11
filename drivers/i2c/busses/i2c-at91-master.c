@@ -800,3 +800,96 @@ int at91_twi_probe_master(struct platform_device *pdev,
 
 	return 0;
 }
+<<<<<<< HEAD:drivers/i2c/busses/i2c-at91-master.c
+=======
+
+#ifdef CONFIG_PM
+
+static int at91_twi_runtime_suspend(struct device *dev)
+{
+	struct at91_twi_dev *twi_dev = dev_get_drvdata(dev);
+
+	clk_disable_unprepare(twi_dev->clk);
+
+	pinctrl_pm_select_sleep_state(dev);
+
+	return 0;
+}
+
+static int at91_twi_runtime_resume(struct device *dev)
+{
+	struct at91_twi_dev *twi_dev = dev_get_drvdata(dev);
+
+	pinctrl_pm_select_default_state(dev);
+
+	return clk_prepare_enable(twi_dev->clk);
+}
+
+static int at91_twi_suspend_noirq(struct device *dev)
+{
+	if (!pm_runtime_status_suspended(dev))
+		at91_twi_runtime_suspend(dev);
+
+	return 0;
+}
+
+static int at91_twi_resume_noirq(struct device *dev)
+{
+	struct at91_twi_dev *twi_dev = dev_get_drvdata(dev);
+	int ret;
+
+	if (!pm_runtime_status_suspended(dev)) {
+		ret = at91_twi_runtime_resume(dev);
+		if (ret)
+			return ret;
+	}
+
+	pm_runtime_mark_last_busy(dev);
+	pm_request_autosuspend(dev);
+
+	at91_init_twi_bus(twi_dev);
+
+	return 0;
+}
+
+static const struct dev_pm_ops at91_twi_pm = {
+	.suspend_noirq	= at91_twi_suspend_noirq,
+	.resume_noirq	= at91_twi_resume_noirq,
+	.runtime_suspend	= at91_twi_runtime_suspend,
+	.runtime_resume		= at91_twi_runtime_resume,
+};
+
+#define at91_twi_pm_ops (&at91_twi_pm)
+#else
+#define at91_twi_pm_ops NULL
+#endif
+
+static struct platform_driver at91_twi_driver = {
+	.probe		= at91_twi_probe,
+	.remove		= at91_twi_remove,
+	.id_table	= at91_twi_devtypes,
+	.driver		= {
+		.name	= "at91_i2c",
+		.of_match_table = of_match_ptr(atmel_twi_dt_ids),
+		.pm	= at91_twi_pm_ops,
+	},
+};
+
+static int __init at91_twi_init(void)
+{
+	return platform_driver_register(&at91_twi_driver);
+}
+
+static void __exit at91_twi_exit(void)
+{
+	platform_driver_unregister(&at91_twi_driver);
+}
+
+subsys_initcall(at91_twi_init);
+module_exit(at91_twi_exit);
+
+MODULE_AUTHOR("Nikolaus Voss <n.voss@weinmann.de>");
+MODULE_DESCRIPTION("I2C (TWI) driver for Atmel AT91");
+MODULE_LICENSE("GPL");
+MODULE_ALIAS("platform:at91_i2c");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/i2c/busses/i2c-at91.c

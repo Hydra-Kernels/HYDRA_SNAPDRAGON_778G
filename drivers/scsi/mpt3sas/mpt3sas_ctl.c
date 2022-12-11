@@ -879,7 +879,11 @@ _ctl_do_mpt_command(struct MPT3SAS_ADAPTER *ioc, struct mpt3_ioctl_command karg,
 		    tm_request->DevHandle));
 		ioc->build_sg_mpi(ioc, psge, data_out_dma, data_out_sz,
 		    data_in_dma, data_in_sz);
+<<<<<<< HEAD
 		ioc->put_smid_hi_priority(ioc, smid, 0);
+=======
+		mpt3sas_base_put_smid_hi_priority(ioc, smid, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	}
 	case MPI2_FUNCTION_SMP_PASSTHROUGH:

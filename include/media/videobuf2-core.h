@@ -427,7 +427,16 @@ struct vb2_ops {
 
 	void (*buf_queue)(struct vb2_buffer *vb);
 
+<<<<<<< HEAD
 	void (*buf_request_complete)(struct vb2_buffer *vb);
+=======
+struct vb2_buf_ops {
+	int (*verify_planes_array)(struct vb2_buffer *vb, const void *pb);
+	int (*fill_user_buffer)(struct vb2_buffer *vb, void *pb);
+	int (*fill_vb2_buffer)(struct vb2_buffer *vb, const void *pb,
+				struct vb2_plane *planes);
+	int (*set_timestamp)(struct vb2_buffer *vb, const void *pb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /**

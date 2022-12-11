@@ -291,9 +291,13 @@ void panic(const char *fmt, ...)
 	 * panic() is not being callled from OOPS.
 	 */
 	debug_locks_off();
+<<<<<<< HEAD
 	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
 
 	panic_print_sys_info();
+=======
+	console_flush_on_panic();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!panic_blink)
 		panic_blink = no_blink;

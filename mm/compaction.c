@@ -216,6 +216,7 @@ static void reset_cached_positions(struct zone *zone)
 	zone->compact_cached_migrate_pfn[0] = zone->zone_start_pfn;
 	zone->compact_cached_migrate_pfn[1] = zone->zone_start_pfn;
 	zone->compact_cached_free_pfn =
+<<<<<<< HEAD
 				pageblock_start_pfn(zone_end_pfn(zone) - 1);
 }
 
@@ -307,6 +308,9 @@ __reset_isolation_pfn(struct zone *zone, unsigned long pfn, bool check_source,
 	} while (page <= end_page);
 
 	return false;
+=======
+			round_down(zone_end_pfn(zone) - 1, pageblock_nr_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -606,6 +610,7 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 				goto isolate_fail;
 		}
 
+<<<<<<< HEAD
 		/* Found a free page, will break it into order-0 pages */
 		order = page_order(page);
 		isolated = __isolate_free_page(page, order);
@@ -617,6 +622,19 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 		cc->nr_freepages += isolated;
 		list_add_tail(&page->lru, freelist);
 
+=======
+		/* Found a free page, break it into order-0 pages */
+		isolated = split_free_page(page);
+		if (!isolated)
+			break;
+
+		total_isolated += isolated;
+		cc->nr_freepages += isolated;
+		for (i = 0; i < isolated; i++) {
+			list_add(&page->lru, freelist);
+			page++;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!strict && cc->nr_migratepages <= cc->nr_freepages) {
 			blockpfn += isolated;
 			break;
@@ -658,7 +676,15 @@ isolate_fail:
 	if (strict && blockpfn < end_pfn)
 		total_isolated = 0;
 
+<<<<<<< HEAD
 	cc->total_free_scanned += nr_scanned;
+=======
+	/* Update the pageblock-skip if the whole pageblock was scanned */
+	if (blockpfn == end_pfn)
+		update_pageblock_skip(cc, valid_page, total_isolated, false);
+
+	count_compact_events(COMPACTFREE_SCANNED, nr_scanned);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (total_isolated)
 		count_compact_events(COMPACTISOLATED, total_isolated);
 	return total_isolated;
@@ -686,10 +712,17 @@ isolate_freepages_range(struct compact_control *cc,
 	LIST_HEAD(freelist);
 
 	pfn = start_pfn;
+<<<<<<< HEAD
 	block_start_pfn = pageblock_start_pfn(pfn);
 	if (block_start_pfn < cc->zone->zone_start_pfn)
 		block_start_pfn = cc->zone->zone_start_pfn;
 	block_end_pfn = pageblock_end_pfn(pfn);
+=======
+	block_start_pfn = pfn & ~(pageblock_nr_pages - 1);
+	if (block_start_pfn < cc->zone->zone_start_pfn)
+		block_start_pfn = cc->zone->zone_start_pfn;
+	block_end_pfn = ALIGN(pfn + 1, pageblock_nr_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (; pfn < end_pfn; pfn += isolated,
 				block_start_pfn = block_end_pfn,
@@ -705,8 +738,13 @@ isolate_freepages_range(struct compact_control *cc,
 		 * scanning range to right one.
 		 */
 		if (pfn >= block_end_pfn) {
+<<<<<<< HEAD
 			block_start_pfn = pageblock_start_pfn(pfn);
 			block_end_pfn = pageblock_end_pfn(pfn);
+=======
+			block_start_pfn = pfn & ~(pageblock_nr_pages - 1);
+			block_end_pfn = ALIGN(pfn + 1, pageblock_nr_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			block_end_pfn = min(block_end_pfn, end_pfn);
 		}
 
@@ -1089,10 +1127,17 @@ isolate_migratepages_range(struct compact_control *cc, unsigned long start_pfn,
 
 	/* Scan block by block. First and last block may be incomplete */
 	pfn = start_pfn;
+<<<<<<< HEAD
 	block_start_pfn = pageblock_start_pfn(pfn);
 	if (block_start_pfn < cc->zone->zone_start_pfn)
 		block_start_pfn = cc->zone->zone_start_pfn;
 	block_end_pfn = pageblock_end_pfn(pfn);
+=======
+	block_start_pfn = pfn & ~(pageblock_nr_pages - 1);
+	if (block_start_pfn < cc->zone->zone_start_pfn)
+		block_start_pfn = cc->zone->zone_start_pfn;
+	block_end_pfn = ALIGN(pfn + 1, pageblock_nr_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (; pfn < end_pfn; pfn = block_end_pfn,
 				block_start_pfn = block_end_pfn,
@@ -1473,8 +1518,11 @@ static void isolate_freepages(struct compact_control *cc)
 				block_end_pfn = block_start_pfn,
 				block_start_pfn -= pageblock_nr_pages,
 				isolate_start_pfn = block_start_pfn) {
+<<<<<<< HEAD
 		unsigned long nr_isolated;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * This can iterate a massively long zone without finding any
 		 * suitable migration targets, so periodically check resched.
@@ -1496,6 +1544,7 @@ static void isolate_freepages(struct compact_control *cc)
 			continue;
 
 		/* Found a block suitable for isolating free pages from. */
+<<<<<<< HEAD
 		nr_isolated = isolate_freepages_block(cc, &isolate_start_pfn,
 					block_end_pfn, freelist, stride, false);
 
@@ -1505,6 +1554,17 @@ static void isolate_freepages(struct compact_control *cc)
 
 		/* Are enough freepages isolated? */
 		if (cc->nr_freepages >= cc->nr_migratepages) {
+=======
+		isolate_freepages_block(cc, &isolate_start_pfn, block_end_pfn,
+					freelist, false);
+
+		/*
+		 * If we isolated enough freepages, or aborted due to lock
+		 * contention, terminate.
+		 */
+		if ((cc->nr_freepages >= cc->nr_migratepages)
+							|| cc->contended) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (isolate_start_pfn >= block_end_pfn) {
 				/*
 				 * Restart at previous pageblock if more
@@ -1741,6 +1801,10 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	unsigned long block_start_pfn;
 	unsigned long block_end_pfn;
 	unsigned long low_pfn;
+<<<<<<< HEAD
+=======
+	unsigned long isolate_start_pfn;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct page *page;
 	const isolate_mode_t isolate_mode =
 		(sysctl_compact_unevictable_allowed ? ISOLATE_UNEVICTABLE : 0) |
@@ -1752,6 +1816,7 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	 * initialized by compact_zone(). The first failure will use
 	 * the lowest PFN as the starting point for linear scanning.
 	 */
+<<<<<<< HEAD
 	low_pfn = fast_find_migrateblock(cc);
 	block_start_pfn = pageblock_start_pfn(low_pfn);
 	if (block_start_pfn < cc->zone->zone_start_pfn)
@@ -1766,13 +1831,25 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 
 	/* Only scan within a pageblock boundary */
 	block_end_pfn = pageblock_end_pfn(low_pfn);
+=======
+	low_pfn = cc->migrate_pfn;
+	block_start_pfn = cc->migrate_pfn & ~(pageblock_nr_pages - 1);
+	if (block_start_pfn < zone->zone_start_pfn)
+		block_start_pfn = zone->zone_start_pfn;
+
+	/* Only scan within a pageblock boundary */
+	block_end_pfn = ALIGN(low_pfn + 1, pageblock_nr_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Iterate over whole pageblocks until we find the first suitable.
 	 * Do not cross the free scanner.
 	 */
 	for (; block_end_pfn <= cc->free_pfn;
+<<<<<<< HEAD
 			fast_find_block = false,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			low_pfn = block_end_pfn,
 			block_start_pfn = block_end_pfn,
 			block_end_pfn += pageblock_nr_pages) {
@@ -1785,8 +1862,13 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 		if (!(low_pfn % (SWAP_CLUSTER_MAX * pageblock_nr_pages)))
 			cond_resched();
 
+<<<<<<< HEAD
 		page = pageblock_pfn_to_page(block_start_pfn,
 						block_end_pfn, cc->zone);
+=======
+		page = pageblock_pfn_to_page(block_start_pfn, block_end_pfn,
+									zone);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!page)
 			continue;
 
@@ -1812,6 +1894,18 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 		if (!suitable_migration_source(cc, page)) {
 			update_cached_migrate(cc, block_end_pfn);
 			continue;
+<<<<<<< HEAD
+=======
+
+		/* Perform the isolation */
+		isolate_start_pfn = low_pfn;
+		low_pfn = isolate_migratepages_block(cc, low_pfn,
+						block_end_pfn, isolate_mode);
+
+		if (!low_pfn || cc->contended) {
+			acct_isolated(zone, cc);
+			return ISOLATE_ABORT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/* Perform the isolation */
@@ -2110,8 +2204,18 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)
 	 * want to compact the whole zone), but check that it is initialised
 	 * by ensuring the values are within zone boundaries.
 	 */
+<<<<<<< HEAD
 	cc->fast_start_pfn = 0;
 	if (cc->whole_zone) {
+=======
+	cc->migrate_pfn = zone->compact_cached_migrate_pfn[sync];
+	cc->free_pfn = zone->compact_cached_free_pfn;
+	if (cc->free_pfn < start_pfn || cc->free_pfn >= end_pfn) {
+		cc->free_pfn = round_down(end_pfn - 1, pageblock_nr_pages);
+		zone->compact_cached_free_pfn = cc->free_pfn;
+	}
+	if (cc->migrate_pfn < start_pfn || cc->migrate_pfn >= end_pfn) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		cc->migrate_pfn = start_pfn;
 		cc->free_pfn = pageblock_start_pfn(end_pfn - 1);
 	} else {

@@ -209,6 +209,12 @@ struct dmatest_data {
 	unsigned int	off;
 };
 
+/* poor man's completion - we want to use wait_event_freezable() on it */
+struct dmatest_done {
+	bool			done;
+	wait_queue_head_t	*wait;
+};
+
 struct dmatest_thread {
 	struct list_head	node;
 	struct dmatest_info	*info;
@@ -788,10 +794,15 @@ static int dmatest_func(void *data)
 		}
 
 		done->done = false;
+<<<<<<< HEAD
 		if (!params->polled) {
 			tx->callback = dmatest_callback;
 			tx->callback_param = done;
 		}
+=======
+		tx->callback = dmatest_callback;
+		tx->callback_param = done;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		cookie = tx->tx_submit(tx);
 
 		if (dma_submit_error(cookie)) {
@@ -801,6 +812,7 @@ static int dmatest_func(void *data)
 			goto error_unmap_continue;
 		}
 
+<<<<<<< HEAD
 		if (params->polled) {
 			status = dma_sync_wait(chan, cookie);
 			dmaengine_terminate_sync(chan);
@@ -808,17 +820,27 @@ static int dmatest_func(void *data)
 				done->done = true;
 		} else {
 			dma_async_issue_pending(chan);
+=======
+		wait_event_freezable_timeout(thread->done_wait, done->done,
+					     msecs_to_jiffies(params->timeout));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			wait_event_freezable_timeout(thread->done_wait,
 					done->done,
 					msecs_to_jiffies(params->timeout));
 
+<<<<<<< HEAD
 			status = dma_async_is_tx_complete(chan, cookie, NULL,
 							  NULL);
 		}
 
 		if (!done->done) {
 			result("test timed out", total_tests, src->off, dst->off,
+=======
+		if (!done->done) {
+			dmaengine_unmap_put(um);
+			result("test timed out", total_tests, src_off, dst_off,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			       len, 0);
 			goto error_unmap_continue;
 		} else if (status != DMA_COMPLETE) {
@@ -902,7 +924,11 @@ err_thread_type:
 
 	/* terminate all transfers on specified channels */
 	if (ret || failed_tests)
+<<<<<<< HEAD
 		dmaengine_terminate_sync(chan);
+=======
+		dmaengine_terminate_all(chan);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	thread->done = true;
 	wake_up(&thread_wait);

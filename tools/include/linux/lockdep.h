@@ -16,7 +16,11 @@
 #include <linux/hardirq.h>
 #include <unistd.h>
 
+<<<<<<< HEAD:tools/include/linux/lockdep.h
 #define MAX_LOCK_DEPTH 63UL
+=======
+#define MAX_LOCK_DEPTH 255UL
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:tools/lib/lockdep/uinclude/linux/lockdep.h
 
 #define asmlinkage
 #define __visible

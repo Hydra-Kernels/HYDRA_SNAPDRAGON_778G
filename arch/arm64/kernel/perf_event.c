@@ -885,6 +885,7 @@ static void armv8pmu_reset(void *info)
 		armv8pmu_disable_intens(idx);
 	}
 
+<<<<<<< HEAD
 	/* Clear the counters we flip at guest entry/exit */
 	kvm_clr_pmu_events(U32_MAX);
 
@@ -922,6 +923,10 @@ static int __armv8_pmuv3_map_event(struct perf_event *event,
 
 	return armpmu_map_event(event, extra_event_map, extra_cache_map,
 				ARMV8_PMU_EVTYPE_EVENT);
+=======
+	/* Initialize & Reset PMNC: C and P bits. */
+	armv8pmu_pmcr_write(ARMV8_PMCR_P | ARMV8_PMCR_C);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int armv8_pmuv3_map_event(struct perf_event *event)

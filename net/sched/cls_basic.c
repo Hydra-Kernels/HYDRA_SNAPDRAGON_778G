@@ -118,7 +118,10 @@ static void basic_destroy(struct tcf_proto *tp, bool rtnl_held,
 		else
 			__basic_delete_filter(f);
 	}
+<<<<<<< HEAD
 	idr_destroy(&head->handle_idr);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree_rcu(head, rcu);
 }
 

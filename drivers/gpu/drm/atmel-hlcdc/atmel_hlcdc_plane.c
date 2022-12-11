@@ -350,7 +350,65 @@ atmel_hlcdc_plane_update_pos_and_size(struct atmel_hlcdc_plane *plane,
 					ATMEL_HLCDC_LAYER_POS(state->crtc_x,
 							      state->crtc_y));
 
+<<<<<<< HEAD
 	atmel_hlcdc_plane_setup_scaler(plane, state);
+=======
+	/* TODO: rework the rescaling part */
+	if (state->crtc_w != state->src_w || state->crtc_h != state->src_h) {
+		u32 factor_reg = 0;
+
+		if (state->crtc_w != state->src_w) {
+			int i;
+			u32 factor;
+			u32 *coeff_tab = heo_upscaling_xcoef;
+			u32 max_memsize;
+
+			if (state->crtc_w < state->src_w)
+				coeff_tab = heo_downscaling_xcoef;
+			for (i = 0; i < ARRAY_SIZE(heo_upscaling_xcoef); i++)
+				atmel_hlcdc_layer_update_cfg(&plane->layer,
+							     17 + i,
+							     0xffffffff,
+							     coeff_tab[i]);
+			factor = ((8 * 256 * state->src_w) - (256 * 4)) /
+				 state->crtc_w;
+			factor++;
+			max_memsize = ((factor * state->crtc_w) + (256 * 4)) /
+				      2048;
+			if (max_memsize > state->src_w)
+				factor--;
+			factor_reg |= factor | 0x80000000;
+		}
+
+		if (state->crtc_h != state->src_h) {
+			int i;
+			u32 factor;
+			u32 *coeff_tab = heo_upscaling_ycoef;
+			u32 max_memsize;
+
+			if (state->crtc_h < state->src_h)
+				coeff_tab = heo_downscaling_ycoef;
+			for (i = 0; i < ARRAY_SIZE(heo_upscaling_ycoef); i++)
+				atmel_hlcdc_layer_update_cfg(&plane->layer,
+							     33 + i,
+							     0xffffffff,
+							     coeff_tab[i]);
+			factor = ((8 * 256 * state->src_h) - (256 * 4)) /
+				 state->crtc_h;
+			factor++;
+			max_memsize = ((factor * state->crtc_h) + (256 * 4)) /
+				      2048;
+			if (max_memsize > state->src_h)
+				factor--;
+			factor_reg |= (factor << 16) | 0x80000000;
+		}
+
+		atmel_hlcdc_layer_update_cfg(&plane->layer, 13, 0xffffffff,
+					     factor_reg);
+	} else {
+		atmel_hlcdc_layer_update_cfg(&plane->layer, 13, 0xffffffff, 0);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void

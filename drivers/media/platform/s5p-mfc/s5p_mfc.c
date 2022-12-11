@@ -1073,8 +1073,19 @@ static void s5p_mfc_memdev_release(struct device *dev)
 	of_reserved_mem_device_release(dev);
 }
 
+<<<<<<< HEAD
 static struct device *s5p_mfc_alloc_memdev(struct device *dev,
 					   const char *name, unsigned int idx)
+=======
+static void s5p_mfc_memdev_release(struct device *dev)
+{
+	dma_release_declared_memory(dev);
+}
+
+static void *mfc_get_drv_data(struct platform_device *pdev);
+
+static int s5p_mfc_alloc_memdevs(struct s5p_mfc_dev *dev)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct device *child;
 	int ret;
@@ -1105,6 +1116,7 @@ static struct device *s5p_mfc_alloc_memdev(struct device *dev,
 		device_del(child);
 	}
 
+<<<<<<< HEAD
 	put_device(child);
 	return NULL;
 }
@@ -1166,6 +1178,40 @@ static int s5p_mfc_configure_2port_memory(struct s5p_mfc_dev *mfc_dev)
 	vb2_dma_contig_set_max_seg_size(mfc_dev->mem_dev[BANK_R_CTX],
 					DMA_BIT_MASK(32));
 
+=======
+	dev_set_name(dev->mem_dev_l, "%s", "s5p-mfc-l");
+	dev->mem_dev_l->release = s5p_mfc_memdev_release;
+	device_initialize(dev->mem_dev_l);
+	of_property_read_u32_array(dev->plat_dev->dev.of_node,
+			"samsung,mfc-l", mem_info, 2);
+	if (dma_declare_coherent_memory(dev->mem_dev_l, mem_info[0],
+				mem_info[0], mem_info[1],
+				DMA_MEMORY_MAP | DMA_MEMORY_EXCLUSIVE) == 0) {
+		mfc_err("Failed to declare coherent memory for\n"
+		"MFC device\n");
+		return -ENOMEM;
+	}
+
+	dev->mem_dev_r = devm_kzalloc(&dev->plat_dev->dev,
+			sizeof(struct device), GFP_KERNEL);
+	if (!dev->mem_dev_r) {
+		mfc_err("Not enough memory\n");
+		return -ENOMEM;
+	}
+
+	dev_set_name(dev->mem_dev_r, "%s", "s5p-mfc-r");
+	dev->mem_dev_r->release = s5p_mfc_memdev_release;
+	device_initialize(dev->mem_dev_r);
+	of_property_read_u32_array(dev->plat_dev->dev.of_node,
+			"samsung,mfc-r", mem_info, 2);
+	if (dma_declare_coherent_memory(dev->mem_dev_r, mem_info[0],
+				mem_info[0], mem_info[1],
+				DMA_MEMORY_MAP | DMA_MEMORY_EXCLUSIVE) == 0) {
+		pr_err("Failed to declare coherent memory for\n"
+		"MFC device\n");
+		return -ENOMEM;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

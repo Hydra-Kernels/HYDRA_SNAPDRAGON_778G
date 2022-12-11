@@ -657,7 +657,11 @@ int mlx4_ib_send_to_slave(struct mlx4_ib_dev *dev, int slave, u8 port,
 	spin_unlock(&tun_qp->tx_lock);
 	tun_qp->tx_ring[tun_tx_ix].ah = NULL;
 end:
+<<<<<<< HEAD
 	rdma_destroy_ah(ah, 0);
+=======
+	ib_destroy_ah(ah);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -1469,7 +1473,11 @@ int mlx4_ib_send_to_wire(struct mlx4_ib_dev *dev, int slave, u8 port,
 	spin_unlock(&sqp->tx_lock);
 	sqp->tx_ring[wire_tx_ix].ah = NULL;
 out:
+<<<<<<< HEAD
 	kfree(ah);
+=======
+	ib_destroy_ah(ah);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

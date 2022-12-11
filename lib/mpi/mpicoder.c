@@ -161,11 +161,14 @@ int mpi_read_buffer(MPI a, uint8_t *buf, unsigned buf_len, unsigned *nbytes,
 		*sign = a->sign;
 
 	lzeros = count_lzeros(a);
+<<<<<<< HEAD
 
 	if (buf_len < n - lzeros) {
 		*nbytes = n - lzeros;
 		return -EOVERFLOW;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	p = buf;
 	*nbytes = n - lzeros;
@@ -256,13 +259,21 @@ int mpi_write_to_sgl(MPI a, struct scatterlist *sgl, unsigned nbytes,
 #error please implement for this limb size.
 #endif
 	unsigned int n = mpi_get_size(a);
+<<<<<<< HEAD
 	struct sg_mapping_iter miter;
 	int i, x, buf_len;
 	int nents;
+=======
+	int i, x, y = 0, lzeros, buf_len;
+
+	if (!nbytes || *nbytes < n)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (sign)
 		*sign = a->sign;
 
+<<<<<<< HEAD
 	if (nbytes < n)
 		return -EOVERFLOW;
 
@@ -290,6 +301,19 @@ int mpi_write_to_sgl(MPI a, struct scatterlist *sgl, unsigned nbytes,
 	}
 
 	for (i = a->nlimbs - 1; i >= 0; i--) {
+=======
+	lzeros = count_lzeros(a);
+
+	*nbytes = n - lzeros;
+	buf_len = sgl->length;
+	p2 = sg_virt(sgl);
+
+	for (i = a->nlimbs - 1 - lzeros / BYTES_PER_MPI_LIMB,
+			lzeros %= BYTES_PER_MPI_LIMB;
+		i >= 0; i--) {
+		alimb = a->d[i];
+		p = (u8 *)&alimb2;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if BYTES_PER_MPI_LIMB == 4
 		alimb = a->d[i] ? cpu_to_be32(a->d[i]) : 0;
 #elif BYTES_PER_MPI_LIMB == 8
@@ -297,7 +321,19 @@ int mpi_write_to_sgl(MPI a, struct scatterlist *sgl, unsigned nbytes,
 #else
 #error please implement for this limb size.
 #endif
+<<<<<<< HEAD
 		p = (u8 *)&alimb;
+=======
+		if (lzeros > 0) {
+			mpi_limb_t *limb1 = (void *)p - sizeof(alimb);
+			mpi_limb_t *limb2 = (void *)p - sizeof(alimb)
+				+ lzeros;
+			*limb1 = *limb2;
+			p -= lzeros;
+			y = lzeros;
+			lzeros -= sizeof(alimb);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		for (x = 0; x < sizeof(alimb); x++) {
 			*p2++ = *p++;

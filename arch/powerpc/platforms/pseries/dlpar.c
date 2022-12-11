@@ -270,8 +270,11 @@ int dlpar_detach_node(struct device_node *dn)
 	if (rc)
 		return rc;
 
+<<<<<<< HEAD
 	of_node_put(dn);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

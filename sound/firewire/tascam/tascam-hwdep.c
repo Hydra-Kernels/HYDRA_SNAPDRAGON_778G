@@ -15,6 +15,7 @@
 
 #include "tascam.h"
 
+<<<<<<< HEAD
 static long tscm_hwdep_read_locked(struct snd_tscm *tscm, char __user *buf,
 				   long count, loff_t *offset)
 {
@@ -93,11 +94,19 @@ static long tscm_hwdep_read_queue(struct snd_tscm *tscm, char __user *buf,
 	return count;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static long hwdep_read(struct snd_hwdep *hwdep, char __user *buf, long count,
 		       loff_t *offset)
 {
 	struct snd_tscm *tscm = hwdep->private_data;
 	DEFINE_WAIT(wait);
+<<<<<<< HEAD
+=======
+	union snd_firewire_event event = {
+		.lock_status.type = SNDRV_FIREWIRE_EVENT_LOCK_STATUS,
+	};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_irq(&tscm->lock);
 
@@ -111,6 +120,7 @@ static long hwdep_read(struct snd_hwdep *hwdep, char __user *buf, long count,
 		spin_lock_irq(&tscm->lock);
 	}
 
+<<<<<<< HEAD
 	// NOTE: The acquired lock should be released in callee side.
 	if (tscm->dev_lock_changed) {
 		count = tscm_hwdep_read_locked(tscm, buf, count, offset);
@@ -120,6 +130,17 @@ static long hwdep_read(struct snd_hwdep *hwdep, char __user *buf, long count,
 		spin_unlock_irq(&tscm->lock);
 		count = 0;
 	}
+=======
+	event.lock_status.status = (tscm->dev_lock_count > 0);
+	tscm->dev_lock_changed = false;
+
+	spin_unlock_irq(&tscm->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	count = min_t(long, count, sizeof(event.lock_status));
+
+	if (copy_to_user(buf, &event, count))
+		return -EFAULT;
 
 	return count;
 }

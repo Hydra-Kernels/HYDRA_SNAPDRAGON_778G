@@ -47,7 +47,11 @@
 #include <asm/fixmap.h>
 #include <asm/realmode.h>
 #include <asm/time.h>
+<<<<<<< HEAD
 #include <asm/pgalloc.h>
+=======
+#include <asm/nospec-branch.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * We allocate runtime services regions top-down, starting from -4G, i.e.
@@ -662,12 +666,28 @@ static DEFINE_SPINLOCK(efi_runtime_lock);
 	efi_status_t __s;						\
 	u32 __func;							\
 									\
+<<<<<<< HEAD
 	arch_efi_call_virt_setup();					\
+=======
+	efi_sync_low_kernel_mappings();					\
+	local_irq_save(flags);						\
+	firmware_restrict_branch_speculation_start();			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 									\
 	__func = runtime_service32(f);					\
 	__s = efi64_thunk(__func, __VA_ARGS__);				\
 									\
+<<<<<<< HEAD
 	arch_efi_call_virt_teardown();					\
+=======
+	func = runtime_service32(f);					\
+	__s = efi64_thunk(func, __VA_ARGS__);			\
+									\
+	write_cr3(efi_scratch.prev_cr3);				\
+	__flush_tlb_all();						\
+	firmware_restrict_branch_speculation_end();			\
+	local_irq_restore(flags);					\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 									\
 	__s;								\
 })

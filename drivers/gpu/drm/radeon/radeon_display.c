@@ -416,7 +416,13 @@ static void radeon_flip_work_func(struct work_struct *__work)
 	struct drm_crtc *crtc = &radeon_crtc->base;
 	unsigned long flags;
 	int r;
+<<<<<<< HEAD
 	int vpos, hpos;
+=======
+	int vpos, hpos, stat, min_udelay = 0;
+	unsigned repcnt = 4;
+	struct drm_vblank_crtc *vblank = &crtc->dev->vblank[work->crtc_id];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	down_read(&rdev->exclusive_lock);
 	if (work->fence) {
@@ -469,6 +475,56 @@ static void radeon_flip_work_func(struct work_struct *__work)
 	/* set the proper interrupt */
 	radeon_irq_kms_pflip_irq_get(rdev, radeon_crtc->crtc_id);
 
+<<<<<<< HEAD
+=======
+	/* If this happens to execute within the "virtually extended" vblank
+	 * interval before the start of the real vblank interval then it needs
+	 * to delay programming the mmio flip until the real vblank is entered.
+	 * This prevents completing a flip too early due to the way we fudge
+	 * our vblank counter and vblank timestamps in order to work around the
+	 * problem that the hw fires vblank interrupts before actual start of
+	 * vblank (when line buffer refilling is done for a frame). It
+	 * complements the fudging logic in radeon_get_crtc_scanoutpos() for
+	 * timestamping and radeon_get_vblank_counter_kms() for vblank counts.
+	 *
+	 * In practice this won't execute very often unless on very fast
+	 * machines because the time window for this to happen is very small.
+	 */
+	while (radeon_crtc->enabled && --repcnt) {
+		/* GET_DISTANCE_TO_VBLANKSTART returns distance to real vblank
+		 * start in hpos, and to the "fudged earlier" vblank start in
+		 * vpos.
+		 */
+		stat = radeon_get_crtc_scanoutpos(rdev->ddev, work->crtc_id,
+						  GET_DISTANCE_TO_VBLANKSTART,
+						  &vpos, &hpos, NULL, NULL,
+						  &crtc->hwmode);
+
+		if ((stat & (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE)) !=
+		    (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE) ||
+		    !(vpos >= 0 && hpos <= 0))
+			break;
+
+		/* Sleep at least until estimated real start of hw vblank */
+		min_udelay = (-hpos + 1) * max(vblank->linedur_ns / 1000, 5);
+		if (min_udelay > vblank->framedur_ns / 2000) {
+			/* Don't wait ridiculously long - something is wrong */
+			repcnt = 0;
+			break;
+		}
+		spin_unlock_irqrestore(&crtc->dev->event_lock, flags);
+		usleep_range(min_udelay, 2 * min_udelay);
+		spin_lock_irqsave(&crtc->dev->event_lock, flags);
+	};
+
+	if (!repcnt)
+		DRM_DEBUG_DRIVER("Delay problem on crtc %d: min_udelay %d, "
+				 "framedur %d, linedur %d, stat %d, vpos %d, "
+				 "hpos %d\n", work->crtc_id, min_udelay,
+				 vblank->framedur_ns / 1000,
+				 vblank->linedur_ns / 1000, stat, vpos, hpos);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* do the flip (mmio) */
 	radeon_page_flip(rdev, radeon_crtc->crtc_id, work->base, work->async);
 
@@ -1333,6 +1389,7 @@ radeon_user_framebuffer_create(struct drm_device *dev,
 	/* Handle is imported dma-buf, so cannot be migrated to VRAM for scanout */
 	if (obj->import_attach) {
 		DRM_DEBUG_KMS("Cannot create framebuffer from imported dma_buf\n");
+<<<<<<< HEAD
 		drm_gem_object_put(obj);
 		return ERR_PTR(-EINVAL);
 	}
@@ -1340,6 +1397,14 @@ radeon_user_framebuffer_create(struct drm_device *dev,
 	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
 	if (fb == NULL) {
 		drm_gem_object_put_unlocked(obj);
+=======
+		return ERR_PTR(-EINVAL);
+	}
+
+	radeon_fb = kzalloc(sizeof(*radeon_fb), GFP_KERNEL);
+	if (radeon_fb == NULL) {
+		drm_gem_object_unreference_unlocked(obj);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return ERR_PTR(-ENOMEM);
 	}
 

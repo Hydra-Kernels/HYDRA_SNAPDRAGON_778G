@@ -129,7 +129,12 @@ static int led_tg_check(const struct xt_tgchk_param *par)
 	/* Since the letinternal timer can be shared between multiple targets,
 	 * always set it up, even if the current target does not need it
 	 */
+<<<<<<< HEAD
 	timer_setup(&ledinternal->timer, led_timeout_callback, 0);
+=======
+	setup_timer(&ledinternal->timer, led_timeout_callback,
+		    (unsigned long)ledinternal);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	list_add_tail(&ledinternal->list, &xt_led_triggers);
 

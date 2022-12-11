@@ -402,7 +402,77 @@ static int make_both_connections(struct snd_bebob *bebob)
 {
 	int err = 0;
 
+<<<<<<< HEAD
 	err = cmp_connection_establish(&bebob->out_conn);
+=======
+	if (bebob->connected)
+		goto end;
+
+	/* confirm params for both streams */
+	err = get_formation_index(rate, &index);
+	if (err < 0)
+		goto end;
+	pcm_channels = bebob->tx_stream_formations[index].pcm;
+	midi_channels = bebob->tx_stream_formations[index].midi;
+	err = amdtp_am824_set_parameters(&bebob->tx_stream, rate,
+					 pcm_channels, midi_channels * 8,
+					 false);
+	if (err < 0)
+		goto end;
+
+	pcm_channels = bebob->rx_stream_formations[index].pcm;
+	midi_channels = bebob->rx_stream_formations[index].midi;
+	err = amdtp_am824_set_parameters(&bebob->rx_stream, rate,
+					 pcm_channels, midi_channels * 8,
+					 false);
+	if (err < 0)
+		goto end;
+
+	/* establish connections for both streams */
+	err = cmp_connection_establish(&bebob->out_conn,
+			amdtp_stream_get_max_payload(&bebob->tx_stream));
+	if (err < 0)
+		goto end;
+	err = cmp_connection_establish(&bebob->in_conn,
+			amdtp_stream_get_max_payload(&bebob->rx_stream));
+	if (err < 0) {
+		cmp_connection_break(&bebob->out_conn);
+		goto end;
+	}
+
+	bebob->connected = true;
+end:
+	return err;
+}
+
+static void
+break_both_connections(struct snd_bebob *bebob)
+{
+	cmp_connection_break(&bebob->in_conn);
+	cmp_connection_break(&bebob->out_conn);
+
+	bebob->connected = false;
+
+	/* These models seems to be in transition state for a longer time. */
+	if (bebob->maudio_special_quirk != NULL)
+		msleep(200);
+}
+
+static void
+destroy_both_connections(struct snd_bebob *bebob)
+{
+	cmp_connection_destroy(&bebob->in_conn);
+	cmp_connection_destroy(&bebob->out_conn);
+}
+
+static int
+get_sync_mode(struct snd_bebob *bebob, enum cip_flags *sync_mode)
+{
+	enum snd_bebob_clock_type src;
+	int err;
+
+	err = snd_bebob_stream_get_clock_src(bebob, &src);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err < 0)
 		return err;
 

@@ -277,8 +277,14 @@ static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
 	batchp = &get_cpu_var(hugepd_freelist_cur);
 
 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+<<<<<<< HEAD
 	    mm_is_thread_local(tlb->mm)) {
 		kmem_cache_free(PGT_CACHE(PTE_T_ORDER), hugepte);
+=======
+	    cpumask_equal(mm_cpumask(tlb->mm),
+			  cpumask_of(smp_processor_id()))) {
+		kmem_cache_free(hugepte_cache, hugepte);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		put_cpu_var(hugepd_freelist_cur);
 		return;
 	}

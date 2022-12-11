@@ -69,8 +69,16 @@
 #define AUDIT_INITIALIZED	1
 static int	audit_initialized;
 
+<<<<<<< HEAD
 u32		audit_enabled = AUDIT_OFF;
 bool		audit_ever_enabled = !!AUDIT_OFF;
+=======
+#define AUDIT_OFF	0
+#define AUDIT_ON	1
+#define AUDIT_LOCKED	2
+u32		audit_enabled = AUDIT_OFF;
+u32		audit_ever_enabled = !!AUDIT_OFF;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 EXPORT_SYMBOL_GPL(audit_enabled);
 
@@ -1098,10 +1106,17 @@ static void audit_log_feature_change(int which, u32 old_feature, u32 new_feature
 	if (audit_enabled == AUDIT_OFF)
 		return;
 
+<<<<<<< HEAD
 	ab = audit_log_start(audit_context(), GFP_KERNEL, AUDIT_FEATURE_CHANGE);
 	if (!ab)
 		return;
 	audit_log_task_info(ab);
+=======
+	ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_FEATURE_CHANGE);
+	if (!ab)
+		return;
+	audit_log_task_info(ab, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	audit_log_format(ab, " feature=%s old=%u new=%u old_lock=%u new_lock=%u res=%d",
 			 audit_feature_names[which], !!old_feature, !!new_feature,
 			 !!old_lock, !!new_lock, res);
@@ -1594,9 +1609,17 @@ static int __init audit_init(void)
 					       sizeof(struct audit_buffer),
 					       0, SLAB_PANIC, NULL);
 
+<<<<<<< HEAD
 	skb_queue_head_init(&audit_queue);
 	skb_queue_head_init(&audit_retry_queue);
 	skb_queue_head_init(&audit_hold_queue);
+=======
+	skb_queue_head_init(&audit_skb_queue);
+	skb_queue_head_init(&audit_skb_hold_queue);
+	audit_initialized = AUDIT_INITIALIZED;
+
+	audit_log(NULL, GFP_KERNEL, AUDIT_KERNEL, "initialized");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < AUDIT_INODE_BUCKETS; i++)
 		INIT_LIST_HEAD(&audit_inode_hash[i]);
@@ -1641,9 +1664,14 @@ static int __init audit_enable(char *str)
 
 	if (audit_default == AUDIT_OFF)
 		audit_initialized = AUDIT_DISABLED;
+<<<<<<< HEAD
 	if (audit_set_enabled(audit_default))
 		pr_err("audit: error setting audit state (%d)\n",
 		       audit_default);
+=======
+	audit_enabled = audit_default;
+	audit_ever_enabled = !!audit_enabled;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pr_info("%s\n", audit_default ?
 		"enabled (after initialization)" : "disabled (until reboot)");
@@ -2134,14 +2162,22 @@ void audit_put_tty(struct tty_struct *tty)
 void audit_log_task_info(struct audit_buffer *ab)
 {
 	const struct cred *cred;
+<<<<<<< HEAD
 	char comm[sizeof(current->comm)];
+=======
+	char comm[sizeof(tsk->comm)];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct tty_struct *tty;
 
 	if (!ab)
 		return;
 
 	cred = current_cred();
+<<<<<<< HEAD
 	tty = audit_get_tty();
+=======
+	tty = audit_get_tty(tsk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	audit_log_format(ab,
 			 " ppid=%d pid=%d auid=%u uid=%u gid=%u"
 			 " euid=%u suid=%u fsuid=%u"
@@ -2158,11 +2194,19 @@ void audit_log_task_info(struct audit_buffer *ab)
 			 from_kgid(&init_user_ns, cred->sgid),
 			 from_kgid(&init_user_ns, cred->fsgid),
 			 tty ? tty_name(tty) : "(none)",
+<<<<<<< HEAD
 			 audit_get_sessionid(current));
 	audit_put_tty(tty);
 	audit_log_format(ab, " comm=");
 	audit_log_untrustedstring(ab, get_task_comm(comm, current));
 	audit_log_d_path_exe(ab, current->mm);
+=======
+			 audit_get_sessionid(tsk));
+	audit_put_tty(tty);
+	audit_log_format(ab, " comm=");
+	audit_log_untrustedstring(ab, get_task_comm(comm, tsk));
+	audit_log_d_path_exe(ab, tsk->mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	audit_log_task_context(ab);
 }
 EXPORT_SYMBOL(audit_log_task_info);

@@ -1089,6 +1089,7 @@ int btrfs_quota_disable(struct btrfs_fs_info *fs_info)
 	mutex_lock(&fs_info->qgroup_ioctl_lock);
 	if (!fs_info->quota_root)
 		goto out;
+<<<<<<< HEAD
 	mutex_unlock(&fs_info->qgroup_ioctl_lock);
 
 	/*
@@ -1113,6 +1114,10 @@ int btrfs_quota_disable(struct btrfs_fs_info *fs_info)
 		goto out;
 
 	clear_bit(BTRFS_FS_QUOTA_ENABLED, &fs_info->flags);
+=======
+	fs_info->quota_enabled = 0;
+	fs_info->pending_quota_state = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	btrfs_qgroup_wait_for_completion(fs_info, false);
 	spin_lock(&fs_info->qgroup_lock);
 	quota_root = fs_info->quota_root;
@@ -3058,6 +3063,21 @@ static bool is_last_leaf(struct btrfs_path *path)
 }
 
 /*
+ * Check if the leaf is the last leaf. Which means all node pointers
+ * are at their last position.
+ */
+static bool is_last_leaf(struct btrfs_path *path)
+{
+	int i;
+
+	for (i = 1; i < BTRFS_MAX_LEVEL && path->nodes[i]; i++) {
+		if (path->slots[i] != btrfs_header_nritems(path->nodes[i]) - 1)
+			return false;
+	}
+	return true;
+}
+
+/*
  * returns < 0 on error, 0 when more leafs are to be scanned.
  * returns 1 when done.
  */
@@ -3138,10 +3158,15 @@ out:
 	if (scratch_leaf)
 		free_extent_buffer(scratch_leaf);
 
+<<<<<<< HEAD
 	if (done && !ret) {
 		ret = 1;
 		fs_info->qgroup_rescan_progress.objectid = (u64)-1;
 	}
+=======
+	if (done && !ret)
+		ret = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -3242,6 +3267,15 @@ out:
 	} else {
 		btrfs_err(fs_info, "qgroup scan failed with %d", err);
 	}
+<<<<<<< HEAD
+=======
+
+done:
+	mutex_lock(&fs_info->qgroup_rescan_lock);
+	fs_info->qgroup_rescan_running = false;
+	mutex_unlock(&fs_info->qgroup_rescan_lock);
+	complete_all(&fs_info->qgroup_rescan_completion);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -3299,6 +3333,7 @@ qgroup_rescan_init(struct btrfs_fs_info *fs_info, u64 progress_objectid,
 		sizeof(fs_info->qgroup_rescan_progress));
 	fs_info->qgroup_rescan_progress.objectid = progress_objectid;
 	init_completion(&fs_info->qgroup_rescan_completion);
+	fs_info->qgroup_rescan_running = true;
 
 	spin_unlock(&fs_info->qgroup_lock);
 	mutex_unlock(&fs_info->qgroup_rescan_lock);

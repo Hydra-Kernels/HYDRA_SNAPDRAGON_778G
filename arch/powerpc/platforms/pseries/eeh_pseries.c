@@ -601,9 +601,24 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
 		config_addr = pe->addr;
 
 	while (max_wait > 0) {
+<<<<<<< HEAD
 		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
 				config_addr, BUID_HI(pe->phb->buid),
 				BUID_LO(pe->phb->buid));
+=======
+		/* Use new configure-pe function, if supported */
+		if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE) {
+			ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
+					config_addr, BUID_HI(pe->phb->buid),
+					BUID_LO(pe->phb->buid));
+		} else if (ibm_configure_bridge != RTAS_UNKNOWN_SERVICE) {
+			ret = rtas_call(ibm_configure_bridge, 3, 1, NULL,
+					config_addr, BUID_HI(pe->phb->buid),
+					BUID_LO(pe->phb->buid));
+		} else {
+			return -EFAULT;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (!ret)
 			return ret;
@@ -625,7 +640,11 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
 		rtas_busy_delay(ret);
 	}
 
+<<<<<<< HEAD
 	pr_warn("%s: Unable to configure bridge PHB#%x-PE#%x (%d)\n",
+=======
+	pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x (%d)\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		__func__, pe->phb->global_number, pe->addr, ret);
 	return ret;
 }

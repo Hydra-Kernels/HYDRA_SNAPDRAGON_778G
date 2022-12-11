@@ -935,7 +935,27 @@ static void msm_gpio_irq_disable(struct irq_data *d)
 
 static void msm_gpio_irq_unmask(struct irq_data *d)
 {
+<<<<<<< HEAD
 	msm_gpio_irq_clear_unmask(d, false);
+=======
+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+	struct msm_pinctrl *pctrl = to_msm_pinctrl(gc);
+	const struct msm_pingroup *g;
+	unsigned long flags;
+	u32 val;
+
+	g = &pctrl->soc->groups[d->hwirq];
+
+	spin_lock_irqsave(&pctrl->lock, flags);
+
+	val = readl(pctrl->regs + g->intr_cfg_reg);
+	val |= BIT(g->intr_enable_bit);
+	writel(val, pctrl->regs + g->intr_cfg_reg);
+
+	set_bit(d->hwirq, pctrl->enabled_irqs);
+
+	spin_unlock_irqrestore(&pctrl->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void msm_gpio_irq_ack(struct irq_data *d)

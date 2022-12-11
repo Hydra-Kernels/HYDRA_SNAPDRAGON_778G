@@ -295,12 +295,19 @@ static int marvell_config_aneg(struct phy_device *phydev)
 	int changed = 0;
 	int err;
 
+<<<<<<< HEAD
 	err = marvell_set_polarity(phydev, phydev->mdix_ctrl);
 	if (err < 0)
 		return err;
 
 	changed = err;
 
+=======
+	err = marvell_set_polarity(phydev, phydev->mdix);
+	if (err < 0)
+		return err;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	err = phy_write(phydev, MII_M1111_PHY_LED_CONTROL,
 			MII_M1111_PHY_LED_DIRECT);
 	if (err < 0)
@@ -310,17 +317,34 @@ static int marvell_config_aneg(struct phy_device *phydev)
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	if (phydev->autoneg != AUTONEG_ENABLE || changed) {
 		/* A write to speed/duplex bits (that is performed by
 		 * genphy_config_aneg() call above) must be followed by
 		 * a software reset. Otherwise, the write has no effect.
 		 */
 		err = genphy_soft_reset(phydev);
+=======
+	if (phydev->autoneg != AUTONEG_ENABLE) {
+		int bmcr;
+
+		/*
+		 * A write to speed/duplex bits (that is performed by
+		 * genphy_config_aneg() call above) must be followed by
+		 * a software reset. Otherwise, the write has no effect.
+		 */
+		bmcr = phy_read(phydev, MII_BMCR);
+		if (bmcr < 0)
+			return bmcr;
+
+		err = phy_write(phydev, MII_BMCR, bmcr | BMCR_RESET);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err < 0)
 			return err;
 	}
 
 	return 0;
+<<<<<<< HEAD
 }
 
 static int m88e1101_config_aneg(struct phy_device *phydev)
@@ -360,6 +384,49 @@ static int m88e1101_config_aneg(struct phy_device *phydev)
 
 #if IS_ENABLED(CONFIG_OF_MDIO)
 /* Set and/or override some configuration registers based on the
+=======
+}
+
+static int m88e1101_config_aneg(struct phy_device *phydev)
+{
+	int err;
+
+	/* This Marvell PHY has an errata which requires
+	 * that certain registers get written in order
+	 * to restart autonegotiation
+	 */
+	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
+
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, 0x1d, 0x1f);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, 0x1e, 0x200c);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, 0x1d, 0x5);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, 0x1e, 0);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, 0x1e, 0x100);
+	if (err < 0)
+		return err;
+
+	return marvell_config_aneg(phydev);
+}
+
+#ifdef CONFIG_OF_MDIO
+/*
+ * Set and/or override some configuration registers based on the
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * marvell,reg-init property stored in the of_node for the phydev.
  *
  * marvell,reg-init = <reg-page reg mask value>,...;
@@ -1203,8 +1270,28 @@ static int marvell_update_link(struct phy_device *phydev, int fiber)
 		if (status < 0)
 			return status;
 
+<<<<<<< HEAD
 		if ((status & REGISTER_LINK_STATUS) == 0)
 			phydev->link = 0;
+=======
+		lpa = phy_read(phydev, MII_LPA);
+		if (lpa < 0)
+			return lpa;
+
+		lpagb = phy_read(phydev, MII_STAT1000);
+		if (lpagb < 0)
+			return lpagb;
+
+		adv = phy_read(phydev, MII_ADVERTISE);
+		if (adv < 0)
+			return adv;
+
+		phydev->lp_advertising = mii_stat1000_to_ethtool_lpa_t(lpagb) |
+					 mii_lpa_to_ethtool_lpa_t(lpa);
+
+		if (status & MII_M1011_PHY_STATUS_FULLDUPLEX)
+			phydev->duplex = DUPLEX_FULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		else
 			phydev->link = 1;
 	} else {
@@ -2132,10 +2219,17 @@ static struct phy_driver marvell_drivers[] = {
 		.phy_id = MARVELL_PHY_ID_88E1101,
 		.phy_id_mask = MARVELL_PHY_ID_MASK,
 		.name = "Marvell 88E1101",
+<<<<<<< HEAD
 		/* PHY_GBIT_FEATURES */
 		.probe = marvell_probe,
 		.config_init = &marvell_config_init,
 		.config_aneg = &m88e1101_config_aneg,
+=======
+		.features = PHY_GBIT_FEATURES,
+		.flags = PHY_HAS_INTERRUPT,
+		.config_aneg = &m88e1101_config_aneg,
+		.read_status = &genphy_read_status,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.ack_interrupt = &marvell_ack_interrupt,
 		.config_intr = &marvell_config_intr,
 		.resume = &genphy_resume,

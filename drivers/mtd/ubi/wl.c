@@ -649,6 +649,12 @@ static int wear_leveling_worker(struct ubi_device *ubi, struct ubi_work *wrk,
 {
 	int err, scrubbing = 0, torture = 0, protect = 0, erroneous = 0;
 	int erase = 0, keep = 0, vol_id = -1, lnum = -1;
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_MTD_UBI_FASTMAP
+	int anchor = wrk->anchor;
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ubi_wl_entry *e1, *e2;
 	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
@@ -662,8 +668,11 @@ static int wear_leveling_worker(struct ubi_device *ubi, struct ubi_work *wrk,
 	if (!vidb)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	vid_hdr = ubi_get_vid_hdr(vidb);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	down_read(&ubi->fm_eba_sem);
 	mutex_lock(&ubi->move_mutex);
 	spin_lock(&ubi->wl_lock);
@@ -948,6 +957,12 @@ out_not_moved:
 			goto out_ro;
 	}
 
+	if (erase) {
+		err = do_sync_erase(ubi, e1, vol_id, lnum, 1);
+		if (err)
+			goto out_ro;
+	}
+
 	mutex_unlock(&ubi->move_mutex);
 	up_read(&ubi->fm_eba_sem);
 	return 0;
@@ -980,7 +995,11 @@ out_cancel:
 	spin_unlock(&ubi->wl_lock);
 	mutex_unlock(&ubi->move_mutex);
 	up_read(&ubi->fm_eba_sem);
+<<<<<<< HEAD
 	ubi_free_vid_buf(vidb);
+=======
+	ubi_free_vid_hdr(ubi, vid_hdr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

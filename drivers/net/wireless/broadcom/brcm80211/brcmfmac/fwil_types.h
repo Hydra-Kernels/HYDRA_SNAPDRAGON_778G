@@ -58,9 +58,12 @@
 #define BRCMF_SCANTYPE_ACTIVE		0
 #define BRCMF_SCANTYPE_PASSIVE		1
 
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/fwil_types.h
 #define BRCMF_WSEC_MAX_PSK_LEN		32
 #define	BRCMF_WSEC_PASSPHRASE		BIT(0)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/fwil_types.h
 /* primary (ie tx) key */
 #define BRCMF_PRIMARY_KEY		(1 << 1)
 #define DOT11_BSSTYPE_ANY		2

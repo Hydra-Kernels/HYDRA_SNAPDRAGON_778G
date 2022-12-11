@@ -1028,6 +1028,19 @@ static inline int update_parent_pkey(struct ipoib_dev_priv *priv)
 		 */
 		priv->dev->broadcast[8] = priv->pkey >> 8;
 		priv->dev->broadcast[9] = priv->pkey & 0xff;
+
+		/*
+		 * Update the broadcast address in the priv->broadcast object,
+		 * in case it already exists, otherwise no one will do that.
+		 */
+		if (priv->broadcast) {
+			spin_lock_irq(&priv->lock);
+			memcpy(priv->broadcast->mcmember.mgid.raw,
+			       priv->dev->broadcast + 4,
+			sizeof(union ib_gid));
+			spin_unlock_irq(&priv->lock);
+		}
+
 		return 0;
 	}
 
@@ -1223,17 +1236,28 @@ static void __ipoib_ib_dev_flush(struct ipoib_dev_priv *priv,
 		ipoib_mcast_dev_flush(dev);
 		if (oper_up)
 			set_bit(IPOIB_FLAG_OPER_UP, &priv->flags);
+<<<<<<< HEAD
 		ipoib_reap_dead_ahs(priv);
+=======
+		ipoib_flush_ah(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (level >= IPOIB_FLUSH_NORMAL)
 		ipoib_ib_dev_down(dev);
 
 	if (level == IPOIB_FLUSH_HEAVY) {
+		rtnl_lock();
 		if (test_bit(IPOIB_FLAG_INITIALIZED, &priv->flags))
 			ipoib_ib_dev_stop(dev);
 
+<<<<<<< HEAD
 		if (ipoib_ib_dev_open(dev))
+=======
+		result = ipoib_ib_dev_open(dev);
+		rtnl_unlock();
+		if (result)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 
 		if (netif_queue_stopped(dev))

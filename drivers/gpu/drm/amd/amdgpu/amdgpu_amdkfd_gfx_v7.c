@@ -442,6 +442,7 @@ static int kgd_hqd_sdma_load(struct kgd_dev *kgd, void *mqd,
 				RESUME_CTX, 0);
 		WREG32(mmSDMA0_GFX_CONTEXT_CNTL, data);
 	}
+<<<<<<< HEAD
 
 	data = REG_SET_FIELD(m->sdma_rlc_doorbell, SDMA0_RLC0_DOORBELL,
 			     ENABLE, 1);
@@ -494,6 +495,24 @@ static int kgd_hqd_sdma_dump(struct kgd_dev *kgd,
 
 	WARN_ON_ONCE(i != HQD_N_REGS);
 	*n_regs = i;
+=======
+
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_DOORBELL,
+				m->sdma_rlc_doorbell);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_RPTR, 0);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_WPTR, 0);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_VIRTUAL_ADDR,
+				m->sdma_rlc_virtual_addr);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_BASE, m->sdma_rlc_rb_base);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_BASE_HI,
+			m->sdma_rlc_rb_base_hi);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_RPTR_ADDR_LO,
+			m->sdma_rlc_rb_rptr_addr_lo);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_RPTR_ADDR_HI,
+			m->sdma_rlc_rb_rptr_addr_hi);
+	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_CNTL,
+			m->sdma_rlc_rb_cntl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -669,8 +688,11 @@ static int kgd_hqd_sdma_destroy(struct kgd_dev *kgd, void *mqd,
 	WREG32(sdma_base_addr + mmSDMA0_RLC0_RB_CNTL,
 		RREG32(sdma_base_addr + mmSDMA0_RLC0_RB_CNTL) |
 		SDMA0_RLC0_RB_CNTL__RB_ENABLE_MASK);
+<<<<<<< HEAD
 
 	m->sdma_rlc_rb_rptr = RREG32(sdma_base_addr + mmSDMA0_RLC0_RB_RPTR);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

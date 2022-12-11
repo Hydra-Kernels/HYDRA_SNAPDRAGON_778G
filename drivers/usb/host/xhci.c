@@ -179,8 +179,11 @@ int xhci_start(struct xhci_hcd *xhci)
 	if (!ret)
 		/* clear state flags. Including dying, halted or removing */
 		xhci->xhc_state = 0;
+<<<<<<< HEAD
 
 	enable_irq(hcd->irq);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }
@@ -749,11 +752,26 @@ static void xhci_stop(struct usb_hcd *hcd)
 
 	mutex_lock(&xhci->mutex);
 
+<<<<<<< HEAD
 	/* Only halt host and free memory after both hcds are removed */
+=======
+	if (!(xhci->xhc_state & XHCI_STATE_HALTED)) {
+		spin_lock_irq(&xhci->lock);
+
+		xhci->xhc_state |= XHCI_STATE_HALTED;
+		xhci->cmd_ring_state = CMD_RING_STATE_STOPPED;
+		xhci_halt(xhci);
+		xhci_reset(xhci);
+
+		spin_unlock_irq(&xhci->lock);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!usb_hcd_is_primary_hcd(hcd)) {
 		mutex_unlock(&xhci->mutex);
 		return;
 	}
+<<<<<<< HEAD
 
 	xhci_dbc_exit(xhci);
 
@@ -763,6 +781,8 @@ static void xhci_stop(struct usb_hcd *hcd)
 	xhci_halt(xhci);
 	xhci_reset(xhci);
 	spin_unlock_irq(&xhci->lock);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	xhci_cleanup_msix(xhci);
 
@@ -959,7 +979,11 @@ static void xhci_disable_hub_port_wake(struct xhci_hcd *xhci,
 
 static bool xhci_pending_portevent(struct xhci_hcd *xhci)
 {
+<<<<<<< HEAD
 	struct xhci_port	**ports;
+=======
+	__le32 __iomem		**port_array;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int			port_index;
 	u32			status;
 	u32			portsc;
@@ -973,18 +997,32 @@ static bool xhci_pending_portevent(struct xhci_hcd *xhci)
 	 * being written to the Event Ring. See note in xhci 1.1 section 4.19.2.
 	 */
 
+<<<<<<< HEAD
 	port_index = xhci->usb2_rhub.num_ports;
 	ports = xhci->usb2_rhub.ports;
 	while (port_index--) {
 		portsc = readl(ports[port_index]->addr);
+=======
+	port_index = xhci->num_usb2_ports;
+	port_array = xhci->usb2_ports;
+	while (port_index--) {
+		portsc = readl(port_array[port_index]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (portsc & PORT_CHANGE_MASK ||
 		    (portsc & PORT_PLS_MASK) == XDEV_RESUME)
 			return true;
 	}
+<<<<<<< HEAD
 	port_index = xhci->usb3_rhub.num_ports;
 	ports = xhci->usb3_rhub.ports;
 	while (port_index--) {
 		portsc = readl(ports[port_index]->addr);
+=======
+	port_index = xhci->num_usb3_ports;
+	port_array = xhci->usb3_ports;
+	while (port_index--) {
+		portsc = readl(port_array[port_index]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (portsc & PORT_CHANGE_MASK ||
 		    (portsc & PORT_PLS_MASK) == XDEV_RESUME)
 			return true;
@@ -1264,6 +1302,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
 
  done:
 	if (retval == 0) {
+<<<<<<< HEAD
 		/*
 		 * Resume roothubs only if there are pending events.
 		 * USB 3 devices resend U3 LFPS wake after a 100ms delay if
@@ -1276,6 +1315,10 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
 		}
 
 		if (pending_portevent) {
+=======
+		/* Resume root hubs only when have pending events. */
+		if (xhci_pending_portevent(xhci)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			usb_hcd_resume_root_hub(xhci->shared_hcd);
 			usb_hcd_resume_root_hub(hcd);
 		}
@@ -1707,17 +1750,35 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
 
 	if (xhci->xhc_state & XHCI_STATE_HALTED) {
 		xhci_dbg_trace(xhci, trace_xhci_dbg_cancel_urb,
+<<<<<<< HEAD
 				"HC halted, freeing TD manually.");
 		for (i = urb_priv->num_tds_done;
 		     i < urb_priv->num_tds;
 		     i++) {
 			td = &urb_priv->td[i];
+=======
+				"HW died, freeing TD.");
+		urb_priv = urb->hcpriv;
+		for (i = urb_priv->td_cnt;
+		     i < urb_priv->length && xhci->devs[urb->dev->slot_id];
+		     i++) {
+			td = urb_priv->td[i];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (!list_empty(&td->td_list))
 				list_del_init(&td->td_list);
 			if (!list_empty(&td->cancelled_td_list))
 				list_del_init(&td->cancelled_td_list);
 		}
+<<<<<<< HEAD
 		goto err_giveback;
+=======
+
+		usb_hcd_unlink_urb_from_ep(hcd, urb);
+		spin_unlock_irqrestore(&xhci->lock, flags);
+		usb_hcd_giveback_urb(hcd, urb, -ESHUTDOWN);
+		xhci_urb_free_priv(urb_priv);
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	i = urb_priv->num_tds_done;
@@ -5611,8 +5672,11 @@ static int __init xhci_hcd_init(void)
 	if (usb_disabled())
 		return -ENODEV;
 
+<<<<<<< HEAD
 	xhci_debugfs_create_root();
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

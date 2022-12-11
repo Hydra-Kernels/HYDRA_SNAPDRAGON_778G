@@ -50,16 +50,25 @@ extern void zfcp_dbf_hba_basic(char *, struct zfcp_adapter *);
 extern void zfcp_dbf_san_req(char *, struct zfcp_fsf_req *, u32);
 extern void zfcp_dbf_san_res(char *, struct zfcp_fsf_req *);
 extern void zfcp_dbf_san_in_els(char *, struct zfcp_fsf_req *);
+<<<<<<< HEAD
 extern void zfcp_dbf_scsi_common(char *tag, int level, struct scsi_device *sdev,
 				 struct scsi_cmnd *sc,
 				 struct zfcp_fsf_req *fsf);
+=======
+extern void zfcp_dbf_scsi(char *, int, struct scsi_cmnd *,
+			  struct zfcp_fsf_req *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void zfcp_dbf_scsi_eh(char *tag, struct zfcp_adapter *adapter,
 			     unsigned int scsi_id, int ret);
 
 /* zfcp_erp.c */
 extern void zfcp_erp_set_adapter_status(struct zfcp_adapter *, u32);
 extern void zfcp_erp_clear_adapter_status(struct zfcp_adapter *, u32);
+<<<<<<< HEAD
 extern void zfcp_erp_port_forced_no_port_dbf(char *dbftag,
+=======
+extern void zfcp_erp_port_forced_no_port_dbf(char *id,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					     struct zfcp_adapter *adapter,
 					     u64 port_name, u32 port_id);
 extern void zfcp_erp_adapter_reopen(struct zfcp_adapter *, int, char *);

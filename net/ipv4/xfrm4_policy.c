@@ -93,6 +93,10 @@ static int xfrm4_fill_dst(struct xfrm_dst *xdst, struct net_device *dev,
 		xdst->u.rt.rt_gw6 = rt->rt_gw6;
 	xdst->u.rt.rt_pmtu = rt->rt_pmtu;
 	xdst->u.rt.rt_mtu_locked = rt->rt_mtu_locked;
+<<<<<<< HEAD
+=======
+	xdst->u.rt.rt_table_id = rt->rt_table_id;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	INIT_LIST_HEAD(&xdst->u.rt.rt_uncached);
 	rt_add_uncached_list(&xdst->u.rt);
 

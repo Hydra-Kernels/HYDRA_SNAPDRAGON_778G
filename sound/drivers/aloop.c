@@ -323,7 +323,11 @@ static int loopback_prepare(struct snd_pcm_substream *substream)
 
 	loopback_timer_stop_sync(dpcm);
 
+<<<<<<< HEAD
 	salign = (snd_pcm_format_physical_width(runtime->format) *
+=======
+	salign = (snd_pcm_format_width(runtime->format) *
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 						runtime->channels) / 8;
 	bps = salign * runtime->rate;
 	if (bps <= 0 || salign <= 0)

@@ -118,6 +118,7 @@ static inline void native_pud_clear(pud_t *pud)
 	native_set_pud(pud, native_make_pud(0));
 }
 
+<<<<<<< HEAD
 static inline pud_t native_pudp_get_and_clear(pud_t *xp)
 {
 #ifdef CONFIG_SMP
@@ -155,6 +156,34 @@ static inline void native_p4d_clear(p4d_t *p4d)
 static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
 {
 	WRITE_ONCE(*pgdp, pti_set_user_pgtbl(pgdp, pgd));
+=======
+#ifdef CONFIG_PAGE_TABLE_ISOLATION
+extern pgd_t kaiser_set_shadow_pgd(pgd_t *pgdp, pgd_t pgd);
+
+static inline pgd_t *native_get_shadow_pgd(pgd_t *pgdp)
+{
+#ifdef CONFIG_DEBUG_VM
+	/* linux/mmdebug.h may not have been included at this point */
+	BUG_ON(!kaiser_enabled);
+#endif
+	return (pgd_t *)((unsigned long)pgdp | (unsigned long)PAGE_SIZE);
+}
+#else
+static inline pgd_t kaiser_set_shadow_pgd(pgd_t *pgdp, pgd_t pgd)
+{
+	return pgd;
+}
+static inline pgd_t *native_get_shadow_pgd(pgd_t *pgdp)
+{
+	BUILD_BUG_ON(1);
+	return NULL;
+}
+#endif /* CONFIG_PAGE_TABLE_ISOLATION */
+
+static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
+{
+	*pgdp = kaiser_set_shadow_pgd(pgdp, pgd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void native_pgd_clear(pgd_t *pgd)
@@ -255,6 +284,7 @@ extern void cleanup_highmap(void);
 extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
 extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
 
+<<<<<<< HEAD
 #define gup_fast_permitted gup_fast_permitted
 static inline bool gup_fast_permitted(unsigned long start, unsigned long end)
 {
@@ -262,6 +292,11 @@ static inline bool gup_fast_permitted(unsigned long start, unsigned long end)
 		return false;
 	return true;
 }
+=======
+#include <asm/pgtable-invert.h>
+
+#endif /* !__ASSEMBLY__ */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <asm/pgtable-invert.h>
 

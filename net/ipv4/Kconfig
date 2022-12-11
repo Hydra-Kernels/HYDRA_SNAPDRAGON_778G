@@ -186,7 +186,10 @@ config NET_IPGRE_DEMUX
 config NET_IP_TUNNEL
 	tristate
 	select DST_CACHE
+<<<<<<< HEAD
 	select GRO_CELLS
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default n
 
 config NET_IPGRE

@@ -579,9 +579,15 @@ static int intel_pt_recording_options(struct auxtrace_record *itr,
 			container_of(itr, struct intel_pt_recording, itr);
 	struct perf_pmu *intel_pt_pmu = ptr->intel_pt_pmu;
 	bool have_timing_info, need_immediate = false;
+<<<<<<< HEAD
 	struct evsel *evsel, *intel_pt_evsel = NULL;
 	const struct perf_cpu_map *cpus = evlist->core.cpus;
 	bool privileged = perf_event_paranoid_check(-1);
+=======
+	struct perf_evsel *evsel, *intel_pt_evsel = NULL;
+	const struct cpu_map *cpus = evlist->cpus;
+	bool privileged = geteuid() == 0 || perf_event_paranoid() < 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u64 tsc_bit;
 	int err;
 
@@ -784,6 +790,9 @@ static int intel_pt_recording_options(struct auxtrace_record *itr,
 		tracking_evsel->core.attr.sample_period = 1;
 
 		tracking_evsel->no_aux_samples = true;
+		if (need_immediate)
+			tracking_evsel->immediate = true;
+
 		if (need_immediate)
 			tracking_evsel->immediate = true;
 

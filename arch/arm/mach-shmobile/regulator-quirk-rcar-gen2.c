@@ -37,6 +37,7 @@
 /* start of DA9210 System Control and Event Registers */
 #define DA9210_REG_MASK_A		0x54
 
+<<<<<<< HEAD
 struct regulator_quirk {
 	struct list_head		list;
 	const struct of_device_id	*id;
@@ -47,12 +48,15 @@ struct regulator_quirk {
 };
 
 static LIST_HEAD(quirk_list);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void __iomem *irqc;
 
 /* first byte sets the memory pointer, following are consecutive reg values */
 static u8 da9063_irq_clr[] = { DA9063_REG_IRQ_MASK_A, 0xff, 0xff, 0xff, 0xff };
 static u8 da9210_irq_clr[] = { DA9210_REG_MASK_A, 0xff, 0xff };
 
+<<<<<<< HEAD
 static struct i2c_msg da9063_msg = {
 	.len = ARRAY_SIZE(da9063_irq_clr),
 	.buf = da9063_irq_clr,
@@ -70,6 +74,20 @@ static const struct of_device_id rcar_gen2_quirk_match[] = {
 	{},
 };
 
+=======
+static struct i2c_msg da9xxx_msgs[2] = {
+	{
+		.addr = 0x58,
+		.len = ARRAY_SIZE(da9063_irq_clr),
+		.buf = da9063_irq_clr,
+	}, {
+		.addr = 0x68,
+		.len = ARRAY_SIZE(da9210_irq_clr),
+		.buf = da9210_irq_clr,
+	},
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int regulator_quirk_notify(struct notifier_block *nb,
 				  unsigned long action, void *data)
 {
@@ -94,6 +112,7 @@ static int regulator_quirk_notify(struct notifier_block *nb,
 	client = to_i2c_client(dev);
 	dev_dbg(dev, "Detected %s\n", client->name);
 
+<<<<<<< HEAD
 	/*
 	 * Send message to all PMICs that share an IRQ line to deassert it.
 	 *
@@ -111,6 +130,15 @@ static int regulator_quirk_notify(struct notifier_block *nb,
 
 		ret = i2c_transfer(client->adapter, &pos->i2c_msg, 1);
 		if (ret != 1)
+=======
+	if ((client->addr == 0x58 && !strcmp(client->name, "da9063")) ||
+	    (client->addr == 0x68 && !strcmp(client->name, "da9210"))) {
+		int ret;
+
+		dev_info(&client->dev, "clearing da9063/da9210 interrupts\n");
+		ret = i2c_transfer(client->adapter, da9xxx_msgs, ARRAY_SIZE(da9xxx_msgs));
+		if (ret != ARRAY_SIZE(da9xxx_msgs))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_err(&client->dev, "i2c error %d\n", ret);
 	}
 

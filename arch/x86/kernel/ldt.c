@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/uaccess.h>
+#include <linux/kaiser.h>
 
 #include <asm/ldt.h>
 #include <asm/tlb.h>
@@ -61,11 +62,25 @@ static void flush_ldt(void *__mm)
 	refresh_ldt_segments();
 }
 
+static void __free_ldt_struct(struct ldt_struct *ldt)
+{
+	if (ldt->size * LDT_ENTRY_SIZE > PAGE_SIZE)
+		vfree(ldt->entries);
+	else
+		free_page((unsigned long)ldt->entries);
+	kfree(ldt);
+}
+
 /* The caller must call finalize_ldt_struct on the result. LDT starts zeroed. */
 static struct ldt_struct *alloc_ldt_struct(unsigned int num_entries)
 {
 	struct ldt_struct *new_ldt;
+<<<<<<< HEAD
 	unsigned int alloc_size;
+=======
+	int alloc_size;
+	int ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (num_entries > LDT_ENTRIES)
 		return NULL;
@@ -93,10 +108,20 @@ static struct ldt_struct *alloc_ldt_struct(unsigned int num_entries)
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	/* The new LDT isn't aliased for PTI yet. */
 	new_ldt->slot = -1;
 
 	new_ldt->nr_entries = num_entries;
+=======
+	ret = kaiser_add_mapping((unsigned long)new_ldt->entries, alloc_size,
+				 __PAGE_KERNEL);
+	new_ldt->size = size;
+	if (ret) {
+		__free_ldt_struct(new_ldt);
+		return NULL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return new_ldt;
 }
 
@@ -344,19 +369,30 @@ static void free_ldt_struct(struct ldt_struct *ldt)
 	if (likely(!ldt))
 		return;
 
+<<<<<<< HEAD
 	paravirt_free_ldt(ldt->entries, ldt->nr_entries);
 	if (ldt->nr_entries * LDT_ENTRY_SIZE > PAGE_SIZE)
 		vfree_atomic(ldt->entries);
 	else
 		free_page((unsigned long)ldt->entries);
 	kfree(ldt);
+=======
+	kaiser_remove_mapping((unsigned long)ldt->entries,
+			      ldt->size * LDT_ENTRY_SIZE);
+	paravirt_free_ldt(ldt->entries, ldt->size);
+	__free_ldt_struct(ldt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
  * Called on fork from arch_dup_mmap(). Just copy the current LDT state,
  * the new task is not running, so nothing can be installed.
  */
+<<<<<<< HEAD
 int ldt_dup_context(struct mm_struct *old_mm, struct mm_struct *mm)
+=======
+int init_new_context_ldt(struct task_struct *tsk, struct mm_struct *mm)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct ldt_struct *new_ldt;
 	int retval = 0;

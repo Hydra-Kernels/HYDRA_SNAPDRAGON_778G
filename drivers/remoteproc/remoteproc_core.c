@@ -1917,6 +1917,7 @@ int rproc_add(struct rproc *rproc)
 
 	dev_info(dev, "%s is available\n", rproc->name);
 
+<<<<<<< HEAD
 	/* create debugfs entries */
 	rproc_create_debug_dir(rproc);
 
@@ -1926,6 +1927,16 @@ int rproc_add(struct rproc *rproc)
 		if (ret < 0)
 			return ret;
 	}
+=======
+	dev_info(dev, "Note: remoteproc is still under development and considered experimental.\n");
+	dev_info(dev, "THE BINARY FORMAT IS NOT YET FINALIZED, and backward compatibility isn't yet guaranteed.\n");
+
+	/* create debugfs entries */
+	rproc_create_debug_dir(rproc);
+	ret = rproc_add_virtio_devices(rproc);
+	if (ret < 0)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* expose to rproc_get_by_phandle users */
 	mutex_lock(&rproc_list_mutex);

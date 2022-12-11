@@ -4156,7 +4156,10 @@ nfsd4_verify_open_stid(struct nfs4_stid *s)
 	switch (s->sc_type) {
 	default:
 		break;
+<<<<<<< HEAD
 	case 0:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case NFS4_CLOSED_STID:
 	case NFS4_CLOSED_DELEG_STID:
 		ret = nfserr_bad_stateid;
@@ -4173,7 +4176,11 @@ nfsd4_lock_ol_stateid(struct nfs4_ol_stateid *stp)
 {
 	__be32 ret;
 
+<<<<<<< HEAD
 	mutex_lock_nested(&stp->st_mutex, LOCK_STATEID_MUTEX);
+=======
+	mutex_lock(&stp->st_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = nfsd4_verify_open_stid(&stp->st_stid);
 	if (ret != nfs_ok)
 		mutex_unlock(&stp->st_mutex);
@@ -4237,7 +4244,11 @@ init_open_stateid(struct nfs4_file *fp, struct nfsd4_open *open)
 	stp = open->op_stp;
 	/* We are moving these outside of the spinlocks to avoid the warnings */
 	mutex_init(&stp->st_mutex);
+<<<<<<< HEAD
 	mutex_lock_nested(&stp->st_mutex, OPEN_STATEID_MUTEX);
+=======
+	mutex_lock(&stp->st_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 retry:
 	spin_lock(&oo->oo_owner.so_client->cl_lock);
@@ -4248,7 +4259,11 @@ retry:
 		goto out_unlock;
 
 	open->op_stp = NULL;
+<<<<<<< HEAD
 	refcount_inc(&stp->st_stid.sc_count);
+=======
+	atomic_inc(&stp->st_stid.sc_count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	stp->st_stid.sc_type = NFS4_OPEN_STID;
 	INIT_LIST_HEAD(&stp->st_locks);
 	stp->st_stateowner = nfs4_get_stateowner(&oo->oo_owner);
@@ -5714,9 +5729,13 @@ nfsd4_free_lock_stateid(stateid_t *stateid, struct nfs4_stid *s)
 	struct nfs4_ol_stateid *stp = openlockstateid(s);
 	__be32 ret;
 
+<<<<<<< HEAD
 	ret = nfsd4_lock_ol_stateid(stp);
 	if (ret)
 		goto out_put_stid;
+=======
+	mutex_lock(&stp->st_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = check_stateid_generation(stateid, &s->sc_stateid, 1);
 	if (ret)
@@ -5732,7 +5751,10 @@ nfsd4_free_lock_stateid(stateid_t *stateid, struct nfs4_stid *s)
 
 out:
 	mutex_unlock(&stp->st_mutex);
+<<<<<<< HEAD
 out_put_stid:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	nfs4_put_stid(s);
 	return ret;
 }
@@ -5764,8 +5786,12 @@ nfsd4_free_stateid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		ret = nfserr_locks_held;
 		break;
 	case NFS4_LOCK_STID:
+<<<<<<< HEAD
 		spin_unlock(&s->sc_lock);
 		refcount_inc(&s->sc_count);
+=======
+		atomic_inc(&s->sc_count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock(&cl->cl_lock);
 		ret = nfsd4_free_lock_stateid(stateid, s);
 		goto out;
@@ -6025,6 +6051,7 @@ nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		goto out; 
 
 	stp->st_stid.sc_type = NFS4_CLOSED_STID;
+<<<<<<< HEAD
 
 	/*
 	 * Technically we don't _really_ have to increment or copy it, since
@@ -6032,11 +6059,14 @@ nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	 * copied value below, but we continue to do so here just to ensure
 	 * that racing ops see that there was a state change.
 	 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	nfs4_inc_and_copy_stateid(&close->cl_stateid, &stp->st_stid);
 
 	nfsd4_close_open_stateid(stp);
 	mutex_unlock(&stp->st_mutex);
 
+<<<<<<< HEAD
 	/* v4.1+ suggests that we send a special stateid in here, since the
 	 * clients should just ignore this anyway. Since this is not useful
 	 * for v4.0 clients either, we set it to the special close_stateid
@@ -6045,6 +6075,12 @@ nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	 * See RFC5661 section 18.2.4, and RFC7530 section 16.2.5
 	 */
 	memcpy(&close->cl_stateid, &close_stateid, sizeof(close->cl_stateid));
+=======
+	/* See RFC5661 sectionm 18.2.4 */
+	if (stp->st_stid.sc_client->cl_minorversion)
+		memcpy(&close->cl_stateid, &close_stateid,
+				sizeof(close->cl_stateid));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* put reference from nfs4_preprocess_seqid_op */
 	nfs4_put_stid(&stp->st_stid);
@@ -6319,7 +6355,11 @@ retry:
 	stp->st_access_bmap = 0;
 	stp->st_deny_bmap = open_stp->st_deny_bmap;
 	stp->st_openstp = open_stp;
+<<<<<<< HEAD
 	spin_lock(&fp->fi_lock);
+=======
+	mutex_init(&stp->st_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	list_add(&stp->st_locks, &open_stp->st_locks);
 	list_add(&stp->st_perstateowner, &lo->lo_owner.so_stateids);
 	list_add(&stp->st_perfile, &fp->fi_stateids);
@@ -6353,7 +6393,26 @@ find_or_create_lock_stateid(struct nfs4_lockowner *lo, struct nfs4_file *fi,
 
 	*new = false;
 	spin_lock(&clp->cl_lock);
+<<<<<<< HEAD
 	lst = find_lock_stateid(lo, ost);
+=======
+	lst = find_lock_stateid(lo, fi);
+	if (lst == NULL) {
+		spin_unlock(&clp->cl_lock);
+		ns = nfs4_alloc_stid(clp, stateid_slab, nfs4_free_lock_stateid);
+		if (ns == NULL)
+			return NULL;
+
+		spin_lock(&clp->cl_lock);
+		lst = find_lock_stateid(lo, fi);
+		if (likely(!lst)) {
+			lst = openlockstateid(ns);
+			init_lock_stateid(lst, lo, fi, inode, ost);
+			ns = NULL;
+			*new = true;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock(&clp->cl_lock);
 	if (lst != NULL) {
 		if (nfsd4_lock_ol_stateid(lst) == nfs_ok)
@@ -6406,6 +6465,7 @@ lookup_or_create_lock_state(struct nfsd4_compound_state *cstate,
 	struct nfs4_lockowner *lo;
 	struct nfs4_ol_stateid *lst;
 	unsigned int strhashval;
+	bool hashed;
 
 	lo = find_lockowner_str(cl, &lock->lk_new_owner);
 	if (!lo) {
@@ -6421,12 +6481,31 @@ lookup_or_create_lock_state(struct nfsd4_compound_state *cstate,
 			goto out;
 	}
 
+<<<<<<< HEAD
+=======
+retry:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lst = find_or_create_lock_stateid(lo, fi, inode, ost, new);
 	if (lst == NULL) {
 		status = nfserr_jukebox;
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&lst->st_mutex);
+
+	/* See if it's still hashed to avoid race with FREE_STATEID */
+	spin_lock(&cl->cl_lock);
+	hashed = !list_empty(&lst->st_perfile);
+	spin_unlock(&cl->cl_lock);
+
+	if (!hashed) {
+		mutex_unlock(&lst->st_mutex);
+		nfs4_put_stid(&lst->st_stid);
+		goto retry;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	status = nfs_ok;
 	*plst = lst;
 out:
@@ -6634,6 +6713,11 @@ out:
 		    seqid_mutating_err(ntohl(status)))
 			lock_sop->lo_owner.so_seqid++;
 
+<<<<<<< HEAD
+=======
+		mutex_unlock(&lock_stp->st_mutex);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * If this is a new, never-before-used stateid, and we are
 		 * returning an error, then just go ahead and release it.
@@ -6915,7 +6999,10 @@ nfsd4_release_lockowner(struct svc_rqst *rqstp,
 	}
 	spin_unlock(&clp->cl_lock);
 	free_ol_stateid_reaplist(&reaplist);
+<<<<<<< HEAD
 	remove_blocked_locks(lo);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	nfs4_put_stateowner(&lo->lo_owner);
 
 	return status;
@@ -7739,11 +7826,14 @@ nfs4_state_start_net(struct net *net)
 	ret = get_nfsdfs(net);
 	if (ret)
 		return ret;
+<<<<<<< HEAD
 	ret = nfs4_state_create_net(net);
 	if (ret) {
 		mntput(nn->nfsd_mnt);
 		return ret;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	locks_start_grace(net, &nn->nfsd4_manager);
 	nfsd4_client_tracking_init(net);
 	if (nn->track_reclaim_completes && nn->reclaim_str_hashtbl_size == 0)
@@ -7768,10 +7858,21 @@ nfs4_state_start(void)
 {
 	int ret;
 
+<<<<<<< HEAD
 	laundry_wq = alloc_workqueue("%s", WQ_UNBOUND, 0, "nfsd4");
 	if (laundry_wq == NULL) {
 		ret = -ENOMEM;
 		goto out;
+=======
+	ret = set_callback_cred();
+	if (ret)
+		return ret;
+
+	laundry_wq = alloc_workqueue("%s", WQ_UNBOUND, 0, "nfsd4");
+	if (laundry_wq == NULL) {
+		ret = -ENOMEM;
+		goto out_cleanup_cred;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	ret = nfsd4_create_callback_queue();
 	if (ret)
@@ -7782,7 +7883,12 @@ nfs4_state_start(void)
 
 out_free_laundry:
 	destroy_workqueue(laundry_wq);
+<<<<<<< HEAD
 out:
+=======
+out_cleanup_cred:
+	cleanup_callback_cred();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -7820,6 +7926,7 @@ nfs4_state_shutdown(void)
 {
 	destroy_workqueue(laundry_wq);
 	nfsd4_destroy_callback_queue();
+	cleanup_callback_cred();
 }
 
 static void

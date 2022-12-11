@@ -2401,10 +2401,53 @@ extern unsigned ext4_free_clusters_after_init(struct super_block *sb,
 					      struct ext4_group_desc *gdp);
 ext4_fsblk_t ext4_inode_to_goal_block(struct inode *);
 
+<<<<<<< HEAD
 #ifdef CONFIG_UNICODE
 extern int ext4_fname_setup_ci_filename(struct inode *dir,
 					 const struct qstr *iname,
 					 struct ext4_filename *fname);
+=======
+/* crypto_policy.c */
+int ext4_is_child_context_consistent_with_parent(struct inode *parent,
+						 struct inode *child);
+int ext4_inherit_context(struct inode *parent, struct inode *child);
+void ext4_to_hex(char *dst, char *src, size_t src_size);
+int ext4_process_policy(const struct ext4_encryption_policy *policy,
+			struct inode *inode);
+int ext4_get_policy(struct inode *inode,
+		    struct ext4_encryption_policy *policy);
+
+/* crypto.c */
+extern struct kmem_cache *ext4_crypt_info_cachep;
+bool ext4_valid_contents_enc_mode(uint32_t mode);
+uint32_t ext4_validate_encryption_key_size(uint32_t mode, uint32_t size);
+extern struct workqueue_struct *ext4_read_workqueue;
+struct ext4_crypto_ctx *ext4_get_crypto_ctx(struct inode *inode,
+					    gfp_t gfp_flags);
+void ext4_release_crypto_ctx(struct ext4_crypto_ctx *ctx);
+void ext4_restore_control_page(struct page *data_page);
+struct page *ext4_encrypt(struct inode *inode,
+			  struct page *plaintext_page,
+			  gfp_t gfp_flags);
+int ext4_decrypt(struct page *page);
+int ext4_encrypted_zeroout(struct inode *inode, struct ext4_extent *ex);
+extern const struct dentry_operations ext4_encrypted_d_ops;
+
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+int ext4_init_crypto(void);
+void ext4_exit_crypto(void);
+static inline int ext4_sb_has_crypto(struct super_block *sb)
+{
+	return ext4_has_feature_encrypt(sb);
+}
+#else
+static inline int ext4_init_crypto(void) { return 0; }
+static inline void ext4_exit_crypto(void) { }
+static inline int ext4_sb_has_crypto(struct super_block *sb)
+{
+	return 0;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #ifdef CONFIG_FS_ENCRYPTION
@@ -2490,8 +2533,20 @@ static inline int ext4_fname_setup_filename(struct inode *dir,
 	err = ext4_fname_setup_ci_filename(dir, iname, fname);
 #endif
 
+<<<<<<< HEAD
 	return err;
 }
+=======
+
+/* crypto_key.c */
+void ext4_free_crypt_info(struct ext4_crypt_info *ci);
+void ext4_free_encryption_info(struct inode *inode, struct ext4_crypt_info *ci);
+
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+int ext4_has_encryption_key(struct inode *inode);
+
+int ext4_get_encryption_info(struct inode *inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int ext4_fname_prepare_lookup(struct inode *dir,
 					    struct dentry *dentry,
@@ -2675,8 +2730,13 @@ extern int ext4_writepage_trans_blocks(struct inode *);
 extern int ext4_chunk_trans_blocks(struct inode *, int nrblocks);
 extern int ext4_zero_partial_blocks(handle_t *handle, struct inode *inode,
 			     loff_t lstart, loff_t lend);
+<<<<<<< HEAD
 extern vm_fault_t ext4_page_mkwrite(struct vm_fault *vmf);
 extern vm_fault_t ext4_filemap_fault(struct vm_fault *vmf);
+=======
+extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf);
+extern int ext4_filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern qsize_t *ext4_get_reserved_space(struct inode *inode);
 extern int ext4_get_projid(struct inode *inode, kprojid_t *projid);
 extern void ext4_da_release_space(struct inode *inode, int to_free);

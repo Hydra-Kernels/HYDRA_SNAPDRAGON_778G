@@ -1314,6 +1314,7 @@ struct fib {
 	struct list_head	fiblink;
 	void			*data;
 	u32			vector_no;
+<<<<<<< HEAD
 	struct hw_fib		*hw_fib_va;	/* also used for native */
 	dma_addr_t		hw_fib_pa;	/* physical address of hw_fib*/
 	dma_addr_t		hw_sgl_pa;	/* extra sgl for native */
@@ -1338,6 +1339,10 @@ struct aac_hba_map_info {
 	u16		qd_limit;
 	u32		scan_counter;
 	struct aac_ciss_identify_pd  *safw_identify_resp;
+=======
+	struct hw_fib		*hw_fib_va;		/* Actual shared object */
+	dma_addr_t		hw_fib_pa;		/* physical address of hw_fib*/
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*

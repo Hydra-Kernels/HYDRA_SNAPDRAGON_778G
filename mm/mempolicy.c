@@ -1528,6 +1528,13 @@ static int kernel_migrate_pages(pid_t pid, unsigned long maxnode,
 	task_nodes = cpuset_mems_allowed(current);
 	nodes_and(*new, *new, task_nodes);
 	if (nodes_empty(*new))
+<<<<<<< HEAD
+=======
+		goto out_put;
+
+	nodes_and(*new, *new, node_states[N_MEMORY]);
+	if (nodes_empty(*new))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out_put;
 
 	err = security_task_movememory(task);
@@ -1652,7 +1659,11 @@ COMPAT_SYSCALL_DEFINE3(set_mempolicy, int, mode, compat_ulong_t __user *, nmask,
 			return -EFAULT;
 	}
 
+<<<<<<< HEAD
 	return kernel_set_mempolicy(mode, nm, nr_bits+1);
+=======
+	return sys_set_mempolicy(mode, nm, nr_bits+1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 COMPAT_SYSCALL_DEFINE6(mbind, compat_ulong_t, start, compat_ulong_t, len,
@@ -1674,7 +1685,11 @@ COMPAT_SYSCALL_DEFINE6(mbind, compat_ulong_t, start, compat_ulong_t, len,
 			return -EFAULT;
 	}
 
+<<<<<<< HEAD
 	return kernel_mbind(start, len, mode, nm, nr_bits+1, flags);
+=======
+	return sys_mbind(start, len, mode, nm, nr_bits+1, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 COMPAT_SYSCALL_DEFINE4(migrate_pages, compat_pid_t, pid,
@@ -2169,8 +2184,13 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 	}
 
 	nmask = policy_nodemask(gfp, pol);
+<<<<<<< HEAD
 	preferred_nid = policy_node(gfp, pol, node);
 	page = __alloc_pages_nodemask(gfp, order, preferred_nid, nmask);
+=======
+	zl = policy_zonelist(gfp, pol, node);
+	page = __alloc_pages_nodemask(gfp, order, zl, nmask);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mpol_cond_put(pol);
 out:
 	return page;

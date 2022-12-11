@@ -191,7 +191,11 @@ void symbols__fixup_duplicate(struct rb_root_cached *symbols)
 	if (symbol_conf.allow_aliases)
 		return;
 
+<<<<<<< HEAD
 	nd = rb_first_cached(symbols);
+=======
+	nd = rb_first(symbols);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (nd) {
 		curr = rb_entry(nd, struct symbol, rb_node);
@@ -1444,11 +1448,16 @@ int __dso__load_kallsyms(struct dso *dso, const char *filename,
 	if (dso__load_all_kallsyms(dso, filename) < 0)
 		return -1;
 
+<<<<<<< HEAD
 	if (kallsyms__delta(kmap, filename, &delta))
 		return -1;
 
 	symbols__fixup_end(&dso->symbols);
 	symbols__fixup_duplicate(&dso->symbols);
+=======
+	symbols__fixup_end(&dso->symbols[map->type]);
+	symbols__fixup_duplicate(&dso->symbols[map->type]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (dso->kernel == DSO_TYPE_GUEST_KERNEL)
 		dso->symtab_type = DSO_BINARY_TYPE__GUEST_KALLSYMS;

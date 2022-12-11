@@ -506,7 +506,11 @@ struct mm_struct {
 		 */
 		struct task_struct __rcu *owner;
 #endif
+<<<<<<< HEAD
 		struct user_namespace *user_ns;
+=======
+	struct user_namespace *user_ns;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* store ref to file /proc/<pid>/exe symlink points to */
 		struct file __rcu *exe_file;
@@ -531,6 +535,7 @@ struct mm_struct {
 		/* numa_scan_seq prevents two threads setting pte_numa */
 		int numa_scan_seq;
 #endif
+<<<<<<< HEAD
 		/*
 		 * An operation with batched TLB flushing is going on. Anything
 		 * that can move process memory needs to flush the TLB when
@@ -540,6 +545,24 @@ struct mm_struct {
 #ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 		/* See flush_tlb_batched_pending() */
 		bool tlb_flush_batched;
+=======
+#if defined(CONFIG_NUMA_BALANCING) || defined(CONFIG_COMPACTION)
+	/*
+	 * An operation with batched TLB flushing is going on. Anything that
+	 * can move process memory needs to flush the TLB when moving a
+	 * PROT_NONE or PROT_NUMA mapped page.
+	 */
+	bool tlb_flush_pending;
+#endif
+#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+	/* See flush_tlb_batched_pending() */
+	bool tlb_flush_batched;
+#endif
+	struct uprobes_state uprobes_state;
+#ifdef CONFIG_X86_INTEL_MPX
+	/* address of the bounds directory */
+	void __user *bd_addr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 		struct uprobes_state uprobes_state;
 #ifdef CONFIG_HUGETLB_PAGE

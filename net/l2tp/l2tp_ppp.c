@@ -467,7 +467,10 @@ static int pppol2tp_release(struct socket *sock)
 		 * The last reference will be dropped by pppol2tp_put_sk().
 		 */
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	release_sock(sk);
 
 	/* This will delete the session context via
@@ -680,6 +683,20 @@ static int pppol2tp_connect(struct socket *sock, struct sockaddr *uservaddr,
 
 	lock_sock(sk);
 
+<<<<<<< HEAD
+=======
+	error = -EINVAL;
+
+	if (sockaddr_len != sizeof(struct sockaddr_pppol2tp) &&
+	    sockaddr_len != sizeof(struct sockaddr_pppol2tpv3) &&
+	    sockaddr_len != sizeof(struct sockaddr_pppol2tpin6) &&
+	    sockaddr_len != sizeof(struct sockaddr_pppol2tpv3in6))
+		goto end;
+
+	if (sp->sa_protocol != PX_PROTO_OL2TP)
+		goto end;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Check for already bound sockets */
 	error = -EBUSY;
 	if (sk->sk_state & PPPOX_CONNECTED)
@@ -1038,9 +1055,125 @@ static int pppol2tp_tunnel_copy_stats(struct pppol2tp_ioc_stats *stats,
 {
 	struct l2tp_session *session;
 
+<<<<<<< HEAD
 	if (!stats->session_id) {
 		pppol2tp_copy_stats(stats, &tunnel->stats);
 		return 0;
+=======
+	l2tp_dbg(session, PPPOL2TP_MSG_CONTROL,
+		 "%s: pppol2tp_session_ioctl(cmd=%#x, arg=%#lx)\n",
+		 session->name, cmd, arg);
+
+	sk = ps->sock;
+	if (!sk)
+		return -EBADR;
+
+	sock_hold(sk);
+
+	switch (cmd) {
+	case SIOCGIFMTU:
+		err = -ENXIO;
+		if (!(sk->sk_state & PPPOX_CONNECTED))
+			break;
+
+		err = -EFAULT;
+		if (copy_from_user(&ifr, (void __user *) arg, sizeof(struct ifreq)))
+			break;
+		ifr.ifr_mtu = session->mtu;
+		if (copy_to_user((void __user *) arg, &ifr, sizeof(struct ifreq)))
+			break;
+
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: get mtu=%d\n",
+			  session->name, session->mtu);
+		err = 0;
+		break;
+
+	case SIOCSIFMTU:
+		err = -ENXIO;
+		if (!(sk->sk_state & PPPOX_CONNECTED))
+			break;
+
+		err = -EFAULT;
+		if (copy_from_user(&ifr, (void __user *) arg, sizeof(struct ifreq)))
+			break;
+
+		session->mtu = ifr.ifr_mtu;
+
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: set mtu=%d\n",
+			  session->name, session->mtu);
+		err = 0;
+		break;
+
+	case PPPIOCGMRU:
+		err = -ENXIO;
+		if (!(sk->sk_state & PPPOX_CONNECTED))
+			break;
+
+		err = -EFAULT;
+		if (put_user(session->mru, (int __user *) arg))
+			break;
+
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: get mru=%d\n",
+			  session->name, session->mru);
+		err = 0;
+		break;
+
+	case PPPIOCSMRU:
+		err = -ENXIO;
+		if (!(sk->sk_state & PPPOX_CONNECTED))
+			break;
+
+		err = -EFAULT;
+		if (get_user(val, (int __user *) arg))
+			break;
+
+		session->mru = val;
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: set mru=%d\n",
+			  session->name, session->mru);
+		err = 0;
+		break;
+
+	case PPPIOCGFLAGS:
+		err = -EFAULT;
+		if (put_user(ps->flags, (int __user *) arg))
+			break;
+
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: get flags=%d\n",
+			  session->name, ps->flags);
+		err = 0;
+		break;
+
+	case PPPIOCSFLAGS:
+		err = -EFAULT;
+		if (get_user(val, (int __user *) arg))
+			break;
+		ps->flags = val;
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: set flags=%d\n",
+			  session->name, ps->flags);
+		err = 0;
+		break;
+
+	case PPPIOCGL2TPSTATS:
+		err = -ENXIO;
+		if (!(sk->sk_state & PPPOX_CONNECTED))
+			break;
+
+		memset(&stats, 0, sizeof(stats));
+		stats.tunnel_id = tunnel->tunnel_id;
+		stats.session_id = session->session_id;
+		pppol2tp_copy_stats(&stats, &session->stats);
+		if (copy_to_user((void __user *) arg, &stats,
+				 sizeof(stats)))
+			break;
+		l2tp_info(session, PPPOL2TP_MSG_CONTROL, "%s: get L2TP stats\n",
+			  session->name);
+		err = 0;
+		break;
+
+	default:
+		err = -ENOSYS;
+		break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* If session_id is set, search the corresponding session in the
@@ -1456,11 +1589,15 @@ static void pppol2tp_next_tunnel(struct net *net, struct pppol2tp_seq_data *pd)
 
 static void pppol2tp_next_session(struct net *net, struct pppol2tp_seq_data *pd)
 {
+<<<<<<< HEAD
 	/* Drop reference taken during previous invocation */
 	if (pd->session)
 		l2tp_session_dec_refcount(pd->session);
 
 	pd->session = l2tp_session_get_nth(pd->tunnel, pd->session_idx);
+=======
+	pd->session = l2tp_session_get_nth(pd->tunnel, pd->session_idx, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pd->session_idx++;
 
 	if (pd->session == NULL) {
@@ -1611,10 +1748,20 @@ static int pppol2tp_seq_show(struct seq_file *m, void *v)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (!pd->session)
+=======
+	/* Show the tunnel or session context.
+	 */
+	if (!pd->session) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pppol2tp_seq_tunnel_show(m, pd->tunnel);
-	else
+	} else {
 		pppol2tp_seq_session_show(m, pd->session);
+		if (pd->session->deref)
+			pd->session->deref(pd->session);
+		l2tp_session_dec_refcount(pd->session);
+	}
 
 out:
 	return 0;
@@ -1756,5 +1903,9 @@ MODULE_AUTHOR("James Chapman <jchapman@katalix.com>");
 MODULE_DESCRIPTION("PPP over L2TP over UDP");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(PPPOL2TP_DRV_VERSION);
+<<<<<<< HEAD
 MODULE_ALIAS_NET_PF_PROTO(PF_PPPOX, PX_PROTO_OL2TP);
+=======
+MODULE_ALIAS("pppox-proto-" __stringify(PX_PROTO_OL2TP));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 MODULE_ALIAS_L2TP_PWTYPE(7);

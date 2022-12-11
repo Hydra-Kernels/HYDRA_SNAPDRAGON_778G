@@ -27,8 +27,11 @@ MODULE_AUTHOR("Jaya Kumar <jayakumar.lkml@gmail.com>");
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 #define W8001_MAX_PHYS		42
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define W8001_MAX_LENGTH	13
 #define W8001_LEAD_MASK		0x80
 #define W8001_LEAD_BYTE		0x80

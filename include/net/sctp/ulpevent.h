@@ -152,6 +152,7 @@ __u16 sctp_ulpevent_get_notification_type(const struct sctp_ulpevent *event);
 static inline void sctp_ulpevent_type_set(__u16 *subscribe,
 					  __u16 sn_type, __u8 on)
 {
+<<<<<<< HEAD
 	if (sn_type > SCTP_SN_TYPE_MAX)
 		return;
 
@@ -168,6 +169,14 @@ static inline bool sctp_ulpevent_type_enabled(__u16 subscribe, __u16 sn_type)
 		return false;
 
 	return subscribe & (1 << (sn_type - SCTP_SN_TYPE_BASE));
+=======
+	int offset = sn_type - SCTP_SN_TYPE_BASE;
+	char *amask = (char *) mask;
+
+	if (offset >= sizeof(struct sctp_event_subscribe))
+		return 0;
+	return amask[offset];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Given an event subscription, is this event enabled? */

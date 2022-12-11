@@ -298,12 +298,23 @@ static int add_fastmap(struct ubi_attach_info *ai, int pnum,
 {
 	struct ubi_ainf_peb *aeb;
 
+<<<<<<< HEAD
 	aeb = ubi_alloc_aeb(ai, pnum, ec);
 	if (!aeb)
 		return -ENOMEM;
 
 	aeb->vol_id = be32_to_cpu(vid_hdr->vol_id);
 	aeb->sqnum = be64_to_cpu(vid_hdr->sqnum);
+=======
+	aeb = kmem_cache_alloc(ai->aeb_slab_cache, GFP_KERNEL);
+	if (!aeb)
+		return -ENOMEM;
+
+	aeb->pnum = pnum;
+	aeb->vol_id = be32_to_cpu(vidh->vol_id);
+	aeb->sqnum = be64_to_cpu(vidh->sqnum);
+	aeb->ec = ec;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	list_add(&aeb->u.list, &ai->fastmap);
 
 	dbg_bld("add to fastmap list: PEB %d, vol_id %d, sqnum: %llu", pnum,
@@ -941,9 +952,12 @@ static bool vol_ignored(int vol_id)
 static int scan_peb(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		    int pnum, bool fast)
 {
+<<<<<<< HEAD
 	struct ubi_ec_hdr *ech = ai->ech;
 	struct ubi_vid_io_buf *vidb = ai->vidb;
 	struct ubi_vid_hdr *vidh = ubi_get_vid_hdr(vidb);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	long long ec;
 	int err, bitflips = 0, vol_id = -1, ec_err = 0;
 
@@ -1334,6 +1348,10 @@ static void destroy_ai(struct ubi_attach_info *ai)
 		list_del(&aeb->u.list);
 		ubi_free_aeb(ai, aeb);
 	}
+	list_for_each_entry_safe(aeb, aeb_tmp, &ai->fastmap, u.list) {
+		list_del(&aeb->u.list);
+		kmem_cache_free(ai->aeb_slab_cache, aeb);
+	}
 
 	/* Destroy the volume RB-tree */
 	rb = ai->volumes.rb_node;
@@ -1494,6 +1512,13 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 	scan_ai = alloc_ai();
 	if (!scan_ai)
 		goto out;
+<<<<<<< HEAD
+=======
+
+	ech = kzalloc(ubi->ec_hdr_alsize, GFP_KERNEL);
+	if (!ech)
+		goto out_ai;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	scan_ai->ech = kzalloc(ubi->ec_hdr_alsize, GFP_KERNEL);
 	if (!scan_ai->ech)
@@ -1535,7 +1560,11 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 out_vidh:
 	ubi_free_vid_buf(scan_ai->vidb);
 out_ech:
+<<<<<<< HEAD
 	kfree(scan_ai->ech);
+=======
+	kfree(ech);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_ai:
 	destroy_ai(scan_ai);
 out:

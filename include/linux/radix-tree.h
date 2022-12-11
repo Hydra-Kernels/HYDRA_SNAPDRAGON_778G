@@ -298,6 +298,7 @@ void __rcu **radix_tree_next_chunk(const struct radix_tree_root *,
 			     struct radix_tree_iter *iter, unsigned flags);
 
 /**
+<<<<<<< HEAD
  * radix_tree_iter_lookup - look up an index in the radix tree
  * @root: radix tree root
  * @iter: iterator state
@@ -316,6 +317,8 @@ radix_tree_iter_lookup(const struct radix_tree_root *root,
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * radix_tree_iter_retry - retry this chunk of the iteration
  * @iter:	iterator state
  *
@@ -325,6 +328,7 @@ radix_tree_iter_lookup(const struct radix_tree_root *root,
  * and continue the iteration.
  */
 static inline __must_check
+<<<<<<< HEAD
 void __rcu **radix_tree_iter_retry(struct radix_tree_iter *iter)
 {
 	iter->next_index = iter->index;
@@ -351,6 +355,14 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 void __rcu **__must_check radix_tree_iter_resume(void __rcu **slot,
 					struct radix_tree_iter *iter);
 
+=======
+void **radix_tree_iter_retry(struct radix_tree_iter *iter)
+{
+	iter->next_index = iter->index;
+	return NULL;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * radix_tree_chunk_size - get current chunk size
  *
@@ -403,9 +415,15 @@ static __always_inline void __rcu **radix_tree_next_slot(void __rcu **slot,
 			goto found;
 		}
 	} else {
+<<<<<<< HEAD
 		long count = radix_tree_chunk_size(iter);
 
 		while (--count > 0) {
+=======
+		long size = radix_tree_chunk_size(iter);
+
+		while (--size > 0) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			slot++;
 			iter->index = __radix_tree_iter_add(iter, 1);
 

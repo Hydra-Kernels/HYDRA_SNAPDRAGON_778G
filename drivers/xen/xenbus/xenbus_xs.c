@@ -257,6 +257,7 @@ static void *xs_wait_for_reply(struct xb_req_data *req, struct xsd_sockmsg *msg)
 	msg->type = req->msg.type;
 	msg->len = req->msg.len;
 
+<<<<<<< HEAD
 	mutex_lock(&xb_write_mutex);
 	if (req->state == xb_req_state_queued ||
 	    req->state == xb_req_state_wait_reply)
@@ -264,6 +265,14 @@ static void *xs_wait_for_reply(struct xb_req_data *req, struct xsd_sockmsg *msg)
 	else
 		kfree(req);
 	mutex_unlock(&xb_write_mutex);
+=======
+	mutex_unlock(&xs_state.request_mutex);
+
+	if ((msg->type == XS_TRANSACTION_END) ||
+	    ((req_msg.type == XS_TRANSACTION_START) &&
+	     (msg->type == XS_ERROR)))
+		transaction_end();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

@@ -1225,8 +1225,13 @@ static struct rt6_info *ip6_pol_route_lookup(struct net *net,
 	if (fl6->flowi6_flags & FLOWI_FLAG_SKIP_NH_OIF)
 		flags &= ~RT6_LOOKUP_F_IFACE;
 
+<<<<<<< HEAD
 	rcu_read_lock();
 	fn = fib6_node_lookup(&table->tb6_root, &fl6->daddr, &fl6->saddr);
+=======
+	read_lock_bh(&table->tb6_lock);
+	fn = fib6_lookup(&table->tb6_root, &fl6->daddr, &fl6->saddr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 restart:
 	res.f6i = rcu_dereference(fn->leaf);
 	if (!res.f6i)
@@ -2486,10 +2491,17 @@ static struct rt6_info *ip6_pol_route_output(struct net *net,
 	return ip6_pol_route(net, table, fl6->flowi6_oif, fl6, skb, flags);
 }
 
+<<<<<<< HEAD
 struct dst_entry *ip6_route_output_flags_noref(struct net *net,
 					       const struct sock *sk,
 					       struct flowi6 *fl6, int flags)
 {
+=======
+struct dst_entry *ip6_route_output_flags(struct net *net, const struct sock *sk,
+					 struct flowi6 *fl6, int flags)
+{
+	struct dst_entry *dst;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool any_src;
 
 	if (ipv6_addr_type(&fl6->daddr) &
@@ -2517,6 +2529,7 @@ struct dst_entry *ip6_route_output_flags_noref(struct net *net,
 
 	return fib6_rule_lookup(net, fl6, NULL, flags, ip6_pol_route_output);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(ip6_route_output_flags_noref);
 
 struct dst_entry *ip6_route_output_flags(struct net *net,
@@ -2539,6 +2552,8 @@ struct dst_entry *ip6_route_output_flags(struct net *net,
 
         return dst;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 EXPORT_SYMBOL_GPL(ip6_route_output_flags);
 
 struct dst_entry *ip6_blackhole_route(struct net *net, struct dst_entry *dst_orig)
@@ -2595,10 +2610,16 @@ static struct dst_entry *rt6_check(struct rt6_info *rt,
 				   struct fib6_info *from,
 				   u32 cookie)
 {
+<<<<<<< HEAD
 	u32 rt_cookie = 0;
 
 	if (!from || !fib6_get_cookie_safe(from, &rt_cookie) ||
 	    rt_cookie != cookie)
+=======
+	u32 rt_cookie;
+
+	if (!rt6_get_cookie_safe(rt, &rt_cookie) || rt_cookie != cookie)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return NULL;
 
 	if (rt6_check_expired(rt))
@@ -2680,6 +2701,7 @@ static void ip6_link_failure(struct sk_buff *skb)
 	if (rt) {
 		rcu_read_lock();
 		if (rt->rt6i_flags & RTF_CACHE) {
+<<<<<<< HEAD
 			rt6_remove_exception_rt(rt);
 		} else {
 			struct fib6_info *from;
@@ -2691,6 +2713,18 @@ static void ip6_link_failure(struct sk_buff *skb)
 				if (fn && (rt->rt6i_flags & RTF_DEFAULT))
 					fn->fn_sernum = -1;
 			}
+=======
+			dst_hold(&rt->dst);
+			ip6_del_rt(rt);
+		} else {
+			struct fib6_node *fn;
+
+			rcu_read_lock();
+			fn = rcu_dereference(rt->rt6i_node);
+			if (fn && (rt->rt6i_flags & RTF_DEFAULT))
+				fn->fn_sernum = -1;
+			rcu_read_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		rcu_read_unlock();
 	}
@@ -2724,7 +2758,12 @@ static void rt6_do_update_pmtu(struct rt6_info *rt, u32 mtu)
 static bool rt6_cache_allowed_for_pmtu(const struct rt6_info *rt)
 {
 	return !(rt->rt6i_flags & RTF_CACHE) &&
+<<<<<<< HEAD
 		(rt->rt6i_flags & RTF_PCPU || rcu_access_pointer(rt->from));
+=======
+		(rt->rt6i_flags & RTF_PCPU ||
+		 rcu_access_pointer(rt->rt6i_node));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __ip6_rt_update_pmtu(struct dst_entry *dst, const struct sock *sk,
@@ -3250,7 +3289,39 @@ static int ip6_nh_lookup_table(struct net *net, struct fib6_config *cfg,
 		fib6_select_path(net, res, &fl6, cfg->fc_ifindex,
 				 cfg->fc_ifindex != 0, NULL, flags);
 
+<<<<<<< HEAD
 	return err;
+=======
+		if (type == RTAX_CC_ALGO) {
+			char tmp[TCP_CA_NAME_MAX];
+
+			nla_strlcpy(tmp, nla, sizeof(tmp));
+			val = tcp_ca_get_key_by_name(tmp, &ecn_ca);
+			if (val == TCP_CA_UNSPEC)
+				goto err;
+		} else {
+			val = nla_get_u32(nla);
+		}
+		if (type == RTAX_HOPLIMIT && val > 255)
+			val = 255;
+		if (type == RTAX_FEATURES && (val & ~RTAX_FEATURE_MASK))
+			goto err;
+
+		mp[type - 1] = val;
+		__set_bit(type - 1, mxc->mx_valid);
+	}
+
+	if (ecn_ca) {
+		__set_bit(RTAX_FEATURES - 1, mxc->mx_valid);
+		mp[RTAX_FEATURES - 1] |= DST_FEATURE_ECN_CA;
+	}
+
+	mxc->mx = mp;
+	return 0;
+ err:
+	kfree(mp);
+	return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int ip6_route_check_nh_onlink(struct net *net,
@@ -3341,6 +3412,7 @@ static int ip6_validate_gw(struct net *net, struct fib6_config *cfg,
 	bool need_addr_check = !dev;
 	int err = -EINVAL;
 
+<<<<<<< HEAD
 	/* if gw_addr is local we will fail to detect this in case
 	 * address is still TENTATIVE (DAD in progress). rt6_lookup()
 	 * will return already-added prefix route via interface that
@@ -3349,6 +3421,13 @@ static int ip6_validate_gw(struct net *net, struct fib6_config *cfg,
 	if (dev &&
 	    ipv6_chk_addr_and_flags(net, gw_addr, dev, skip_dev, 0, 0)) {
 		NL_SET_ERR_MSG(extack, "Gateway can not be a local address");
+=======
+	/* RTF_PCPU is an internal flag; can not be set by userspace */
+	if (cfg->fc_flags & RTF_PCPU)
+		goto out;
+
+	if (cfg->fc_dst_len > 128 || cfg->fc_src_len > 128)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 
@@ -3969,7 +4048,14 @@ static int ip6_route_del(struct fib6_config *cfg,
 				continue;
 			if (!fib6_info_hold_safe(rt))
 				continue;
+<<<<<<< HEAD
 			rcu_read_unlock();
+=======
+			if (cfg->fc_protocol && cfg->fc_protocol != rt->rt6i_protocol)
+				continue;
+			dst_hold(&rt->dst);
+			read_unlock_bh(&table->tb6_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/* if gateway was specified only delete the one hop */
 			if (cfg->fc_flags & RTF_GATEWAY)
@@ -4840,6 +4926,7 @@ static const struct nla_policy rtm_ipv6_policy[RTA_MAX+1] = {
 	[RTA_PREF]              = { .type = NLA_U8 },
 	[RTA_ENCAP_TYPE]	= { .type = NLA_U16 },
 	[RTA_ENCAP]		= { .type = NLA_NESTED },
+<<<<<<< HEAD
 	[RTA_EXPIRES]		= { .type = NLA_U32 },
 	[RTA_UID]		= { .type = NLA_U32 },
 	[RTA_MARK]		= { .type = NLA_U32 },
@@ -4848,6 +4935,9 @@ static const struct nla_policy rtm_ipv6_policy[RTA_MAX+1] = {
 	[RTA_SPORT]		= { .type = NLA_U16 },
 	[RTA_DPORT]		= { .type = NLA_U16 },
 	[RTA_NH_ID]		= { .type = NLA_U32 },
+=======
+	[RTA_TABLE]		= { .type = NLA_U32 },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static int rtm_to_fib6_config(struct sk_buff *skb, struct nlmsghdr *nlh,
@@ -5003,11 +5093,31 @@ static int ip6_route_info_append(struct net *net,
 				 struct fib6_config *r_cfg)
 {
 	struct rt6_nh *nh;
+<<<<<<< HEAD
 	int err = -EEXIST;
 
 	list_for_each_entry(nh, rt6_nh_list, next) {
 		/* check if fib6_info already exists */
 		if (rt6_duplicate_nexthop(nh->fib6_info, rt))
+=======
+
+	list_for_each_entry(nh, rt6_nh_list, next) {
+		pr_warn("IPV6: multipath route replace failed (check consistency of installed routes): %pI6 nexthop %pI6 ifi %d\n",
+		        &nh->r_cfg.fc_dst, &nh->r_cfg.fc_gateway,
+		        nh->r_cfg.fc_ifindex);
+	}
+}
+
+static int ip6_route_info_append(struct list_head *rt6_nh_list,
+				 struct rt6_info *rt, struct fib6_config *r_cfg)
+{
+	struct rt6_nh *nh;
+	int err = -EEXIST;
+
+	list_for_each_entry(nh, rt6_nh_list, next) {
+		/* check if rt6_info already exists */
+		if (rt6_duplicate_nexthop(nh->rt6_info, rt))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return err;
 	}
 
@@ -5449,6 +5559,7 @@ static int rt6_fill_node(struct net *net, struct sk_buff *skb,
 #endif
 	if (iif) {
 #ifdef CONFIG_IPV6_MROUTE
+<<<<<<< HEAD
 		if (ipv6_addr_is_multicast(&rt6_dst->addr)) {
 			int err = ip6mr_get_route(net, skb, rtm, portid);
 
@@ -5456,6 +5567,22 @@ static int rt6_fill_node(struct net *net, struct sk_buff *skb,
 				return 0;
 			if (err < 0)
 				goto nla_put_failure;
+=======
+		if (ipv6_addr_is_multicast(&rt->rt6i_dst.addr)) {
+			int err = ip6mr_get_route(net, skb, rtm, nowait,
+						  portid);
+
+			if (err <= 0) {
+				if (!nowait) {
+					if (err == 0)
+						return 0;
+					goto nla_put_failure;
+				} else {
+					if (err == -EMSGSIZE)
+						goto nla_put_failure;
+				}
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else
 #endif
 			if (nla_put_u32(skb, RTA_IIF, iif))
@@ -5542,6 +5669,14 @@ static int rt6_fill_node(struct net *net, struct sk_buff *skb,
 	if (nla_put_u8(skb, RTA_PREF, IPV6_EXTRACT_PREF(rt6_flags)))
 		goto nla_put_failure;
 
+<<<<<<< HEAD
+=======
+	if (nla_put_u8(skb, RTA_PREF, IPV6_EXTRACT_PREF(rt->rt6i_flags)))
+		goto nla_put_failure;
+
+	if (lwtunnel_fill_encap(skb, rt->dst.lwtstate) < 0)
+		goto nla_put_failure;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	nlmsg_end(skb, nlh);
 	return 0;
@@ -5999,7 +6134,10 @@ static int ip6_route_dev_notify(struct notifier_block *this,
 		return NOTIFY_OK;
 
 	if (event == NETDEV_REGISTER) {
+<<<<<<< HEAD
 		net->ipv6.fib6_null_entry->fib6_nh->fib_nh_dev = dev;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		net->ipv6.ip6_null_entry->dst.dev = dev;
 		net->ipv6.ip6_null_entry->rt6i_idev = in6_dev_get(dev);
 #ifdef CONFIG_IPV6_MULTIPLE_TABLES
@@ -6013,10 +6151,17 @@ static int ip6_route_dev_notify(struct notifier_block *this,
 		/* NETDEV_UNREGISTER could be fired for multiple times by
 		 * netdev_wait_allrefs(). Make sure we only call this once.
 		 */
+<<<<<<< HEAD
 		in6_dev_put_clear(&net->ipv6.ip6_null_entry->rt6i_idev);
 #ifdef CONFIG_IPV6_MULTIPLE_TABLES
 		in6_dev_put_clear(&net->ipv6.ip6_prohibit_entry->rt6i_idev);
 		in6_dev_put_clear(&net->ipv6.ip6_blk_hole_entry->rt6i_idev);
+=======
+		in6_dev_put(net->ipv6.ip6_null_entry->rt6i_idev);
+#ifdef CONFIG_IPV6_MULTIPLE_TABLES
+		in6_dev_put(net->ipv6.ip6_prohibit_entry->rt6i_idev);
+		in6_dev_put(net->ipv6.ip6_blk_hole_entry->rt6i_idev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	}
 
@@ -6334,7 +6479,10 @@ void __init ip6_route_init_special_entries(void)
 	/* Registering of the loopback is done before this portion of code,
 	 * the loopback reference in rt6_info will not be taken, do it
 	 * manually for init_net */
+<<<<<<< HEAD
 	init_net.ipv6.fib6_null_entry->fib6_nh->fib_nh_dev = init_net.loopback_dev;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	init_net.ipv6.ip6_null_entry->dst.dev = init_net.loopback_dev;
 	init_net.ipv6.ip6_null_entry->rt6i_idev = in6_dev_get(init_net.loopback_dev);
   #ifdef CONFIG_IPV6_MULTIPLE_TABLES

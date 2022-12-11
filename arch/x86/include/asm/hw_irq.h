@@ -118,7 +118,12 @@ struct irq_alloc_info {
 
 struct irq_cfg {
 	unsigned int		dest_apicid;
+<<<<<<< HEAD
 	unsigned int		vector;
+=======
+	u8			vector;
+	u8			old_vector;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 extern struct irq_cfg *irq_cfg(unsigned int irq);
@@ -157,7 +162,7 @@ extern char spurious_entries_start[];
 #define VECTOR_RETRIGGERED	((void *)-2L)
 
 typedef struct irq_desc* vector_irq_t[NR_VECTORS];
-DECLARE_PER_CPU(vector_irq_t, vector_irq);
+DECLARE_PER_CPU_USER_MAPPED(vector_irq_t, vector_irq);
 
 #endif /* !ASSEMBLY_ */
 

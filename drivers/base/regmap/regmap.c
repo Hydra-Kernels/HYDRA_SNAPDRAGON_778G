@@ -1906,6 +1906,11 @@ int regmap_raw_write(struct regmap *map, unsigned int reg,
 		return -EINVAL;
 	if (val_len % map->format.val_bytes)
 		return -EINVAL;
+<<<<<<< HEAD
+=======
+	if (map->max_raw_write && map->max_raw_write < val_len)
+		return -E2BIG;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	map->lock(map->lock_arg);
 

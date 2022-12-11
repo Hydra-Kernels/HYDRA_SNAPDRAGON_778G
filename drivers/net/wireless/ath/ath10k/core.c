@@ -73,6 +73,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA988X_BOARD_DATA_SZ,
 			.board_ext_size = QCA988X_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca988x_ops,
 		.decap_align_bytes = 4,
 		.spectral_bin_discard = 0,
@@ -188,6 +189,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.num_wds_entries = 0x20,
 		.uart_pin_workaround = true,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA6174_HW_2_1_VERSION,
@@ -206,6 +210,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA6174_BOARD_DATA_SZ,
 			.board_ext_size = QCA6174_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca988x_ops,
 		.decap_align_bytes = 4,
 		.spectral_bin_discard = 0,
@@ -223,6 +228,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA6174_HW_2_1_VERSION,
@@ -241,6 +249,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA6174_BOARD_DATA_SZ,
 			.board_ext_size = QCA6174_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca988x_ops,
 		.decap_align_bytes = 4,
 		.spectral_bin_discard = 0,
@@ -258,6 +267,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA6174_HW_3_0_VERSION,
@@ -276,6 +288,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA6174_BOARD_DATA_SZ,
 			.board_ext_size = QCA6174_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca988x_ops,
 		.decap_align_bytes = 4,
 		.spectral_bin_discard = 0,
@@ -293,6 +306,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA6174_HW_3_2_VERSION,
@@ -312,6 +328,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA6174_BOARD_DATA_SZ,
 			.board_ext_size = QCA6174_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca6174_ops,
 		.hw_clk = qca6174_clk,
 		.target_cpu_freq = 176000000,
@@ -331,6 +348,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = true,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA99X0_HW_2_0_DEV_VERSION,
@@ -354,6 +374,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA99X0_BOARD_DATA_SZ,
 			.board_ext_size = QCA99X0_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.sw_decrypt_mcast_mgmt = true,
 		.hw_ops = &qca99x0_ops,
 		.decap_align_bytes = 1,
@@ -465,6 +486,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 1,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA9377_HW_1_0_DEV_VERSION,
@@ -483,6 +507,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA9377_BOARD_DATA_SZ,
 			.board_ext_size = QCA9377_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca988x_ops,
 		.decap_align_bytes = 4,
 		.spectral_bin_discard = 0,
@@ -500,6 +525,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = true,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.id = QCA9377_HW_1_1_DEV_VERSION,
@@ -518,6 +546,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 			.board_size = QCA9377_BOARD_DATA_SZ,
 			.board_ext_size = QCA9377_BOARD_EXT_DATA_SZ,
 		},
+<<<<<<< HEAD
 		.hw_ops = &qca6174_ops,
 		.hw_clk = qca6174_clk,
 		.target_cpu_freq = 176000000,
@@ -607,6 +636,9 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
 		.hw_filter_reset_required = false,
 		.fw_diag_ce_download = false,
 		.tx_stats_over_pktlog = false,
+=======
+		.decap_align_bytes = 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 };
 
@@ -900,12 +932,18 @@ static int ath10k_core_get_board_id_from_otp(struct ath10k *ar)
 		   "boot get otp board id result 0x%08x board_id %d chip_id %d ext_bid_support %d\n",
 		   result, board_id, chip_id, ext_bid_support);
 
+<<<<<<< HEAD
 	ar->id.ext_bid_supported = ext_bid_support;
 
 	if ((result & ATH10K_BMI_BOARD_ID_STATUS_MASK) != 0 ||
 	    (board_id == 0)) {
 		ath10k_dbg(ar, ATH10K_DBG_BOOT,
 			   "board id does not exist in otp, ignore it\n");
+=======
+	if ((result & ATH10K_BMI_BOARD_ID_STATUS_MASK) != 0 ||
+	    (board_id == 0)) {
+		ath10k_warn(ar, "board id is not exist in otp, ignore it\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EOPNOTSUPP;
 	}
 
@@ -2723,6 +2761,7 @@ int ath10k_core_start(struct ath10k *ar, enum ath10k_firmware_mode mode,
 		goto err_hif_stop;
 	}
 
+<<<<<<< HEAD
 	status = ath10k_core_compat_services(ar);
 	if (status) {
 		ath10k_err(ar, "compat services failed: %d\n", status);
@@ -2759,16 +2798,22 @@ int ath10k_core_start(struct ath10k *ar, enum ath10k_firmware_mode mode,
 		}
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	status = ath10k_htt_rx_ring_refill(ar);
 	if (status) {
 		ath10k_err(ar, "failed to refill htt rx ring: %d\n", status);
 		goto err_hif_stop;
 	}
 
+<<<<<<< HEAD
 	if (ar->max_num_vdevs >= 64)
 		ar->free_vdev_map = 0xFFFFFFFFFFFFFFFFLL;
 	else
 		ar->free_vdev_map = (1LL << ar->max_num_vdevs) - 1;
+=======
+	ar->free_vdev_map = (1LL << ar->max_num_vdevs) - 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	INIT_LIST_HEAD(&ar->arvifs);
 
@@ -2785,12 +2830,15 @@ int ath10k_core_start(struct ath10k *ar, enum ath10k_firmware_mode mode,
 	if (status)
 		goto err_hif_stop;
 
+<<<<<<< HEAD
 	status = ath10k_hif_set_target_log_mode(ar, fw_diag_log);
 	if (status && status != -EOPNOTSUPP) {
 		ath10k_warn(ar, "set traget log mode faileds: %d\n", status);
 		goto err_hif_stop;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 err_hif_stop:

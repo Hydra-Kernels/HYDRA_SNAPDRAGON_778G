@@ -1602,7 +1602,11 @@ static int rsnd_kctrl_put(struct snd_kcontrol *kctrl,
 	}
 
 	if (change && cfg->update)
+<<<<<<< HEAD
 		cfg->update(cfg->io, cfg->mod);
+=======
+		cfg->update(cfg->io, mod);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return change;
 }

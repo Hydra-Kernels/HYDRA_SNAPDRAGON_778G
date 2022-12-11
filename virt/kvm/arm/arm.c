@@ -163,11 +163,14 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
 {
 	int i;
 
+<<<<<<< HEAD:virt/kvm/arm/arm.c
 	kvm_vgic_destroy(kvm);
 
 	free_percpu(kvm->arch.last_vcpu_ran);
 	kvm->arch.last_vcpu_ran = NULL;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/arm.c
 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
 		if (kvm->vcpus[i]) {
 			kvm_arch_vcpu_free(kvm->vcpus[i]);

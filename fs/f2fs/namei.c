@@ -1283,9 +1283,17 @@ static const char *f2fs_encrypted_get_link(struct dentry *dentry,
 	if (!dentry)
 		return ERR_PTR(-ECHILD);
 
+<<<<<<< HEAD
 	page = read_mapping_page(inode->i_mapping, 0, NULL);
 	if (IS_ERR(page))
 		return ERR_CAST(page);
+=======
+	cpage = read_mapping_page(inode->i_mapping, 0, NULL);
+	if (IS_ERR(cpage))
+		return ERR_CAST(cpage);
+	caddr = page_address(cpage);
+	caddr[size] = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	target = fscrypt_get_symlink(inode, page_address(page),
 				     inode->i_sb->s_blocksize, done);
@@ -1299,7 +1307,38 @@ static int f2fs_encrypted_symlink_getattr(const struct path *path,
 {
 	f2fs_getattr(path, stat, request_mask, query_flags);
 
+<<<<<<< HEAD
 	return fscrypt_symlink_getattr(path, stat);
+=======
+	if ((cstr.len + sizeof(struct f2fs_encrypted_symlink_data) - 1) >
+								max_size) {
+		/* Symlink data on the disk is corrupted */
+		res = -EIO;
+		goto errout;
+	}
+	res = f2fs_fname_crypto_alloc_buffer(inode, cstr.len, &pstr);
+	if (res)
+		goto errout;
+
+	res = f2fs_fname_disk_to_usr(inode, NULL, &cstr, &pstr);
+	if (res < 0)
+		goto errout;
+
+	kfree(cstr.name);
+
+	paddr = pstr.name;
+
+	/* Null-terminate the name */
+	paddr[res] = '\0';
+
+	page_cache_release(cpage);
+	return *cookie = paddr;
+errout:
+	kfree(cstr.name);
+	f2fs_fname_crypto_free_buffer(&pstr);
+	page_cache_release(cpage);
+	return ERR_PTR(res);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 const struct inode_operations f2fs_encrypted_symlink_inode_operations = {

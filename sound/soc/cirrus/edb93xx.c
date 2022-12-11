@@ -59,6 +59,13 @@ SND_SOC_DAILINK_DEFS(hifi,
 static struct snd_soc_dai_link edb93xx_dai = {
 	.name		= "CS4271",
 	.stream_name	= "CS4271 HiFi",
+<<<<<<< HEAD
+=======
+	.platform_name	= "ep93xx-i2s",
+	.cpu_dai_name	= "ep93xx-i2s",
+	.codec_name	= "spi0.0",
+	.codec_dai_name	= "cs4271-hifi",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.dai_fmt	= SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
 			  SND_SOC_DAIFMT_CBS_CFS,
 	.ops		= &edb93xx_ops,

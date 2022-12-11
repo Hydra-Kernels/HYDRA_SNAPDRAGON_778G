@@ -54,6 +54,7 @@ static int detach_port(char *port)
 		return -1;
 	}
 
+<<<<<<< HEAD
 	/* check for invalid port */
 	for (i = 0; i < vhci_driver->nports; i++) {
 		idev = &vhci_driver->idev[i];
@@ -87,6 +88,14 @@ static int detach_port(char *port)
 	}
 	info("Port %d is now detached!\n", portnum);
 
+=======
+	ret = usbip_vhci_detach_device(portnum);
+	if (ret < 0) {
+		ret = -1;
+		goto call_driver_close;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 call_driver_close:
 	usbip_vhci_driver_close();
 

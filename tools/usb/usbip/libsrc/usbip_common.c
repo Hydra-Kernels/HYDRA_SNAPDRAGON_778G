@@ -248,7 +248,11 @@ int read_usb_interface(struct usbip_usb_device *udev, int i,
 			udev->busid, udev->bConfigurationValue, i);
 	if (size < 0 || (unsigned int)size >= sizeof(busid)) {
 		err("busid length %i >= %lu or < 0", size,
+<<<<<<< HEAD
 		    (long unsigned)sizeof(busid));
+=======
+		    (unsigned long)sizeof(busid));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -1;
 	}
 

@@ -1349,9 +1349,14 @@ static void fjes_netdev_setup(struct net_device *netdev)
 	netdev->watchdog_timeo = FJES_TX_RETRY_INTERVAL;
 	netdev->netdev_ops = &fjes_netdev_ops;
 	fjes_set_ethtool_ops(netdev);
+<<<<<<< HEAD
 	netdev->mtu = fjes_support_mtu[3];
 	netdev->min_mtu = fjes_support_mtu[0];
 	netdev->max_mtu = fjes_support_mtu[3];
+=======
+	netdev->mtu = fjes_support_mtu[0];
+	netdev->flags |= IFF_BROADCAST;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
 }
 

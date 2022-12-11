@@ -17,7 +17,11 @@
 #define BXT_PAD_OWN	0x020
 #define BXT_PADCFGLOCK	0x060
 #define BXT_HOSTSW_OWN	0x080
+<<<<<<< HEAD
 #define BXT_GPI_IS	0x100
+=======
+#define BXT_PADCFGLOCK	0x060
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define BXT_GPI_IE	0x110
 
 #define BXT_COMMUNITY(s, e)				\

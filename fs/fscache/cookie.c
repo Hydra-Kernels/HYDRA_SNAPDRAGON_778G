@@ -770,6 +770,10 @@ void __fscache_disable_cookie(struct fscache_cookie *cookie,
 	if (cookie->type != FSCACHE_COOKIE_TYPE_INDEX)
 		fscache_invalidate_writes(cookie);
 
+	/* Make sure any pending writes are cancelled. */
+	if (cookie->def->type != FSCACHE_COOKIE_TYPE_INDEX)
+		fscache_invalidate_writes(cookie);
+
 	/* Reset the cookie state if it wasn't relinquished */
 	if (!test_bit(FSCACHE_COOKIE_RELINQUISHED, &cookie->flags)) {
 		atomic_inc(&cookie->n_active);

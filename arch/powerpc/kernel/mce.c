@@ -304,6 +304,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
 
 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
 
+	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+
 	/*
 	 * For now just print it to console.
 	 * TODO: log this error event to FSP or nvram.

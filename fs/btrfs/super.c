@@ -2044,6 +2044,12 @@ static inline int btrfs_calc_avail_data_space(struct btrfs_fs_info *fs_info,
  * change the result (like a new metadata chunk).
  *
  * If metadata is exhausted, f_bavail will be 0.
+<<<<<<< HEAD
+=======
+ *
+ * FIXME: not accurate for mixed block groups, total and free/used are ok,
+ * available appears slightly larger.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 {
@@ -2060,7 +2066,10 @@ static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	struct btrfs_block_rsv *block_rsv = &fs_info->global_block_rsv;
 	int ret;
 	u64 thresh = 0;
+<<<<<<< HEAD
 	int mixed = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcu_read_lock();
 	list_for_each_entry_rcu(found, head, list) {
@@ -2077,6 +2086,8 @@ static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 						btrfs_raid_array[i].bg_flag);
 			}
 		}
+		if (found->flags & BTRFS_BLOCK_GROUP_METADATA)
+			total_free_meta += found->disk_total - found->disk_used;
 
 		/*
 		 * Metadata in mixed block goup profiles are accounted in data
@@ -2127,6 +2138,7 @@ static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	 * succeed even if the Avail is zero. But this is better than the other
 	 * way around.
 	 */
+<<<<<<< HEAD
 	thresh = SZ_4M;
 
 	/*
@@ -2138,6 +2150,11 @@ static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	 */
 	if (!mixed && block_rsv->space_info->full &&
 	    total_free_meta - thresh < block_rsv->size)
+=======
+	thresh = 4 * 1024 * 1024;
+
+	if (total_free_meta - thresh < block_rsv->size)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		buf->f_bavail = 0;
 
 	buf->f_type = BTRFS_SUPER_MAGIC;

@@ -1417,6 +1417,7 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
 		goto err;
 	}
 
+<<<<<<< HEAD
 	rc = cfg->ops->start_work(ctx, irqs);
 	if (unlikely(rc)) {
 		dev_dbg(dev, "%s: Could not start context rc=%d\n",
@@ -1427,6 +1428,11 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
 	ctxid = cfg->ops->process_element(ctx);
 	if (unlikely((ctxid >= MAX_CONTEXT) || (ctxid < 0))) {
 		dev_err(dev, "%s: ctxid=%d invalid\n", __func__, ctxid);
+=======
+	ctxid = cxl_process_element(ctx);
+	if (unlikely((ctxid >= MAX_CONTEXT) || (ctxid < 0))) {
+		dev_err(dev, "%s: ctxid (%d) invalid!\n", __func__, ctxid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rc = -EPERM;
 		goto err;
 	}
@@ -1551,7 +1557,25 @@ static int recover_context(struct cxlflash_cfg *cfg,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	rc = cfg->ops->start_work(ctx, ctxi->irqs);
+=======
+	ctxid = cxl_process_element(ctx);
+	if (unlikely((ctxid >= MAX_CONTEXT) || (ctxid < 0))) {
+		dev_err(dev, "%s: ctxid (%d) invalid!\n", __func__, ctxid);
+		rc = -EPERM;
+		goto err1;
+	}
+
+	file = cxl_get_fd(ctx, &cfg->cxl_fops, &fd);
+	if (unlikely(fd < 0)) {
+		rc = -ENODEV;
+		dev_err(dev, "%s: Could not get file descriptor\n", __func__);
+		goto err1;
+	}
+
+	rc = cxl_start_work(ctx, &ctxi->work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(rc)) {
 		dev_dbg(dev, "%s: Could not start context rc=%d\n",
 			__func__, rc);
@@ -1671,9 +1695,19 @@ static int cxlflash_afu_recover(struct scsi_device *sdev,
 	up_read(&cfg->ioctl_rwsem);
 	rc = mutex_lock_interruptible(mutex);
 	down_read(&cfg->ioctl_rwsem);
+<<<<<<< HEAD
 	if (rc) {
 		locked = false;
 		goto out;
+=======
+	if (rc)
+		goto out;
+	rc = check_state(cfg);
+	if (rc) {
+		dev_err(dev, "%s: Failed state! rc=%d\n", __func__, rc);
+		rc = -ENODEV;
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	rc = check_state(cfg);

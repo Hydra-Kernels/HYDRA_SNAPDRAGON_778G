@@ -1042,6 +1042,7 @@ static int pt_buffer_reset_markers(struct pt_buffer *buf,
 		return 0;
 
 	/* clear STOP and INT from current entry */
+<<<<<<< HEAD:arch/x86/events/intel/pt.c
 	if (buf->stop_te) {
 		buf->stop_te->stop = 0;
 		buf->stop_te->intr = 0;
@@ -1049,6 +1050,11 @@ static int pt_buffer_reset_markers(struct pt_buffer *buf,
 
 	if (buf->intr_te)
 		buf->intr_te->intr = 0;
+=======
+	buf->topa_index[buf->stop_pos]->stop = 0;
+	buf->topa_index[buf->stop_pos]->intr = 0;
+	buf->topa_index[buf->intr_pos]->intr = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_pt.c
 
 	/* how many pages till the STOP marker */
 	npages = handle->size >> PAGE_SHIFT;
@@ -1074,10 +1080,53 @@ static int pt_buffer_reset_markers(struct pt_buffer *buf,
 		idx = wakeup;
 
 	idx &= buf->nr_pages - 1;
+<<<<<<< HEAD:arch/x86/events/intel/pt.c
 	if (idx != buf->intr_pos) {
 		buf->intr_pos = idx;
 		buf->intr_te = pt_topa_entry_for_page(buf, idx);
 		buf->intr_te = pt_topa_prev_entry(buf, buf->intr_te);
+=======
+	buf->intr_pos = idx;
+
+	buf->topa_index[buf->stop_pos]->stop = 1;
+	buf->topa_index[buf->stop_pos]->intr = 1;
+	buf->topa_index[buf->intr_pos]->intr = 1;
+
+	return 0;
+}
+
+/**
+ * pt_buffer_setup_topa_index() - build topa_index[] table of regions
+ * @buf:	PT buffer.
+ *
+ * topa_index[] references output regions indexed by offset into the
+ * buffer for purposes of quick reverse lookup.
+ */
+static void pt_buffer_setup_topa_index(struct pt_buffer *buf)
+{
+	struct topa *cur = buf->first, *prev = buf->last;
+	struct topa_entry *te_cur = TOPA_ENTRY(cur, 0),
+		*te_prev = TOPA_ENTRY(prev, prev->last - 1);
+	int pg = 0, idx = 0;
+
+	while (pg < buf->nr_pages) {
+		int tidx;
+
+		/* pages within one topa entry */
+		for (tidx = 0; tidx < 1 << te_cur->size; tidx++, pg++)
+			buf->topa_index[pg] = te_prev;
+
+		te_prev = te_cur;
+
+		if (idx == cur->last - 1) {
+			/* advance to next topa table */
+			idx = 0;
+			cur = list_entry(cur->list.next, struct topa, list);
+		} else {
+			idx++;
+		}
+		te_cur = TOPA_ENTRY(cur, idx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_intel_pt.c
 	}
 
 	buf->stop_te->stop = 1;

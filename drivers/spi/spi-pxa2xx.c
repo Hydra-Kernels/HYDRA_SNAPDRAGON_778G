@@ -590,9 +590,12 @@ static void reset_sccr1(struct driver_data *drv_data)
 	case QUARK_X1000_SSP:
 		sccr1_reg &= ~QUARK_X1000_SSCR1_RFT;
 		break;
+<<<<<<< HEAD
 	case CE4100_SSP:
 		sccr1_reg &= ~CE4100_SSCR1_RFT;
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		sccr1_reg &= ~SSCR1_RFT;
 		break;

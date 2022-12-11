@@ -2226,7 +2226,13 @@ static int get_memory_error_data(struct mem_ctl_info *mci,
 		idx = (ch_addr >> 13);	/* FIXME: Datasheet says to shift by 15 */
 	idx %= 1 << rir_way;
 
+<<<<<<< HEAD
 	pci_read_config_dword(pvt->pci_tad[base_ch], rir_offset[n_rir][idx], &reg);
+=======
+	pci_read_config_dword(pvt->pci_tad[ch_add + base_ch],
+			      rir_offset[n_rir][idx],
+			      &reg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	*rank = RIR_RNK_TGT(pvt->info.type, reg);
 
 	edac_dbg(0, "RIR#%d: channel address 0x%08Lx < 0x%08Lx, RIR interleave %d, index %d\n",
@@ -3137,6 +3143,14 @@ static int sbridge_mce_check_error(struct notifier_block *nb, unsigned long val,
 	if (edac_get_report_status() == EDAC_REPORTING_DISABLED)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
+=======
+	mci = get_mci_for_node_id(mce->socketid);
+	if (!mci)
+		return NOTIFY_DONE;
+	pvt = mci->pvt_info;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Just let mcelog handle it if the error is
 	 * outside the memory controller. A memory error

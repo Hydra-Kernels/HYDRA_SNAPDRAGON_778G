@@ -224,7 +224,11 @@ static int sg_check_file_access(struct file *filp, const char *caller)
 			caller, task_tgid_vnr(current), current->comm);
 		return -EPERM;
 	}
+<<<<<<< HEAD
 	if (uaccess_kernel()) {
+=======
+	if (unlikely(segment_eq(get_fs(), KERNEL_DS))) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pr_err_once("%s: process %d (%s) called from kernel context, this is not allowed.\n",
 			caller, task_tgid_vnr(current), current->comm);
 		return -EACCES;
@@ -805,10 +809,15 @@ sg_common_write(Sg_fd * sfp, Sg_request * srp,
 			"sg_common_write:  scsi opcode=0x%02x, cmd_size=%d\n",
 			(int) cmnd[0], (int) hp->cmd_len));
 
+<<<<<<< HEAD
 	if (hp->dxfer_len >= SZ_256M) {
 		sg_remove_request(sfp, srp);
 		return -EINVAL;
 	}
+=======
+	if (hp->dxfer_len >= SZ_256M)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	k = sg_start_req(srp, cmnd);
 	if (k) {
@@ -1082,7 +1091,11 @@ sg_ioctl(struct file *filp, unsigned int cmd_in, unsigned long arg)
 		else {
 			sg_req_info_t *rinfo;
 
+<<<<<<< HEAD
 			rinfo = kcalloc(SG_MAX_QUEUE, SZ_SG_REQ_INFO,
+=======
+			rinfo = kzalloc(SZ_SG_REQ_INFO * SG_MAX_QUEUE,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					GFP_KERNEL);
 			if (!rinfo)
 				return -ENOMEM;
@@ -1874,7 +1887,11 @@ sg_build_indirect(Sg_scatter_hold * schp, Sg_fd * sfp, int buff_size)
 	int ret_sz = 0, i, k, rem_sz, num, mx_sc_elems;
 	int sg_tablesize = sfp->parentdp->sg_tablesize;
 	int blk_size = buff_size, order;
+<<<<<<< HEAD
 	gfp_t gfp_mask = GFP_ATOMIC | __GFP_COMP | __GFP_NOWARN | __GFP_ZERO;
+=======
+	gfp_t gfp_mask = GFP_ATOMIC | __GFP_COMP | __GFP_NOWARN;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct sg_device *sdp = sfp->parentdp;
 
 	if (blk_size < 0)
@@ -1914,7 +1931,7 @@ retry:
 		num = (rem_sz > scatter_elem_sz_prev) ?
 			scatter_elem_sz_prev : rem_sz;
 
-		schp->pages[k] = alloc_pages(gfp_mask, order);
+		schp->pages[k] = alloc_pages(gfp_mask | __GFP_ZERO, order);
 		if (!schp->pages[k])
 			goto out;
 

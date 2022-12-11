@@ -456,7 +456,11 @@ static unsigned long __init xen_foreach_remap_area(unsigned long nr_pages,
 {
 	phys_addr_t start = 0;
 	unsigned long ret_val = 0;
+<<<<<<< HEAD
 	const struct e820_entry *entry = xen_e820_table.entries;
+=======
+	const struct e820entry *entry = xen_e820_map;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int i;
 
 	/*
@@ -914,6 +918,11 @@ char * __init xen_memory_setup(void)
 	 * underlying RAM.
 	 */
 	xen_foreach_remap_area(max_pfn, xen_set_identity_and_remap_chunk);
+<<<<<<< HEAD
+=======
+
+	pr_info("Released %ld page(s)\n", xen_released_pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pr_info("Released %ld page(s)\n", xen_released_pages);
 

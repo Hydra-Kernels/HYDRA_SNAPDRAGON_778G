@@ -1510,6 +1510,11 @@ out:
 
 static void activate_or_offline_path(struct pgpath *pgpath)
 {
+<<<<<<< HEAD
+=======
+	struct pgpath *pgpath =
+		container_of(work, struct pgpath, activate_path.work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct request_queue *q = bdev_get_queue(pgpath->path.dev->bdev);
 
 	if (pgpath->is_active && !blk_queue_dying(q))

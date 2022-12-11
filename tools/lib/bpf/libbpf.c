@@ -854,6 +854,7 @@ bpf_object__init_internal_map(struct bpf_object *obj, enum libbpf_map_type type,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int bpf_object__init_global_data_maps(struct bpf_object *obj)
 {
 	int err;
@@ -1341,6 +1342,8 @@ static int bpf_object__init_maps(struct bpf_object *obj, int flags)
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static bool section_have_execinstr(struct bpf_object *obj, int idx)
 {
 	Elf_Scn *scn;
@@ -1359,6 +1362,7 @@ static bool section_have_execinstr(struct bpf_object *obj, int idx)
 	return false;
 }
 
+<<<<<<< HEAD
 static void bpf_object__sanitize_btf(struct bpf_object *obj)
 {
 	bool has_datasec = obj->caps.btf_datasec;
@@ -1517,6 +1521,9 @@ static int bpf_object__sanitize_and_load_btf(struct bpf_object *obj)
 }
 
 static int bpf_object__elf_collect(struct bpf_object *obj, int flags)
+=======
+static int bpf_object__elf_collect(struct bpf_object *obj)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	Elf *elf = obj->efile.elf;
 	GElf_Ehdr *ep = &obj->efile.ehdr;
@@ -1616,7 +1623,19 @@ static int bpf_object__elf_collect(struct bpf_object *obj, int flags)
 		} else if (sh.sh_type == SHT_REL) {
 			int nr_reloc = obj->efile.nr_reloc;
 			void *reloc = obj->efile.reloc;
+<<<<<<< HEAD
 			int sec = sh.sh_info; /* points to other section */
+=======
+			int nr_reloc = obj->efile.nr_reloc + 1;
+			int sec = sh.sh_info; /* points to other section */
+
+			/* Only do relo for section with exec instructions */
+			if (!section_have_execinstr(obj, sec)) {
+				pr_debug("skip relo %s(%d) for section(%d)\n",
+					 name, idx, sec);
+				continue;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/* Only do relo for section with exec instructions */
 			if (!section_have_execinstr(obj, sec)) {

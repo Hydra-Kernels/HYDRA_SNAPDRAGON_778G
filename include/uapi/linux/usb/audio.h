@@ -390,6 +390,7 @@ static inline __u8 uac_processing_unit_iChannelNames(struct uac_processing_unit_
 static inline __u8 uac_processing_unit_bControlSize(struct uac_processing_unit_descriptor *desc,
 						    int protocol)
 {
+<<<<<<< HEAD
 	switch (protocol) {
 	case UAC_VERSION_1:
 		return desc->baSourceID[desc->bNrInPins + 4];
@@ -400,11 +401,17 @@ static inline __u8 uac_processing_unit_bControlSize(struct uac_processing_unit_d
 	default:
 		return 1;
 	}
+=======
+	return (protocol == UAC_VERSION_1) ?
+		desc->baSourceID[desc->bNrInPins + 4] :
+		2; /* in UAC2, this value is constant */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline __u8 *uac_processing_unit_bmControls(struct uac_processing_unit_descriptor *desc,
 						   int protocol)
 {
+<<<<<<< HEAD
 	switch (protocol) {
 	case UAC_VERSION_1:
 		return &desc->baSourceID[desc->bNrInPins + 5];
@@ -415,6 +422,11 @@ static inline __u8 *uac_processing_unit_bmControls(struct uac_processing_unit_de
 	default:
 		return NULL;
 	}
+=======
+	return (protocol == UAC_VERSION_1) ?
+		&desc->baSourceID[desc->bNrInPins + 5] :
+		&desc->baSourceID[desc->bNrInPins + 6];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline __u8 uac_processing_unit_iProcessing(struct uac_processing_unit_descriptor *desc,

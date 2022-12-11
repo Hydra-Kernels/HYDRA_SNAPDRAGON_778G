@@ -1173,8 +1173,12 @@ int st_accel_common_probe(struct iio_dev *indio_dev)
 	struct st_sensor_data *adata = iio_priv(indio_dev);
 	struct st_sensors_platform_data *pdata =
 		(struct st_sensors_platform_data *)adata->dev->platform_data;
+<<<<<<< HEAD
 	struct iio_chan_spec *channels;
 	size_t channels_size;
+=======
+	int irq = adata->get_irq_data_ready(indio_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err;
 
 	indio_dev->modes = INDIO_DIRECT_MODE;

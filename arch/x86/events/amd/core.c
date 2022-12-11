@@ -933,9 +933,12 @@ static __initconst const struct x86_pmu amd_pmu = {
 
 static int __init amd_core_pmu_init(void)
 {
+<<<<<<< HEAD:arch/x86/events/amd/core.c
 	u64 even_ctr_mask = 0ULL;
 	int i;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_amd.c
 	if (!boot_cpu_has(X86_FEATURE_PERFCTR_CORE))
 		return 0;
 

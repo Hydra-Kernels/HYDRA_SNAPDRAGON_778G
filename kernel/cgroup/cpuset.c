@@ -66,8 +66,13 @@
 #include <linux/cgroup.h>
 #include <linux/wait.h>
 
+<<<<<<< HEAD:kernel/cgroup/cpuset.c
 DEFINE_STATIC_KEY_FALSE(cpusets_pre_enable_key);
 DEFINE_STATIC_KEY_FALSE(cpusets_enabled_key);
+=======
+struct static_key cpusets_pre_enable_key __read_mostly = STATIC_KEY_INIT_FALSE;
+struct static_key cpusets_enabled_key __read_mostly = STATIC_KEY_INIT_FALSE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cpuset.c
 
 /* See "Frequency meter" comments, below. */
 
@@ -2905,6 +2910,20 @@ static void cpuset_fork(struct task_struct *task)
 	task->mems_allowed = current->mems_allowed;
 }
 
+/*
+ * Make sure the new task conform to the current state of its parent,
+ * which could have been changed by cpuset just after it inherits the
+ * state from the parent and before it sits on the cgroup's task list.
+ */
+void cpuset_fork(struct task_struct *task, void *priv)
+{
+	if (task_css_is_root(task, cpuset_cgrp_id))
+		return;
+
+	set_cpus_allowed_ptr(task, &current->cpus_allowed);
+	task->mems_allowed = current->mems_allowed;
+}
+
 struct cgroup_subsys cpuset_cgrp_subsys = {
 	.css_alloc	= cpuset_css_alloc,
 	.css_online	= cpuset_css_online,
@@ -2916,10 +2935,15 @@ struct cgroup_subsys cpuset_cgrp_subsys = {
 	.post_attach	= cpuset_post_attach,
 	.bind		= cpuset_bind,
 	.fork		= cpuset_fork,
+<<<<<<< HEAD:kernel/cgroup/cpuset.c
 	.legacy_cftypes	= legacy_files,
 	.dfl_cftypes	= dfl_files,
 	.early_init	= true,
 	.threaded	= true,
+=======
+	.legacy_cftypes	= files,
+	.early_init	= 1,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cpuset.c
 };
 
 /**
@@ -3143,6 +3167,13 @@ update_tasks:
 	percpu_up_write(&cpuset_rwsem);
 }
 
+static bool force_rebuild;
+
+void cpuset_force_rebuild(void)
+{
+	force_rebuild = true;
+}
+
 /**
  * cpuset_hotplug_workfn - handle CPU/memory hotunplug for a cpuset
  *
@@ -3253,8 +3284,11 @@ static void cpuset_hotplug_workfn(struct work_struct *work)
 		force_rebuild = false;
 		rebuild_sched_domains();
 	}
+<<<<<<< HEAD:kernel/cgroup/cpuset.c
 
 	free_cpumasks(NULL, ptmp);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cpuset.c
 }
 
 void cpuset_update_active_cpus(void)

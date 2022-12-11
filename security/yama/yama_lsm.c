@@ -385,8 +385,16 @@ static int yama_ptrace_access_check(struct task_struct *child,
 		}
 	}
 
+<<<<<<< HEAD
 	if (rc && (mode & PTRACE_MODE_NOAUDIT) == 0)
 		report_access("attach", child, current);
+=======
+	if (rc && (mode & PTRACE_MODE_NOAUDIT) == 0) {
+		printk_ratelimited(KERN_NOTICE
+			"ptrace of pid %d was attempted by: %s (pid %d)\n",
+			child->pid, current->comm, current->pid);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return rc;
 }

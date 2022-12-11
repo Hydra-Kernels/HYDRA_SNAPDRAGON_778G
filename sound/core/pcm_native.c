@@ -72,6 +72,7 @@ static int snd_pcm_open(struct file *file, struct snd_pcm *pcm, int stream);
 
 static DECLARE_RWSEM(snd_pcm_link_rwsem);
 
+<<<<<<< HEAD
 void snd_pcm_group_init(struct snd_pcm_group *group)
 {
 	spin_lock_init(&group->lock);
@@ -95,6 +96,20 @@ DEFINE_PCM_GROUP_LOCK(unlock, unlock);
 DEFINE_PCM_GROUP_LOCK(lock_irq, lock);
 DEFINE_PCM_GROUP_LOCK(unlock_irq, unlock);
 
+=======
+/* Writer in rwsem may block readers even during its waiting in queue,
+ * and this may lead to a deadlock when the code path takes read sem
+ * twice (e.g. one in snd_pcm_action_nonatomic() and another in
+ * snd_pcm_stream_lock()).  As a (suboptimal) workaround, let writer to
+ * spin until it gets the lock.
+ */
+static inline void down_write_nonblock(struct rw_semaphore *lock)
+{
+	while (!down_write_trylock(lock))
+		cond_resched();
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * snd_pcm_stream_lock - Lock the PCM stream
  * @substream: PCM substream
@@ -2036,9 +2051,14 @@ static int snd_pcm_link(struct snd_pcm_substream *substream, int fd)
 		res = -ENOMEM;
 		goto _nolock;
 	}
+<<<<<<< HEAD
 	snd_pcm_group_init(group);
 
 	down_write(&snd_pcm_link_rwsem);
+=======
+	down_write_nonblock(&snd_pcm_link_rwsem);
+	write_lock_irq(&snd_pcm_link_rwlock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (substream->runtime->status->state == SNDRV_PCM_STATE_OPEN ||
 	    substream->runtime->status->state != substream1->runtime->status->state ||
 	    substream->pcm->nonatomic != substream1->pcm->nonatomic) {
@@ -2087,8 +2107,13 @@ static int snd_pcm_unlink(struct snd_pcm_substream *substream)
 	bool do_free = false;
 	int res = 0;
 
+<<<<<<< HEAD
 	down_write(&snd_pcm_link_rwsem);
 
+=======
+	down_write_nonblock(&snd_pcm_link_rwsem);
+	write_lock_irq(&snd_pcm_link_rwlock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!snd_pcm_stream_linked(substream)) {
 		res = -EALREADY;
 		goto _end;

@@ -23,7 +23,11 @@
 #include <linux/freezer.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
+<<<<<<< HEAD
 #include <linux/numa.h>
+=======
+#include <linux/cgroup.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <trace/events/sched.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);
@@ -283,9 +287,16 @@ static int kthread(void *_create)
 	preempt_enable();
 
 	ret = -EINTR;
+<<<<<<< HEAD
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
 		cgroup_kthread_ready();
 		__kthread_parkme(self);
+=======
+
+	if (!test_bit(KTHREAD_SHOULD_STOP, &self.flags)) {
+		cgroup_kthread_ready();
+		__kthread_parkme(&self);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = threadfn(data);
 	}
 	do_exit(ret);

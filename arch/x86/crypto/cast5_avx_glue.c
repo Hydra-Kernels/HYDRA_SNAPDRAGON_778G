@@ -55,11 +55,16 @@ static int ecb_crypt(struct skcipher_request *req, bool enc)
 	void (*fn)(struct cast5_ctx *ctx, u8 *dst, const u8 *src);
 	int err;
 
+<<<<<<< HEAD
 	err = skcipher_walk_virt(&walk, req, false);
 
 	while ((nbytes = walk.nbytes)) {
 		u8 *wsrc = walk.src.virt.addr;
 		u8 *wdst = walk.dst.virt.addr;
+=======
+	err = blkcipher_walk_virt(desc, walk);
+	desc->flags &= ~CRYPTO_TFM_REQ_MAY_SLEEP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		fpu_enabled = cast5_fpu_begin(fpu_enabled, &walk, nbytes);
 

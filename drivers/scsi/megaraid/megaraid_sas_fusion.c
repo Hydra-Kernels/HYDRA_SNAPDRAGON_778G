@@ -284,6 +284,7 @@ megasas_write_64bit_req_desc(struct megasas_instance *instance,
 		&instance->reg_set->inbound_low_queue_port);
 	writel(le32_to_cpu(req_desc->u.high),
 		&instance->reg_set->inbound_high_queue_port);
+	mmiowb();
 	spin_unlock_irqrestore(&instance->hba_lock, flags);
 #endif
 }
@@ -3106,6 +3107,7 @@ megasas_build_syspd_fusion(struct megasas_instance *instance,
 		<< MR_RAID_CTX_RAID_FLAGS_IO_SUB_TYPE_SHIFT;
 
 	/* If FW supports PD sequence number */
+<<<<<<< HEAD
 	if (instance->support_seqnum_jbod_fp) {
 		if (instance->use_seqnum_jbod_fp &&
 			instance->pd_list[pd_index].driveType == TYPE_DISK) {
@@ -3143,6 +3145,27 @@ megasas_build_syspd_fusion(struct megasas_instance *instance,
 			pRAID_Context->config_seq_num = 0;
 			io_request->DevHandle = cpu_to_le16(0xFFFF);
 		}
+=======
+	if (instance->use_seqnum_jbod_fp &&
+		instance->pd_list[pd_index].driveType == TYPE_DISK) {
+		/* TgtId must be incremented by 255 as jbod seq number is index
+		 * below raid map
+		 */
+		pRAID_Context->VirtualDiskTgtId =
+			cpu_to_le16(device_id + (MAX_PHYSICAL_DEVICES - 1));
+		pRAID_Context->configSeqNum = pd_sync->seq[pd_index].seqNum;
+		io_request->DevHandle = pd_sync->seq[pd_index].devHandle;
+		pRAID_Context->regLockFlags |=
+			(MR_RL_FLAGS_SEQ_NUM_ENABLE|MR_RL_FLAGS_GRANT_DESTINATION_CUDA);
+		pRAID_Context->Type = MPI2_TYPE_CUDA;
+		pRAID_Context->nseg = 0x1;
+	} else if (fusion->fast_path_io) {
+		pRAID_Context->VirtualDiskTgtId = cpu_to_le16(device_id);
+		pRAID_Context->configSeqNum = 0;
+		local_map_ptr = fusion->ld_drv_map[(instance->map_id & 1)];
+		io_request->DevHandle =
+			local_map_ptr->raidMap.devHndlInfo[device_id].curDevHdl;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		pRAID_Context->virtual_disk_tgt_id = cpu_to_le16(device_id);
 		pRAID_Context->config_seq_num = 0;
@@ -3191,7 +3214,11 @@ megasas_build_syspd_fusion(struct megasas_instance *instance,
 		pRAID_Context->timeout_value =
 			cpu_to_le16((os_timeout_value > timeout_limit) ?
 			timeout_limit : os_timeout_value);
+<<<<<<< HEAD
 		if (instance->adapter_type >= INVADER_SERIES)
+=======
+		if (fusion->adapter_type == INVADER_SERIES)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			io_request->IoFlags |=
 				cpu_to_le16(MPI25_SAS_DEVICE0_FLAGS_ENABLED_FAST_PATH);
 

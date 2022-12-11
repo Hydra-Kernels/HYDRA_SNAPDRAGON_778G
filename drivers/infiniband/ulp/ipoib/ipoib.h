@@ -148,6 +148,7 @@ static inline void skb_add_pseudo_hdr(struct sk_buff *skb)
 	memset(data, 0, IPOIB_PSEUDO_LEN);
 	skb_reset_mac_header(skb);
 	skb_pull(skb, IPOIB_HARD_LEN);
+<<<<<<< HEAD
 }
 
 static inline struct ipoib_dev_priv *ipoib_priv(const struct net_device *dev)
@@ -155,6 +156,8 @@ static inline struct ipoib_dev_priv *ipoib_priv(const struct net_device *dev)
 	struct rdma_netdev *rn = netdev_priv(dev);
 
 	return rn->clnt_priv;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Used for all multicast joins (broadcast, IPv4 mcast and IPv6 mcast) */

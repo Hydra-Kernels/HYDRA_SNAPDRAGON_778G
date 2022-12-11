@@ -277,18 +277,64 @@ static int hp_wmi_read_int(int query)
 
 	if (ret)
 		return ret < 0 ? ret : -EINVAL;
+<<<<<<< HEAD
 
 	return val;
+=======
+	return state;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hp_wmi_hw_state(int mask)
 {
+<<<<<<< HEAD
 	int state = hp_wmi_read_int(HPWMI_HARDWARE_QUERY);
 
 	if (state < 0)
 		return state;
 
 	return !!(state & mask);
+=======
+	int state = 0;
+	int ret = hp_wmi_perform_query(HPWMI_HDDTEMP_QUERY, 0, &state,
+				       sizeof(state), sizeof(state));
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+	return state;
+}
+
+static int hp_wmi_als_state(void)
+{
+	int state = 0;
+	int ret = hp_wmi_perform_query(HPWMI_ALS_QUERY, 0, &state,
+				       sizeof(state), sizeof(state));
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+	return state;
+}
+
+static int hp_wmi_dock_state(void)
+{
+	int state = 0;
+	int ret = hp_wmi_perform_query(HPWMI_HARDWARE_QUERY, 0, &state,
+				       sizeof(state), sizeof(state));
+
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+
+	return state & 0x1;
+}
+
+static int hp_wmi_tablet_state(void)
+{
+	int state = 0;
+	int ret = hp_wmi_perform_query(HPWMI_HARDWARE_QUERY, 0, &state,
+				       sizeof(state), sizeof(state));
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+
+	return (state & 0x4) ? 1 : 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int __init hp_wmi_bios_2008_later(void)
@@ -318,8 +364,14 @@ static int __init hp_wmi_enable_hotkeys(void)
 	int value = 0x6e;
 	int ret = hp_wmi_perform_query(HPWMI_BIOS_QUERY, HPWMI_WRITE, &value,
 				       sizeof(value), 0);
+<<<<<<< HEAD
 
 	return ret <= 0 ? ret : -EINVAL;
+=======
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hp_wmi_set_block(void *data, bool blocked)
@@ -330,8 +382,14 @@ static int hp_wmi_set_block(void *data, bool blocked)
 
 	ret = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, HPWMI_WRITE,
 				   &query, sizeof(query), 0);
+<<<<<<< HEAD
 
 	return ret <= 0 ? ret : -EINVAL;
+=======
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const struct rfkill_ops hp_wmi_rfkill_ops = {
@@ -407,7 +465,21 @@ static int hp_wmi_rfkill2_refresh(void)
 	return 0;
 }
 
+<<<<<<< HEAD
 static ssize_t display_show(struct device *dev, struct device_attribute *attr,
+=======
+static int hp_wmi_post_code_state(void)
+{
+	int state = 0;
+	int ret = hp_wmi_perform_query(HPWMI_POSTCODEERROR_QUERY, 0, &state,
+				       sizeof(state), sizeof(state));
+	if (ret)
+		return ret < 0 ? ret : -EINVAL;
+	return state;
+}
+
+static ssize_t show_display(struct device *dev, struct device_attribute *attr,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			    char *buf)
 {
 	int value = hp_wmi_read_int(HPWMI_DISPLAY_QUERY);
@@ -570,10 +642,17 @@ static void hp_wmi_notify(u32 value, void *context)
 	case HPWMI_DOCK_EVENT:
 		if (test_bit(SW_DOCK, hp_wmi_input_dev->swbit))
 			input_report_switch(hp_wmi_input_dev, SW_DOCK,
+<<<<<<< HEAD
 					    hp_wmi_hw_state(HPWMI_DOCK_MASK));
 		if (test_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit))
 			input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
 					    hp_wmi_hw_state(HPWMI_TABLET_MASK));
+=======
+					    hp_wmi_dock_state());
+		if (test_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit))
+			input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
+					    hp_wmi_tablet_state());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		input_sync(hp_wmi_input_dev);
 		break;
 	case HPWMI_PARK_HDD:
@@ -638,7 +717,12 @@ static void hp_wmi_notify(u32 value, void *context)
 static int __init hp_wmi_input_setup(void)
 {
 	acpi_status status;
+<<<<<<< HEAD
 	int err, val;
+=======
+	int err;
+	int val;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	hp_wmi_input_dev = input_allocate_device();
 	if (!hp_wmi_input_dev)
@@ -651,19 +735,30 @@ static int __init hp_wmi_input_setup(void)
 	__set_bit(EV_SW, hp_wmi_input_dev->evbit);
 
 	/* Dock */
+<<<<<<< HEAD
 	val = hp_wmi_hw_state(HPWMI_DOCK_MASK);
+=======
+	val = hp_wmi_dock_state();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!(val < 0)) {
 		__set_bit(SW_DOCK, hp_wmi_input_dev->swbit);
 		input_report_switch(hp_wmi_input_dev, SW_DOCK, val);
 	}
 
 	/* Tablet mode */
+<<<<<<< HEAD
 	if (enable_tablet_mode_sw > 0) {
 		val = hp_wmi_hw_state(HPWMI_TABLET_MASK);
 		if (val >= 0) {
 			__set_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit);
 			input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE, val);
 		}
+=======
+	val = hp_wmi_tablet_state();
+	if (!(val < 0)) {
+		__set_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit);
+		input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE, val);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	err = sparse_keymap_setup(hp_wmi_input_dev, hp_wmi_keymap, NULL);
@@ -710,6 +805,11 @@ static int __init hp_wmi_rfkill_setup(struct platform_device *device)
 		return wireless;
 
 	err = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, HPWMI_WRITE, &wireless,
+				   sizeof(wireless), 0);
+	if (err)
+		return err;
+
+	err = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, &wireless,
 				   sizeof(wireless), 0);
 	if (err)
 		return err;
@@ -919,10 +1019,17 @@ static int hp_wmi_resume_handler(struct device *device)
 	if (hp_wmi_input_dev) {
 		if (test_bit(SW_DOCK, hp_wmi_input_dev->swbit))
 			input_report_switch(hp_wmi_input_dev, SW_DOCK,
+<<<<<<< HEAD
 					    hp_wmi_hw_state(HPWMI_DOCK_MASK));
 		if (test_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit))
 			input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
 					    hp_wmi_hw_state(HPWMI_TABLET_MASK));
+=======
+					    hp_wmi_dock_state());
+		if (test_bit(SW_TABLET_MODE, hp_wmi_input_dev->swbit))
+			input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
+					    hp_wmi_tablet_state());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		input_sync(hp_wmi_input_dev);
 	}
 

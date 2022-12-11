@@ -1445,6 +1445,10 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
 	if (budget <= 0)
 		return budget;
 
+	/* Handle case where we are called by netpoll with a budget of 0 */
+	if (budget <= 0)
+		return budget;
+
 	/* attempt to distribute budget to each queue fairly, but don't
 	 * allow the budget to go below 1 because we'll exit polling
 	 */
@@ -1986,9 +1990,14 @@ int fm10k_init_queueing_scheme(struct fm10k_intfc *interface)
 	/* Allocate memory for queues */
 	err = fm10k_alloc_q_vectors(interface);
 	if (err) {
+<<<<<<< HEAD
 		dev_err(&interface->pdev->dev,
 			"Unable to allocate queue vectors\n");
 		goto err_alloc_q_vectors;
+=======
+		fm10k_reset_msix_capability(interface);
+		return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Map rings to devices, and map devices to physical queues */

@@ -501,6 +501,7 @@ static struct scsi_host_template fdomain_template = {
 	.dma_boundary		= PAGE_SIZE - 1,
 };
 
+<<<<<<< HEAD
 struct Scsi_Host *fdomain_create(int base, int irq, int this_id,
 				 struct device *dev)
 {
@@ -511,6 +512,10 @@ struct Scsi_Host *fdomain_create(int base, int irq, int this_id,
 		"Unknown", "TMC-1800", "TMC-18C50", "TMC-18C30"
 	};
 	unsigned long irq_flags = 0;
+=======
+#ifndef PCMCIA
+#if defined(CONFIG_PCI) && defined(MODULE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	chip = fdomain_identify(base);
 	if (!chip)

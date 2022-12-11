@@ -1250,6 +1250,7 @@ void __init adjust_lowmem_bounds(void)
 	 * last full pmd, which should be mapped.
 	 */
 	memblock_limit = round_down(memblock_limit, PMD_SIZE);
+<<<<<<< HEAD
 
 	if (!IS_ENABLED(CONFIG_HIGHMEM) || cache_is_vipt_aliasing()) {
 		if (memblock_end_of_DRAM() > arm_lowmem_limit) {
@@ -1262,6 +1263,8 @@ void __init adjust_lowmem_bounds(void)
 			memblock_remove(memblock_limit, end - memblock_limit);
 		}
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memblock_set_current_limit(memblock_limit);
 }

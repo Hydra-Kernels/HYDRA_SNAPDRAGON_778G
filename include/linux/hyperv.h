@@ -718,6 +718,11 @@ struct vmbus_device {
 	bool perf_device;
 };
 
+enum hv_signal_policy {
+	HV_SIGNAL_POLICY_DEFAULT = 0,
+	HV_SIGNAL_POLICY_EXPLICIT,
+};
+
 struct vmbus_channel {
 	struct list_head listentry;
 
@@ -857,6 +862,7 @@ struct vmbus_channel {
 	 * link up channels based on their CPU affinity.
 	 */
 	struct list_head percpu_list;
+<<<<<<< HEAD
 
 	/*
 	 * Defer freeing channel until after all cpu's have
@@ -937,6 +943,24 @@ struct vmbus_channel {
 };
 
 static inline bool is_hvsock_channel(const struct vmbus_channel *c)
+=======
+	/*
+	 * Host signaling policy: The default policy will be
+	 * based on the ring buffer state. We will also support
+	 * a policy where the client driver can have explicit
+	 * signaling control.
+	 */
+	enum hv_signal_policy  signal_policy;
+};
+
+static inline void set_channel_signal_state(struct vmbus_channel *c,
+					    enum hv_signal_policy policy)
+{
+	c->signal_policy = policy;
+}
+
+static inline void set_channel_read_state(struct vmbus_channel *c, bool state)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return !!(c->offermsg.offer.chn_flags &
 		  VMBUS_CHANNEL_TLNPI_PROVIDER_OFFER);

@@ -3184,12 +3184,17 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
 			  ixgbe_clean_xdp_tx_irq(q_vector, ring, budget) :
 			  ixgbe_clean_tx_irq(q_vector, ring, budget);
 
+<<<<<<< HEAD
 		if (!wd)
 			clean_complete = false;
 	}
 
 	/* Exit if we are called by netpoll */
 	if (budget <= 0)
+=======
+	/* Exit if we are called by netpoll or busy polling is active */
+	if ((budget <= 0) || !ixgbe_qv_lock_napi(q_vector))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return budget;
 
 	/* attempt to distribute budget to each queue fairly, but don't allow
@@ -11430,6 +11435,12 @@ skip_bad_vf_detection:
 		return PCI_ERS_RESULT_DISCONNECT;
 	}
 
+<<<<<<< HEAD
+=======
+	if (netif_running(netdev))
+		ixgbe_close_suspend(adapter);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!test_and_set_bit(__IXGBE_DISABLED, &adapter->state))
 		pci_disable_device(pdev);
 	rtnl_unlock();

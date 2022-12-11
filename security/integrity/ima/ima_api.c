@@ -219,6 +219,7 @@ int ima_collect_measurement(struct integrity_iint_cache *iint,
 		char digest[IMA_MAX_DIGEST_SIZE];
 	} hash;
 
+<<<<<<< HEAD
 	/*
 	 * Always collect the modsig, because IMA might have already collected
 	 * the file digest without collecting the modsig in a previous
@@ -226,6 +227,10 @@ int ima_collect_measurement(struct integrity_iint_cache *iint,
 	 */
 	if (modsig)
 		ima_collect_modsig(modsig, buf, size);
+=======
+	if (xattr_value)
+		*xattr_len = ima_read_xattr(file_dentry(file), xattr_value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (iint->flags & IMA_COLLECTED)
 		goto out;

@@ -333,6 +333,19 @@ config ARCH_TEGRA
 	help
 	  This enables support for the NVIDIA Tegra SoC family.
 
+<<<<<<< HEAD
+=======
+config ARCH_TEGRA_132_SOC
+	bool "NVIDIA Tegra132 SoC"
+	depends on ARCH_TEGRA
+	select PINCTRL_TEGRA124
+	help
+	  Enable support for NVIDIA Tegra132 SoC, based on the Denver
+	  ARMv8 CPU.  The Tegra132 SoC is similar to the Tegra124 SoC,
+	  but contains an NVIDIA Denver CPU complex in place of
+	  Tegra124's "4+1" Cortex-A15 CPU complex.
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config ARCH_SPRD
 	bool "Spreadtrum SoC platform"
 	help

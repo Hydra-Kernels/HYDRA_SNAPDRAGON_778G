@@ -1366,8 +1366,15 @@ static void btrfs_async_run_delayed_root(struct btrfs_work *work)
 		btrfs_release_prepared_delayed_node(delayed_node);
 		total_done++;
 
+<<<<<<< HEAD
 	} while ((async_work->nr == 0 && total_done < BTRFS_DELAYED_WRITEBACK)
 		 || total_done < async_work->nr);
+=======
+	btrfs_release_prepared_delayed_node(delayed_node);
+	if ((async_work->nr == 0 && total_done < BTRFS_DELAYED_WRITEBACK) ||
+	    total_done < async_work->nr)
+		goto again;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	btrfs_free_path(path);
 out:
@@ -1381,6 +1388,13 @@ static int btrfs_wq_run_delayed_node(struct btrfs_delayed_root *delayed_root,
 {
 	struct btrfs_async_delayed_work *async_work;
 
+<<<<<<< HEAD
+=======
+	if (atomic_read(&delayed_root->items) < BTRFS_DELAYED_BACKGROUND ||
+	    btrfs_workqueue_normal_congested(fs_info->delayed_workers))
+		return 0;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	async_work = kmalloc(sizeof(*async_work), GFP_NOFS);
 	if (!async_work)
 		return -ENOMEM;
@@ -1687,7 +1701,7 @@ int btrfs_should_delete_dir_index(struct list_head *del_list,
  *
  */
 int btrfs_readdir_delayed_dir_index(struct dir_context *ctx,
-				    struct list_head *ins_list)
+				    struct list_head *ins_list, bool *emitted)
 {
 	struct btrfs_dir_item *di;
 	struct btrfs_delayed_item *curr, *next;
@@ -1731,7 +1745,11 @@ int btrfs_readdir_delayed_dir_index(struct dir_context *ctx,
 
 		if (over)
 			return 1;
+<<<<<<< HEAD
 		ctx->pos++;
+=======
+		*emitted = true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }

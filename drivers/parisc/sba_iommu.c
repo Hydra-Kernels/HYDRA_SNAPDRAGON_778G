@@ -713,7 +713,11 @@ sba_map_single(struct device *dev, void *addr, size_t size,
 
 	ioc = GET_IOC(dev);
 	if (!ioc)
+<<<<<<< HEAD
 		return DMA_MAPPING_ERROR;
+=======
+		return DMA_ERROR_CODE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* save offset bits */
 	offset = ((dma_addr_t) (long) addr) & ~IOVP_MASK;

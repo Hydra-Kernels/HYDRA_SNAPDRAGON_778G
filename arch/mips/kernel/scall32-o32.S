@@ -205,6 +205,251 @@ einval: li	v0, -ENOSYS
 	jr	ra
 	END(sys_syscall)
 
+<<<<<<< HEAD
+=======
+	.align	2
+	.type	sys_call_table, @object
+EXPORT(sys_call_table)
+	PTR	sys_syscall			/* 4000 */
+	PTR	sys_exit
+	PTR	__sys_fork
+	PTR	sys_read
+	PTR	sys_write
+	PTR	sys_open			/* 4005 */
+	PTR	sys_close
+	PTR	sys_waitpid
+	PTR	sys_creat
+	PTR	sys_link
+	PTR	sys_unlink			/* 4010 */
+	PTR	sys_execve
+	PTR	sys_chdir
+	PTR	sys_time
+	PTR	sys_mknod
+	PTR	sys_chmod			/* 4015 */
+	PTR	sys_lchown
+	PTR	sys_ni_syscall
+	PTR	sys_ni_syscall			/* was sys_stat */
+	PTR	sys_lseek
+	PTR	sys_getpid			/* 4020 */
+	PTR	sys_mount
+	PTR	sys_oldumount
+	PTR	sys_setuid
+	PTR	sys_getuid
+	PTR	sys_stime			/* 4025 */
+	PTR	sys_ptrace
+	PTR	sys_alarm
+	PTR	sys_ni_syscall			/* was sys_fstat */
+	PTR	sys_pause
+	PTR	sys_utime			/* 4030 */
+	PTR	sys_ni_syscall
+	PTR	sys_ni_syscall
+	PTR	sys_access
+	PTR	sys_nice
+	PTR	sys_ni_syscall			/* 4035 */
+	PTR	sys_sync
+	PTR	sys_kill
+	PTR	sys_rename
+	PTR	sys_mkdir
+	PTR	sys_rmdir			/* 4040 */
+	PTR	sys_dup
+	PTR	sysm_pipe
+	PTR	sys_times
+	PTR	sys_ni_syscall
+	PTR	sys_brk				/* 4045 */
+	PTR	sys_setgid
+	PTR	sys_getgid
+	PTR	sys_ni_syscall			/* was signal(2) */
+	PTR	sys_geteuid
+	PTR	sys_getegid			/* 4050 */
+	PTR	sys_acct
+	PTR	sys_umount
+	PTR	sys_ni_syscall
+	PTR	sys_ioctl
+	PTR	sys_fcntl			/* 4055 */
+	PTR	sys_ni_syscall
+	PTR	sys_setpgid
+	PTR	sys_ni_syscall
+	PTR	sys_olduname
+	PTR	sys_umask			/* 4060 */
+	PTR	sys_chroot
+	PTR	sys_ustat
+	PTR	sys_dup2
+	PTR	sys_getppid
+	PTR	sys_getpgrp			/* 4065 */
+	PTR	sys_setsid
+	PTR	sys_sigaction
+	PTR	sys_sgetmask
+	PTR	sys_ssetmask
+	PTR	sys_setreuid			/* 4070 */
+	PTR	sys_setregid
+	PTR	sys_sigsuspend
+	PTR	sys_sigpending
+	PTR	sys_sethostname
+	PTR	sys_setrlimit			/* 4075 */
+	PTR	sys_getrlimit
+	PTR	sys_getrusage
+	PTR	sys_gettimeofday
+	PTR	sys_settimeofday
+	PTR	sys_getgroups			/* 4080 */
+	PTR	sys_setgroups
+	PTR	sys_ni_syscall			/* old_select */
+	PTR	sys_symlink
+	PTR	sys_ni_syscall			/* was sys_lstat */
+	PTR	sys_readlink			/* 4085 */
+	PTR	sys_uselib
+	PTR	sys_swapon
+	PTR	sys_reboot
+	PTR	sys_old_readdir
+	PTR	sys_mips_mmap			/* 4090 */
+	PTR	sys_munmap
+	PTR	sys_truncate
+	PTR	sys_ftruncate
+	PTR	sys_fchmod
+	PTR	sys_fchown			/* 4095 */
+	PTR	sys_getpriority
+	PTR	sys_setpriority
+	PTR	sys_ni_syscall
+	PTR	sys_statfs
+	PTR	sys_fstatfs			/* 4100 */
+	PTR	sys_ni_syscall			/* was ioperm(2) */
+	PTR	sys_socketcall
+	PTR	sys_syslog
+	PTR	sys_setitimer
+	PTR	sys_getitimer			/* 4105 */
+	PTR	sys_newstat
+	PTR	sys_newlstat
+	PTR	sys_newfstat
+	PTR	sys_uname
+	PTR	sys_ni_syscall			/* 4110 was iopl(2) */
+	PTR	sys_vhangup
+	PTR	sys_ni_syscall			/* was sys_idle() */
+	PTR	sys_ni_syscall			/* was sys_vm86 */
+	PTR	sys_wait4
+	PTR	sys_swapoff			/* 4115 */
+	PTR	sys_sysinfo
+	PTR	sys_ipc
+	PTR	sys_fsync
+	PTR	sys_sigreturn
+	PTR	__sys_clone			/* 4120 */
+	PTR	sys_setdomainname
+	PTR	sys_newuname
+	PTR	sys_ni_syscall			/* sys_modify_ldt */
+	PTR	sys_adjtimex
+	PTR	sys_mprotect			/* 4125 */
+	PTR	sys_sigprocmask
+	PTR	sys_ni_syscall			/* was create_module */
+	PTR	sys_init_module
+	PTR	sys_delete_module
+	PTR	sys_ni_syscall			/* 4130 was get_kernel_syms */
+	PTR	sys_quotactl
+	PTR	sys_getpgid
+	PTR	sys_fchdir
+	PTR	sys_bdflush
+	PTR	sys_sysfs			/* 4135 */
+	PTR	sys_personality
+	PTR	sys_ni_syscall			/* for afs_syscall */
+	PTR	sys_setfsuid
+	PTR	sys_setfsgid
+	PTR	sys_llseek			/* 4140 */
+	PTR	sys_getdents
+	PTR	sys_select
+	PTR	sys_flock
+	PTR	sys_msync
+	PTR	sys_readv			/* 4145 */
+	PTR	sys_writev
+	PTR	sys_cacheflush
+	PTR	sys_cachectl
+	PTR	__sys_sysmips
+	PTR	sys_ni_syscall			/* 4150 */
+	PTR	sys_getsid
+	PTR	sys_fdatasync
+	PTR	sys_sysctl
+	PTR	sys_mlock
+	PTR	sys_munlock			/* 4155 */
+	PTR	sys_mlockall
+	PTR	sys_munlockall
+	PTR	sys_sched_setparam
+	PTR	sys_sched_getparam
+	PTR	sys_sched_setscheduler		/* 4160 */
+	PTR	sys_sched_getscheduler
+	PTR	sys_sched_yield
+	PTR	sys_sched_get_priority_max
+	PTR	sys_sched_get_priority_min
+	PTR	sys_sched_rr_get_interval	/* 4165 */
+	PTR	sys_nanosleep
+	PTR	sys_mremap
+	PTR	sys_accept
+	PTR	sys_bind
+	PTR	sys_connect			/* 4170 */
+	PTR	sys_getpeername
+	PTR	sys_getsockname
+	PTR	sys_getsockopt
+	PTR	sys_listen
+	PTR	sys_recv			/* 4175 */
+	PTR	sys_recvfrom
+	PTR	sys_recvmsg
+	PTR	sys_send
+	PTR	sys_sendmsg
+	PTR	sys_sendto			/* 4180 */
+	PTR	sys_setsockopt
+	PTR	sys_shutdown
+	PTR	sys_socket
+	PTR	sys_socketpair
+	PTR	sys_setresuid			/* 4185 */
+	PTR	sys_getresuid
+	PTR	sys_ni_syscall			/* was sys_query_module */
+	PTR	sys_poll
+	PTR	sys_ni_syscall			/* was nfsservctl */
+	PTR	sys_setresgid			/* 4190 */
+	PTR	sys_getresgid
+	PTR	sys_prctl
+	PTR	sys_rt_sigreturn
+	PTR	sys_rt_sigaction
+	PTR	sys_rt_sigprocmask		/* 4195 */
+	PTR	sys_rt_sigpending
+	PTR	sys_rt_sigtimedwait
+	PTR	sys_rt_sigqueueinfo
+	PTR	sys_rt_sigsuspend
+	PTR	sys_pread64			/* 4200 */
+	PTR	sys_pwrite64
+	PTR	sys_chown
+	PTR	sys_getcwd
+	PTR	sys_capget
+	PTR	sys_capset			/* 4205 */
+	PTR	sys_sigaltstack
+	PTR	sys_sendfile
+	PTR	sys_ni_syscall
+	PTR	sys_ni_syscall
+	PTR	sys_mips_mmap2			/* 4210 */
+	PTR	sys_truncate64
+	PTR	sys_ftruncate64
+	PTR	sys_stat64
+	PTR	sys_lstat64
+	PTR	sys_fstat64			/* 4215 */
+	PTR	sys_pivot_root
+	PTR	sys_mincore
+	PTR	sys_madvise
+	PTR	sys_getdents64
+	PTR	sys_fcntl64			/* 4220 */
+	PTR	sys_ni_syscall
+	PTR	sys_gettid
+	PTR	sys_readahead
+	PTR	sys_setxattr
+	PTR	sys_lsetxattr			/* 4225 */
+	PTR	sys_fsetxattr
+	PTR	sys_getxattr
+	PTR	sys_lgetxattr
+	PTR	sys_fgetxattr
+	PTR	sys_listxattr			/* 4230 */
+	PTR	sys_llistxattr
+	PTR	sys_flistxattr
+	PTR	sys_removexattr
+	PTR	sys_lremovexattr
+	PTR	sys_fremovexattr		/* 4235 */
+	PTR	sys_tkill
+	PTR	sys_sendfile64
+	PTR	sys_futex
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_MIPS_MT_FPAFF
 	/*
 	 * For FPU affinity scheduling on MIPS MT processors, we need to

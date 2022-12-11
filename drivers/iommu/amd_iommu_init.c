@@ -254,6 +254,7 @@ static int amd_iommu_enable_interrupts(void);
 static int __init iommu_go_to_state(enum iommu_init_state state);
 static void init_device_table_dma(void);
 
+<<<<<<< HEAD
 static bool amd_iommu_pre_enabled = true;
 
 bool translation_pre_enabled(struct amd_iommu *iommu)
@@ -275,6 +276,11 @@ static void init_translation_status(struct amd_iommu *iommu)
 	if (ctrl & (1<<CONTROL_IOMMU_EN))
 		iommu->flags |= AMD_IOMMU_FLAG_TRANS_PRE_ENABLED;
 }
+=======
+static int iommu_pc_get_set_reg_val(struct amd_iommu *iommu,
+				    u8 bank, u8 cntr, u8 fxn,
+				    u64 *value, bool is_write);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline void update_last_devid(u16 devid)
 {
@@ -1479,7 +1485,12 @@ static void amd_iommu_ats_write_check_workaround(struct amd_iommu *iommu)
 	/* Set L2_DEBUG_3[AtsIgnoreIWDis] = 1 */
 	iommu_write_l2(iommu, 0x47, value | BIT(0));
 
+<<<<<<< HEAD
 	pci_info(iommu->dev, "Applying ATS write check workaround\n");
+=======
+	pr_info("AMD-Vi: Applying ATS write check workaround for IOMMU at %s\n",
+		dev_name(&iommu->dev->dev));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -1682,7 +1693,20 @@ static void init_iommu_perf_ctr(struct amd_iommu *iommu)
 
 	amd_iommu_pc_present = true;
 
+<<<<<<< HEAD
 	pci_info(pdev, "IOMMU performance counters supported\n");
+=======
+	/* Check if the performance counters can be written to */
+	if ((0 != iommu_pc_get_set_reg_val(iommu, 0, 0, 0, &val, true)) ||
+	    (0 != iommu_pc_get_set_reg_val(iommu, 0, 0, 0, &val2, false)) ||
+	    (val != val2)) {
+		pr_err("AMD-Vi: Unable to write to IOMMU perf counter.\n");
+		amd_iommu_pc_present = false;
+		return;
+	}
+
+	pr_info("AMD-Vi: IOMMU performance counters supported\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	val = readl(iommu->mmio_base + MMIO_CNTR_CONF_OFFSET);
 	iommu->max_banks = (u8) ((val >> 12) & 0x3f);
@@ -3124,18 +3148,29 @@ u8 amd_iommu_pc_get_max_counters(unsigned int idx)
 }
 EXPORT_SYMBOL(amd_iommu_pc_get_max_counters);
 
+<<<<<<< HEAD
 static int iommu_pc_get_set_reg(struct amd_iommu *iommu, u8 bank, u8 cntr,
 				u8 fxn, u64 *value, bool is_write)
+=======
+static int iommu_pc_get_set_reg_val(struct amd_iommu *iommu,
+				    u8 bank, u8 cntr, u8 fxn,
+				    u64 *value, bool is_write)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	u32 offset;
 	u32 max_offset_lim;
 
+<<<<<<< HEAD
 	/* Make sure the IOMMU PC resource is available */
 	if (!amd_iommu_pc_present)
 		return -ENODEV;
 
 	/* Check for valid iommu and pc register indexing */
 	if (WARN_ON(!iommu || (fxn > 0x28) || (fxn & 7)))
+=======
+	/* Check for valid iommu and pc register indexing */
+	if (WARN_ON((fxn > 0x28) || (fxn & 7)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENODEV;
 
 	offset = (u32)(((0x40 | bank) << 12) | (cntr << 8) | fxn);
@@ -3161,6 +3196,7 @@ static int iommu_pc_get_set_reg(struct amd_iommu *iommu, u8 bank, u8 cntr,
 
 	return 0;
 }
+<<<<<<< HEAD
 
 int amd_iommu_pc_get_reg(struct amd_iommu *iommu, u8 bank, u8 cntr, u8 fxn, u64 *value)
 {
@@ -3179,3 +3215,19 @@ int amd_iommu_pc_set_reg(struct amd_iommu *iommu, u8 bank, u8 cntr, u8 fxn, u64 
 	return iommu_pc_get_set_reg(iommu, bank, cntr, fxn, value, true);
 }
 EXPORT_SYMBOL(amd_iommu_pc_set_reg);
+=======
+EXPORT_SYMBOL(amd_iommu_pc_get_set_reg_val);
+
+int amd_iommu_pc_get_set_reg_val(u16 devid, u8 bank, u8 cntr, u8 fxn,
+				    u64 *value, bool is_write)
+{
+	struct amd_iommu *iommu = amd_iommu_rlookup_table[devid];
+
+	/* Make sure the IOMMU PC resource is available */
+	if (!amd_iommu_pc_present || iommu == NULL)
+		return -ENODEV;
+
+	return iommu_pc_get_set_reg_val(iommu, bank, cntr, fxn,
+					value, is_write);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

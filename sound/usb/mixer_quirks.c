@@ -1510,6 +1510,7 @@ static int snd_microii_spdif_default_get(struct snd_kcontrol *kcontrol,
 
 	/* use known values for that card: interface#1 altsetting#1 */
 	iface = usb_ifnum_to_if(chip->dev, 1);
+<<<<<<< HEAD
 	if (!iface || iface->num_altsetting < 2) {
 		err = -EINVAL;
 		goto end;
@@ -1519,6 +1520,13 @@ static int snd_microii_spdif_default_get(struct snd_kcontrol *kcontrol,
 		err = -EINVAL;
 		goto end;
 	}
+=======
+	if (!iface || iface->num_altsetting < 2)
+		return -EINVAL;
+	alts = &iface->altsetting[1];
+	if (get_iface_desc(alts)->bNumEndpoints < 1)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ep = get_endpoint(alts, 0)->bEndpointAddress;
 
 	err = snd_usb_ctl_msg(chip->dev,

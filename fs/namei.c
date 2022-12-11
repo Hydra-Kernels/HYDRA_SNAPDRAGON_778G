@@ -1852,6 +1852,7 @@ static inline int step_into(struct nameidata *nd, struct path *path,
 		nd->inode = inode;
 		nd->seq = seq;
 		return 0;
+<<<<<<< HEAD
 	}
 	/* make sure that d_is_symlink above matches inode */
 	if (nd->flags & LOOKUP_RCU) {
@@ -1859,6 +1860,16 @@ static inline int step_into(struct nameidata *nd, struct path *path,
 			return -ECHILD;
 	}
 	return pick_link(nd, path, inode, seq);
+=======
+	if (!follow)
+		return 0;
+	/* make sure that d_is_symlink above matches inode */
+	if (nd->flags & LOOKUP_RCU) {
+		if (read_seqcount_retry(&link->dentry->d_seq, seq))
+			return -ECHILD;
+	}
+	return pick_link(nd, link, inode, seq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int walk_component(struct nameidata *nd, int flags)
@@ -1892,12 +1903,19 @@ static int walk_component(struct nameidata *nd, int flags)
 		if (unlikely(err < 0))
 			return err;
 
+<<<<<<< HEAD
 		if (unlikely(d_is_negative(path.dentry))) {
 			path_to_nameidata(&path, nd);
 			return -ENOENT;
 		}
 
 		seq = 0;	/* we are already out of RCU mode */
+=======
+		seq = 0;	/* we are already out of RCU mode */
+		err = -ENOENT;
+		if (d_is_negative(path.dentry))
+			goto out_path_put;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		inode = d_backing_inode(path.dentry);
 	}
 
@@ -2250,8 +2268,11 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 
 	if (!*s)
 		flags &= ~LOOKUP_RCU;
+<<<<<<< HEAD
 	if (flags & LOOKUP_RCU)
 		rcu_read_lock();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
 	nd->flags = flags | LOOKUP_JUMPED | LOOKUP_PARENT;
@@ -3284,6 +3305,7 @@ static int lookup_open(struct nameidata *nd, struct path *path,
 	}
 
 no_open:
+<<<<<<< HEAD
 	if (d_in_lookup(dentry)) {
 		struct dentry *res = dir_inode->i_op->lookup(dir_inode, dentry,
 							     nd->flags);
@@ -3296,6 +3318,16 @@ no_open:
 			dput(dentry);
 			dentry = res;
 		}
+=======
+	if (need_lookup) {
+		dentry = lookup_real(dir, dentry, nd->flags);
+		if (IS_ERR(dentry))
+			return PTR_ERR(dentry);
+	}
+	if (create_error && !dentry->d_inode) {
+		error = create_error;
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Negative dentry, just create the file */
@@ -3454,18 +3486,47 @@ static int do_last(struct nameidata *nd,
 		return -EEXIST;
 	}
 
+<<<<<<< HEAD
 	seq = 0;	/* out of RCU mode, so the value doesn't matter */
+=======
+	error = follow_managed(&path, nd);
+	if (unlikely(error < 0))
+		return error;
+
+	BUG_ON(nd->flags & LOOKUP_RCU);
+	seq = 0;	/* out of RCU mode, so the value doesn't matter */
+	if (unlikely(d_is_negative(path.dentry))) {
+		path_to_nameidata(&path, nd);
+		return -ENOENT;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	inode = d_backing_inode(path.dentry);
 finish_lookup:
 	error = step_into(nd, &path, 0, inode, seq);
 	if (unlikely(error))
 		return error;
+<<<<<<< HEAD
+=======
+
+	if ((nd->flags & LOOKUP_RCU) || nd->path.mnt != path.mnt) {
+		path_to_nameidata(&path, nd);
+	} else {
+		save_parent.dentry = nd->path.dentry;
+		save_parent.mnt = mntget(path.mnt);
+		nd->path.dentry = path.dentry;
+
+	}
+	nd->inode = inode;
+	nd->seq = seq;
+	/* Why this, you ask?  _Now_ we might have grown LOOKUP_JUMPED... */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 finish_open:
 	/* Why this, you ask?  _Now_ we might have grown LOOKUP_JUMPED... */
 	error = complete_walk(nd);
 	if (error)
 		return error;
 	audit_inode(nd->name, nd->path.dentry, 0);
+<<<<<<< HEAD
 	if (open_flag & O_CREAT) {
 		error = -EISDIR;
 		if (d_is_dir(nd->path.dentry))
@@ -3475,6 +3536,15 @@ finish_open:
 		if (unlikely(error))
 			goto out;
 	}
+=======
+	if (unlikely(d_is_symlink(nd->path.dentry)) && !(open_flag & O_PATH)) {
+		error = -ELOOP;
+		goto out;
+	}
+	error = -EISDIR;
+	if ((open_flag & O_CREAT) && d_is_dir(nd->path.dentry))
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	error = -ENOTDIR;
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		goto out;
@@ -4479,7 +4549,11 @@ int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 	unsigned max_links = new_dir->i_sb->s_max_links;
 	struct name_snapshot old_name;
 
-	if (source == target)
+	/*
+	 * Check source == target.
+	 * On overlayfs need to look at underlying inodes.
+	 */
+	if (vfs_select_inode(old_dentry, 0) == vfs_select_inode(new_dentry, 0))
 		return 0;
 
 	error = may_delete(old_dir, old_dentry, is_dir);
@@ -4579,7 +4653,11 @@ out:
 		inode_unlock(target);
 	dput(new_dentry);
 	if (!error) {
+<<<<<<< HEAD
 		fsnotify_move(old_dir, new_dir, &old_name.name, is_dir,
+=======
+		fsnotify_move(old_dir, new_dir, old_name.name, is_dir,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			      !(flags & RENAME_EXCHANGE) ? target : NULL, old_dentry);
 		if (flags & RENAME_EXCHANGE) {
 			fsnotify_move(new_dir, old_dir, &old_dentry->d_name,

@@ -38,9 +38,15 @@
 #include <linux/pipe_fs_i.h>
 #include <linux/oom.h>
 #include <linux/compat.h>
+<<<<<<< HEAD
 #include <linux/fs.h>
 #include <linux/path.h>
 #include <linux/timekeeping.h>
+=======
+#include <linux/sched.h>
+#include <linux/fs.h>
+#include <linux/path.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>

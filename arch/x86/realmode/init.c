@@ -7,8 +7,12 @@
 #include <asm/set_memory.h>
 #include <asm/pgtable.h>
 #include <asm/realmode.h>
+<<<<<<< HEAD
 #include <asm/tlbflush.h>
 #include <asm/crash.h>
+=======
+#include <asm/kaiser.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;
@@ -27,11 +31,18 @@ void __init reserve_real_mode(void)
 	WARN_ON(slab_is_available());
 
 	/* Has to be under 1M so we can execute real-mode AP code. */
+<<<<<<< HEAD
 	mem = memblock_find_in_range(0, 1<<20, size, PAGE_SIZE);
 	if (!mem) {
 		pr_info("No sub-1M memory is available for the trampoline\n");
 		return;
 	}
+=======
+	mem = memblock_find_in_range(0, 1 << 20, size,
+				     KAISER_KERNEL_PGD_ALIGNMENT);
+	if (!mem)
+		panic("Cannot allocate trampoline\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memblock_reserve(mem, size);
 	set_real_mode_mem(mem);

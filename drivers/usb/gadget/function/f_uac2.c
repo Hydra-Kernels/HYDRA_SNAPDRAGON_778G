@@ -781,6 +781,7 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 	uac2->ac_intf = ret;
 	uac2->ac_alt = 0;
 
+<<<<<<< HEAD
 	if (EPOUT_EN(uac2_opts)) {
 		ret = usb_interface_id(cfg, fn);
 		if (ret < 0) {
@@ -803,6 +804,38 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 		std_as_in_if1_desc.bInterfaceNumber = ret;
 		uac2->as_in_intf = ret;
 		uac2->as_in_alt = 0;
+=======
+	ret = usb_interface_id(cfg, fn);
+	if (ret < 0) {
+		dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
+		return ret;
+	}
+	std_as_out_if0_desc.bInterfaceNumber = ret;
+	std_as_out_if1_desc.bInterfaceNumber = ret;
+	agdev->as_out_intf = ret;
+	agdev->as_out_alt = 0;
+
+	ret = usb_interface_id(cfg, fn);
+	if (ret < 0) {
+		dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
+		return ret;
+	}
+	std_as_in_if0_desc.bInterfaceNumber = ret;
+	std_as_in_if1_desc.bInterfaceNumber = ret;
+	agdev->as_in_intf = ret;
+	agdev->as_in_alt = 0;
+
+	agdev->out_ep = usb_ep_autoconfig(gadget, &fs_epout_desc);
+	if (!agdev->out_ep) {
+		dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
+		return ret;
+	}
+
+	agdev->in_ep = usb_ep_autoconfig(gadget, &fs_epin_desc);
+	if (!agdev->in_ep) {
+		dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Calculate wMaxPacketSize according to audio bandwidth */
@@ -869,6 +902,7 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 
 	agdev->gadget = gadget;
 
+<<<<<<< HEAD
 	agdev->params.p_chmask = uac2_opts->p_chmask;
 	agdev->params.p_srate = uac2_opts->p_srate;
 	agdev->params.p_ssize = uac2_opts->p_ssize;
@@ -877,14 +911,34 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 	agdev->params.c_ssize = uac2_opts->c_ssize;
 	agdev->params.req_number = uac2_opts->req_number;
 	ret = g_audio_setup(agdev, "UAC2 PCM", "UAC2_Gadget");
+=======
+	prm = &agdev->uac2.p_prm;
+	prm->max_psize = hs_epin_desc.wMaxPacketSize;
+	prm->rbuf = kzalloc(prm->max_psize * USB_XFERS, GFP_KERNEL);
+	if (!prm->rbuf) {
+		prm->max_psize = 0;
+		goto err;
+	}
+
+	ret = alsa_uac2_init(agdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
-		goto err_free_descs;
+		goto err;
 	return 0;
 
+<<<<<<< HEAD
 err_free_descs:
 	usb_free_all_descriptors(fn);
 	agdev->gadget = NULL;
 	return ret;
+=======
+err:
+	kfree(agdev->uac2.p_prm.rbuf);
+	kfree(agdev->uac2.c_prm.rbuf);
+err_free_descs:
+	usb_free_all_descriptors(fn);
+	return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int

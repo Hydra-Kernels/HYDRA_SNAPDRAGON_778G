@@ -19,6 +19,7 @@
 
 #include <asm/e820/api.h>
 #include <asm/setup.h>
+#include <asm/cpufeature.h>
 
 /*
  * We organize the E820 table into three main data structures:
@@ -812,7 +813,11 @@ u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 /*
  * Find the highest page frame number we have available
  */
+<<<<<<< HEAD
 static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type)
+=======
+static unsigned long __init e820_end_pfn(unsigned long limit_pfn, unsigned type)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int i;
 	unsigned long last_pfn = 0;
@@ -823,7 +828,11 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 		unsigned long start_pfn;
 		unsigned long end_pfn;
 
+<<<<<<< HEAD
 		if (entry->type != type)
+=======
+		if (ei->type != type)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 
 		start_pfn = entry->addr >> PAGE_SHIFT;
@@ -849,12 +858,20 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 
 unsigned long __init e820__end_of_ram_pfn(void)
 {
+<<<<<<< HEAD
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
+=======
+	return e820_end_pfn(MAX_ARCH_PFN, E820_RAM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 unsigned long __init e820__end_of_low_ram_pfn(void)
 {
+<<<<<<< HEAD
 	return e820_end_pfn(1UL << (32 - PAGE_SHIFT), E820_TYPE_RAM);
+=======
+	return e820_end_pfn(1UL << (32 - PAGE_SHIFT), E820_RAM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __init early_panic(char *msg)

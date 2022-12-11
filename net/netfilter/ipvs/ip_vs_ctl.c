@@ -2447,7 +2447,11 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
 			ret = -EINVAL;
 			if (strscpy(cfg.mcast_ifn, dm->mcast_ifn,
 				    sizeof(cfg.mcast_ifn)) <= 0)
+<<<<<<< HEAD
 				return ret;
+=======
+				goto out_dec;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			cfg.syncid = dm->syncid;
 			ret = start_sync_thread(ipvs, &cfg, dm->state);
 		} else {
@@ -4118,12 +4122,19 @@ int __net_init ip_vs_control_net_init(struct netns_ipvs *ipvs)
 
 	spin_lock_init(&ipvs->tot_stats.lock);
 
+<<<<<<< HEAD
 	proc_create_net("ip_vs", 0, ipvs->net->proc_net, &ip_vs_info_seq_ops,
 			sizeof(struct ip_vs_iter));
 	proc_create_net_single("ip_vs_stats", 0, ipvs->net->proc_net,
 			ip_vs_stats_show, NULL);
 	proc_create_net_single("ip_vs_stats_percpu", 0, ipvs->net->proc_net,
 			ip_vs_stats_percpu_show, NULL);
+=======
+	proc_create("ip_vs", 0, ipvs->net->proc_net, &ip_vs_info_fops);
+	proc_create("ip_vs_stats", 0, ipvs->net->proc_net, &ip_vs_stats_fops);
+	proc_create("ip_vs_stats_percpu", 0, ipvs->net->proc_net,
+		    &ip_vs_stats_percpu_fops);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ip_vs_control_net_init_sysctl(ipvs))
 		goto err;

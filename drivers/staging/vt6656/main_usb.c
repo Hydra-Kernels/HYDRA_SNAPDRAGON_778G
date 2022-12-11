@@ -548,8 +548,12 @@ static int vnt_start(struct ieee80211_hw *hw)
 		goto free_all;
 	}
 
+<<<<<<< HEAD
 	ret = vnt_key_init_table(priv);
 	if (ret)
+=======
+	if (vnt_key_init_table(priv))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto free_all;
 
 	priv->int_interval = 1;  /* bInterval is set to 1 */

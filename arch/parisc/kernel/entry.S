@@ -23,7 +23,10 @@
 #include <asm/signal.h>
 #include <asm/unistd.h>
 #include <asm/ldcw.h>
+<<<<<<< HEAD
 #include <asm/traps.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/thread_info.h>
 #include <asm/alternative.h>
 
@@ -37,8 +40,17 @@
 
 	.import		pa_tlb_lock,data
 	.macro  load_pa_tlb_lock reg
+<<<<<<< HEAD
 	mfctl		%cr25,\reg
 	addil		L%(PAGE_SIZE << (PGD_ALLOC_ORDER - 1)),\reg
+=======
+#if __PA_LDCW_ALIGNMENT > 4
+	load32	PA(pa_tlb_lock) + __PA_LDCW_ALIGNMENT-1, \reg
+	depi	0,31,__PA_LDCW_ALIGN_ORDER, \reg
+#else
+	load32	PA(pa_tlb_lock), \reg
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.endm
 
 	/* space_to_prot macro creates a prot id from a space id */
@@ -447,7 +459,11 @@
 	/* Acquire pa_tlb_lock lock and check page is present. */
 	.macro		tlb_lock	spc,ptp,pte,tmp,tmp1,fault
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 98:	cmpib,COND(=),n	0,\spc,2f
+=======
+	cmpib,COND(=),n	0,\spc,2f
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	load_pa_tlb_lock \tmp
 1:	LDCW		0(\tmp),\tmp1
 	cmpib,COND(=)	0,\tmp1,1b
@@ -471,17 +487,28 @@
 	   performed prior to releasing the lock. */
 	.macro		tlb_unlock0	spc,tmp
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 98:	or,COND(=)	%r0,\spc,%r0
 	stw,ma		\spc,0(\tmp)
 99:	ALTERNATIVE(98b, 99b, ALT_COND_NO_SMP, INSN_NOP)
+=======
+	or,COND(=)	%r0,\spc,%r0
+	sync
+	or,COND(=)	%r0,\spc,%r0
+	stw             \spc,0(\tmp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	.endm
 
 	/* Release pa_tlb_lock lock. */
 	.macro		tlb_unlock1	spc,tmp
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 98:	load_pa_tlb_lock \tmp
 99:	ALTERNATIVE(98b, 99b, ALT_COND_NO_SMP, INSN_NOP)
+=======
+	load_pa_tlb_lock \tmp
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tlb_unlock0	\spc,\tmp
 #endif
 	.endm

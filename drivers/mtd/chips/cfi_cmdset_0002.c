@@ -1713,8 +1713,13 @@ static int __xipram do_write_oneword_once(struct map_info *map,
 		UDELAY(map, chip, adr, 1);
 	}
 
+<<<<<<< HEAD
 	return ret;
 }
+=======
+		if (++retry_cnt <= MAX_RETRIES)
+			goto retry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int __xipram do_write_oneword_start(struct map_info *map,
 					   struct flchip *chip,
@@ -2085,6 +2090,50 @@ static int __xipram do_write_buffer(struct map_info *map, struct flchip *chip,
 	if (ret)
 		do_write_buffer_reset(map, chip, cfi);
 
+<<<<<<< HEAD
+=======
+	for (;;) {
+		if (chip->state != FL_WRITING) {
+			/* Someone's suspended the write. Sleep */
+			DECLARE_WAITQUEUE(wait, current);
+
+			set_current_state(TASK_UNINTERRUPTIBLE);
+			add_wait_queue(&chip->wq, &wait);
+			mutex_unlock(&chip->mutex);
+			schedule();
+			remove_wait_queue(&chip->wq, &wait);
+			timeo = jiffies + (HZ / 2); /* FIXME */
+			mutex_lock(&chip->mutex);
+			continue;
+		}
+
+		if (time_after(jiffies, timeo) && !chip_ready(map, adr))
+			break;
+
+		if (chip_good(map, adr, datum)) {
+			xip_enable(map, chip, adr);
+			goto op_done;
+		}
+
+		/* Latency issues. Drop the lock, wait a while and retry */
+		UDELAY(map, chip, adr, 1);
+	}
+
+	/*
+	 * Recovery from write-buffer programming failures requires
+	 * the write-to-buffer-reset sequence.  Since the last part
+	 * of the sequence also works as a normal reset, we can run
+	 * the same commands regardless of why we are here.
+	 * See e.g.
+	 * http://www.spansion.com/Support/Application%20Notes/MirrorBit_Write_Buffer_Prog_Page_Buffer_Read_AN.pdf
+	 */
+	cfi_send_gen_cmd(0xAA, cfi->addr_unlock1, chip->start, map, cfi,
+			 cfi->device_type, NULL);
+	cfi_send_gen_cmd(0x55, cfi->addr_unlock2, chip->start, map, cfi,
+			 cfi->device_type, NULL);
+	cfi_send_gen_cmd(0xF0, cfi->addr_unlock1, chip->start, map, cfi,
+			 cfi->device_type, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xip_enable(map, chip, adr);
 
 	chip->state = FL_READY;
@@ -2474,15 +2523,23 @@ static int __xipram do_erase_chip(struct map_info *map, struct flchip *chip)
 			chip->erase_suspended = 0;
 		}
 
+<<<<<<< HEAD
 		if (chip_good(map, chip, adr, map_word_ff(map))) {
 			if (cfi_check_err_status(map, chip, adr))
 				ret = -EIO;
+=======
+		if (chip_good(map, adr, map_word_ff(map)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 
 		if (time_after(jiffies, timeo)) {
 			printk(KERN_WARNING "MTD %s(): software timeout\n",
+<<<<<<< HEAD
 			       __func__);
+=======
+				__func__ );
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ret = -EIO;
 			break;
 		}
@@ -2573,15 +2630,24 @@ static int __xipram do_erase_oneblock(struct map_info *map, struct flchip *chip,
 			chip->erase_suspended = 0;
 		}
 
+<<<<<<< HEAD
 		if (chip_good(map, chip, adr, map_word_ff(map))) {
 			if (cfi_check_err_status(map, chip, adr))
 				ret = -EIO;
+=======
+		if (chip_good(map, adr, map_word_ff(map))) {
+			xip_enable(map, chip, adr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 
 		if (time_after(jiffies, timeo)) {
 			printk(KERN_WARNING "MTD %s(): software timeout\n",
+<<<<<<< HEAD
 			       __func__);
+=======
+				__func__ );
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ret = -EIO;
 			break;
 		}

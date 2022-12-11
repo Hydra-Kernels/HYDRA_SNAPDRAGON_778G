@@ -779,7 +779,11 @@ void ipic_set_default_priority(void)
 
 u32 ipic_get_mcp_status(void)
 {
+<<<<<<< HEAD
 	return primary_ipic ? ipic_read(primary_ipic->regs, IPIC_SERSR) : 0;
+=======
+	return ipic_read(primary_ipic->regs, IPIC_SERSR);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void ipic_clear_mcp_status(u32 mask)

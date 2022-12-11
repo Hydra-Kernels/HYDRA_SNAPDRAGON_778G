@@ -844,6 +844,7 @@ static void ipr_sata_eh_done(struct ipr_cmnd *ipr_cmd)
 	struct ipr_hrr_queue *hrrq = ipr_cmd->hrrq;
 	unsigned long hrrq_flags;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&hrrq->_lock, hrrq_flags);
 	__ipr_sata_eh_done(ipr_cmd);
 	spin_unlock_irqrestore(&hrrq->_lock, hrrq_flags);
@@ -867,6 +868,11 @@ static void __ipr_scsi_eh_done(struct ipr_cmnd *ipr_cmd)
 
 	scsi_dma_unmap(ipr_cmd->scsi_cmd);
 	scsi_cmd->scsi_done(scsi_cmd);
+=======
+	qc->err_mask |= AC_ERR_OTHER;
+	sata_port->ioasa.status |= ATA_BUSY;
+	ata_qc_complete(qc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ipr_cmd->eh_comp)
 		complete(ipr_cmd->eh_comp);
 	list_add_tail(&ipr_cmd->queue, &ipr_cmd->hrrq->hrrq_free_q);
@@ -6054,6 +6060,7 @@ static void __ipr_erp_done(struct ipr_cmnd *ipr_cmd)
 	if (ipr_cmd->eh_comp)
 		complete(ipr_cmd->eh_comp);
 	list_add_tail(&ipr_cmd->queue, &ipr_cmd->hrrq->hrrq_free_q);
+<<<<<<< HEAD
 }
 
 /**
@@ -6074,6 +6081,8 @@ static void ipr_erp_done(struct ipr_cmnd *ipr_cmd)
 	spin_lock_irqsave(&hrrq->_lock, hrrq_flags);
 	__ipr_erp_done(ipr_cmd);
 	spin_unlock_irqrestore(&hrrq->_lock, hrrq_flags);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -10270,6 +10279,7 @@ static int ipr_probe_ioa(struct pci_dev *pdev,
 		ipr_number_of_msix = IPR_MAX_MSIX_VECTORS;
 	}
 
+<<<<<<< HEAD
 	irq_flag = PCI_IRQ_LEGACY;
 	if (ioa_cfg->ipr_chip->has_msi)
 		irq_flag |= PCI_IRQ_MSI | PCI_IRQ_MSIX;
@@ -10277,6 +10287,19 @@ static int ipr_probe_ioa(struct pci_dev *pdev,
 	if (rc < 0) {
 		ipr_wait_for_pci_err_recovery(ioa_cfg);
 		goto cleanup_nomem;
+=======
+	if (ioa_cfg->ipr_chip->intr_type == IPR_USE_MSI &&
+			ipr_enable_msix(ioa_cfg) == 0)
+		ioa_cfg->intr_flag = IPR_USE_MSIX;
+	else if (ioa_cfg->ipr_chip->intr_type == IPR_USE_MSI &&
+			ipr_enable_msi(ioa_cfg) == 0)
+		ioa_cfg->intr_flag = IPR_USE_MSI;
+	else {
+		ioa_cfg->intr_flag = IPR_USE_LSI;
+		ioa_cfg->clear_isr = 1;
+		ioa_cfg->nvectors = 1;
+		dev_info(&pdev->dev, "Cannot enable MSI.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	ioa_cfg->nvectors = rc;
 

@@ -983,6 +983,10 @@ static void sctp_assoc_bh_rcv(struct work_struct *work)
 	struct sctp_endpoint *ep;
 	struct sctp_chunk *chunk;
 	struct sctp_inq *inqueue;
+<<<<<<< HEAD
+=======
+	sctp_subtype_t subtype;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int first_time = 1;	/* is this the first time through the loop */
 	int error = 0;
 	int state;

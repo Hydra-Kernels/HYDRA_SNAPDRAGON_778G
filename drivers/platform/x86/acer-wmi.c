@@ -1965,7 +1965,32 @@ static int __init acer_wmi_enable_lm(void)
 	return status;
 }
 
+<<<<<<< HEAD
 static int __init acer_wmi_enable_rf_button(void)
+=======
+#define ACER_WMID_ACCEL_HID	"BST0001"
+
+static acpi_status __init acer_wmi_get_handle_cb(acpi_handle ah, u32 level,
+						void *ctx, void **retval)
+{
+	struct acpi_device *dev;
+
+	if (!strcmp(ctx, "SENR")) {
+		if (acpi_bus_get_device(ah, &dev))
+			return AE_OK;
+		if (!strcmp(ACER_WMID_ACCEL_HID, acpi_device_hid(dev)))
+			return AE_OK;
+	} else
+		return AE_OK;
+
+	*(acpi_handle *)retval = ah;
+
+	return AE_CTRL_TERMINATE;
+}
+
+static int __init acer_wmi_get_handle(const char *name, const char *prop,
+					acpi_handle *ah)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct func_return_value return_value;
 	acpi_status status;
@@ -1992,9 +2017,15 @@ static int __init acer_wmi_accel_setup(void)
 	struct acpi_device *adev;
 	int err;
 
+<<<<<<< HEAD
 	adev = acpi_dev_get_first_match_dev("BST0001", NULL, -1);
 	if (!adev)
 		return -ENODEV;
+=======
+	err = acer_wmi_get_handle("SENR", ACER_WMID_ACCEL_HID, &gsensor_handle);
+	if (err)
+		return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	gsensor_handle = acpi_device_handle(adev);
 	acpi_dev_put(adev);
@@ -2344,8 +2375,13 @@ static int __init acer_wmi_init(void)
 		if (err)
 			return err;
 		err = acer_wmi_accel_setup();
+<<<<<<< HEAD
 		if (err && err != -ENODEV)
 			pr_warn("Cannot enable accelerometer\n");
+=======
+		if (err)
+			return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	err = platform_driver_register(&acer_platform_driver);

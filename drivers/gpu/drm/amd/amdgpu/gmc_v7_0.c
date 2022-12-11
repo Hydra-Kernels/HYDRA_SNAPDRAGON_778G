@@ -54,11 +54,57 @@ static void gmc_v7_0_set_gmc_funcs(struct amdgpu_device *adev);
 static void gmc_v7_0_set_irq_funcs(struct amdgpu_device *adev);
 static int gmc_v7_0_wait_for_idle(void *handle);
 
+<<<<<<< HEAD
 MODULE_FIRMWARE("amdgpu/bonaire_mc.bin");
 MODULE_FIRMWARE("amdgpu/hawaii_mc.bin");
 MODULE_FIRMWARE("amdgpu/topaz_mc.bin");
 
 static const u32 golden_settings_iceland_a11[] =
+=======
+MODULE_FIRMWARE("radeon/bonaire_mc.bin");
+MODULE_FIRMWARE("radeon/hawaii_mc.bin");
+MODULE_FIRMWARE("amdgpu/topaz_mc.bin");
+
+static const u32 golden_settings_iceland_a11[] =
+{
+	mmVM_PRT_APERTURE0_LOW_ADDR, 0x0fffffff, 0x0fffffff,
+	mmVM_PRT_APERTURE1_LOW_ADDR, 0x0fffffff, 0x0fffffff,
+	mmVM_PRT_APERTURE2_LOW_ADDR, 0x0fffffff, 0x0fffffff,
+	mmVM_PRT_APERTURE3_LOW_ADDR, 0x0fffffff, 0x0fffffff
+};
+
+static const u32 iceland_mgcg_cgcg_init[] =
+{
+	mmMC_MEM_POWER_LS, 0xffffffff, 0x00000104
+};
+
+static void gmc_v7_0_init_golden_registers(struct amdgpu_device *adev)
+{
+	switch (adev->asic_type) {
+	case CHIP_TOPAZ:
+		amdgpu_program_register_sequence(adev,
+						 iceland_mgcg_cgcg_init,
+						 (const u32)ARRAY_SIZE(iceland_mgcg_cgcg_init));
+		amdgpu_program_register_sequence(adev,
+						 golden_settings_iceland_a11,
+						 (const u32)ARRAY_SIZE(golden_settings_iceland_a11));
+		break;
+	default:
+		break;
+	}
+}
+
+/**
+ * gmc7_mc_wait_for_idle - wait for MC idle callback.
+ *
+ * @adev: amdgpu_device pointer
+ *
+ * Wait for the MC (memory controller) to be idle.
+ * (evergreen+).
+ * Returns 0 if the MC is idle, -1 if not.
+ */
+int gmc_v7_0_mc_wait_for_idle(struct amdgpu_device *adev)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	mmVM_PRT_APERTURE0_LOW_ADDR, 0x0fffffff, 0x0fffffff,
 	mmVM_PRT_APERTURE1_LOW_ADDR, 0x0fffffff, 0x0fffffff,
@@ -154,9 +200,18 @@ static int gmc_v7_0_init_microcode(struct amdgpu_device *adev)
 	default: BUG();
 	}
 
+<<<<<<< HEAD
 	snprintf(fw_name, sizeof(fw_name), "amdgpu/%s_mc.bin", chip_name);
 
 	err = request_firmware(&adev->gmc.fw, fw_name, adev->dev);
+=======
+	if (adev->asic_type == CHIP_TOPAZ)
+		snprintf(fw_name, sizeof(fw_name), "amdgpu/%s_mc.bin", chip_name);
+	else
+		snprintf(fw_name, sizeof(fw_name), "radeon/%s_mc.bin", chip_name);
+
+	err = request_firmware(&adev->mc.fw, fw_name, adev->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err)
 		goto out;
 	err = amdgpu_ucode_validate(adev->gmc.fw);
@@ -914,6 +969,7 @@ static int gmc_v7_0_early_init(void *handle)
 	gmc_v7_0_set_gmc_funcs(adev);
 	gmc_v7_0_set_irq_funcs(adev);
 
+<<<<<<< HEAD
 	adev->gmc.shared_aperture_start = 0x2000000000000000ULL;
 	adev->gmc.shared_aperture_end =
 		adev->gmc.shared_aperture_start + (4ULL << 30) - 1;
@@ -922,6 +978,8 @@ static int gmc_v7_0_early_init(void *handle)
 	adev->gmc.private_aperture_end =
 		adev->gmc.private_aperture_start + (4ULL << 30) - 1;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -975,7 +1033,23 @@ static int gmc_v7_0_sw_init(void *handle)
 	if (r)
 		return r;
 
+<<<<<<< HEAD
 	r = amdgpu_irq_add_id(adev, AMDGPU_IRQ_CLIENTID_LEGACY, VISLANDS30_IV_SRCID_GFX_MEM_PROT_FAULT, &adev->gmc.vm_fault);
+=======
+	if (adev->flags & AMD_IS_APU) {
+		adev->mc.vram_type = AMDGPU_VRAM_TYPE_UNKNOWN;
+	} else {
+		u32 tmp = RREG32(mmMC_SEQ_MISC0);
+		tmp &= MC_SEQ_MISC0__MT__MASK;
+		adev->mc.vram_type = gmc_v7_0_convert_vram_type(tmp);
+	}
+
+	r = amdgpu_irq_add_id(adev, 146, &adev->mc.vm_fault);
+	if (r)
+		return r;
+
+	r = amdgpu_irq_add_id(adev, 147, &adev->mc.vm_fault);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (r)
 		return r;
 

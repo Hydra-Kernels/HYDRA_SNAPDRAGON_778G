@@ -3760,6 +3760,7 @@ static const struct of_device_id ufs_qcom_of_match[] = {
 	{},
 };
 MODULE_DEVICE_TABLE(of, ufs_qcom_of_match);
+<<<<<<< HEAD
 
 #ifdef CONFIG_ACPI
 static const struct acpi_device_id ufs_qcom_acpi_match[] = {
@@ -3768,6 +3769,8 @@ static const struct acpi_device_id ufs_qcom_acpi_match[] = {
 };
 MODULE_DEVICE_TABLE(acpi, ufs_qcom_acpi_match);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static const struct dev_pm_ops ufs_qcom_pm_ops = {
 	.suspend	= ufshcd_pltfrm_suspend,

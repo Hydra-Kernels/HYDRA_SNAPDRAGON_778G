@@ -309,7 +309,11 @@ static struct key *request_user_key(const char *master_desc, const u8 **master_k
 		goto error;
 
 	down_read(&ukey->sem);
+<<<<<<< HEAD
 	upayload = user_key_payload_locked(ukey);
+=======
+	upayload = user_key_payload(ukey);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!upayload) {
 		/* key was revoked before we acquired its semaphore */
 		up_read(&ukey->sem);

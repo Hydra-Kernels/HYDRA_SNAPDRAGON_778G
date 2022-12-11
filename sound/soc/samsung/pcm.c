@@ -494,6 +494,16 @@ static int s3c_pcm_dev_probe(struct platform_device *pdev)
 
 	pcm_pdata = pdev->dev.platform_data;
 
+<<<<<<< HEAD
+=======
+	/* Check for availability of necessary resource */
+	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (!mem_res) {
+		dev_err(&pdev->dev, "Unable to get register resource\n");
+		return -ENXIO;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (pcm_pdata && pcm_pdata->cfg_gpio && pcm_pdata->cfg_gpio(pdev)) {
 		dev_err(&pdev->dev, "Unable to configure gpio\n");
 		return -EINVAL;
@@ -537,11 +547,17 @@ static int s3c_pcm_dev_probe(struct platform_device *pdev)
 	s3c_pcm_stereo_in[pdev->id].addr = mem_res->start + S3C_PCM_RXFIFO;
 	s3c_pcm_stereo_out[pdev->id].addr = mem_res->start + S3C_PCM_TXFIFO;
 
+<<<<<<< HEAD
 	filter = NULL;
 	if (pcm_pdata) {
 		s3c_pcm_stereo_in[pdev->id].filter_data = pcm_pdata->dma_capture;
 		s3c_pcm_stereo_out[pdev->id].filter_data = pcm_pdata->dma_playback;
 		filter = pcm_pdata->dma_filter;
+=======
+	if (pcm_pdata) {
+		s3c_pcm_stereo_in[pdev->id].slave = pcm_pdata->dma_capture;
+		s3c_pcm_stereo_out[pdev->id].slave = pcm_pdata->dma_playback;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	pcm->dma_capture = &s3c_pcm_stereo_in[pdev->id];

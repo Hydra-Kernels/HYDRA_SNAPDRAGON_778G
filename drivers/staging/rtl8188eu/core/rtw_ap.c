@@ -758,6 +758,10 @@ int rtw_check_beacon_data(struct adapter *padapter, u8 *pbuf,  int len)
 	if (!check_fwstate(pmlmepriv, WIFI_AP_STATE))
 		return _FAIL;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (len < 0 || len > MAX_IE_SZ)
 		return _FAIL;
 

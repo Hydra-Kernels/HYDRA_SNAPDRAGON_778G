@@ -3280,13 +3280,18 @@ static int bnxt_init_one_rx_ring(struct bnxt *bp, int ring_nr)
 
 static void bnxt_init_cp_rings(struct bnxt *bp)
 {
+<<<<<<< HEAD
 	int i, j;
+=======
+	int i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (i = 0; i < bp->cp_nr_rings; i++) {
 		struct bnxt_cp_ring_info *cpr = &bp->bnapi[i]->cp_ring;
 		struct bnxt_ring_struct *ring = &cpr->cp_ring_struct;
 
 		ring->fw_ring_id = INVALID_HW_RING_ID;
+<<<<<<< HEAD
 		cpr->rx_ring_coal.coal_ticks = bp->rx_coal.coal_ticks;
 		cpr->rx_ring_coal.coal_bufs = bp->rx_coal.coal_bufs;
 		for (j = 0; j < 2; j++) {
@@ -3300,6 +3305,8 @@ static void bnxt_init_cp_rings(struct bnxt *bp)
 			cpr2->rx_ring_coal.coal_ticks = bp->rx_coal.coal_ticks;
 			cpr2->rx_ring_coal.coal_bufs = bp->rx_coal.coal_bufs;
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

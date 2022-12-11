@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 /* SPDX-License-Identifier: GPL-2.0 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef _ASM_S390_ALTERNATIVE_H
 #define _ASM_S390_ALTERNATIVE_H
 

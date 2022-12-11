@@ -1051,6 +1051,7 @@ static int map_get_next_key(union bpf_attr *attr)
 	map = __bpf_map_get(f);
 	if (IS_ERR(map))
 		return PTR_ERR(map);
+<<<<<<< HEAD
 	if (!(map_get_sys_perms(map, f) & FMODE_CAN_READ)) {
 		err = -EPERM;
 		goto err_put;
@@ -1062,6 +1063,18 @@ static int map_get_next_key(union bpf_attr *attr)
 			err = PTR_ERR(key);
 			goto err_put;
 		}
+=======
+
+	if (ukey) {
+		err = -ENOMEM;
+		key = kmalloc(map->key_size, GFP_USER);
+		if (!key)
+			goto err_put;
+
+		err = -EFAULT;
+		if (copy_from_user(key, ukey, map->key_size) != 0)
+			goto free_key;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		key = NULL;
 	}
@@ -1213,12 +1226,21 @@ static int find_prog_type(enum bpf_prog_type type, struct bpf_prog *prog)
 	if (!ops)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (!bpf_prog_is_dev_bound(prog->aux))
 		prog->aux->ops = ops;
 	else
 		prog->aux->ops = &bpf_offload_prog_ops;
 	prog->type = type;
 	return 0;
+=======
+	return -EINVAL;
+}
+
+void bpf_register_prog_type(struct bpf_prog_type_list *tl)
+{
+	list_add(&tl->list_node, &bpf_prog_types);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* drop refcnt on maps used by eBPF program and free auxilary data */
@@ -1459,6 +1481,7 @@ static struct bpf_prog *____bpf_prog_get(struct fd f)
 	return f.file->private_data;
 }
 
+<<<<<<< HEAD
 struct bpf_prog *bpf_prog_add(struct bpf_prog *prog, int i)
 {
 	if (atomic_add_return(i, &prog->aux->refcnt) > BPF_MAX_REFCNT) {
@@ -1522,6 +1545,21 @@ bool bpf_prog_get_ok(struct bpf_prog *prog,
 
 static struct bpf_prog *__bpf_prog_get(u32 ufd, enum bpf_prog_type *attach_type,
 				       bool attach_drv)
+=======
+struct bpf_prog *bpf_prog_inc(struct bpf_prog *prog)
+{
+	if (atomic_inc_return(&prog->aux->refcnt) > BPF_MAX_REFCNT) {
+		atomic_dec(&prog->aux->refcnt);
+		return ERR_PTR(-EBUSY);
+	}
+	return prog;
+}
+
+/* called by sockets/tracing/seccomp before attaching program to an event
+ * pairs with bpf_prog_put()
+ */
+struct bpf_prog *bpf_prog_get(u32 ufd)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct fd f = fdget(ufd);
 	struct bpf_prog *prog;
@@ -1535,7 +1573,10 @@ static struct bpf_prog *__bpf_prog_get(u32 ufd, enum bpf_prog_type *attach_type,
 	}
 
 	prog = bpf_prog_inc(prog);
+<<<<<<< HEAD
 out:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fdput(f);
 	return prog;
 }
@@ -1724,7 +1765,12 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	if (err < 0)
 		goto free_used_maps;
 
+<<<<<<< HEAD
 	prog = bpf_prog_select_runtime(prog, &err);
+=======
+	/* eBPF program is ready to be JITed */
+	err = bpf_prog_select_runtime(prog);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err < 0)
 		goto free_used_maps;
 

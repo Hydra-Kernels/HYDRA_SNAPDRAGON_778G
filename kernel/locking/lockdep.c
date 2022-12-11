@@ -3987,8 +3987,22 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
 	if (depth) {
 		hlock = curr->held_locks + depth - 1;
 		if (hlock->class_idx == class_idx && nest_lock) {
+<<<<<<< HEAD
 			if (!references)
 				references++;
+=======
+			if (hlock->references) {
+				/*
+				 * Check: unsigned int references:12, overflow.
+				 */
+				if (DEBUG_LOCKS_WARN_ON(hlock->references == (1 << 12)-1))
+					return 0;
+
+				hlock->references++;
+			} else {
+				hlock->references = 2;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			if (!hlock->references)
 				hlock->references++;

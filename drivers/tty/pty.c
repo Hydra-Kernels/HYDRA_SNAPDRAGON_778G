@@ -124,6 +124,7 @@ static int pty_write(struct tty_struct *tty, const unsigned char *buf, int c)
 		/* And shovel */
 		if (c)
 			tty_flip_buffer_push(to->port);
+		spin_unlock_irqrestore(&to->port->lock, flags);
 	}
 	return c;
 }
@@ -758,7 +759,18 @@ static void pty_unix98_remove(struct tty_driver *driver, struct tty_struct *tty)
 
 static void pty_show_fdinfo(struct tty_struct *tty, struct seq_file *m)
 {
+<<<<<<< HEAD
 	seq_printf(m, "tty-index:\t%d\n", tty->index);
+=======
+	struct pts_fs_info *fsi;
+
+	if (tty->driver->subtype == PTY_TYPE_MASTER)
+		fsi = tty->driver_data;
+	else
+		fsi = tty->link->driver_data;
+	devpts_kill_index(fsi, tty->index);
+	devpts_put_ref(fsi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const struct tty_operations ptm_unix98_ops = {
@@ -825,11 +837,18 @@ static int ptmx_open(struct inode *inode, struct file *filp)
 	if (retval)
 		return retval;
 
+<<<<<<< HEAD
 	fsi = devpts_acquire(filp);
 	if (IS_ERR(fsi)) {
 		retval = PTR_ERR(fsi);
 		goto out_free_file;
 	}
+=======
+	fsi = devpts_get_ref(inode, filp);
+	retval = -ENODEV;
+	if (!fsi)
+		goto out_free_file;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* find a device that is not in use. */
 	mutex_lock(&devpts_mutex);
@@ -838,7 +857,11 @@ static int ptmx_open(struct inode *inode, struct file *filp)
 
 	retval = index;
 	if (index < 0)
+<<<<<<< HEAD
 		goto out_put_fsi;
+=======
+		goto out_put_ref;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 
 	mutex_lock(&tty_mutex);
@@ -860,9 +883,17 @@ static int ptmx_open(struct inode *inode, struct file *filp)
 
 	tty_add_file(tty, filp);
 
+<<<<<<< HEAD
 	dentry = devpts_pty_new(fsi, index, tty->link);
 	if (IS_ERR(dentry)) {
 		retval = PTR_ERR(dentry);
+=======
+	slave_inode = devpts_pty_new(fsi,
+			MKDEV(UNIX98_PTY_SLAVE_MAJOR, index), index,
+			tty->link);
+	if (IS_ERR(slave_inode)) {
+		retval = PTR_ERR(slave_inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto err_release;
 	}
 	tty->link->driver_data = dentry;
@@ -882,8 +913,13 @@ err_release:
 	return retval;
 out:
 	devpts_kill_index(fsi, index);
+<<<<<<< HEAD
 out_put_fsi:
 	devpts_release(fsi);
+=======
+out_put_ref:
+	devpts_put_ref(fsi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_free_file:
 	tty_free_file(filp);
 	return retval;

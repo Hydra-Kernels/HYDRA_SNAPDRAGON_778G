@@ -194,7 +194,11 @@ static inline int qt2_getregister(struct usb_device *dev,
 	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			      QT_SET_GET_REGISTER, 0xc0, reg,
 			      uart, data, sizeof(*data), QT2_USB_TIMEOUT);
+<<<<<<< HEAD
 	if (ret < (int)sizeof(*data)) {
+=======
+	if (ret < sizeof(*data)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret >= 0)
 			ret = -EIO;
 	}

@@ -387,6 +387,7 @@ static noinline int vmalloc_fault(unsigned long address)
 	if (p4d_none(*p4d_k))
 		return -1;
 
+<<<<<<< HEAD
 	if (p4d_none(*p4d) && !pgtable_l5_enabled()) {
 		set_p4d(p4d, *p4d_k);
 		arch_flush_lazy_mmu_mode();
@@ -402,13 +403,32 @@ static noinline int vmalloc_fault(unsigned long address)
 
 	if (pud_large(*pud))
 		return 0;
+=======
+	if (pud_none(*pud) || pud_pfn(*pud) != pud_pfn(*pud_ref))
+		BUG();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	if (pud_large(*pud))
+		return 0;
 
 	pmd = pmd_offset(pud, address);
 	if (pmd_none(*pmd))
 		return -1;
 
+<<<<<<< HEAD
 	if (pmd_large(*pmd))
 		return 0;
+=======
+	if (pmd_none(*pmd) || pmd_pfn(*pmd) != pmd_pfn(*pmd_ref))
+		BUG();
+
+	if (pmd_large(*pmd))
+		return 0;
+
+	pte_ref = pte_offset_kernel(pmd_ref, address);
+	if (!pte_present(*pte_ref))
+		return -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pte = pte_offset_kernel(pmd, address);
 	if (!pte_present(*pte))

@@ -4224,8 +4224,13 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
 	int srcu_idx;
 	unsigned long ebb_regs[3] = {};	/* shut up GCC */
 	unsigned long user_tar = 0;
+<<<<<<< HEAD
 	unsigned int user_vrsave;
 	struct kvm *kvm;
+=======
+	unsigned long proc_fscr = 0;
+	unsigned int user_vrsave;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!vcpu->arch.sane) {
 		run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
@@ -4251,6 +4256,7 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
 		current->thread.tm_tfhar = mfspr(SPRN_TFHAR);
 		current->thread.tm_tfiar = mfspr(SPRN_TFIAR);
 		current->thread.tm_texasr = mfspr(SPRN_TEXASR);
+<<<<<<< HEAD
 		current->thread.regs->msr &= ~MSR_TM;
 	}
 #endif
@@ -4264,6 +4270,11 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
 		vcpu->arch.online = 1;
 	}
 
+=======
+	}
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kvmppc_core_prepare_to_enter(vcpu);
 
 	/* No need to go into the guest when all we'll do is come back out */
@@ -4288,6 +4299,23 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
 	}
 	user_vrsave = mfspr(SPRN_VRSAVE);
 
+<<<<<<< HEAD
+=======
+	flush_fp_to_thread(current);
+	flush_altivec_to_thread(current);
+	flush_vsx_to_thread(current);
+
+	/* Save userspace EBB and other register values */
+	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+		ebb_regs[0] = mfspr(SPRN_EBBHR);
+		ebb_regs[1] = mfspr(SPRN_EBBRR);
+		ebb_regs[2] = mfspr(SPRN_BESCR);
+		user_tar = mfspr(SPRN_TAR);
+		proc_fscr = mfspr(SPRN_FSCR);
+	}
+	user_vrsave = mfspr(SPRN_VRSAVE);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vcpu->arch.wqp = &vcpu->arch.vcore->wq;
 	vcpu->arch.pgdir = current->mm->pgd;
 	vcpu->arch.state = KVMPPC_VCPU_BUSY_IN_HOST;
@@ -4333,10 +4361,31 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
 		mtspr(SPRN_EBBRR, ebb_regs[1]);
 		mtspr(SPRN_BESCR, ebb_regs[2]);
 		mtspr(SPRN_TAR, user_tar);
+<<<<<<< HEAD
 		mtspr(SPRN_FSCR, current->thread.fscr);
 	}
 	mtspr(SPRN_VRSAVE, user_vrsave);
 
+=======
+		mtspr(SPRN_FSCR, proc_fscr);
+	}
+	mtspr(SPRN_VRSAVE, user_vrsave);
+
+	/*
+	 * Since we don't do lazy TM reload, we need to reload
+	 * the TM registers here.
+	 */
+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+	if (cpu_has_feature(CPU_FTR_TM) && current->thread.regs &&
+	    (current->thread.regs->msr & MSR_TM)) {
+		mtspr(SPRN_TFHAR, current->thread.tm_tfhar);
+		mtspr(SPRN_TFIAR, current->thread.tm_tfiar);
+		mtspr(SPRN_TEXASR, current->thread.tm_texasr);
+	}
+#endif
+
+ out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vcpu->arch.state = KVMPPC_VCPU_NOTREADY;
 	atomic_dec(&kvm->arch.vcpus_running);
 	return r;

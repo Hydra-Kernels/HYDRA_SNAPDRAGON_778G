@@ -873,7 +873,10 @@ again:
 
 discard_page:
 	fscache_stat(&fscache_n_store_pages_over_limit);
+<<<<<<< HEAD
 	trace_fscache_wrote_page(cookie, page, &op->op, -ENOBUFS);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fscache_end_page_write(object, page);
 	goto again;
 

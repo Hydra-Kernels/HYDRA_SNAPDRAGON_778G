@@ -865,8 +865,59 @@ static int helper_rfc4106_encrypt(struct aead_request *req)
 		*(iv+4+i) = req->iv[i];
 	*((__be32 *)(iv+12)) = counter;
 
+<<<<<<< HEAD
 	return gcmaes_encrypt(req, req->assoclen - 8, ctx->hash_subkey, iv,
 			      aes_ctx);
+=======
+	if (sg_is_last(req->src) &&
+	    req->src->offset + req->src->length <= PAGE_SIZE &&
+	    sg_is_last(req->dst) && req->dst->length &&
+	    req->dst->offset + req->dst->length <= PAGE_SIZE) {
+		one_entry_in_sg = 1;
+		scatterwalk_start(&src_sg_walk, req->src);
+		assoc = scatterwalk_map(&src_sg_walk);
+		src = assoc + req->assoclen;
+		dst = src;
+		if (unlikely(req->src != req->dst)) {
+			scatterwalk_start(&dst_sg_walk, req->dst);
+			dst = scatterwalk_map(&dst_sg_walk) + req->assoclen;
+		}
+	} else {
+		/* Allocate memory for src, dst, assoc */
+		assoc = kmalloc(req->cryptlen + auth_tag_len + req->assoclen,
+			GFP_ATOMIC);
+		if (unlikely(!assoc))
+			return -ENOMEM;
+		scatterwalk_map_and_copy(assoc, req->src, 0,
+					 req->assoclen + req->cryptlen, 0);
+		src = assoc + req->assoclen;
+		dst = src;
+	}
+
+	kernel_fpu_begin();
+	aesni_gcm_enc_tfm(aes_ctx, dst, src, req->cryptlen, iv,
+			  ctx->hash_subkey, assoc, req->assoclen - 8,
+			  dst + req->cryptlen, auth_tag_len);
+	kernel_fpu_end();
+
+	/* The authTag (aka the Integrity Check Value) needs to be written
+	 * back to the packet. */
+	if (one_entry_in_sg) {
+		if (unlikely(req->src != req->dst)) {
+			scatterwalk_unmap(dst - req->assoclen);
+			scatterwalk_advance(&dst_sg_walk, req->dst->length);
+			scatterwalk_done(&dst_sg_walk, 1, 0);
+		}
+		scatterwalk_unmap(assoc);
+		scatterwalk_advance(&src_sg_walk, req->src->length);
+		scatterwalk_done(&src_sg_walk, req->src == req->dst, 0);
+	} else {
+		scatterwalk_map_and_copy(dst, req->dst, req->assoclen,
+					 req->cryptlen + auth_tag_len, 1);
+		kfree(assoc);
+	}
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int helper_rfc4106_decrypt(struct aead_request *req)

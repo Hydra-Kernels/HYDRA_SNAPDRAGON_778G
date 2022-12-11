@@ -170,10 +170,21 @@ int phy_aneg_done(struct phy_device *phydev)
 {
 	if (phydev->drv && phydev->drv->aneg_done)
 		return phydev->drv->aneg_done(phydev);
+<<<<<<< HEAD
 	else if (phydev->is_c45)
 		return genphy_c45_aneg_done(phydev);
 	else
 		return genphy_aneg_done(phydev);
+=======
+
+	/* Avoid genphy_aneg_done() if the Clause 45 PHY does not
+	 * implement Clause 22 registers
+	 */
+	if (phydev->is_c45 && !(phydev->c45_ids.devices_in_package & BIT(0)))
+		return -EINVAL;
+
+	return genphy_aneg_done(phydev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(phy_aneg_done);
 
@@ -698,7 +709,11 @@ void phy_stop_machine(struct phy_device *phydev)
 	cancel_delayed_work_sync(&phydev->state_queue);
 
 	mutex_lock(&phydev->lock);
+<<<<<<< HEAD
 	if (phy_is_started(phydev))
+=======
+	if (phydev->state > PHY_UP && phydev->state != PHY_HALTED)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		phydev->state = PHY_UP;
 	mutex_unlock(&phydev->lock);
 }
@@ -824,7 +839,36 @@ EXPORT_SYMBOL(phy_request_interrupt);
  */
 void phy_free_interrupt(struct phy_device *phydev)
 {
+<<<<<<< HEAD
 	phy_disable_interrupts(phydev);
+=======
+	atomic_set(&phydev->irq_disable, 0);
+	if (request_irq(phydev->irq, phy_interrupt,
+				IRQF_SHARED,
+				"phy_interrupt",
+				phydev) < 0) {
+		pr_warn("%s: Can't get IRQ %d (PHY)\n",
+			phydev->bus->name, phydev->irq);
+		phydev->irq = PHY_POLL;
+		return 0;
+	}
+
+	return phy_enable_interrupts(phydev);
+}
+EXPORT_SYMBOL(phy_start_interrupts);
+
+/**
+ * phy_stop_interrupts - disable interrupts from a PHY device
+ * @phydev: target phy_device struct
+ */
+int phy_stop_interrupts(struct phy_device *phydev)
+{
+	int err = phy_disable_interrupts(phydev);
+
+	if (err)
+		phy_error(phydev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	free_irq(phydev->irq, phydev);
 }
 EXPORT_SYMBOL(phy_free_interrupt);
@@ -915,7 +959,50 @@ void phy_state_machine(struct work_struct *work)
 		break;
 	case PHY_NOLINK:
 	case PHY_RUNNING:
+<<<<<<< HEAD
 		err = phy_check_link_status(phydev);
+=======
+		/* Only register a CHANGE if we are polling or ignoring
+		 * interrupts and link changed since latest checking.
+		 */
+		if (!phy_interrupt_is_valid(phydev)) {
+			old_link = phydev->link;
+			err = phy_read_status(phydev);
+			if (err)
+				break;
+
+			if (old_link != phydev->link)
+				phydev->state = PHY_CHANGELINK;
+		}
+		/*
+		 * Failsafe: check that nobody set phydev->link=0 between two
+		 * poll cycles, otherwise we won't leave RUNNING state as long
+		 * as link remains down.
+		 */
+		if (!phydev->link && phydev->state == PHY_RUNNING) {
+			phydev->state = PHY_CHANGELINK;
+			dev_err(&phydev->dev, "no link in PHY_RUNNING\n");
+		}
+		break;
+	case PHY_CHANGELINK:
+		err = phy_read_status(phydev);
+		if (err)
+			break;
+
+		if (phydev->link) {
+			phydev->state = PHY_RUNNING;
+			netif_carrier_on(phydev->attached_dev);
+		} else {
+			phydev->state = PHY_NOLINK;
+			netif_carrier_off(phydev->attached_dev);
+		}
+
+		phydev->adjust_link(phydev->attached_dev);
+
+		if (phy_interrupt_is_valid(phydev))
+			err = phy_config_interrupt(phydev,
+						   PHY_INTERRUPT_ENABLED);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case PHY_HALTED:
 		if (phydev->link) {

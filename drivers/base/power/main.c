@@ -1234,7 +1234,14 @@ static void dpm_superior_set_must_resume(struct device *dev)
 	if (dev->parent)
 		dev->parent->power.must_resume = true;
 
+<<<<<<< HEAD
 	idx = device_links_read_lock();
+=======
+	dpm_wait_for_children(dev, async);
+
+	if (async_error)
+		goto Complete;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
 		link->supplier->power.must_resume = true;
@@ -1242,6 +1249,7 @@ static void dpm_superior_set_must_resume(struct device *dev)
 	device_links_read_unlock(idx);
 }
 
+<<<<<<< HEAD
 static pm_callback_t dpm_subsys_suspend_noirq_cb(struct device *dev,
 						 pm_message_t state,
 						 const char **info_p)
@@ -1249,6 +1257,8 @@ static pm_callback_t dpm_subsys_suspend_noirq_cb(struct device *dev,
 	pm_callback_t callback;
 	const char *info;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dev->pm_domain) {
 		info = "noirq power domain ";
 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
@@ -1451,9 +1461,16 @@ int dpm_suspend_noirq(pm_message_t state)
 	device_wakeup_arm_wake_irqs();
 	suspend_device_irqs();
 
+<<<<<<< HEAD
 	ret = dpm_noirq_suspend_devices(state);
 	if (ret)
 		dpm_resume_noirq(resume_event(state));
+=======
+	dpm_wait_for_children(dev, async);
+
+	if (async_error)
+		goto Complete;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }
@@ -1462,6 +1479,7 @@ static void dpm_propagate_wakeup_to_parent(struct device *dev)
 {
 	struct device *parent = dev->parent;
 
+<<<<<<< HEAD
 	if (!parent)
 		return;
 
@@ -1480,6 +1498,8 @@ static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
 	pm_callback_t callback;
 	const char *info;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dev->pm_domain) {
 		info = "late power domain ";
 		callback = pm_late_early_op(&dev->pm_domain->ops, state);

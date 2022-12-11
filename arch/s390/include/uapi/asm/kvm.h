@@ -226,6 +226,7 @@ struct kvm_guest_debug_arch {
 #define KVM_SYNC_ARCH0  (1UL << 4)
 #define KVM_SYNC_PFAULT (1UL << 5)
 #define KVM_SYNC_VRS    (1UL << 6)
+<<<<<<< HEAD
 #define KVM_SYNC_RICCB  (1UL << 7)
 #define KVM_SYNC_FPRS   (1UL << 8)
 #define KVM_SYNC_GSCB   (1UL << 9)
@@ -240,6 +241,9 @@ struct kvm_guest_debug_arch {
 /* length and alignment of the sdnx as a power of two */
 #define SDNXC 8
 #define SDNXL (1UL << SDNXC)
+=======
+#define KVM_SYNC_BPBC   (1UL << 10)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* definition of registers in kvm_run */
 struct kvm_sync_regs {
 	__u64 prefix;	/* prefix register */
@@ -259,6 +263,7 @@ struct kvm_sync_regs {
 		__u64 fprs[16];		/* fp registers (KVM_SYNC_FPRS) */
 	};
 	__u8  reserved[512];	/* for future vector expansion */
+<<<<<<< HEAD
 	__u32 fpc;		/* valid on KVM_SYNC_VRS or KVM_SYNC_FPRS */
 	__u8 bpbc : 1;		/* bp mode */
 	__u8 reserved2 : 7;
@@ -274,6 +279,11 @@ struct kvm_sync_regs {
 			__u64 etoken_extension;
 		};
 	};
+=======
+	__u32 fpc;	/* only valid with vector registers */
+	__u8 bpbc : 1;		/* bp mode */
+	__u8 reserved2 : 7;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #define KVM_REG_S390_TODPR	(KVM_REG_S390 | KVM_REG_SIZE_U32 | 0x1)

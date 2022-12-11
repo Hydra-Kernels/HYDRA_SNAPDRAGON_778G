@@ -19,6 +19,7 @@
 #include <linux/iio/trigger_consumer.h>
 #include <linux/iio/triggered_buffer.h>
 #include <linux/regmap.h>
+#include <linux/delay.h>
 #include "bmg160.h"
 
 #define BMG160_IRQ_NAME		"bmg160_event"
@@ -43,6 +44,9 @@
 #define BMG160_NO_FILTER		0
 #define BMG160_DEF_BW			100
 #define BMG160_REG_PMU_BW_RES		BIT(7)
+
+#define BMG160_GYRO_REG_RESET		0x14
+#define BMG160_GYRO_RESET_VAL		0xb6
 
 #define BMG160_GYRO_REG_RESET		0x14
 #define BMG160_GYRO_RESET_VAL		0xb6
@@ -883,8 +887,21 @@ static irqreturn_t bmg160_trigger_handler(int irq, void *p)
 	int ret;
 
 	mutex_lock(&data->mutex);
+<<<<<<< HEAD
 	ret = regmap_bulk_read(data->regmap, BMG160_REG_XOUT_L,
 			       data->scan.chans, AXIS_MAX * 2);
+=======
+	for_each_set_bit(bit, indio_dev->active_scan_mask,
+			 indio_dev->masklength) {
+		ret = regmap_bulk_read(data->regmap, BMG160_AXIS_TO_REG(bit),
+				       &val, 2);
+		if (ret < 0) {
+			mutex_unlock(&data->mutex);
+			goto err;
+		}
+		data->buffer[i++] = val;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&data->mutex);
 	if (ret < 0)
 		goto err;

@@ -13,7 +13,11 @@ CFLAGS_REMOVE_mem_encrypt_identity.o	= -pg
 endif
 
 obj-y	:=  init.o init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+<<<<<<< HEAD
 	    pat.o pgtable.o physaddr.o setup_nx.o tlb.o cpu_entry_area.o
+=======
+	    pat.o pgtable.o physaddr.o gup.o setup_nx.o tlb.o
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 # Make sure __phys_addr has no stackprotector
 nostackp := $(call cc-option, -fno-stack-protector)
@@ -45,6 +49,7 @@ obj-$(CONFIG_AMD_NUMA)		+= amdtopology.o
 obj-$(CONFIG_ACPI_NUMA)		+= srat.o
 obj-$(CONFIG_NUMA_EMU)		+= numa_emulation.o
 
+<<<<<<< HEAD
 obj-$(CONFIG_X86_INTEL_MPX)			+= mpx.o
 obj-$(CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS)	+= pkeys.o
 obj-$(CONFIG_RANDOMIZE_MEMORY)			+= kaslr.o
@@ -53,3 +58,7 @@ obj-$(CONFIG_PAGE_TABLE_ISOLATION)		+= pti.o
 obj-$(CONFIG_AMD_MEM_ENCRYPT)	+= mem_encrypt.o
 obj-$(CONFIG_AMD_MEM_ENCRYPT)	+= mem_encrypt_identity.o
 obj-$(CONFIG_AMD_MEM_ENCRYPT)	+= mem_encrypt_boot.o
+=======
+obj-$(CONFIG_X86_INTEL_MPX)	+= mpx.o
+obj-$(CONFIG_PAGE_TABLE_ISOLATION)		+= kaiser.o
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

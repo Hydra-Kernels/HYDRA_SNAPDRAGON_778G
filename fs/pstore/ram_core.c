@@ -529,9 +529,15 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 		zap = true;
 	}
 
+<<<<<<< HEAD
 	/* Reset missing, invalid, or single-use memory area. */
 	if (zap)
 		persistent_ram_zap(prz);
+=======
+	/* Rewind missing or invalid memory area. */
+	prz->buffer->sig = sig;
+	persistent_ram_zap(prz);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -565,7 +571,11 @@ void persistent_ram_free(struct persistent_ram_zone *prz)
 
 struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t size,
 			u32 sig, struct persistent_ram_ecc_info *ecc_info,
+<<<<<<< HEAD
 			unsigned int memtype, u32 flags, char *label)
+=======
+			unsigned int memtype, u32 flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct persistent_ram_zone *prz;
 	int ret = -ENOMEM;
@@ -579,7 +589,10 @@ struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t size,
 	/* Initialize general buffer state. */
 	raw_spin_lock_init(&prz->buffer_lock);
 	prz->flags = flags;
+<<<<<<< HEAD
 	prz->label = kstrdup(label, GFP_KERNEL);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = persistent_ram_buffer_map(start, size, prz, memtype);
 	if (ret)

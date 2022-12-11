@@ -391,6 +391,10 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
 		if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
 			cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 	}
+<<<<<<< HEAD
+=======
+	spin_unlock_irqrestore(&watchdog_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void clocksource_select_watchdog(bool fallback)
@@ -998,11 +1002,16 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	clocksource_watchdog_lock(&flags);
 	clocksource_enqueue(cs);
 	clocksource_enqueue_watchdog(cs);
+<<<<<<< HEAD
 	clocksource_watchdog_unlock(&flags);
 
 	clocksource_select(false);
 	clocksource_select_watchdog(false);
 	__clocksource_suspend_select(cs);
+=======
+	clocksource_select();
+	clocksource_select_watchdog(false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
@@ -1027,11 +1036,16 @@ void clocksource_change_rating(struct clocksource *cs, int rating)
 	mutex_lock(&clocksource_mutex);
 	clocksource_watchdog_lock(&flags);
 	__clocksource_change_rating(cs, rating);
+<<<<<<< HEAD
 	clocksource_watchdog_unlock(&flags);
 
 	clocksource_select(false);
 	clocksource_select_watchdog(false);
 	clocksource_suspend_select(false);
+=======
+	clocksource_select();
+	clocksource_select_watchdog(false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&clocksource_mutex);
 }
 EXPORT_SYMBOL(clocksource_change_rating);
@@ -1041,8 +1055,11 @@ EXPORT_SYMBOL(clocksource_change_rating);
  */
 static int clocksource_unbind(struct clocksource *cs)
 {
+<<<<<<< HEAD
 	unsigned long flags;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (clocksource_is_watchdog(cs)) {
 		/* Select and try to install a replacement watchdog. */
 		clocksource_select_watchdog(true);

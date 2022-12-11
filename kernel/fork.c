@@ -73,6 +73,7 @@
 #include <linux/tsacct_kern.h>
 #include <linux/cn_proc.h>
 #include <linux/freezer.h>
+#include <linux/kaiser.h>
 #include <linux/delayacct.h>
 #include <linux/taskstats_kern.h>
 #include <linux/random.h>
@@ -272,6 +273,7 @@ static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 
 static inline void free_thread_stack(struct task_struct *tsk)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_VMAP_STACK
 	struct vm_struct *vm = task_stack_vm_area(tsk);
 
@@ -300,6 +302,10 @@ static inline void free_thread_stack(struct task_struct *tsk)
 #endif
 
 	__free_pages(virt_to_page(tsk->stack), THREAD_SIZE_ORDER);
+=======
+	kaiser_unmap_thread_stack(ti);
+	free_kmem_pages((unsigned long)ti, THREAD_SIZE_ORDER);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 # else
 static struct kmem_cache *thread_stack_cache;
@@ -482,6 +488,175 @@ void free_task(struct task_struct *tsk)
 }
 EXPORT_SYMBOL(free_task);
 
+<<<<<<< HEAD
+=======
+static inline void free_signal_struct(struct signal_struct *sig)
+{
+	taskstats_tgid_free(sig);
+	sched_autogroup_exit(sig);
+	kmem_cache_free(signal_cachep, sig);
+}
+
+static inline void put_signal_struct(struct signal_struct *sig)
+{
+	if (atomic_dec_and_test(&sig->sigcnt))
+		free_signal_struct(sig);
+}
+
+void __put_task_struct(struct task_struct *tsk)
+{
+	WARN_ON(!tsk->exit_state);
+	WARN_ON(atomic_read(&tsk->usage));
+	WARN_ON(tsk == current);
+
+	cgroup_free(tsk);
+	task_numa_free(tsk);
+	security_task_free(tsk);
+	exit_creds(tsk);
+	delayacct_tsk_free(tsk);
+	put_signal_struct(tsk->signal);
+
+	if (!profile_handoff_task(tsk))
+		free_task(tsk);
+}
+EXPORT_SYMBOL_GPL(__put_task_struct);
+
+void __init __weak arch_task_cache_init(void) { }
+
+/*
+ * set_max_threads
+ */
+static void set_max_threads(unsigned int max_threads_suggested)
+{
+	u64 threads;
+
+	/*
+	 * The number of threads shall be limited such that the thread
+	 * structures may only consume a small part of the available memory.
+	 */
+	if (fls64(totalram_pages) + fls64(PAGE_SIZE) > 64)
+		threads = MAX_THREADS;
+	else
+		threads = div64_u64((u64) totalram_pages * (u64) PAGE_SIZE,
+				    (u64) THREAD_SIZE * 8UL);
+
+	if (threads > max_threads_suggested)
+		threads = max_threads_suggested;
+
+	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
+}
+
+#ifdef CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT
+/* Initialized by the architecture: */
+int arch_task_struct_size __read_mostly;
+#endif
+
+void __init fork_init(void)
+{
+#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+#ifndef ARCH_MIN_TASKALIGN
+#define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES
+#endif
+	/* create a slab on which task_structs can be allocated */
+	task_struct_cachep =
+		kmem_cache_create("task_struct", arch_task_struct_size,
+			ARCH_MIN_TASKALIGN, SLAB_PANIC | SLAB_NOTRACK, NULL);
+#endif
+
+	/* do the arch specific task caches init */
+	arch_task_cache_init();
+
+	set_max_threads(MAX_THREADS);
+
+	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads/2;
+	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
+	init_task.signal->rlim[RLIMIT_SIGPENDING] =
+		init_task.signal->rlim[RLIMIT_NPROC];
+}
+
+int __weak arch_dup_task_struct(struct task_struct *dst,
+					       struct task_struct *src)
+{
+	*dst = *src;
+	return 0;
+}
+
+void set_task_stack_end_magic(struct task_struct *tsk)
+{
+	unsigned long *stackend;
+
+	stackend = end_of_stack(tsk);
+	*stackend = STACK_END_MAGIC;	/* for overflow detection */
+}
+
+static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
+{
+	struct task_struct *tsk;
+	struct thread_info *ti;
+	int err;
+
+	if (node == NUMA_NO_NODE)
+		node = tsk_fork_get_node(orig);
+	tsk = alloc_task_struct_node(node);
+	if (!tsk)
+		return NULL;
+
+	ti = alloc_thread_info_node(tsk, node);
+	if (!ti)
+		goto free_tsk;
+
+	err = arch_dup_task_struct(tsk, orig);
+	if (err)
+		goto free_ti;
+
+	tsk->stack = ti;
+
+	err = kaiser_map_thread_stack(tsk->stack);
+	if (err)
+		goto free_ti;
+#ifdef CONFIG_SECCOMP
+	/*
+	 * We must handle setting up seccomp filters once we're under
+	 * the sighand lock in case orig has changed between now and
+	 * then. Until then, filter must be NULL to avoid messing up
+	 * the usage counts on the error path calling free_task.
+	 */
+	tsk->seccomp.filter = NULL;
+#endif
+
+	setup_thread_stack(tsk, orig);
+	clear_user_return_notifier(tsk);
+	clear_tsk_need_resched(tsk);
+	set_task_stack_end_magic(tsk);
+
+#ifdef CONFIG_CC_STACKPROTECTOR
+	tsk->stack_canary = get_random_long();
+#endif
+
+	/*
+	 * One for us, one for whoever does the "release_task()" (usually
+	 * parent)
+	 */
+	atomic_set(&tsk->usage, 2);
+#ifdef CONFIG_BLK_DEV_IO_TRACE
+	tsk->btrace_seq = 0;
+#endif
+	tsk->splice_pipe = NULL;
+	tsk->task_frag.page = NULL;
+	tsk->wake_q.next = NULL;
+
+	account_kernel_stack(ti, 1);
+
+	return tsk;
+
+free_ti:
+	free_thread_info(ti);
+free_tsk:
+	free_task_struct(tsk);
+	return NULL;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_MMU
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 					struct mm_struct *oldmm)
@@ -1041,6 +1216,7 @@ static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
 #endif
 }
 
+<<<<<<< HEAD
 static void mm_init_uprobes_state(struct mm_struct *mm)
 {
 #ifdef CONFIG_UPROBES
@@ -1048,6 +1224,8 @@ static void mm_init_uprobes_state(struct mm_struct *mm)
 #endif
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	struct user_namespace *user_ns)
 {
@@ -1121,6 +1299,7 @@ struct mm_struct *mm_alloc(void)
 
 static inline void __mmput(struct mm_struct *mm)
 {
+<<<<<<< HEAD
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	uprobe_clear_state(mm);
@@ -1138,6 +1317,15 @@ static inline void __mmput(struct mm_struct *mm)
 	if (mm->binfmt)
 		module_put(mm->binfmt->module);
 	mmdrop(mm);
+=======
+	BUG_ON(mm == &init_mm);
+	mm_free_pgd(mm);
+	destroy_context(mm);
+	mmu_notifier_mm_destroy(mm);
+	check_mm(mm);
+	put_user_ns(mm->user_ns);
+	free_mm(mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -1830,8 +2018,13 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
 static __latent_entropy struct task_struct *copy_process(
 					struct pid *pid,
 					int trace,
+<<<<<<< HEAD
 					int node,
 					struct kernel_clone_args *args)
+=======
+					unsigned long tls,
+					int node)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int pidfd = -1, retval;
 	struct task_struct *p;
@@ -2001,7 +2194,11 @@ static __latent_entropy struct task_struct *copy_process(
 	posix_cputimers_init(&p->posix_cputimers);
 
 	p->io_context = NULL;
+<<<<<<< HEAD
 	audit_set_context(p, NULL);
+=======
+	p->audit_context = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cgroup_fork(p);
 #ifdef CONFIG_NUMA
 	p->mempolicy = mpol_dup(p->mempolicy);
@@ -2167,7 +2364,11 @@ static __latent_entropy struct task_struct *copy_process(
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
 
+<<<<<<< HEAD
 	cgroup_threadgroup_change_begin(current);
+=======
+	threadgroup_change_begin(current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Ensure that the cgroup subsystem policies allow the new process to be
 	 * forked. It should be noted the the new process's css_set can be changed
@@ -2219,10 +2420,28 @@ static __latent_entropy struct task_struct *copy_process(
 	 */
 	copy_seccomp(p);
 
+<<<<<<< HEAD
 	rseq_fork(p, clone_flags);
 
 	/* Don't start children in a dying pid namespace */
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
+		retval = -ENOMEM;
+=======
+	/*
+	 * Process group and session signals need to be delivered to just the
+	 * parent before the fork or both the parent and the child after the
+	 * fork. Restart if a signal comes in before we add the new process to
+	 * it's process group.
+	 * A fatal signal pending means that current will exit, so the new
+	 * thread can't slip out of an OOM kill (or normal SIGKILL).
+	*/
+	recalc_sigpending();
+	if (signal_pending(current)) {
+		retval = -ERESTARTNOINTR;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+		goto bad_fork_cancel_cgroup;
+	}
+	if (unlikely(!(ns_of_pid(pid)->nr_hashed & PIDNS_HASH_ADDING))) {
 		retval = -ENOMEM;
 		goto bad_fork_cancel_cgroup;
 	}
@@ -2300,6 +2519,7 @@ static __latent_entropy struct task_struct *copy_process(
 bad_fork_cancel_cgroup:
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
+<<<<<<< HEAD
 	cgroup_cancel_fork(p);
 bad_fork_cgroup_threadgroup_change_end:
 	cgroup_threadgroup_change_end(current);
@@ -2308,7 +2528,11 @@ bad_fork_put_pidfd:
 		fput(pidfile);
 		put_unused_fd(pidfd);
 	}
+=======
+	cgroup_cancel_fork(p, cgrp_ss_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 bad_fork_free_pid:
+	threadgroup_change_end(current);
 	if (pid != &init_struct_pid)
 		free_pid(pid);
 bad_fork_cleanup_thread:
@@ -2375,11 +2599,16 @@ static inline void init_idle_pids(struct task_struct *idle)
 struct task_struct *fork_idle(int cpu)
 {
 	struct task_struct *task;
+<<<<<<< HEAD
 	struct kernel_clone_args args = {
 		.flags = CLONE_VM,
 	};
 
 	task = copy_process(&init_struct_pid, 0, cpu_to_node(cpu), &args);
+=======
+	task = copy_process(CLONE_VM, 0, 0, NULL, &init_struct_pid, 0, 0,
+			    cpu_to_node(cpu));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!IS_ERR(task)) {
 		init_idle_pids(task);
 		init_idle(task, cpu);
@@ -2428,6 +2657,7 @@ long _do_fork(struct kernel_clone_args *args)
 			trace = 0;
 	}
 
+<<<<<<< HEAD
 	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
 	add_latent_entropy();
 
@@ -2436,6 +2666,10 @@ long _do_fork(struct kernel_clone_args *args)
 
 	cpufreq_task_times_alloc(p);
 
+=======
+	p = copy_process(clone_flags, stack_start, stack_size,
+			 child_tidptr, NULL, trace, tls, NUMA_NO_NODE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Do this prior waking up the new thread - the thread pointer
 	 * might get invalid after that point, if the thread exits quickly.

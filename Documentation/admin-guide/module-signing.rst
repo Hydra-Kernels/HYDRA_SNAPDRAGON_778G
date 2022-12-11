@@ -281,5 +281,10 @@ in the root node of the kernel source tree.
 If you use the same private key to sign modules for multiple kernel
 configurations, you must ensure that the module version information is
 sufficient to prevent loading a module into a different kernel.  Either
+<<<<<<< HEAD:Documentation/admin-guide/module-signing.rst
 set ``CONFIG_MODVERSIONS=y`` or ensure that each configuration has a different
 kernel release string by changing ``EXTRAVERSION`` or ``CONFIG_LOCALVERSION``.
+=======
+set CONFIG_MODVERSIONS=y or ensure that each configuration has a different
+kernel release string by changing EXTRAVERSION or CONFIG_LOCALVERSION.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/module-signing.txt

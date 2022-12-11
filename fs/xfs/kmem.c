@@ -6,7 +6,10 @@
 #include "xfs.h"
 #include <linux/backing-dev.h>
 #include "xfs_message.h"
+<<<<<<< HEAD
 #include "xfs_trace.h"
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 void *
 kmem_alloc(size_t size, xfs_km_flags_t flags)

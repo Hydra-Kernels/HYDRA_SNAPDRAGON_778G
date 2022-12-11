@@ -2379,7 +2379,11 @@ static struct configfs_item_operations uvc_func_item_ops = {
 	.release	= uvc_func_item_release,
 };
 
+<<<<<<< HEAD
 #define UVCG_OPTS_ATTR(cname, aname, limit)				\
+=======
+#define UVCG_OPTS_ATTR(cname, aname, conv, str2u, uxx, vnoc, limit)	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static ssize_t f_uvc_opts_##cname##_show(				\
 	struct config_item *item, char *page)				\
 {									\
@@ -2424,9 +2428,22 @@ end:									\
 									\
 UVC_ATTR(f_uvc_opts_, cname, cname)
 
+<<<<<<< HEAD
 UVCG_OPTS_ATTR(streaming_interval, streaming_interval, 16);
 UVCG_OPTS_ATTR(streaming_maxpacket, streaming_maxpacket, 3072);
 UVCG_OPTS_ATTR(streaming_maxburst, streaming_maxburst, 15);
+=======
+#define identity_conv(x) (x)
+
+UVCG_OPTS_ATTR(streaming_interval, streaming_interval, identity_conv,
+	       kstrtou8, u8, identity_conv, 16);
+UVCG_OPTS_ATTR(streaming_maxpacket, streaming_maxpacket, le16_to_cpu,
+	       kstrtou16, u16, le16_to_cpu, 3072);
+UVCG_OPTS_ATTR(streaming_maxburst, streaming_maxburst, identity_conv,
+	       kstrtou8, u8, identity_conv, 15);
+
+#undef identity_conv
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #undef UVCG_OPTS_ATTR
 

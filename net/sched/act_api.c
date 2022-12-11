@@ -239,10 +239,28 @@ static int tcf_dump_walker(struct tcf_idrinfo *idrinfo, struct sk_buff *skb,
 			       (unsigned long)p->tcfa_tm.lastuse))
 			continue;
 
+<<<<<<< HEAD
 		nest = nla_nest_start_noflag(skb, n_i);
 		if (!nest) {
 			index--;
 			goto nla_put_failure;
+=======
+			nest = nla_nest_start(skb, a->order);
+			if (nest == NULL) {
+				index--;
+				goto nla_put_failure;
+			}
+			err = tcf_action_dump_1(skb, a, 0, 0);
+			if (err < 0) {
+				index--;
+				nlmsg_trim(skb, nest);
+				goto done;
+			}
+			nla_nest_end(skb, nest);
+			n_i++;
+			if (n_i >= TCA_ACT_MAX_PRIO)
+				goto done;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		err = tcf_action_dump_1(skb, p, 0, 0);
 		if (err < 0) {
@@ -1192,11 +1210,17 @@ static int tca_action_flush(struct net *net, struct nlattr *nla,
 		goto out_module_put;
 	}
 
+<<<<<<< HEAD
 	err = ops->walk(net, skb, &dcb, RTM_DELACTION, ops, extack);
 	if (err <= 0) {
 		nla_nest_cancel(skb, nest);
 		goto out_module_put;
 	}
+=======
+	err = a.ops->walk(skb, &dcb, RTM_DELACTION, &a);
+	if (err <= 0)
+		goto out_module_put;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	nla_nest_end(skb, nest);
 

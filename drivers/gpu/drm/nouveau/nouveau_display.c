@@ -110,8 +110,12 @@ nouveau_display_scanoutpos_head(struct drm_crtc *crtc, int *vpos, int *hpos,
 	};
 	struct nouveau_display *disp = nouveau_display(crtc->dev);
 	struct drm_vblank_crtc *vblank = &crtc->dev->vblank[drm_crtc_index(crtc)];
+<<<<<<< HEAD
 	int retry = 20;
 	bool ret = false;
+=======
+	int ret, retry = 20;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	do {
 		ret = nvif_mthd(&disp->disp.object, 0, &args, sizeof(args));
@@ -411,10 +415,16 @@ nouveau_display_init(struct drm_device *dev, bool resume, bool runtime)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	/* enable connector detection and polling for connectors without HPD
 	 * support
 	 */
 	drm_kms_helper_poll_enable(dev);
+=======
+	/* enable polling for external displays */
+	if (!dev->mode_config.poll_enabled)
+		drm_kms_helper_poll_enable(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* enable hotplug interrupts */
 	drm_connector_list_iter_begin(dev, &conn_iter);
@@ -630,12 +640,68 @@ nouveau_display_resume(struct drm_device *dev, bool runtime)
 
 	nouveau_display_init(dev, true, runtime);
 
+<<<<<<< HEAD
 	if (drm_drv_uses_atomic_modeset(dev)) {
 		if (disp->suspend) {
 			drm_atomic_helper_resume(dev, disp->suspend);
 			disp->suspend = NULL;
 		}
 		return;
+=======
+		nouveau_fb = nouveau_framebuffer(crtc->primary->fb);
+		if (!nouveau_fb || !nouveau_fb->nvbo)
+			continue;
+
+		ret = nouveau_bo_pin(nouveau_fb->nvbo, TTM_PL_FLAG_VRAM, true);
+		if (ret)
+			NV_ERROR(drm, "Could not pin framebuffer\n");
+	}
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct nouveau_crtc *nv_crtc = nouveau_crtc(crtc);
+		if (!nv_crtc->cursor.nvbo)
+			continue;
+
+		ret = nouveau_bo_pin(nv_crtc->cursor.nvbo, TTM_PL_FLAG_VRAM, true);
+		if (!ret && nv_crtc->cursor.set_offset)
+			ret = nouveau_bo_map(nv_crtc->cursor.nvbo);
+		if (ret)
+			NV_ERROR(drm, "Could not pin/map cursor.\n");
+	}
+
+	nouveau_display_init(dev);
+
+	/* Force CLUT to get re-loaded during modeset */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct nouveau_crtc *nv_crtc = nouveau_crtc(crtc);
+
+		nv_crtc->lut.depth = 0;
+	}
+
+	/* This should ensure we don't hit a locking problem when someone
+	 * wakes us up via a connector.  We should never go into suspend
+	 * while the display is on anyways.
+	 */
+	if (runtime)
+		return;
+
+	drm_helper_resume_force_mode(dev);
+
+	/* Make sure that drm and hw vblank irqs get resumed if needed. */
+	for (head = 0; head < dev->mode_config.num_crtc; head++)
+		drm_vblank_on(dev, head);
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct nouveau_crtc *nv_crtc = nouveau_crtc(crtc);
+
+		if (!nv_crtc->cursor.nvbo)
+			continue;
+
+		if (nv_crtc->cursor.set_offset)
+			nv_crtc->cursor.set_offset(nv_crtc, nv_crtc->cursor.nvbo->bo.offset);
+		nv_crtc->cursor.set_pos(nv_crtc, nv_crtc->cursor_saved_x,
+						 nv_crtc->cursor_saved_y);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

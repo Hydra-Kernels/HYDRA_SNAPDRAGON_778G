@@ -175,7 +175,11 @@ static void fixup_cpu_id(struct cpuinfo_x86 *c, int node)
 	this_cpu_write(cpu_llc_id, node);
 
 	/* Account for nodes per socket in multi-core-module processors */
+<<<<<<< HEAD
 	if (boot_cpu_has(X86_FEATURE_NODEID_MSR)) {
+=======
+	if (static_cpu_has(X86_FEATURE_NODEID_MSR)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rdmsrl(MSR_FAM10H_NODE_ID, val);
 		nodes = ((val >> 3) & 7) + 1;
 	}

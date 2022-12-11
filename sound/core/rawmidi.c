@@ -686,9 +686,38 @@ static int resize_runtime_buffer(struct snd_rawmidi_runtime *runtime,
 int snd_rawmidi_output_params(struct snd_rawmidi_substream *substream,
 			      struct snd_rawmidi_params *params)
 {
+<<<<<<< HEAD
 	if (substream->append && substream->use_count > 1)
 		return -EBUSY;
 	snd_rawmidi_drain_output(substream);
+=======
+	char *newbuf, *oldbuf;
+	struct snd_rawmidi_runtime *runtime = substream->runtime;
+	
+	if (substream->append && substream->use_count > 1)
+		return -EBUSY;
+	snd_rawmidi_drain_output(substream);
+	if (params->buffer_size < 32 || params->buffer_size > 1024L * 1024L) {
+		return -EINVAL;
+	}
+	if (params->avail_min < 1 || params->avail_min > params->buffer_size) {
+		return -EINVAL;
+	}
+	if (params->buffer_size != runtime->buffer_size) {
+		newbuf = kmalloc(params->buffer_size, GFP_KERNEL);
+		if (!newbuf)
+			return -ENOMEM;
+		spin_lock_irq(&runtime->lock);
+		oldbuf = runtime->buffer;
+		runtime->buffer = newbuf;
+		runtime->buffer_size = params->buffer_size;
+		runtime->avail = runtime->buffer_size;
+		runtime->appl_ptr = runtime->hw_ptr = 0;
+		spin_unlock_irq(&runtime->lock);
+		kfree(oldbuf);
+	}
+	runtime->avail_min = params->avail_min;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	substream->active_sensing = !params->no_active_sensing;
 	return resize_runtime_buffer(substream->runtime, params, false);
 }
@@ -697,8 +726,35 @@ EXPORT_SYMBOL(snd_rawmidi_output_params);
 int snd_rawmidi_input_params(struct snd_rawmidi_substream *substream,
 			     struct snd_rawmidi_params *params)
 {
+<<<<<<< HEAD
 	snd_rawmidi_drain_input(substream);
 	return resize_runtime_buffer(substream->runtime, params, true);
+=======
+	char *newbuf, *oldbuf;
+	struct snd_rawmidi_runtime *runtime = substream->runtime;
+
+	snd_rawmidi_drain_input(substream);
+	if (params->buffer_size < 32 || params->buffer_size > 1024L * 1024L) {
+		return -EINVAL;
+	}
+	if (params->avail_min < 1 || params->avail_min > params->buffer_size) {
+		return -EINVAL;
+	}
+	if (params->buffer_size != runtime->buffer_size) {
+		newbuf = kmalloc(params->buffer_size, GFP_KERNEL);
+		if (!newbuf)
+			return -ENOMEM;
+		spin_lock_irq(&runtime->lock);
+		oldbuf = runtime->buffer;
+		runtime->buffer = newbuf;
+		runtime->buffer_size = params->buffer_size;
+		runtime->appl_ptr = runtime->hw_ptr = 0;
+		spin_unlock_irq(&runtime->lock);
+		kfree(oldbuf);
+	}
+	runtime->avail_min = params->avail_min;
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(snd_rawmidi_input_params);
 
@@ -971,10 +1027,15 @@ static long snd_rawmidi_kernel_read1(struct snd_rawmidi_substream *substream,
 	long result = 0, count1;
 	struct snd_rawmidi_runtime *runtime = substream->runtime;
 	unsigned long appl_ptr;
+<<<<<<< HEAD
 	int err = 0;
 
 	spin_lock_irqsave(&runtime->lock, flags);
 	snd_rawmidi_buffer_ref(runtime);
+=======
+
+	spin_lock_irqsave(&runtime->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while (count > 0 && runtime->avail) {
 		count1 = runtime->buffer_size - runtime->appl_ptr;
 		if (count1 > count)
@@ -993,19 +1054,31 @@ static long snd_rawmidi_kernel_read1(struct snd_rawmidi_substream *substream,
 		if (userbuf) {
 			spin_unlock_irqrestore(&runtime->lock, flags);
 			if (copy_to_user(userbuf + result,
+<<<<<<< HEAD
 					 runtime->buffer + appl_ptr, count1))
 				err = -EFAULT;
 			spin_lock_irqsave(&runtime->lock, flags);
 			if (err)
 				goto out;
+=======
+					 runtime->buffer + appl_ptr, count1)) {
+				return result > 0 ? result : -EFAULT;
+			}
+			spin_lock_irqsave(&runtime->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		result += count1;
 		count -= count1;
 	}
+<<<<<<< HEAD
  out:
 	snd_rawmidi_buffer_unref(runtime);
 	spin_unlock_irqrestore(&runtime->lock, flags);
 	return result > 0 ? result : err;
+=======
+	spin_unlock_irqrestore(&runtime->lock, flags);
+	return result;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 long snd_rawmidi_kernel_read(struct snd_rawmidi_substream *substream,
@@ -1193,7 +1266,11 @@ int __snd_rawmidi_transmit_ack(struct snd_rawmidi_substream *substream, int coun
 	runtime->avail += count;
 	substream->bytes += count;
 	if (count > 0) {
+<<<<<<< HEAD
 		if (runtime->drain || __snd_rawmidi_ready(runtime))
+=======
+		if (runtime->drain || snd_rawmidi_ready(substream))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			wake_up(&runtime->sleep);
 	}
 	return count;
@@ -1702,6 +1779,7 @@ static int snd_rawmidi_dev_register(struct snd_device *device)
 		return -ENOMEM;
 	err = 0;
 	mutex_lock(&register_mutex);
+<<<<<<< HEAD
 	if (snd_rawmidi_search(rmidi->card, rmidi->device))
 		err = -EBUSY;
 	else
@@ -1710,17 +1788,40 @@ static int snd_rawmidi_dev_register(struct snd_device *device)
 	if (err < 0)
 		return err;
 
+=======
+	if (snd_rawmidi_search(rmidi->card, rmidi->device)) {
+		mutex_unlock(&register_mutex);
+		return -EBUSY;
+	}
+	list_add_tail(&rmidi->list, &snd_rawmidi_devices);
+	mutex_unlock(&register_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	err = snd_register_device(SNDRV_DEVICE_TYPE_RAWMIDI,
 				  rmidi->card, rmidi->device,
 				  &snd_rawmidi_f_ops, rmidi, &rmidi->dev);
 	if (err < 0) {
 		rmidi_err(rmidi, "unable to register\n");
+<<<<<<< HEAD
 		goto error;
 	}
 	if (rmidi->ops && rmidi->ops->dev_register) {
 		err = rmidi->ops->dev_register(rmidi);
 		if (err < 0)
 			goto error_unregister;
+=======
+		mutex_lock(&register_mutex);
+		list_del(&rmidi->list);
+		mutex_unlock(&register_mutex);
+		return err;
+	}
+	if (rmidi->ops && rmidi->ops->dev_register &&
+	    (err = rmidi->ops->dev_register(rmidi)) < 0) {
+		snd_unregister_device(&rmidi->dev);
+		mutex_lock(&register_mutex);
+		list_del(&rmidi->list);
+		mutex_unlock(&register_mutex);
+		return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 #ifdef CONFIG_SND_OSSEMUL
 	rmidi->ossreg = 0;

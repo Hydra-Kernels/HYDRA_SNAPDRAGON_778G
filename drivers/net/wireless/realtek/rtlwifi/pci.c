@@ -621,7 +621,11 @@ tx_status_ok:
 
 	if (((rtlpriv->link_info.num_rx_inperiod +
 	      rtlpriv->link_info.num_tx_inperiod) > 8) ||
+<<<<<<< HEAD
 	      rtlpriv->link_info.num_rx_inperiod > 2)
+=======
+	      (rtlpriv->link_info.num_rx_inperiod > 2))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rtl_lps_leave(hw);
 }
 
@@ -780,7 +784,11 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		new_skb = dev_alloc_skb(rtlpci->rxbuffersize);
 		if (unlikely(!new_skb))
 			goto no_new;
+<<<<<<< HEAD
 		memset(&rx_status, 0, sizeof(rx_status));
+=======
+		memset(&rx_status , 0 , sizeof(rx_status));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rtlpriv->cfg->ops->query_rx_desc(hw, &stats,
 						 &rx_status, (u8 *)pdesc, skb);
 
@@ -874,7 +882,11 @@ new_trx_end:
 		}
 		if (((rtlpriv->link_info.num_rx_inperiod +
 		      rtlpriv->link_info.num_tx_inperiod) > 8) ||
+<<<<<<< HEAD
 		      rtlpriv->link_info.num_rx_inperiod > 2)
+=======
+		      (rtlpriv->link_info.num_rx_inperiod > 2))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			rtl_lps_leave(hw);
 		skb = new_skb;
 no_new:

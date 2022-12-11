@@ -516,6 +516,7 @@ static int hdmi_vendor_infoframe_length(const struct hdmi_vendor_infoframe *fram
 		return 4;
 }
 
+<<<<<<< HEAD
 static int hdmi_vendor_infoframe_check_only(const struct hdmi_vendor_infoframe *frame)
 {
 	if (frame->type != HDMI_INFOFRAME_TYPE_VENDOR ||
@@ -533,6 +534,8 @@ static int hdmi_vendor_infoframe_check_only(const struct hdmi_vendor_infoframe *
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * hdmi_vendor_infoframe_check() - check a HDMI vendor infoframe
  * @frame: HDMI infoframe
@@ -571,9 +574,17 @@ ssize_t hdmi_vendor_infoframe_pack_only(const struct hdmi_vendor_infoframe *fram
 	size_t length;
 	int ret;
 
+<<<<<<< HEAD
 	ret = hdmi_vendor_infoframe_check_only(frame);
 	if (ret)
 		return ret;
+=======
+	/* only one of those can be supplied */
+	if (frame->vic != 0 && frame->s3d_struct != HDMI_3D_STRUCTURE_INVALID)
+		return -EINVAL;
+
+	frame->length = hdmi_vendor_infoframe_length(frame);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	length = HDMI_INFOFRAME_HEADER_SIZE + frame->length;
 

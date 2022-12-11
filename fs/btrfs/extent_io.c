@@ -2879,11 +2879,21 @@ struct bio *btrfs_bio_clone(struct bio *bio)
 	struct btrfs_io_bio *btrfs_bio;
 	struct bio *new;
 
+<<<<<<< HEAD
 	/* Bio allocation backed by a bioset does not fail */
 	new = bio_clone_fast(bio, GFP_NOFS, &btrfs_bioset);
 	btrfs_bio = btrfs_io_bio(new);
 	btrfs_io_bio_init(btrfs_bio);
 	btrfs_bio->iter = bio->bi_iter;
+=======
+	new = bio_clone_bioset(bio, gfp_mask, btrfs_bioset);
+	if (new) {
+		btrfs_bio = btrfs_io_bio(new);
+		btrfs_bio->csum = NULL;
+		btrfs_bio->csum_allocated = NULL;
+		btrfs_bio->end_io = NULL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return new;
 }
 
@@ -5496,7 +5506,11 @@ int read_extent_buffer_pages(struct extent_buffer *eb, int wait, int mirror_num)
 	 * the uptodate bit of our pages won't be affected by
 	 * clear_extent_buffer_uptodate().
 	 */
+<<<<<<< HEAD
 	for (i = 0; i < num_pages; i++) {
+=======
+	for (i = start_i; i < num_pages; i++) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		page = eb->pages[i];
 		if (!PageUptodate(page)) {
 			num_reads++;

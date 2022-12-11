@@ -230,13 +230,21 @@ static int snd_seq_cell_alloc(struct snd_seq_pool *pool,
 
 		set_current_state(TASK_INTERRUPTIBLE);
 		add_wait_queue(&pool->output_sleep, &wait);
+<<<<<<< HEAD
 		spin_unlock_irqrestore(&pool->lock, flags);
+=======
+		spin_unlock_irq(&pool->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (mutexp)
 			mutex_unlock(mutexp);
 		schedule();
 		if (mutexp)
 			mutex_lock(mutexp);
+<<<<<<< HEAD
 		spin_lock_irqsave(&pool->lock, flags);
+=======
+		spin_lock_irq(&pool->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		remove_wait_queue(&pool->output_sleep, &wait);
 		/* interrupted? */
 		if (signal_pending(current)) {
@@ -374,16 +382,27 @@ int snd_seq_pool_init(struct snd_seq_pool *pool)
 	if (snd_BUG_ON(!pool))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	cellptr = kvmalloc_array(sizeof(struct snd_seq_event_cell), pool->size,
 				 GFP_KERNEL);
+=======
+	cellptr = vmalloc(sizeof(struct snd_seq_event_cell) * pool->size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!cellptr)
 		return -ENOMEM;
 
 	/* add new cells to the free cell list */
+<<<<<<< HEAD
 	spin_lock_irq(&pool->lock);
 	if (pool->ptr) {
 		spin_unlock_irq(&pool->lock);
 		kvfree(cellptr);
+=======
+	spin_lock_irqsave(&pool->lock, flags);
+	if (pool->ptr) {
+		spin_unlock_irqrestore(&pool->lock, flags);
+		vfree(cellptr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	}
 

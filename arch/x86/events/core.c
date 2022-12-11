@@ -2119,7 +2119,12 @@ static int x86_pmu_event_init(struct perf_event *event)
 
 static void refresh_pce(void *ignored)
 {
+<<<<<<< HEAD:arch/x86/events/core.c
 	load_mm_cr4_irqsoff(this_cpu_read(cpu_tlbstate.loaded_mm));
+=======
+	if (current->active_mm)
+		load_mm_cr4(current->active_mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event.c
 }
 
 static void x86_pmu_event_mapped(struct perf_event *event, struct mm_struct *mm)

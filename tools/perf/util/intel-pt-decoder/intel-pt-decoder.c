@@ -14,8 +14,11 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <linux/compiler.h>
+<<<<<<< HEAD
 #include <linux/string.h>
 #include <linux/zalloc.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "../auxtrace.h"
 
@@ -64,9 +67,14 @@ static inline bool intel_pt_sample_time(enum intel_pt_pkt_state pkt_state)
 	case INTEL_PT_STATE_NO_IP:
 	case INTEL_PT_STATE_ERR_RESYNC:
 	case INTEL_PT_STATE_IN_SYNC:
+<<<<<<< HEAD
 	case INTEL_PT_STATE_TNT_CONT:
 		return true;
 	case INTEL_PT_STATE_TNT:
+=======
+	case INTEL_PT_STATE_TNT:
+		return true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case INTEL_PT_STATE_TIP:
 	case INTEL_PT_STATE_TIP_PGD:
 	case INTEL_PT_STATE_FUP:
@@ -108,7 +116,10 @@ struct intel_pt_decoder {
 	bool have_cyc;
 	bool fixup_last_mtc;
 	bool have_last_ip;
+<<<<<<< HEAD
 	bool in_psb;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	enum intel_pt_param_flags flags;
 	uint64_t pos;
 	uint64_t last_ip;
@@ -117,7 +128,10 @@ struct intel_pt_decoder {
 	uint64_t timestamp;
 	uint64_t tsc_timestamp;
 	uint64_t ref_timestamp;
+<<<<<<< HEAD
 	uint64_t buf_timestamp;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	uint64_t sample_timestamp;
 	uint64_t ret_addr;
 	uint64_t ctc_timestamp;
@@ -1082,6 +1096,7 @@ out_no_progress:
 	return err;
 }
 
+<<<<<<< HEAD
 static bool intel_pt_fup_event(struct intel_pt_decoder *decoder)
 {
 	bool ret = false;
@@ -1143,6 +1158,8 @@ static bool intel_pt_fup_event(struct intel_pt_decoder *decoder)
 	return ret;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline bool intel_pt_fup_with_nlip(struct intel_pt_decoder *decoder,
 					  struct intel_pt_insn *intel_pt_insn,
 					  uint64_t ip, int err)
@@ -1166,11 +1183,23 @@ static int intel_pt_walk_fup(struct intel_pt_decoder *decoder)
 			return 0;
 		if (err == -EAGAIN ||
 		    intel_pt_fup_with_nlip(decoder, &intel_pt_insn, ip, err)) {
+<<<<<<< HEAD
 			bool no_tip = decoder->pkt_state != INTEL_PT_STATE_FUP;
 
 			decoder->pkt_state = INTEL_PT_STATE_IN_SYNC;
 			if (intel_pt_fup_event(decoder) && no_tip)
 				return 0;
+=======
+			if (decoder->set_fup_tx_flags) {
+				decoder->set_fup_tx_flags = false;
+				decoder->tx_flags = decoder->fup_tx_flags;
+				decoder->state.type = INTEL_PT_TRANSACTION;
+				decoder->state.from_ip = decoder->ip;
+				decoder->state.to_ip = 0;
+				decoder->state.flags = decoder->fup_tx_flags;
+				return 0;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EAGAIN;
 		}
 		decoder->set_fup_tx_flags = false;
@@ -1455,6 +1484,10 @@ static int intel_pt_overflow(struct intel_pt_decoder *decoder)
 {
 	intel_pt_log("ERROR: Buffer overflow\n");
 	intel_pt_clear_tx_flags(decoder);
+<<<<<<< HEAD
+=======
+	decoder->cbr = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	decoder->timestamp_insn_cnt = 0;
 	decoder->pkt_state = INTEL_PT_STATE_ERR_RESYNC;
 	decoder->overflow = true;
@@ -1624,6 +1657,7 @@ static void intel_pt_calc_cyc_timestamp(struct intel_pt_decoder *decoder)
 		decoder->timestamp = timestamp;
 
 	decoder->timestamp_insn_cnt = 0;
+<<<<<<< HEAD
 
 	intel_pt_log_to("Setting timestamp", decoder->timestamp);
 }
@@ -1666,6 +1700,8 @@ static void intel_pt_bip(struct intel_pt_decoder *decoder)
 
 	decoder->state.items.mask[pos] |= bit;
 	decoder->state.items.val[pos][id] = decoder->packet.payload;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Walk PSB+ packets when already in sync. */
@@ -2294,6 +2330,7 @@ static int intel_pt_walk_to_ip(struct intel_pt_decoder *decoder)
 		switch (decoder->packet.type) {
 		case INTEL_PT_TIP_PGD:
 			decoder->continuous_period = false;
+<<<<<<< HEAD
 			decoder->pge = false;
 			if (intel_pt_have_ip(decoder))
 				intel_pt_set_ip(decoder);
@@ -2302,6 +2339,9 @@ static int intel_pt_walk_to_ip(struct intel_pt_decoder *decoder)
 			decoder->state.type |= INTEL_PT_TRACE_END;
 			return 0;
 
+=======
+			__fallthrough;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case INTEL_PT_TIP_PGE:
 			decoder->pge = true;
 			intel_pt_mtc_cyc_cnt_pge(decoder);
@@ -2313,6 +2353,7 @@ static int intel_pt_walk_to_ip(struct intel_pt_decoder *decoder)
 			return 0;
 
 		case INTEL_PT_TIP:
+<<<<<<< HEAD
 			decoder->pge = true;
 			if (intel_pt_have_ip(decoder))
 				intel_pt_set_ip(decoder);
@@ -2321,12 +2362,25 @@ static int intel_pt_walk_to_ip(struct intel_pt_decoder *decoder)
 			return 0;
 
 		case INTEL_PT_FUP:
+=======
+			decoder->pge = decoder->packet.type != INTEL_PT_TIP_PGD;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (intel_pt_have_ip(decoder))
 				intel_pt_set_ip(decoder);
 			if (decoder->ip)
 				return 0;
 			break;
 
+<<<<<<< HEAD
+=======
+		case INTEL_PT_FUP:
+			if (intel_pt_have_ip(decoder))
+				intel_pt_set_ip(decoder);
+			if (decoder->ip)
+				return 0;
+			break;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case INTEL_PT_MTC:
 			intel_pt_calc_mtc_timestamp(decoder);
 			break;
@@ -2413,6 +2467,7 @@ static int intel_pt_sync_ip(struct intel_pt_decoder *decoder)
 	int err;
 
 	decoder->set_fup_tx_flags = false;
+<<<<<<< HEAD
 	decoder->set_fup_ptw = false;
 	decoder->set_fup_mwait = false;
 	decoder->set_fup_pwre = false;
@@ -2425,6 +2480,8 @@ static int intel_pt_sync_ip(struct intel_pt_decoder *decoder)
 		decoder->state.type = 0; /* Do not have a sample */
 		return 0;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	intel_pt_log("Scanning for full IP\n");
 	err = intel_pt_walk_to_ip(decoder);
@@ -2589,7 +2646,11 @@ const struct intel_pt_state *intel_pt_decode(struct intel_pt_decoder *decoder)
 			decoder->have_last_ip = false;
 			decoder->last_ip = 0;
 			decoder->ip = 0;
+<<<<<<< HEAD
 			__fallthrough;
+=======
+			/* Fall through */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case INTEL_PT_STATE_ERR_RESYNC:
 			err = intel_pt_sync_ip(decoder);
 			break;
@@ -2625,6 +2686,7 @@ const struct intel_pt_state *intel_pt_decode(struct intel_pt_decoder *decoder)
 	if (err) {
 		decoder->state.err = intel_pt_ext_err(err);
 		decoder->state.from_ip = decoder->ip;
+<<<<<<< HEAD
 		intel_pt_update_sample_time(decoder);
 		decoder->sample_tot_cyc_cnt = decoder->tot_cyc_cnt;
 	} else {
@@ -2653,13 +2715,26 @@ const struct intel_pt_state *intel_pt_decode(struct intel_pt_decoder *decoder)
 		 */
 		if (!decoder->have_cyc)
 			decoder->state.flags |= INTEL_PT_SAMPLE_IPC;
+=======
+		decoder->sample_timestamp = decoder->timestamp;
+		decoder->sample_insn_cnt = decoder->timestamp_insn_cnt;
+	} else {
+		decoder->state.err = 0;
+		if (intel_pt_sample_time(decoder->pkt_state)) {
+			decoder->sample_timestamp = decoder->timestamp;
+			decoder->sample_insn_cnt = decoder->timestamp_insn_cnt;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	decoder->state.timestamp = decoder->sample_timestamp;
 	decoder->state.est_timestamp = intel_pt_est_timestamp(decoder);
 	decoder->state.cr3 = decoder->cr3;
 	decoder->state.tot_insn_cnt = decoder->tot_insn_cnt;
+<<<<<<< HEAD
 	decoder->state.tot_cyc_cnt = decoder->sample_tot_cyc_cnt;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return &decoder->state;
 }
@@ -2895,11 +2970,16 @@ static unsigned char *intel_pt_find_overlap_tsc(unsigned char *buf_a,
 
 			/* Same TSC, so buffers are consecutive */
 			if (!cmp && rem_b >= rem_a) {
+<<<<<<< HEAD
 				unsigned char *start;
 
 				*consecutive = true;
 				start = buf_b + len_b - (rem_b - rem_a);
 				return adj_for_padding(start, buf_a, len_a);
+=======
+				*consecutive = true;
+				return buf_b + len_b - (rem_b - rem_a);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 			if (cmp < 0)
 				return buf_b; /* tsc_a < tsc_b => no overlap */
@@ -2962,7 +3042,11 @@ unsigned char *intel_pt_find_overlap(unsigned char *buf_a, size_t len_a,
 		found = memmem(buf_a, len_a, buf_b, len_a);
 		if (found) {
 			*consecutive = true;
+<<<<<<< HEAD
 			return adj_for_padding(buf_b + len_a, buf_a, len_a);
+=======
+			return buf_b + len_a;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/* Try again at next PSB in buffer 'a' */

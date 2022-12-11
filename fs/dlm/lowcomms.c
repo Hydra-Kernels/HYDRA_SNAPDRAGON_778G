@@ -1725,6 +1725,12 @@ void dlm_lowcomms_stop(void)
 	*/
 	mutex_lock(&connections_lock);
 	dlm_allow_conn = 0;
+<<<<<<< HEAD
+=======
+	foreach_conn(stop_conn);
+	clean_writequeues();
+	foreach_conn(free_conn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&connections_lock);
 	work_flush();
 	clean_writequeues();

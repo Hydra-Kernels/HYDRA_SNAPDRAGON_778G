@@ -11,6 +11,7 @@
 
 int _braille_console_setup(char **str, char **brl_options)
 {
+<<<<<<< HEAD
 	size_t len;
 
 	len = str_has_prefix(*str, "brl,");
@@ -31,6 +32,21 @@ int _braille_console_setup(char **str, char **brl_options)
 		*((*str)++) = 0;
 	}
 
+=======
+	if (!strncmp(*str, "brl,", 4)) {
+		*brl_options = "";
+		*str += 4;
+	} else if (!strncmp(*str, "brl=", 4)) {
+		*brl_options = *str + 4;
+		*str = strchr(*brl_options, ',');
+		if (!*str) {
+			pr_err("need port name after brl=\n");
+			return -EINVAL;
+		}
+		*((*str)++) = 0;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -33,9 +33,41 @@ static void hda_fixup_thinkpad_acpi(struct hda_codec *codec,
 	if (action == HDA_FIXUP_ACT_PROBE) {
 		if (!is_thinkpad(codec))
 			return;
+<<<<<<< HEAD
 		old_vmaster_hook = spec->vmaster_mute.hook;
 		spec->vmaster_mute.hook = update_tpacpi_mute_led;
 		snd_hda_gen_fixup_micmute_led(codec, fix, action);
+=======
+		if (!led_set_func)
+			led_set_func = symbol_request(tpacpi_led_set);
+		if (!led_set_func) {
+			codec_warn(codec,
+				   "Failed to find thinkpad-acpi symbol tpacpi_led_set\n");
+			return;
+		}
+
+		removefunc = true;
+		if (led_set_func(TPACPI_LED_MUTE, false) >= 0) {
+			old_vmaster_hook = spec->vmaster_mute.hook;
+			spec->vmaster_mute.hook = update_tpacpi_mute_led;
+			removefunc = false;
+		}
+		if (led_set_func(TPACPI_LED_MICMUTE, false) >= 0) {
+			if (spec->num_adc_nids > 1 && !spec->dyn_adc_switch)
+				codec_dbg(codec,
+					  "Skipping micmute LED control due to several ADCs");
+			else {
+				spec->cap_sync_hook = update_tpacpi_micmute_led;
+				removefunc = false;
+			}
+		}
+	}
+
+	if (led_set_func && (action == HDA_FIXUP_ACT_FREE || removefunc)) {
+		symbol_put(tpacpi_led_set);
+		led_set_func = NULL;
+		old_vmaster_hook = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

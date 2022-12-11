@@ -408,7 +408,11 @@ void blk_integrity_register(struct gendisk *disk, struct blk_integrity *template
 	bi->tuple_size = template->tuple_size;
 	bi->tag_size = template->tag_size;
 
+<<<<<<< HEAD
 	disk->queue->backing_dev_info->capabilities |= BDI_CAP_STABLE_WRITES;
+=======
+	disk->queue->backing_dev_info.capabilities |= BDI_CAP_STABLE_WRITES;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(blk_integrity_register);
 
@@ -421,7 +425,11 @@ EXPORT_SYMBOL(blk_integrity_register);
  */
 void blk_integrity_unregister(struct gendisk *disk)
 {
+<<<<<<< HEAD
 	disk->queue->backing_dev_info->capabilities &= ~BDI_CAP_STABLE_WRITES;
+=======
+	disk->queue->backing_dev_info.capabilities &= ~BDI_CAP_STABLE_WRITES;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memset(&disk->queue->integrity, 0, sizeof(struct blk_integrity));
 }
 EXPORT_SYMBOL(blk_integrity_unregister);

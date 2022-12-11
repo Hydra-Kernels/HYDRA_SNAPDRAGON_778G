@@ -408,11 +408,14 @@ struct usb_host_bos {
 	struct usb_ssp_cap_descriptor	*ssp_cap;
 	struct usb_ss_container_id_descriptor	*ss_id;
 	struct usb_ptm_cap_descriptor	*ptm_cap;
+<<<<<<< HEAD
 
 	ANDROID_KABI_RESERVE(1);
 	ANDROID_KABI_RESERVE(2);
 	ANDROID_KABI_RESERVE(3);
 	ANDROID_KABI_RESERVE(4);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 int __usb_get_extra_descriptor(char *buffer, unsigned size,
@@ -459,6 +462,10 @@ struct usb_bus {
 	struct usb_devmap devmap;	/* device address allocation map */
 	struct usb_device *root_hub;	/* Root hub */
 	struct usb_bus *hs_companion;	/* Companion EHCI bus, if any */
+<<<<<<< HEAD
+=======
+	struct list_head bus_list;	/* list of busses */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	int bandwidth_allocated;	/* on this bus: how much of the time
 					 * reserved for periodic (intr/iso)
@@ -609,6 +616,10 @@ struct usb3_lpm_parameters {
  * @usb2_hw_lpm_besl_capable: device can perform USB2 hardware BESL LPM
  * @usb2_hw_lpm_enabled: USB2 hardware LPM is enabled
  * @usb2_hw_lpm_allowed: Userspace allows USB 2.0 LPM to be enabled
+<<<<<<< HEAD
+=======
+ * @usb3_lpm_enabled: USB3 hardware LPM enabled
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @usb3_lpm_u1_enabled: USB3 hardware U1 LPM enabled
  * @usb3_lpm_u2_enabled: USB3 hardware U2 LPM enabled
  * @string_langid: language ID for strings
@@ -690,6 +701,10 @@ struct usb_device {
 	unsigned usb2_hw_lpm_besl_capable:1;
 	unsigned usb2_hw_lpm_enabled:1;
 	unsigned usb2_hw_lpm_allowed:1;
+<<<<<<< HEAD
+=======
+	unsigned usb3_lpm_enabled:1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned usb3_lpm_u1_enabled:1;
 	unsigned usb3_lpm_u2_enabled:1;
 	int string_langid;

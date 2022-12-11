@@ -62,11 +62,18 @@
 #define MEI_DEV_ID_SPT_H      0xA13A  /* Sunrise Point H */
 #define MEI_DEV_ID_SPT_H_2    0xA13B  /* Sunrise Point H 2 */
 
+<<<<<<< HEAD
+=======
+#define MEI_DEV_ID_KBP        0xA2BA  /* Kaby Point */
+#define MEI_DEV_ID_KBP_2      0xA2BB  /* Kaby Point 2 */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define MEI_DEV_ID_LBG        0xA1BA  /* Lewisburg (SPT) */
 
 #define MEI_DEV_ID_BXT_M      0x1A9A  /* Broxton M */
 #define MEI_DEV_ID_APL_I      0x5A9A  /* Apollo Lake I */
 
+<<<<<<< HEAD
 #define MEI_DEV_ID_DNV_IE     0x19E5  /* Denverton IE */
 
 #define MEI_DEV_ID_GLK        0x319A  /* Gemini Lake */
@@ -96,6 +103,8 @@
 #define MEI_DEV_ID_MCC        0x4B70  /* Mule Creek Canyon (EHL) */
 #define MEI_DEV_ID_MCC_4      0x4B75  /* Mule Creek Canyon 4 (EHL) */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * MEI HW Section
  */

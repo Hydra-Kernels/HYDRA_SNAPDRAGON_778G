@@ -37,7 +37,18 @@
 #include <asm/setup.h>
 #include <asm/msr.h>
 
+<<<<<<< HEAD
 static const char ucode_path[] = "kernel/x86/microcode/GenuineIntel.bin";
+=======
+/* last level cache size per core */
+static int llc_size_per_core;
+
+static unsigned long mc_saved_in_initrd[MAX_UCODE_COUNT];
+static struct mc_saved_data {
+	unsigned int mc_saved_count;
+	struct microcode_intel **mc_saved;
+} mc_saved_data;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Current microcode patch used in early patching on the APs. */
 static struct microcode_intel *intel_ucode_patch;
@@ -467,6 +478,43 @@ static bool load_builtin_intel_microcode(struct cpio_data *cp)
 		      x86_family(eax), x86_model(eax), x86_stepping(eax));
 
 	return get_builtin_firmware(cp, name);
+<<<<<<< HEAD
+=======
+#else
+	return false;
+#endif
+}
+
+static __initdata char ucode_name[] = "kernel/x86/microcode/GenuineIntel.bin";
+static __init enum ucode_state
+scan_microcode(struct mc_saved_data *mc_saved_data, unsigned long *initrd,
+	       unsigned long start, unsigned long size,
+	       struct ucode_cpu_info *uci)
+{
+	struct cpio_data cd;
+	long offset = 0;
+#ifdef CONFIG_X86_32
+	char *p = (char *)__pa_nodebug(ucode_name);
+#else
+	char *p = ucode_name;
+#endif
+
+	cd.data = NULL;
+	cd.size = 0;
+
+	/* try built-in microcode if no initrd */
+	if (!size) {
+		if (!load_builtin_intel_microcode(&cd))
+			return UCODE_ERROR;
+	} else {
+		cd = find_cpio_data(p, (void *)start, size, &offset);
+		if (!cd.data)
+			return UCODE_ERROR;
+	}
+
+	return get_matching_model_microcode(0, start, cd.data, cd.size,
+					    mc_saved_data, initrd, uci);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -623,9 +671,16 @@ static struct microcode_intel *__load_ucode_intel(struct ucode_cpu_info *uci)
 		use_pa	  = false;
 	}
 
+<<<<<<< HEAD
 	/* try built-in microcode first */
 	if (!load_builtin_intel_microcode(&cp))
 		cp = find_microcode_in_initrd(path, use_pa);
+=======
+	copy_initrd_ptrs(mc_saved, mc_saved_in_initrd, get_initrd_start(), count);
+	ret = save_microcode(&mc_saved_data, mc_saved, count);
+	if (ret)
+		pr_err("Cannot save microcode patches from initrd.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!(cp.data && cp.size))
 		return NULL;
@@ -637,6 +692,7 @@ static struct microcode_intel *__load_ucode_intel(struct ucode_cpu_info *uci)
 
 void __init load_ucode_intel_bsp(void)
 {
+<<<<<<< HEAD
 	struct microcode_intel *patch;
 	struct ucode_cpu_info uci;
 
@@ -645,6 +701,60 @@ void __init load_ucode_intel_bsp(void)
 		return;
 
 	uci.mc = patch;
+=======
+	u64 start, size;
+#ifdef CONFIG_X86_32
+	struct boot_params *p;
+
+	p	= (struct boot_params *)__pa_nodebug(&boot_params);
+	size	= p->hdr.ramdisk_size;
+
+	/*
+	 * Set start only if we have an initrd image. We cannot use initrd_start
+	 * because it is not set that early yet.
+	 */
+	start	= (size ? p->hdr.ramdisk_image : 0);
+
+	_load_ucode_intel_bsp((struct mc_saved_data *)__pa_nodebug(&mc_saved_data),
+			      (unsigned long *)__pa_nodebug(&mc_saved_in_initrd),
+			      start, size);
+#else
+	size	= boot_params.hdr.ramdisk_size;
+	start	= (size ? boot_params.hdr.ramdisk_image + PAGE_OFFSET : 0);
+
+	_load_ucode_intel_bsp(&mc_saved_data, mc_saved_in_initrd, start, size);
+#endif
+}
+
+void load_ucode_intel_ap(void)
+{
+	struct mc_saved_data *mc_saved_data_p;
+	struct ucode_cpu_info uci;
+	unsigned long *mc_saved_in_initrd_p;
+	enum ucode_state ret;
+#ifdef CONFIG_X86_32
+
+	mc_saved_in_initrd_p = (unsigned long *)__pa_nodebug(mc_saved_in_initrd);
+	mc_saved_data_p = (struct mc_saved_data *)__pa_nodebug(&mc_saved_data);
+#else
+	mc_saved_in_initrd_p = mc_saved_in_initrd;
+	mc_saved_data_p = &mc_saved_data;
+#endif
+
+	/*
+	 * If there is no valid ucode previously saved in memory, no need to
+	 * update ucode on this AP.
+	 */
+	if (mc_saved_data_p->mc_saved_count == 0)
+		return;
+
+	collect_cpu_info_early(&uci);
+	ret = load_microcode(mc_saved_data_p, mc_saved_in_initrd_p,
+			     get_initrd_start_addr(), &uci);
+
+	if (ret != UCODE_OK)
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	apply_microcode_early(&uci, true);
 }
@@ -922,6 +1032,29 @@ static bool is_blacklisted(unsigned int cpu)
 	return false;
 }
 
+static bool is_blacklisted(unsigned int cpu)
+{
+	struct cpuinfo_x86 *c = &cpu_data(cpu);
+
+	/*
+	 * Late loading on model 79 with microcode revision less than 0x0b000021
+	 * and LLC size per core bigger than 2.5MB may result in a system hang.
+	 * This behavior is documented in item BDF90, #334165 (Intel Xeon
+	 * Processor E7-8800/4800 v4 Product Family).
+	 */
+	if (c->x86 == 6 &&
+	    c->x86_model == 79 &&
+	    c->x86_mask == 0x01 &&
+	    llc_size_per_core > 2621440 &&
+	    c->microcode < 0x0b000021) {
+		pr_err_once("Erratum BDF90: late loading with revision < 0x0b000021 (0x%x) disabled.\n", c->microcode);
+		pr_err_once("Please consider either early loading through initrd/built-in or a potential BIOS update.\n");
+		return true;
+	}
+
+	return false;
+}
+
 static enum ucode_state request_microcode_fw(int cpu, struct device *device,
 					     bool refresh_fw)
 {
@@ -931,6 +1064,9 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device,
 	enum ucode_state ret;
 	struct kvec kvec;
 	char name[30];
+
+	if (is_blacklisted(cpu))
+		return UCODE_NFOUND;
 
 	if (is_blacklisted(cpu))
 		return UCODE_NFOUND;
@@ -956,8 +1092,16 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device,
 static enum ucode_state
 request_microcode_user(int cpu, const void __user *buf, size_t size)
 {
+<<<<<<< HEAD
 	struct iov_iter iter;
 	struct iovec iov;
+=======
+	if (is_blacklisted(cpu))
+		return UCODE_NFOUND;
+
+	return generic_load_microcode(cpu, (void *)buf, size, &get_ucode_user);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (is_blacklisted(cpu))
 		return UCODE_NFOUND;

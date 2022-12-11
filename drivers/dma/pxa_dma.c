@@ -620,15 +620,24 @@ static irqreturn_t pxad_chan_handler(int irq, void *dev_id)
 	list_for_each_entry_safe(vd, tmp, &chan->vc.desc_issued, node) {
 		vd_completed = is_desc_completed(vd);
 		dev_dbg(&chan->vc.chan.dev->device,
+<<<<<<< HEAD
 			"%s(): checking txd %p[%x]: completed=%d dcsr=0x%x\n",
 			__func__, vd, vd->tx.cookie, vd_completed,
 			dcsr);
 		last_started = vd->tx.cookie;
+=======
+			"%s(): checking txd %p[%x]: completed=%d\n",
+			__func__, vd, vd->tx.cookie, is_desc_completed(vd));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (to_pxad_sw_desc(vd)->cyclic) {
 			vchan_cyclic_callback(vd);
 			break;
 		}
+<<<<<<< HEAD
 		if (vd_completed) {
+=======
+		if (is_desc_completed(vd)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			list_del(&vd->node);
 			vchan_cookie_complete(vd);
 		} else {
@@ -1356,7 +1365,11 @@ static int pxad_probe(struct platform_device *op)
 	const struct dma_slave_map *slave_map = NULL;
 	struct mmp_dma_platdata *pdata = dev_get_platdata(&op->dev);
 	struct resource *iores;
+<<<<<<< HEAD
 	int ret, dma_channels = 0, nb_requestors = 0, slave_map_cnt = 0;
+=======
+	int ret, dma_channels = 0, nb_requestors = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	const enum dma_slave_buswidth widths =
 		DMA_SLAVE_BUSWIDTH_1_BYTE   | DMA_SLAVE_BUSWIDTH_2_BYTES |
 		DMA_SLAVE_BUSWIDTH_4_BYTES;
@@ -1383,12 +1396,19 @@ static int pxad_probe(struct platform_device *op)
 				 "#dma-requests set to default 32 as missing in OF: %d",
 				 ret);
 			nb_requestors = 32;
+<<<<<<< HEAD
 		}
 	} else if (pdata && pdata->dma_channels) {
 		dma_channels = pdata->dma_channels;
 		nb_requestors = pdata->nb_requestors;
 		slave_map = pdata->slave_map;
 		slave_map_cnt = pdata->slave_map_cnt;
+=======
+		};
+	} else if (pdata && pdata->dma_channels) {
+		dma_channels = pdata->dma_channels;
+		nb_requestors = pdata->nb_requestors;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		dma_channels = 32;	/* default 32 channel */
 	}

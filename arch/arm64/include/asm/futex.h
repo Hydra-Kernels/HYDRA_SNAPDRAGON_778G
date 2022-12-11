@@ -43,10 +43,16 @@ do {									\
 } while (0)
 
 static inline int
+<<<<<<< HEAD
 arch_futex_atomic_op_inuser(int op, int oparg, int *oval, u32 __user *_uaddr)
 {
 	int oldval = 0, ret, tmp;
 	u32 __user *uaddr = __uaccess_mask_ptr(_uaddr);
+=======
+arch_futex_atomic_op_inuser(int op, int oparg, int *oval, u32 __user *uaddr)
+{
+	int oldval = 0, ret, tmp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pagefault_disable();
 
@@ -98,6 +104,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *_uaddr,
 	uaddr = __uaccess_mask_ptr(_uaddr);
 	uaccess_enable();
 	asm volatile("// futex_atomic_cmpxchg_inatomic\n"
+ALTERNATIVE("nop", SET_PSTATE_PAN(0), ARM64_HAS_PAN, CONFIG_ARM64_PAN)
 "	prfm	pstl1strm, %2\n"
 "1:	ldxr	%w1, %2\n"
 "	sub	%w3, %w1, %w5\n"
@@ -114,10 +121,20 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *_uaddr,
 "5:	mov	%w0, %w7\n"
 "	b	4b\n"
 "	.popsection\n"
+<<<<<<< HEAD
 	_ASM_EXTABLE(1b, 5b)
 	_ASM_EXTABLE(2b, 5b)
 	: "+r" (ret), "=&r" (val), "+Q" (*uaddr), "=&r" (tmp), "+r" (loops)
 	: "r" (oldval), "r" (newval), "Ir" (-EFAULT), "Ir" (-EAGAIN)
+=======
+"	.pushsection __ex_table,\"a\"\n"
+"	.align	3\n"
+"	.quad	1b, 4b, 2b, 4b\n"
+"	.popsection\n"
+ALTERNATIVE("nop", SET_PSTATE_PAN(1), ARM64_HAS_PAN, CONFIG_ARM64_PAN)
+	: "+r" (ret), "=&r" (val), "+Q" (*uaddr), "=&r" (tmp)
+	: "r" (oldval), "r" (newval), "Ir" (-EFAULT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	: "memory");
 	uaccess_disable();
 

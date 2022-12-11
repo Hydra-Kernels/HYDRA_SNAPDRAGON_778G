@@ -1360,6 +1360,7 @@ static int __init pnv_init_idle_states(void)
 		return rc;
 	pnv_probe_idle_states();
 
+<<<<<<< HEAD
 	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
 		if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
 			power7_fastsleep_workaround_entry = false;
@@ -1372,6 +1373,47 @@ static int __init pnv_init_idle_states(void)
 			 * applied.
 			 */
 			device_create_file(cpu_subsys.dev_root,
+=======
+	if (!firmware_has_feature(FW_FEATURE_OPAL))
+		goto out;
+
+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+	if (!power_mgt) {
+		pr_warn("opal: PowerMgmt Node not found\n");
+		goto out;
+	}
+	dt_idle_states = of_property_count_u32_elems(power_mgt,
+			"ibm,cpu-idle-state-flags");
+	if (dt_idle_states < 0) {
+		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
+		goto out;
+	}
+
+	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
+	if (of_property_read_u32_array(power_mgt,
+			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
+		goto out_free;
+	}
+
+	for (i = 0; i < dt_idle_states; i++)
+		supported_cpuidle_states |= flags[i];
+
+	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+		patch_instruction(
+			(unsigned int *)pnv_fastsleep_workaround_at_entry,
+			PPC_INST_NOP);
+		patch_instruction(
+			(unsigned int *)pnv_fastsleep_workaround_at_exit,
+			PPC_INST_NOP);
+	} else {
+		/*
+		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
+		 * workaround is needed to use fastsleep. Provide sysfs
+		 * control to choose how this workaround has to be applied.
+		 */
+		device_create_file(cpu_subsys.dev_root,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				&dev_attr_fastsleep_workaround_applyonce);
 		}
 

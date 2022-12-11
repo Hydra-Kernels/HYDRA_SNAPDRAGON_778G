@@ -23,6 +23,7 @@
 #include <asm/highmem.h>
 #endif
 
+<<<<<<< HEAD
 /*
  * Regarding 32-bit MIPS huge page support (and the tradeoff it entails):
  *
@@ -41,6 +42,8 @@
  *       (i.e. EVA, XPA, 36-bit Alchemy/Netlogic).
  */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern int temp_tlb_entry;
 
 /*

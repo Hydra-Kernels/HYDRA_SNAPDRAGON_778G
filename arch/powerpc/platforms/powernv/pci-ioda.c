@@ -2609,9 +2609,40 @@ static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb);
 
 static void pnv_pci_ioda_setup_iommu_api(void)
 {
+<<<<<<< HEAD
 	struct pci_controller *hose;
 	struct pnv_phb *phb;
 	struct pnv_ioda_pe *pe;
+=======
+	void *addr;
+	unsigned long offset = 0, level_shift, total_allocated = 0;
+	const unsigned window_shift = ilog2(window_size);
+	unsigned entries_shift = window_shift - page_shift;
+	unsigned table_shift = max_t(unsigned, entries_shift + 3, PAGE_SHIFT);
+	const unsigned long tce_table_size = 1UL << table_shift;
+
+	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+		return -EINVAL;
+
+	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
+		return -EINVAL;
+
+	/* Adjust direct table size from window_size and levels */
+	entries_shift = (entries_shift + levels - 1) / levels;
+	level_shift = entries_shift + 3;
+	level_shift = max_t(unsigned, level_shift, PAGE_SHIFT);
+
+	if ((level_shift - 3) * levels + page_shift >= 60)
+		return -EINVAL;
+
+	/* Allocate TCE table */
+	addr = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
+			levels, tce_table_size, &offset, &total_allocated);
+
+	/* addr==NULL means that the first level allocation failed */
+	if (!addr)
+		return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * There are 4 types of PEs:
@@ -3627,6 +3658,7 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
 }
 
 static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+<<<<<<< HEAD
 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
 	.iommu_bypass_supported	= pnv_pci_ioda_iommu_bypass_supported,
@@ -3656,6 +3688,20 @@ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
 	.window_alignment	= pnv_pci_window_alignment,
 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
 	.shutdown		= pnv_pci_ioda_shutdown,
+=======
+       .dma_dev_setup = pnv_pci_dma_dev_setup,
+       .dma_bus_setup = pnv_pci_dma_bus_setup,
+#ifdef CONFIG_PCI_MSI
+       .setup_msi_irqs = pnv_setup_msi_irqs,
+       .teardown_msi_irqs = pnv_teardown_msi_irqs,
+#endif
+       .enable_device_hook = pnv_pci_enable_device_hook,
+       .window_alignment = pnv_pci_window_alignment,
+       .reset_secondary_bus = pnv_pci_reset_secondary_bus,
+       .dma_set_mask = pnv_pci_ioda_dma_set_mask,
+       .dma_get_required_mask = pnv_pci_ioda_dma_get_required_mask,
+       .shutdown = pnv_pci_ioda_shutdown,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static void __init pnv_pci_init_ioda_phb(struct device_node *np,

@@ -23,6 +23,15 @@
 
 /*
  * Timeout for services such as KVP and fcopy.
+<<<<<<< HEAD
+=======
+ */
+#define HV_UTIL_TIMEOUT 30
+
+/*
+ * The below CPUID leaves are present if VersionAndFeatures.HypervisorPresent
+ * is set by CPUID(HVCPUID_VERSION_FEATURES).
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 #define HV_UTIL_TIMEOUT 30
 
@@ -161,6 +170,11 @@ extern struct hv_context hv_context;
 
 extern int hv_init(void);
 
+<<<<<<< HEAD
+=======
+extern void hv_cleanup(bool crash);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern int hv_post_message(union hv_connection_id connection_id,
 			 enum hv_message_type message_type,
 			 void *payload, size_t payload_size);
@@ -370,10 +384,13 @@ static inline void hv_poll_channel(struct vmbus_channel *channel,
 	if (!channel)
 		return;
 
+<<<<<<< HEAD
 	if (in_interrupt() && (channel->target_cpu == smp_processor_id())) {
 		cb(channel);
 		return;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	smp_call_function_single(channel->target_cpu, cb, channel, true);
 }
 

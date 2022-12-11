@@ -221,6 +221,7 @@ struct l2tp_session *l2tp_tunnel_get_session(struct l2tp_tunnel *tunnel,
 }
 EXPORT_SYMBOL_GPL(l2tp_tunnel_get_session);
 
+<<<<<<< HEAD
 struct l2tp_session *l2tp_session_get(const struct net *net, u32 session_id)
 {
 	struct hlist_head *session_list;
@@ -243,6 +244,10 @@ struct l2tp_session *l2tp_session_get(const struct net *net, u32 session_id)
 EXPORT_SYMBOL_GPL(l2tp_session_get);
 
 struct l2tp_session *l2tp_session_get_nth(struct l2tp_tunnel *tunnel, int nth)
+=======
+struct l2tp_session *l2tp_session_get_nth(struct l2tp_tunnel *tunnel, int nth,
+					  bool do_ref)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int hash;
 	struct l2tp_session *session;
@@ -253,6 +258,11 @@ struct l2tp_session *l2tp_session_get_nth(struct l2tp_tunnel *tunnel, int nth)
 		hlist_for_each_entry(session, &tunnel->session_hlist[hash], hlist) {
 			if (++count > nth) {
 				l2tp_session_inc_refcount(session);
+<<<<<<< HEAD
+=======
+				if (do_ref && session->ref)
+					session->ref(session);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				read_unlock_bh(&tunnel->hlist_lock);
 				return session;
 			}
@@ -1251,7 +1261,17 @@ static void l2tp_tunnel_del_work(struct work_struct *work)
 	struct socket *sock = sk->sk_socket;
 	struct l2tp_net *pn;
 
+<<<<<<< HEAD
 	l2tp_tunnel_closeall(tunnel);
+=======
+	tunnel = container_of(work, struct l2tp_tunnel, del_work);
+
+	l2tp_tunnel_closeall(tunnel);
+
+	sk = l2tp_tunnel_sock_lookup(tunnel);
+	if (!sk)
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* If the tunnel socket was created within the kernel, use
 	 * the sk API to release it here.
@@ -1410,6 +1430,41 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32 
 	if (cfg != NULL)
 		encap = cfg->encap;
 
+<<<<<<< HEAD
+=======
+	/* Quick sanity checks */
+	err = -EPROTONOSUPPORT;
+	if (sk->sk_type != SOCK_DGRAM) {
+		pr_debug("tunl %hu: fd %d wrong socket type\n",
+			 tunnel_id, fd);
+		goto err;
+	}
+	switch (encap) {
+	case L2TP_ENCAPTYPE_UDP:
+		if (sk->sk_protocol != IPPROTO_UDP) {
+			pr_err("tunl %hu: fd %d wrong protocol, got %d, expected %d\n",
+			       tunnel_id, fd, sk->sk_protocol, IPPROTO_UDP);
+			goto err;
+		}
+		break;
+	case L2TP_ENCAPTYPE_IP:
+		if (sk->sk_protocol != IPPROTO_L2TP) {
+			pr_err("tunl %hu: fd %d wrong protocol, got %d, expected %d\n",
+			       tunnel_id, fd, sk->sk_protocol, IPPROTO_L2TP);
+			goto err;
+		}
+		break;
+	}
+
+	/* Check if this socket has already been prepped */
+	tunnel = l2tp_tunnel(sk);
+	if (tunnel != NULL) {
+		/* This socket has already been prepped */
+		err = -EBUSY;
+		goto err;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tunnel = kzalloc(sizeof(struct l2tp_tunnel), GFP_KERNEL);
 	if (tunnel == NULL) {
 		err = -ENOMEM;
@@ -1430,6 +1485,11 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32 
 		tunnel->debug = cfg->debug;
 
 	tunnel->encap = encap;
+<<<<<<< HEAD
+=======
+	if (encap == L2TP_ENCAPTYPE_UDP) {
+		struct udp_tunnel_sock_cfg udp_cfg = { };
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	refcount_set(&tunnel->ref_count, 1);
 	tunnel->fd = fd;

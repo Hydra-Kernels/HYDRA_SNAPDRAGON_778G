@@ -145,6 +145,7 @@ static inline bool is_key_possessed(const key_ref_t key_ref)
 	return (unsigned long) key_ref & 1UL;
 }
 
+<<<<<<< HEAD
 typedef int (*key_restrict_link_func_t)(struct key *dest_keyring,
 					const struct key_type *type,
 					const union key_payload *payload,
@@ -156,6 +157,8 @@ struct key_restriction {
 	struct key_type *keytype;
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 enum key_state {
 	KEY_IS_UNINSTANTIATED,
 	KEY_IS_POSITIVE,		/* Positively instantiated */
@@ -206,10 +209,18 @@ struct key {
 #define KEY_FLAG_USER_CONSTRUCT	3	/* set if key is being constructed in userspace */
 #define KEY_FLAG_ROOT_CAN_CLEAR	4	/* set if key can be cleared by root without permission */
 #define KEY_FLAG_INVALIDATED	5	/* set if key has been invalidated */
+<<<<<<< HEAD
 #define KEY_FLAG_BUILTIN	6	/* set if key is built in to the kernel */
 #define KEY_FLAG_ROOT_CAN_INVAL	7	/* set if key can be invalidated by root without permission */
 #define KEY_FLAG_KEEP		8	/* set if key should not be removed */
 #define KEY_FLAG_UID_KEYRING	9	/* set if key is a user or user session keyring */
+=======
+#define KEY_FLAG_TRUSTED	6	/* set if key is trusted */
+#define KEY_FLAG_TRUSTED_ONLY	7	/* set if keyring only accepts links to trusted keys */
+#define KEY_FLAG_BUILTIN	8	/* set if key is builtin */
+#define KEY_FLAG_ROOT_CAN_INVAL	9	/* set if key can be invalidated by root without permission */
+#define KEY_FLAG_UID_KEYRING	10	/* set if key is a user or user session keyring */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* the key type and key description string
 	 * - the desc is used to match a key against search criteria
@@ -263,6 +274,7 @@ extern struct key *key_alloc(struct key_type *type,
 			     struct key_restriction *restrict_link);
 
 
+<<<<<<< HEAD
 #define KEY_ALLOC_IN_QUOTA		0x0000	/* add to quota, reject if would overrun */
 #define KEY_ALLOC_QUOTA_OVERRUN		0x0001	/* add to quota, permit even if overrun */
 #define KEY_ALLOC_NOT_IN_QUOTA		0x0002	/* not in quota */
@@ -270,6 +282,13 @@ extern struct key *key_alloc(struct key_type *type,
 #define KEY_ALLOC_BYPASS_RESTRICTION	0x0008	/* Override the check on restricted keyrings */
 #define KEY_ALLOC_UID_KEYRING		0x0010	/* allocating a user or user session keyring */
 #define KEY_ALLOC_SET_KEEP		0x0020	/* Set the KEEP flag on the key/keyring */
+=======
+#define KEY_ALLOC_IN_QUOTA	0x0000	/* add to quota, reject if would overrun */
+#define KEY_ALLOC_QUOTA_OVERRUN	0x0001	/* add to quota, permit even if overrun */
+#define KEY_ALLOC_NOT_IN_QUOTA	0x0002	/* not in quota */
+#define KEY_ALLOC_TRUSTED	0x0004	/* Key should be flagged as trusted */
+#define KEY_ALLOC_UID_KEYRING	0x0010	/* allocating a user or user session keyring */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern void key_revoke(struct key *key);
 extern void key_invalidate(struct key *key);
@@ -448,6 +467,14 @@ static inline short key_read_state(const struct key *key)
 static inline bool key_is_positive(const struct key *key)
 {
 	return key_read_state(key) == KEY_IS_POSITIVE;
+<<<<<<< HEAD
+=======
+}
+
+static inline bool key_is_negative(const struct key *key)
+{
+	return key_read_state(key) < 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline bool key_is_negative(const struct key *key)

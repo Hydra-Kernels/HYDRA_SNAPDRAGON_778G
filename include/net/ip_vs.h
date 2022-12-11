@@ -1624,21 +1624,35 @@ static inline void ip_vs_conn_drop_conntrack(struct ip_vs_conn *cp)
 }
 #endif /* CONFIG_IP_VS_NFCT */
 
+<<<<<<< HEAD
 /* Using old conntrack that can not be redirected to another real server? */
 static inline bool ip_vs_conn_uses_old_conntrack(struct ip_vs_conn *cp,
 						 struct sk_buff *skb)
+=======
+/* Really using conntrack? */
+static inline bool ip_vs_conn_uses_conntrack(struct ip_vs_conn *cp,
+					     struct sk_buff *skb)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 #ifdef CONFIG_IP_VS_NFCT
 	enum ip_conntrack_info ctinfo;
 	struct nf_conn *ct;
 
+<<<<<<< HEAD
 	ct = nf_ct_get(skb, &ctinfo);
 	if (ct && nf_ct_is_confirmed(ct))
+=======
+	if (!(cp->flags & IP_VS_CONN_F_NFCT))
+		return false;
+	ct = nf_ct_get(skb, &ctinfo);
+	if (ct && !nf_ct_is_untracked(ct))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return true;
 #endif
 	return false;
 }
 
+<<<<<<< HEAD
 static inline int ip_vs_register_conntrack(struct ip_vs_service *svc)
 {
 #if IS_ENABLED(CONFIG_NF_CONNTRACK)
@@ -1668,6 +1682,8 @@ static inline void ip_vs_unregister_conntrack(struct ip_vs_service *svc)
 #endif
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline int
 ip_vs_dest_conn_overhead(struct ip_vs_dest *dest)
 {

@@ -157,6 +157,7 @@ fetch_store_string(unsigned long addr, void *dest, void *base)
 	if (unlikely(!maxlen))
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (addr == FETCH_TOKEN_COMM)
 		ret = strlcpy(dst, current->comm, maxlen);
 	else
@@ -172,6 +173,17 @@ fetch_store_string(unsigned long addr, void *dest, void *base)
 			 */
 			ret++;
 		*(u32 *)dest = make_data_loc(ret, (void *)dst - base);
+=======
+	ret = strncpy_from_user(dst, src, maxlen);
+	if (ret == maxlen)
+		dst[--ret] = '\0';
+
+	if (ret < 0) {	/* Failed to fetch string */
+		((u8 *)get_rloc_data(dest))[0] = '\0';
+		*(u32 *)dest = make_data_rloc(0, get_rloc_offs(rloc));
+	} else {
+		*(u32 *)dest = make_data_rloc(ret, get_rloc_offs(rloc));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return ret;

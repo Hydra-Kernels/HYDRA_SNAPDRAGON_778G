@@ -1015,6 +1015,7 @@ static void wait_read_barrier(struct r1conf *conf, sector_t sector_nr)
 		return;
 
 	spin_lock_irq(&conf->resync_lock);
+<<<<<<< HEAD
 	atomic_inc(&conf->nr_waiting[idx]);
 	atomic_dec(&conf->nr_pending[idx]);
 	/*
@@ -1028,6 +1029,48 @@ static void wait_read_barrier(struct r1conf *conf, sector_t sector_nr)
 			    conf->resync_lock);
 	atomic_inc(&conf->nr_pending[idx]);
 	atomic_dec(&conf->nr_waiting[idx]);
+=======
+	if (need_to_wait_for_sync(conf, bio)) {
+		conf->nr_waiting++;
+		/* Wait for the barrier to drop.
+		 * However if there are already pending
+		 * requests (preventing the barrier from
+		 * rising completely), and the
+		 * per-process bio queue isn't empty,
+		 * then don't wait, as we need to empty
+		 * that queue to allow conf->start_next_window
+		 * to increase.
+		 */
+		wait_event_lock_irq(conf->wait_barrier,
+				    !conf->array_frozen &&
+				    (!conf->barrier ||
+				     ((conf->start_next_window <
+				       conf->next_resync + RESYNC_SECTORS) &&
+				      current->bio_list &&
+				     (!bio_list_empty(&current->bio_list[0]) ||
+				      !bio_list_empty(&current->bio_list[1])))),
+				    conf->resync_lock);
+		conf->nr_waiting--;
+	}
+
+	if (bio && bio_data_dir(bio) == WRITE) {
+		if (bio->bi_iter.bi_sector >= conf->next_resync) {
+			if (conf->start_next_window == MaxSector)
+				conf->start_next_window =
+					conf->next_resync +
+					NEXT_NORMALIO_DISTANCE;
+
+			if ((conf->start_next_window + NEXT_NORMALIO_DISTANCE)
+			    <= bio->bi_iter.bi_sector)
+				conf->next_window_requests++;
+			else
+				conf->current_window_requests++;
+			sector = conf->start_next_window;
+		}
+	}
+
+	conf->nr_pending++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock_irq(&conf->resync_lock);
 }
 
@@ -1343,13 +1386,20 @@ static void raid1_write_request(struct mddev *mddev, struct bio *bio,
 
 		DEFINE_WAIT(w);
 		for (;;) {
+<<<<<<< HEAD
+=======
+			sigset_t full, old;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			prepare_to_wait(&conf->wait_barrier,
 					&w, TASK_IDLE);
 			if (!md_cluster_ops->area_resyncing(mddev, WRITE,
 							bio->bi_iter.bi_sector,
 							bio_end_sector(bio)))
 				break;
+			sigfillset(&full);
+			sigprocmask(SIG_BLOCK, &full, &old);
 			schedule();
+			sigprocmask(SIG_SETMASK, &old, NULL);
 		}
 		finish_wait(&conf->wait_barrier, &w);
 	}
@@ -2460,8 +2510,12 @@ static void handle_write_finished(struct r1conf *conf, struct r1bio *r1_bio)
 	if (fail) {
 		spin_lock_irq(&conf->device_lock);
 		list_add(&r1_bio->retry_list, &conf->bio_end_io_list);
+<<<<<<< HEAD
 		idx = sector_to_idx(r1_bio->sector);
 		atomic_inc(&conf->nr_queued[idx]);
+=======
+		conf->nr_queued++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock_irq(&conf->device_lock);
 		/*
 		 * In case freeze_array() is waiting for condition
@@ -2534,8 +2588,17 @@ static void raid1d(struct md_thread *thread)
 	    !test_bit(MD_SB_CHANGE_PENDING, &mddev->sb_flags)) {
 		LIST_HEAD(tmp);
 		spin_lock_irqsave(&conf->device_lock, flags);
+<<<<<<< HEAD
 		if (!test_bit(MD_SB_CHANGE_PENDING, &mddev->sb_flags))
 			list_splice_init(&conf->bio_end_io_list, &tmp);
+=======
+		if (!test_bit(MD_CHANGE_PENDING, &mddev->flags)) {
+			while (!list_empty(&conf->bio_end_io_list)) {
+				list_move(conf->bio_end_io_list.prev, &tmp);
+				conf->nr_queued--;
+			}
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock_irqrestore(&conf->device_lock, flags);
 		while (!list_empty(&tmp)) {
 			r1_bio = list_first_entry(&tmp, struct r1bio,

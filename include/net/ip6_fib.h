@@ -79,6 +79,7 @@ struct fib6_node {
 	__u16			fn_bit;		/* bit key */
 	__u16			fn_flags;
 	int			fn_sernum;
+<<<<<<< HEAD
 	struct fib6_info __rcu	*rr_ptr;
 	struct rcu_head		rcu;
 };
@@ -86,6 +87,10 @@ struct fib6_node {
 struct fib6_gc_args {
 	int			timeout;
 	int			more;
+=======
+	struct rt6_info		*rr_ptr;
+	struct rcu_head		rcu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #ifndef CONFIG_IPV6_SUBTREES
@@ -111,12 +116,22 @@ struct rt6_exception_bucket {
 	int			depth;
 };
 
+<<<<<<< HEAD
 struct rt6_exception {
 	struct hlist_node	hlist;
 	struct rt6_info		*rt6i;
 	unsigned long		stamp;
 	struct rcu_head		rcu;
 };
+=======
+	/*
+	 * Tail elements of dst_entry (__refcnt etc.)
+	 * and these elements (rarely used in hot path) are in
+	 * the same cache line.
+	 */
+	struct fib6_table		*rt6i_table;
+	struct fib6_node __rcu		*rt6i_node;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define FIB6_EXCEPTION_BUCKET_SIZE_SHIFT 10
 #define FIB6_EXCEPTION_BUCKET_SIZE (1 << FIB6_EXCEPTION_BUCKET_SIZE_SHIFT)
@@ -256,8 +271,32 @@ static inline bool fib6_get_cookie_safe(const struct fib6_info *f6i,
 	return status;
 }
 
+/* Function to safely get fn->sernum for passed in rt
+ * and store result in passed in cookie.
+ * Return true if we can get cookie safely
+ * Return false if not
+ */
+static inline bool rt6_get_cookie_safe(const struct rt6_info *rt,
+				       u32 *cookie)
+{
+	struct fib6_node *fn;
+	bool status = false;
+
+	rcu_read_lock();
+	fn = rcu_dereference(rt->rt6i_node);
+
+	if (fn) {
+		*cookie = fn->fn_sernum;
+		status = true;
+	}
+
+	rcu_read_unlock();
+	return status;
+}
+
 static inline u32 rt6_get_cookie(const struct rt6_info *rt)
 {
+<<<<<<< HEAD
 	struct fib6_info *from;
 	u32 cookie = 0;
 
@@ -271,6 +310,15 @@ static inline u32 rt6_get_cookie(const struct rt6_info *rt)
 		fib6_get_cookie_safe(from, &cookie);
 
 	rcu_read_unlock();
+=======
+	u32 cookie = 0;
+
+	if (rt->rt6i_flags & RTF_PCPU ||
+	    (unlikely(rt->dst.flags & DST_NOCACHE) && rt->dst.from))
+		rt = (struct rt6_info *)(rt->dst.from);
+
+	rt6_get_cookie_safe(rt, &cookie);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return cookie;
 }

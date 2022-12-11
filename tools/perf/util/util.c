@@ -228,8 +228,155 @@ struct strlist *lsdir(const char *name,
 	}
 
 out:
+<<<<<<< HEAD
 	closedir(dir);
 	return list;
+=======
+	return err;
+}
+
+int copyfile_offset(int ifd, loff_t off_in, int ofd, loff_t off_out, u64 size)
+{
+	void *ptr;
+	loff_t pgoff;
+
+	pgoff = off_in & ~(page_size - 1);
+	off_in -= pgoff;
+
+	ptr = mmap(NULL, off_in + size, PROT_READ, MAP_PRIVATE, ifd, pgoff);
+	if (ptr == MAP_FAILED)
+		return -1;
+
+	while (size) {
+		ssize_t ret = pwrite(ofd, ptr + off_in, size, off_out);
+		if (ret < 0 && errno == EINTR)
+			continue;
+		if (ret <= 0)
+			break;
+
+		size -= ret;
+		off_in += ret;
+		off_out += ret;
+	}
+	munmap(ptr, off_in + size);
+
+	return size ? -1 : 0;
+}
+
+int copyfile_mode(const char *from, const char *to, mode_t mode)
+{
+	int fromfd, tofd;
+	struct stat st;
+	int err = -1;
+	char *tmp = NULL, *ptr = NULL;
+
+	if (stat(from, &st))
+		goto out;
+
+	/* extra 'x' at the end is to reserve space for '.' */
+	if (asprintf(&tmp, "%s.XXXXXXx", to) < 0) {
+		tmp = NULL;
+		goto out;
+	}
+	ptr = strrchr(tmp, '/');
+	if (!ptr)
+		goto out;
+	ptr = memmove(ptr + 1, ptr, strlen(ptr) - 1);
+	*ptr = '.';
+
+	tofd = mkstemp(tmp);
+	if (tofd < 0)
+		goto out;
+
+	if (fchmod(tofd, mode))
+		goto out_close_to;
+
+	if (st.st_size == 0) { /* /proc? do it slowly... */
+		err = slow_copyfile(from, tmp);
+		goto out_close_to;
+	}
+
+	fromfd = open(from, O_RDONLY);
+	if (fromfd < 0)
+		goto out_close_to;
+
+	err = copyfile_offset(fromfd, 0, tofd, 0, st.st_size);
+
+	close(fromfd);
+out_close_to:
+	close(tofd);
+	if (!err)
+		err = link(tmp, to);
+	unlink(tmp);
+out:
+	free(tmp);
+	return err;
+}
+
+int copyfile(const char *from, const char *to)
+{
+	return copyfile_mode(from, to, 0755);
+}
+
+unsigned long convert_unit(unsigned long value, char *unit)
+{
+	*unit = ' ';
+
+	if (value > 1000) {
+		value /= 1000;
+		*unit = 'K';
+	}
+
+	if (value > 1000) {
+		value /= 1000;
+		*unit = 'M';
+	}
+
+	if (value > 1000) {
+		value /= 1000;
+		*unit = 'G';
+	}
+
+	return value;
+}
+
+static ssize_t ion(bool is_read, int fd, void *buf, size_t n)
+{
+	void *buf_start = buf;
+	size_t left = n;
+
+	while (left) {
+		ssize_t ret = is_read ? read(fd, buf, left) :
+					write(fd, buf, left);
+
+		if (ret < 0 && errno == EINTR)
+			continue;
+		if (ret <= 0)
+			return ret;
+
+		left -= ret;
+		buf  += ret;
+	}
+
+	BUG_ON((size_t)(buf - buf_start) != n);
+	return n;
+}
+
+/*
+ * Read exactly 'n' bytes or return an error.
+ */
+ssize_t readn(int fd, void *buf, size_t n)
+{
+	return ion(true, fd, buf, n);
+}
+
+/*
+ * Write exactly 'n' bytes or return an error.
+ */
+ssize_t writen(int fd, void *buf, size_t n)
+{
+	return ion(false, fd, buf, n);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 size_t hex_width(u64 v)

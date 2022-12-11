@@ -304,7 +304,11 @@ static void rpc_set_active(struct rpc_task *task)
 {
 	rpc_task_set_debuginfo(task);
 	set_bit(RPC_TASK_ACTIVE, &task->tk_runstate);
+<<<<<<< HEAD
 	trace_rpc_task_begin(task, NULL);
+=======
+	trace_rpc_task_begin(task->tk_client, task, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

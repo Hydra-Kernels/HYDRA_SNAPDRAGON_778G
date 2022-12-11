@@ -196,6 +196,10 @@ static int __init vdso_init(void)
 	}
 
 	text_pages = (vdso_end - vdso_start) >> PAGE_SHIFT;
+<<<<<<< HEAD
+=======
+	pr_debug("vdso: %i text pages at base %p\n", text_pages, vdso_start);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Allocate the VDSO text pagelist */
 	vdso_text_pagelist = kcalloc(text_pages, sizeof(struct page *),

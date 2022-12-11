@@ -440,9 +440,15 @@ for (pos.v = chunk->member;\
 _sctp_walk_errors((err), (chunk_hdr), ntohs((chunk_hdr)->length))
 
 #define _sctp_walk_errors(err, chunk_hdr, end)\
+<<<<<<< HEAD
 for (err = (struct sctp_errhdr *)((void *)chunk_hdr + \
 	    sizeof(struct sctp_chunkhdr));\
      ((void *)err + offsetof(struct sctp_errhdr, length) + sizeof(err->length) <=\
+=======
+for (err = (sctp_errhdr_t *)((void *)chunk_hdr + \
+	    sizeof(sctp_chunkhdr_t));\
+     ((void *)err + offsetof(sctp_errhdr_t, length) + sizeof(err->length) <=\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
       (void *)chunk_hdr + end) &&\
      (void *)err <= (void *)chunk_hdr + end - ntohs(err->length) &&\
      ntohs(err->length) >= sizeof(struct sctp_errhdr); \

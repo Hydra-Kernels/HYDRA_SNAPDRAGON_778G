@@ -1914,8 +1914,17 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
 
 	mode->type |= DRM_MODE_TYPE_USERDEF;
 	/* fix up 1368x768: GFT/CVT can't express 1366 width due to alignment */
+<<<<<<< HEAD
 	if (cmd->xres == 1366)
 		drm_mode_fixup_1366x768(mode);
+=======
+	if (cmd->xres == 1366 && mode->hdisplay == 1368) {
+		mode->hdisplay = 1366;
+		mode->hsync_start--;
+		mode->hsync_end--;
+		drm_mode_set_name(mode);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
 	return mode;
 }
@@ -2053,6 +2062,11 @@ int drm_mode_convert_umode(struct drm_device *dev,
 		return -EINVAL;
 
 	drm_mode_set_crtcinfo(out, CRTC_INTERLACE_HALVE_V);
+<<<<<<< HEAD
+=======
+
+	ret = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

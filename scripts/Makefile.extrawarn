@@ -17,10 +17,22 @@ endif
 
 export KBUILD_EXTRA_WARN
 
+<<<<<<< HEAD
 #
 # W=1 - warnings which may be relevant and do not occur too often
 #
 ifneq ($(findstring 1, $(KBUILD_EXTRA_WARN)),)
+=======
+warning-1 := -Wextra -Wunused -Wno-unused-parameter
+warning-1 += -Wmissing-declarations
+warning-1 += -Wmissing-format-attribute
+warning-1 += $(call cc-option, -Wmissing-prototypes)
+warning-1 += -Wold-style-definition
+warning-1 += $(call cc-option, -Wmissing-include-dirs)
+warning-1 += $(call cc-option, -Wunused-but-set-variable)
+warning-1 += $(call cc-option, -Wunused-const-variable)
+warning-1 += $(call cc-disable-warning, missing-field-initializers)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 KBUILD_CFLAGS += -Wextra -Wunused -Wno-unused-parameter
 KBUILD_CFLAGS += -Wmissing-declarations

@@ -806,6 +806,14 @@ static int au0828_stream_interrupt(struct au0828_dev *dev)
 	dev->stream_state = STREAM_INTERRUPT;
 	if (test_bit(DEV_DISCONNECTED, &dev->dev_state))
 		return -ENODEV;
+<<<<<<< HEAD
+=======
+	else if (ret) {
+		set_bit(DEV_MISCONFIGURED, &dev->dev_state);
+		dprintk(1, "%s device is misconfigured!\n", __func__);
+		return ret;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -1495,10 +1503,13 @@ static int vidioc_g_tuner(struct file *file, void *priv, struct v4l2_tuner *t)
 	if (t->index != 0)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	ret = v4l_enable_media_source(vfd);
 	if (ret)
 		return ret;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dprintk(1, "%s called std_set %d dev_state %ld\n", __func__,
 		dev->std_set_in_tuner_core, dev->dev_state);
 

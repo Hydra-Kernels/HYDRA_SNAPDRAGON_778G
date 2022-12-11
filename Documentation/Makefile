@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -*- makefile -*-
 # Makefile for Sphinx documentation
 #
@@ -139,3 +140,9 @@ dochelp:
 	@echo  '  configuration. This is e.g. useful to build with nit-picking config.'
 	@echo
 	@echo  '  Default location for the generated documents is Documentation/output'
+=======
+subdir-y := accounting auxdisplay blackfin connector \
+	filesystems filesystems ia64 laptops misc-devices \
+	networking pcmcia prctl ptp spi timers vDSO video4linux \
+	watchdog
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

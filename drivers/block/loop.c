@@ -282,7 +282,11 @@ static int lo_write_bvec(struct file *file, struct bio_vec *bvec, loff_t *ppos)
 	struct iov_iter i;
 	ssize_t bw;
 
+<<<<<<< HEAD
 	iov_iter_bvec(&i, WRITE, bvec, 1, bvec->bv_len);
+=======
+	iov_iter_bvec(&i, ITER_BVEC | WRITE, bvec, 1, bvec->bv_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	file_start_write(file);
 	bw = vfs_iter_write(file, &i, ppos, 0);
@@ -540,6 +544,7 @@ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
 	rq_for_each_bvec(tmp, rq, rq_iter)
 		nr_bvec++;
 
+<<<<<<< HEAD
 	if (rq->bio != rq->biotail) {
 
 		bvec = kmalloc_array(nr_bvec, sizeof(struct bio_vec),
@@ -573,6 +578,17 @@ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
 
 	iov_iter_bvec(&iter, rw, bvec, nr_bvec, blk_rq_bytes(rq));
 	iter.iov_offset = offset;
+=======
+	bvec = __bvec_iter_bvec(bio->bi_io_vec, bio->bi_iter);
+	iov_iter_bvec(&iter, ITER_BVEC | rw, bvec,
+		      bio_segments(bio), blk_rq_bytes(cmd->rq));
+	/*
+	 * This bio may be started from the middle of the 'bvec'
+	 * because of bio splitting, so offset from the bvec must
+	 * be passed to iov iterator
+	 */
+	iter.iov_offset = bio->bi_iter.bi_bvec_done;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	cmd->iocb.ki_pos = pos;
 	cmd->iocb.ki_filp = file;
@@ -649,6 +665,66 @@ static inline void loop_update_dio(struct loop_device *lo)
 			lo->use_dio);
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Do the actual switch; called from the BIO completion routine
+ */
+static void do_loop_switch(struct loop_device *lo, struct switch_request *p)
+{
+	struct file *file = p->file;
+	struct file *old_file = lo->lo_backing_file;
+	struct address_space *mapping;
+
+	/* if no new file, only flush of queued bios requested */
+	if (!file)
+		return;
+
+	mapping = file->f_mapping;
+	mapping_set_gfp_mask(old_file->f_mapping, lo->old_gfp_mask);
+	lo->lo_backing_file = file;
+	lo->lo_blocksize = S_ISBLK(mapping->host->i_mode) ?
+		mapping->host->i_bdev->bd_block_size : PAGE_SIZE;
+	lo->old_gfp_mask = mapping_gfp_mask(mapping);
+	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
+	loop_update_dio(lo);
+}
+
+/*
+ * loop_switch performs the hard work of switching a backing store.
+ * First it needs to flush existing IO, it does this by sending a magic
+ * BIO down the pipe. The completion of this BIO does the actual switch.
+ */
+static int loop_switch(struct loop_device *lo, struct file *file)
+{
+	struct switch_request w;
+
+	w.file = file;
+
+	/* freeze queue and wait for completion of scheduled requests */
+	blk_mq_freeze_queue(lo->lo_queue);
+
+	/* do the switch action */
+	do_loop_switch(lo, &w);
+
+	/* unfreeze */
+	blk_mq_unfreeze_queue(lo->lo_queue);
+
+	return 0;
+}
+
+/*
+ * Helper to flush the IOs in loop, but keeping loop thread running
+ */
+static int loop_flush(struct loop_device *lo)
+{
+	/* loop not yet configured, no running thread, nothing to flush */
+	if (lo->lo_state != Lo_bound)
+		return 0;
+	return loop_switch(lo, NULL);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void loop_reread_partitions(struct loop_device *lo,
 				   struct block_device *bdev)
 {
@@ -680,7 +756,11 @@ static int loop_validate_file(struct file *file, struct block_device *bdev)
 			return -EBADF;
 
 		l = f->f_mapping->host->i_bdev->bd_disk->private_data;
+<<<<<<< HEAD
 		if (l->lo_state != Lo_bound) {
+=======
+		if (l->lo_state == Lo_unbound) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EINVAL;
 		}
 		f = l->lo_backing_file;
@@ -726,6 +806,14 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	if (error)
 		goto out_err;
 
+<<<<<<< HEAD
+=======
+	error = loop_validate_file(file, bdev);
+	if (error)
+		goto out_putf;
+
+	inode = file->f_mapping->host;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	old_file = lo->lo_backing_file;
 
 	error = -EINVAL;
@@ -948,20 +1036,109 @@ static int loop_prepare_queue(struct loop_device *lo)
 
 static void loop_update_rotational(struct loop_device *lo)
 {
+<<<<<<< HEAD
 	struct file *file = lo->lo_backing_file;
 	struct inode *file_inode = file->f_mapping->host;
 	struct block_device *file_bdev = file_inode->i_sb->s_bdev;
 	struct request_queue *q = lo->lo_queue;
 	bool nonrot = true;
+=======
+	struct file	*file;
+	struct inode	*inode;
+	struct address_space *mapping;
+	unsigned lo_blocksize;
+	int		lo_flags = 0;
+	int		error;
+	loff_t		size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* not all filesystems (e.g. tmpfs) have a sb->s_bdev */
 	if (file_bdev)
 		nonrot = blk_queue_nonrot(bdev_get_queue(file_bdev));
 
+<<<<<<< HEAD
 	if (nonrot)
 		blk_queue_flag_set(QUEUE_FLAG_NONROT, q);
 	else
 		blk_queue_flag_clear(QUEUE_FLAG_NONROT, q);
+=======
+	error = -EBADF;
+	file = fget(arg);
+	if (!file)
+		goto out;
+
+	error = -EBUSY;
+	if (lo->lo_state != Lo_unbound)
+		goto out_putf;
+
+	error = loop_validate_file(file, bdev);
+	if (error)
+		goto out_putf;
+
+	mapping = file->f_mapping;
+	inode = mapping->host;
+
+	if (!(file->f_mode & FMODE_WRITE) || !(mode & FMODE_WRITE) ||
+	    !file->f_op->write_iter)
+		lo_flags |= LO_FLAGS_READ_ONLY;
+
+	lo_blocksize = S_ISBLK(inode->i_mode) ?
+		inode->i_bdev->bd_block_size : PAGE_SIZE;
+
+	error = -EFBIG;
+	size = get_loop_size(lo, file);
+	if ((loff_t)(sector_t)size != size)
+		goto out_putf;
+	error = loop_prepare_queue(lo);
+	if (error)
+		goto out_putf;
+
+	error = 0;
+
+	set_device_ro(bdev, (lo_flags & LO_FLAGS_READ_ONLY) != 0);
+
+	lo->use_dio = false;
+	lo->lo_blocksize = lo_blocksize;
+	lo->lo_device = bdev;
+	lo->lo_flags = lo_flags;
+	lo->lo_backing_file = file;
+	lo->transfer = NULL;
+	lo->ioctl = NULL;
+	lo->lo_sizelimit = 0;
+	lo->old_gfp_mask = mapping_gfp_mask(mapping);
+	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
+
+	if (!(lo_flags & LO_FLAGS_READ_ONLY) && file->f_op->fsync)
+		blk_queue_flush(lo->lo_queue, REQ_FLUSH);
+
+	loop_update_dio(lo);
+	set_capacity(lo->lo_disk, size);
+	bd_set_size(bdev, size << 9);
+	loop_sysfs_init(lo);
+	/* let user-space know about the new size */
+	kobject_uevent(&disk_to_dev(bdev->bd_disk)->kobj, KOBJ_CHANGE);
+
+	set_blocksize(bdev, lo_blocksize);
+
+	lo->lo_state = Lo_bound;
+	if (part_shift)
+		lo->lo_flags |= LO_FLAGS_PARTSCAN;
+	if (lo->lo_flags & LO_FLAGS_PARTSCAN)
+		loop_reread_partitions(lo, bdev);
+
+	/* Grab the block_device to prevent its destruction after we
+	 * put /dev/loopXX inode. Later in loop_clr_fd() we bdput(bdev).
+	 */
+	bdgrab(bdev);
+	return 0;
+
+ out_putf:
+	fput(file);
+ out:
+	/* This is safe: open() is still holding a reference. */
+	module_put(THIS_MODULE);
+	return error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int
@@ -1020,27 +1197,46 @@ loop_set_status_from_info(struct loop_device *lo,
 	if ((unsigned int) info->lo_encrypt_key_size > LO_KEY_SIZE)
 		return -EINVAL;
 
+	/* I/O need to be drained during transfer transition */
+	blk_mq_freeze_queue(lo->lo_queue);
+
 	err = loop_release_xfer(lo);
 	if (err)
-		return err;
+		goto exit;
 
 	if (info->lo_encrypt_type) {
 		unsigned int type = info->lo_encrypt_type;
 
-		if (type >= MAX_LO_CRYPT)
-			return -EINVAL;
+		if (type >= MAX_LO_CRYPT) {
+			err = -EINVAL;
+			goto exit;
+		}
 		xfer = xfer_funcs[type];
-		if (xfer == NULL)
-			return -EINVAL;
+		if (xfer == NULL) {
+			err = -EINVAL;
+			goto exit;
+		}
 	} else
 		xfer = NULL;
 
 	err = loop_init_xfer(lo, xfer, info);
 	if (err)
-		return err;
+		goto exit;
 
+<<<<<<< HEAD
 	lo->lo_offset = info->lo_offset;
 	lo->lo_sizelimit = info->lo_sizelimit;
+=======
+	if (lo->lo_offset != info->lo_offset ||
+	    lo->lo_sizelimit != info->lo_sizelimit)
+		if (figure_loop_size(lo, info->lo_offset, info->lo_sizelimit)) {
+			err = -EFBIG;
+			goto exit;
+		}
+
+	loop_config_discard(lo);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memcpy(lo->lo_file_name, info->lo_file_name, LO_NAME_SIZE);
 	memcpy(lo->lo_crypt_name, info->lo_crypt_name, LO_NAME_SIZE);
 	lo->lo_file_name[LO_NAME_SIZE-1] = 0;
@@ -1051,7 +1247,13 @@ loop_set_status_from_info(struct loop_device *lo,
 	lo->transfer = xfer->transfer;
 	lo->ioctl = xfer->ioctl;
 
+<<<<<<< HEAD
 	lo->lo_flags = info->lo_flags;
+=======
+	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) !=
+	     (info->lo_flags & LO_FLAGS_AUTOCLEAR))
+		lo->lo_flags ^= LO_FLAGS_AUTOCLEAR;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	lo->lo_encrypt_key_size = info->lo_encrypt_key_size;
 	lo->lo_init[0] = info->lo_init[0];
@@ -1413,6 +1615,7 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	/* update dio if lo_offset or transfer is changed */
 	__loop_update_dio(lo, lo->use_dio);
 
+<<<<<<< HEAD
 out_unfreeze:
 	blk_mq_unfreeze_queue(lo->lo_queue);
 
@@ -1426,6 +1629,17 @@ out_unlock:
 	mutex_unlock(&loop_ctl_mutex);
 	if (partscan)
 		loop_reread_partitions(lo, bdev);
+=======
+ exit:
+	blk_mq_unfreeze_queue(lo->lo_queue);
+
+	if (!err && (info->lo_flags & LO_FLAGS_PARTSCAN) &&
+	     !(lo->lo_flags & LO_FLAGS_PARTSCAN)) {
+		lo->lo_flags |= LO_FLAGS_PARTSCAN;
+		lo->lo_disk->flags &= ~GENHD_FL_NO_PART_SCAN;
+		loop_reread_partitions(lo, lo->lo_device);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return err;
 }
@@ -1906,9 +2120,13 @@ out:
 	return err;
 }
 
-static void lo_release(struct gendisk *disk, fmode_t mode)
+static void __lo_release(struct loop_device *lo)
 {
+<<<<<<< HEAD
 	struct loop_device *lo;
+=======
+	int err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_lock(&loop_ctl_mutex);
 	lo = disk->private_data;
@@ -1937,6 +2155,13 @@ static void lo_release(struct gendisk *disk, fmode_t mode)
 
 out_unlock:
 	mutex_unlock(&loop_ctl_mutex);
+}
+
+static void lo_release(struct gendisk *disk, fmode_t mode)
+{
+	mutex_lock(&loop_index_mutex);
+	__lo_release(disk->private_data);
+	mutex_unlock(&loop_index_mutex);
 }
 
 static const struct block_device_operations lo_fops = {
@@ -2008,7 +2233,11 @@ static blk_status_t loop_queue_rq(struct blk_mq_hw_ctx *hctx,
 	blk_mq_start_request(rq);
 
 	if (lo->lo_state != Lo_bound)
+<<<<<<< HEAD
 		return BLK_STS_IOERR;
+=======
+		return BLK_MQ_RQ_QUEUE_ERROR;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	switch (req_op(rq)) {
 	case REQ_OP_FLUSH:

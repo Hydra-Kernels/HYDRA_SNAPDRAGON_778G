@@ -1217,6 +1217,7 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 
 		if (signal_pending(current)) {
 			err = sock_intr_errno(timeout);
+<<<<<<< HEAD
 			sk->sk_state = sk->sk_state == TCP_ESTABLISHED ? TCP_CLOSING : TCP_CLOSE;
 			sock->state = SS_UNCONNECTED;
 			vsock_transport_cancel_pkt(vsk);
@@ -1226,6 +1227,15 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 			sk->sk_state = TCP_CLOSE;
 			sock->state = SS_UNCONNECTED;
 			vsock_transport_cancel_pkt(vsk);
+=======
+			sk->sk_state = SS_UNCONNECTED;
+			sock->state = SS_UNCONNECTED;
+			goto out_wait;
+		} else if (timeout == 0) {
+			err = -ETIMEDOUT;
+			sk->sk_state = SS_UNCONNECTED;
+			sock->state = SS_UNCONNECTED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out_wait;
 		}
 
@@ -1234,7 +1244,11 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 
 	if (sk->sk_err) {
 		err = -sk->sk_err;
+<<<<<<< HEAD
 		sk->sk_state = TCP_CLOSE;
+=======
+		sk->sk_state = SS_UNCONNECTED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sock->state = SS_UNCONNECTED;
 	} else {
 		err = 0;

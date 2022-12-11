@@ -20,8 +20,12 @@
 #include <asm/page.h>
 #include <asm/sections.h>
 #include <asm/setup.h>
+<<<<<<< HEAD
 #include <asm/security_features.h>
 #include <asm/firmware.h>
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct fixup_entry {
 	unsigned long	mask;
@@ -115,6 +119,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 }
 
 #ifdef CONFIG_PPC_BOOK3S_64
+<<<<<<< HEAD
 static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
 {
 	unsigned int instrs[3], *dest;
@@ -361,6 +366,8 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
 	stop_machine(__do_entry_flush_fixups, &types, NULL);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void do_rfi_flush_fixups(enum l1d_flush_type types)
 {
 	unsigned int instrs[3], *dest;
@@ -397,6 +404,7 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
 		patch_instruction(dest + 2, instrs[2]);
 	}
 
+<<<<<<< HEAD
 	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
 		(types == L1D_FLUSH_NONE)       ? "no" :
 		(types == L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
@@ -501,6 +509,12 @@ void do_btb_flush_fixups(void)
 }
 #endif /* CONFIG_PPC_FSL_BOOK3E */
 
+=======
+	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
+}
+#endif /* CONFIG_PPC_BOOK3S_64 */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 {
 	long *start, *end;

@@ -6,6 +6,7 @@
 #ifndef _NVME_H
 #define _NVME_H
 
+#include <linux/mutex.h>
 #include <linux/nvme.h>
 #include <linux/cdev.h>
 #include <linux/pci.h>
@@ -37,10 +38,18 @@ enum {
 	NVME_NS_LIGHTNVM	= 1,
 };
 
+/* The below value is the specific amount of delay needed before checking
+ * readiness in case of the PCI_DEVICE(0x1c58, 0x0003), which needs the
+ * NVME_QUIRK_DELAY_BEFORE_CHK_RDY quirk enabled. The value (in ms) was
+ * found empirically.
+ */
+#define NVME_QUIRK_DELAY_AMOUNT		2000
+
 /*
  * List of workarounds for devices that required behavior not specified in
  * the standard.
  */
+<<<<<<< HEAD
 enum nvme_quirks {
 	/*
 	 * Prefers I/O aligned to a stripe size specified in a vendor
@@ -122,6 +131,50 @@ enum nvme_quirks {
 	 * NVMe 1.3 compliance.
 	 */
 	NVME_QUIRK_NO_NS_DESC_LIST		= (1 << 15),
+=======
+struct nvme_dev {
+	struct list_head node;
+	struct nvme_queue **queues;
+	struct request_queue *admin_q;
+	struct blk_mq_tag_set tagset;
+	struct blk_mq_tag_set admin_tagset;
+	u32 __iomem *dbs;
+	struct device *dev;
+	struct dma_pool *prp_page_pool;
+	struct dma_pool *prp_small_pool;
+	int instance;
+	unsigned queue_count;
+	unsigned online_queues;
+	unsigned max_qid;
+	int q_depth;
+	u32 db_stride;
+	u32 ctrl_config;
+	struct msix_entry *entry;
+	struct nvme_bar __iomem *bar;
+	struct list_head namespaces;
+	struct kref kref;
+	struct device *device;
+	struct work_struct reset_work;
+	struct work_struct probe_work;
+	struct work_struct scan_work;
+	struct mutex shutdown_lock;
+	char name[12];
+	char serial[20];
+	char model[40];
+	char firmware_rev[8];
+	bool subsystem;
+	u32 max_hw_sectors;
+	u32 stripe_size;
+	u32 page_size;
+	void __iomem *cmb;
+	dma_addr_t cmb_dma_addr;
+	u64 cmb_size;
+	u32 cmbsz;
+	u16 oncs;
+	u16 abort_limit;
+	u8 event_limit;
+	u8 vwc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*

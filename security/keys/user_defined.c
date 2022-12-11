@@ -108,12 +108,26 @@ int user_update(struct key *key, struct key_preparsed_payload *prep)
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	/* attach the new data, displacing the old */
 	key->expiry = prep->expiry;
 	if (key_is_positive(key))
 		zap = dereference_key_locked(key);
 	rcu_assign_keypointer(key, prep->payload.data[0]);
 	prep->payload.data[0] = NULL;
+=======
+	ret = key_payload_reserve(key, datalen);
+
+	if (ret == 0) {
+		/* attach the new data, displacing the old */
+		if (key_is_positive(key))
+			zap = key->payload.data[0];
+		else
+			zap = NULL;
+		rcu_assign_keypointer(key, upayload);
+		key->expiry = 0;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (zap)
 		call_rcu(&zap->rcu, user_free_payload_rcu);

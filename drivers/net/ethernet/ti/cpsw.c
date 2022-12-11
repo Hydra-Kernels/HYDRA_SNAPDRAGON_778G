@@ -68,6 +68,326 @@ MODULE_PARM_DESC(descs_pool_size, "Number of CPDMA CPPI descriptors in pool");
 #define CPSW_HEADROOM_NA (max(XDP_PACKET_HEADROOM, NET_SKB_PAD) + NET_IP_ALIGN)
 #define CPSW_HEADROOM  ALIGN(CPSW_HEADROOM_NA, sizeof(long))
 
+<<<<<<< HEAD
+=======
+struct cpsw_ss_regs {
+	u32	id_ver;
+	u32	control;
+	u32	soft_reset;
+	u32	stat_port_en;
+	u32	ptype;
+	u32	soft_idle;
+	u32	thru_rate;
+	u32	gap_thresh;
+	u32	tx_start_wds;
+	u32	flow_control;
+	u32	vlan_ltype;
+	u32	ts_ltype;
+	u32	dlr_ltype;
+};
+
+/* CPSW_PORT_V1 */
+#define CPSW1_MAX_BLKS      0x00 /* Maximum FIFO Blocks */
+#define CPSW1_BLK_CNT       0x04 /* FIFO Block Usage Count (Read Only) */
+#define CPSW1_TX_IN_CTL     0x08 /* Transmit FIFO Control */
+#define CPSW1_PORT_VLAN     0x0c /* VLAN Register */
+#define CPSW1_TX_PRI_MAP    0x10 /* Tx Header Priority to Switch Pri Mapping */
+#define CPSW1_TS_CTL        0x14 /* Time Sync Control */
+#define CPSW1_TS_SEQ_LTYPE  0x18 /* Time Sync Sequence ID Offset and Msg Type */
+#define CPSW1_TS_VLAN       0x1c /* Time Sync VLAN1 and VLAN2 */
+
+/* CPSW_PORT_V2 */
+#define CPSW2_CONTROL       0x00 /* Control Register */
+#define CPSW2_MAX_BLKS      0x08 /* Maximum FIFO Blocks */
+#define CPSW2_BLK_CNT       0x0c /* FIFO Block Usage Count (Read Only) */
+#define CPSW2_TX_IN_CTL     0x10 /* Transmit FIFO Control */
+#define CPSW2_PORT_VLAN     0x14 /* VLAN Register */
+#define CPSW2_TX_PRI_MAP    0x18 /* Tx Header Priority to Switch Pri Mapping */
+#define CPSW2_TS_SEQ_MTYPE  0x1c /* Time Sync Sequence ID Offset and Msg Type */
+
+/* CPSW_PORT_V1 and V2 */
+#define SA_LO               0x20 /* CPGMAC_SL Source Address Low */
+#define SA_HI               0x24 /* CPGMAC_SL Source Address High */
+#define SEND_PERCENT        0x28 /* Transmit Queue Send Percentages */
+
+/* CPSW_PORT_V2 only */
+#define RX_DSCP_PRI_MAP0    0x30 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP1    0x34 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP2    0x38 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP3    0x3c /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP4    0x40 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP5    0x44 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP6    0x48 /* Rx DSCP Priority to Rx Packet Mapping */
+#define RX_DSCP_PRI_MAP7    0x4c /* Rx DSCP Priority to Rx Packet Mapping */
+
+/* Bit definitions for the CPSW2_CONTROL register */
+#define PASS_PRI_TAGGED     (1<<24) /* Pass Priority Tagged */
+#define VLAN_LTYPE2_EN      (1<<21) /* VLAN LTYPE 2 enable */
+#define VLAN_LTYPE1_EN      (1<<20) /* VLAN LTYPE 1 enable */
+#define DSCP_PRI_EN         (1<<16) /* DSCP Priority Enable */
+#define TS_320              (1<<14) /* Time Sync Dest Port 320 enable */
+#define TS_319              (1<<13) /* Time Sync Dest Port 319 enable */
+#define TS_132              (1<<12) /* Time Sync Dest IP Addr 132 enable */
+#define TS_131              (1<<11) /* Time Sync Dest IP Addr 131 enable */
+#define TS_130              (1<<10) /* Time Sync Dest IP Addr 130 enable */
+#define TS_129              (1<<9)  /* Time Sync Dest IP Addr 129 enable */
+#define TS_TTL_NONZERO      (1<<8)  /* Time Sync Time To Live Non-zero enable */
+#define TS_ANNEX_F_EN       (1<<6)  /* Time Sync Annex F enable */
+#define TS_ANNEX_D_EN       (1<<4)  /* Time Sync Annex D enable */
+#define TS_LTYPE2_EN        (1<<3)  /* Time Sync LTYPE 2 enable */
+#define TS_LTYPE1_EN        (1<<2)  /* Time Sync LTYPE 1 enable */
+#define TS_TX_EN            (1<<1)  /* Time Sync Transmit Enable */
+#define TS_RX_EN            (1<<0)  /* Time Sync Receive Enable */
+
+#define CTRL_V2_TS_BITS \
+	(TS_320 | TS_319 | TS_132 | TS_131 | TS_130 | TS_129 |\
+	 TS_TTL_NONZERO  | TS_ANNEX_D_EN | TS_LTYPE1_EN)
+
+#define CTRL_V2_ALL_TS_MASK (CTRL_V2_TS_BITS | TS_TX_EN | TS_RX_EN)
+#define CTRL_V2_TX_TS_BITS  (CTRL_V2_TS_BITS | TS_TX_EN)
+#define CTRL_V2_RX_TS_BITS  (CTRL_V2_TS_BITS | TS_RX_EN)
+
+
+#define CTRL_V3_TS_BITS \
+	(TS_320 | TS_319 | TS_132 | TS_131 | TS_130 | TS_129 |\
+	 TS_TTL_NONZERO | TS_ANNEX_F_EN | TS_ANNEX_D_EN |\
+	 TS_LTYPE1_EN)
+
+#define CTRL_V3_ALL_TS_MASK (CTRL_V3_TS_BITS | TS_TX_EN | TS_RX_EN)
+#define CTRL_V3_TX_TS_BITS  (CTRL_V3_TS_BITS | TS_TX_EN)
+#define CTRL_V3_RX_TS_BITS  (CTRL_V3_TS_BITS | TS_RX_EN)
+
+/* Bit definitions for the CPSW2_TS_SEQ_MTYPE register */
+#define TS_SEQ_ID_OFFSET_SHIFT   (16)    /* Time Sync Sequence ID Offset */
+#define TS_SEQ_ID_OFFSET_MASK    (0x3f)
+#define TS_MSG_TYPE_EN_SHIFT     (0)     /* Time Sync Message Type Enable */
+#define TS_MSG_TYPE_EN_MASK      (0xffff)
+
+/* The PTP event messages - Sync, Delay_Req, Pdelay_Req, and Pdelay_Resp. */
+#define EVENT_MSG_BITS ((1<<0) | (1<<1) | (1<<2) | (1<<3))
+
+/* Bit definitions for the CPSW1_TS_CTL register */
+#define CPSW_V1_TS_RX_EN		BIT(0)
+#define CPSW_V1_TS_TX_EN		BIT(4)
+#define CPSW_V1_MSG_TYPE_OFS		16
+
+/* Bit definitions for the CPSW1_TS_SEQ_LTYPE register */
+#define CPSW_V1_SEQ_ID_OFS_SHIFT	16
+
+#define CPSW_MAX_BLKS_TX		15
+#define CPSW_MAX_BLKS_TX_SHIFT		4
+#define CPSW_MAX_BLKS_RX		5
+
+struct cpsw_host_regs {
+	u32	max_blks;
+	u32	blk_cnt;
+	u32	tx_in_ctl;
+	u32	port_vlan;
+	u32	tx_pri_map;
+	u32	cpdma_tx_pri_map;
+	u32	cpdma_rx_chan_map;
+};
+
+struct cpsw_sliver_regs {
+	u32	id_ver;
+	u32	mac_control;
+	u32	mac_status;
+	u32	soft_reset;
+	u32	rx_maxlen;
+	u32	__reserved_0;
+	u32	rx_pause;
+	u32	tx_pause;
+	u32	__reserved_1;
+	u32	rx_pri_map;
+};
+
+struct cpsw_hw_stats {
+	u32	rxgoodframes;
+	u32	rxbroadcastframes;
+	u32	rxmulticastframes;
+	u32	rxpauseframes;
+	u32	rxcrcerrors;
+	u32	rxaligncodeerrors;
+	u32	rxoversizedframes;
+	u32	rxjabberframes;
+	u32	rxundersizedframes;
+	u32	rxfragments;
+	u32	__pad_0[2];
+	u32	rxoctets;
+	u32	txgoodframes;
+	u32	txbroadcastframes;
+	u32	txmulticastframes;
+	u32	txpauseframes;
+	u32	txdeferredframes;
+	u32	txcollisionframes;
+	u32	txsinglecollframes;
+	u32	txmultcollframes;
+	u32	txexcessivecollisions;
+	u32	txlatecollisions;
+	u32	txunderrun;
+	u32	txcarriersenseerrors;
+	u32	txoctets;
+	u32	octetframes64;
+	u32	octetframes65t127;
+	u32	octetframes128t255;
+	u32	octetframes256t511;
+	u32	octetframes512t1023;
+	u32	octetframes1024tup;
+	u32	netoctets;
+	u32	rxsofoverruns;
+	u32	rxmofoverruns;
+	u32	rxdmaoverruns;
+};
+
+struct cpsw_slave {
+	void __iomem			*regs;
+	struct cpsw_sliver_regs __iomem	*sliver;
+	int				slave_num;
+	u32				mac_control;
+	struct cpsw_slave_data		*data;
+	struct phy_device		*phy;
+	struct net_device		*ndev;
+	u32				port_vlan;
+	u32				open_stat;
+};
+
+static inline u32 slave_read(struct cpsw_slave *slave, u32 offset)
+{
+	return __raw_readl(slave->regs + offset);
+}
+
+static inline void slave_write(struct cpsw_slave *slave, u32 val, u32 offset)
+{
+	__raw_writel(val, slave->regs + offset);
+}
+
+struct cpsw_priv {
+	spinlock_t			lock;
+	struct platform_device		*pdev;
+	struct net_device		*ndev;
+	struct device_node		*phy_node;
+	struct napi_struct		napi_rx;
+	struct napi_struct		napi_tx;
+	struct device			*dev;
+	struct cpsw_platform_data	data;
+	struct cpsw_ss_regs __iomem	*regs;
+	struct cpsw_wr_regs __iomem	*wr_regs;
+	u8 __iomem			*hw_stats;
+	struct cpsw_host_regs __iomem	*host_port_regs;
+	u32				msg_enable;
+	u32				version;
+	u32				coal_intvl;
+	u32				bus_freq_mhz;
+	int				rx_packet_max;
+	int				host_port;
+	struct clk			*clk;
+	u8				mac_addr[ETH_ALEN];
+	struct cpsw_slave		*slaves;
+	struct cpdma_ctlr		*dma;
+	struct cpdma_chan		*txch, *rxch;
+	struct cpsw_ale			*ale;
+	bool				rx_pause;
+	bool				tx_pause;
+	bool				quirk_irq;
+	bool				rx_irq_disabled;
+	bool				tx_irq_disabled;
+	/* snapshot of IRQ numbers */
+	u32 irqs_table[4];
+	u32 num_irqs;
+	struct cpts *cpts;
+	u32 emac_port;
+};
+
+struct cpsw_stats {
+	char stat_string[ETH_GSTRING_LEN];
+	int type;
+	int sizeof_stat;
+	int stat_offset;
+};
+
+enum {
+	CPSW_STATS,
+	CPDMA_RX_STATS,
+	CPDMA_TX_STATS,
+};
+
+#define CPSW_STAT(m)		CPSW_STATS,				\
+				sizeof(((struct cpsw_hw_stats *)0)->m), \
+				offsetof(struct cpsw_hw_stats, m)
+#define CPDMA_RX_STAT(m)	CPDMA_RX_STATS,				   \
+				sizeof(((struct cpdma_chan_stats *)0)->m), \
+				offsetof(struct cpdma_chan_stats, m)
+#define CPDMA_TX_STAT(m)	CPDMA_TX_STATS,				   \
+				sizeof(((struct cpdma_chan_stats *)0)->m), \
+				offsetof(struct cpdma_chan_stats, m)
+
+static const struct cpsw_stats cpsw_gstrings_stats[] = {
+	{ "Good Rx Frames", CPSW_STAT(rxgoodframes) },
+	{ "Broadcast Rx Frames", CPSW_STAT(rxbroadcastframes) },
+	{ "Multicast Rx Frames", CPSW_STAT(rxmulticastframes) },
+	{ "Pause Rx Frames", CPSW_STAT(rxpauseframes) },
+	{ "Rx CRC Errors", CPSW_STAT(rxcrcerrors) },
+	{ "Rx Align/Code Errors", CPSW_STAT(rxaligncodeerrors) },
+	{ "Oversize Rx Frames", CPSW_STAT(rxoversizedframes) },
+	{ "Rx Jabbers", CPSW_STAT(rxjabberframes) },
+	{ "Undersize (Short) Rx Frames", CPSW_STAT(rxundersizedframes) },
+	{ "Rx Fragments", CPSW_STAT(rxfragments) },
+	{ "Rx Octets", CPSW_STAT(rxoctets) },
+	{ "Good Tx Frames", CPSW_STAT(txgoodframes) },
+	{ "Broadcast Tx Frames", CPSW_STAT(txbroadcastframes) },
+	{ "Multicast Tx Frames", CPSW_STAT(txmulticastframes) },
+	{ "Pause Tx Frames", CPSW_STAT(txpauseframes) },
+	{ "Deferred Tx Frames", CPSW_STAT(txdeferredframes) },
+	{ "Collisions", CPSW_STAT(txcollisionframes) },
+	{ "Single Collision Tx Frames", CPSW_STAT(txsinglecollframes) },
+	{ "Multiple Collision Tx Frames", CPSW_STAT(txmultcollframes) },
+	{ "Excessive Collisions", CPSW_STAT(txexcessivecollisions) },
+	{ "Late Collisions", CPSW_STAT(txlatecollisions) },
+	{ "Tx Underrun", CPSW_STAT(txunderrun) },
+	{ "Carrier Sense Errors", CPSW_STAT(txcarriersenseerrors) },
+	{ "Tx Octets", CPSW_STAT(txoctets) },
+	{ "Rx + Tx 64 Octet Frames", CPSW_STAT(octetframes64) },
+	{ "Rx + Tx 65-127 Octet Frames", CPSW_STAT(octetframes65t127) },
+	{ "Rx + Tx 128-255 Octet Frames", CPSW_STAT(octetframes128t255) },
+	{ "Rx + Tx 256-511 Octet Frames", CPSW_STAT(octetframes256t511) },
+	{ "Rx + Tx 512-1023 Octet Frames", CPSW_STAT(octetframes512t1023) },
+	{ "Rx + Tx 1024-Up Octet Frames", CPSW_STAT(octetframes1024tup) },
+	{ "Net Octets", CPSW_STAT(netoctets) },
+	{ "Rx Start of Frame Overruns", CPSW_STAT(rxsofoverruns) },
+	{ "Rx Middle of Frame Overruns", CPSW_STAT(rxmofoverruns) },
+	{ "Rx DMA Overruns", CPSW_STAT(rxdmaoverruns) },
+	{ "Rx DMA chan: head_enqueue", CPDMA_RX_STAT(head_enqueue) },
+	{ "Rx DMA chan: tail_enqueue", CPDMA_RX_STAT(tail_enqueue) },
+	{ "Rx DMA chan: pad_enqueue", CPDMA_RX_STAT(pad_enqueue) },
+	{ "Rx DMA chan: misqueued", CPDMA_RX_STAT(misqueued) },
+	{ "Rx DMA chan: desc_alloc_fail", CPDMA_RX_STAT(desc_alloc_fail) },
+	{ "Rx DMA chan: pad_alloc_fail", CPDMA_RX_STAT(pad_alloc_fail) },
+	{ "Rx DMA chan: runt_receive_buf", CPDMA_RX_STAT(runt_receive_buff) },
+	{ "Rx DMA chan: runt_transmit_buf", CPDMA_RX_STAT(runt_transmit_buff) },
+	{ "Rx DMA chan: empty_dequeue", CPDMA_RX_STAT(empty_dequeue) },
+	{ "Rx DMA chan: busy_dequeue", CPDMA_RX_STAT(busy_dequeue) },
+	{ "Rx DMA chan: good_dequeue", CPDMA_RX_STAT(good_dequeue) },
+	{ "Rx DMA chan: requeue", CPDMA_RX_STAT(requeue) },
+	{ "Rx DMA chan: teardown_dequeue", CPDMA_RX_STAT(teardown_dequeue) },
+	{ "Tx DMA chan: head_enqueue", CPDMA_TX_STAT(head_enqueue) },
+	{ "Tx DMA chan: tail_enqueue", CPDMA_TX_STAT(tail_enqueue) },
+	{ "Tx DMA chan: pad_enqueue", CPDMA_TX_STAT(pad_enqueue) },
+	{ "Tx DMA chan: misqueued", CPDMA_TX_STAT(misqueued) },
+	{ "Tx DMA chan: desc_alloc_fail", CPDMA_TX_STAT(desc_alloc_fail) },
+	{ "Tx DMA chan: pad_alloc_fail", CPDMA_TX_STAT(pad_alloc_fail) },
+	{ "Tx DMA chan: runt_receive_buf", CPDMA_TX_STAT(runt_receive_buff) },
+	{ "Tx DMA chan: runt_transmit_buf", CPDMA_TX_STAT(runt_transmit_buff) },
+	{ "Tx DMA chan: empty_dequeue", CPDMA_TX_STAT(empty_dequeue) },
+	{ "Tx DMA chan: busy_dequeue", CPDMA_TX_STAT(busy_dequeue) },
+	{ "Tx DMA chan: good_dequeue", CPDMA_TX_STAT(good_dequeue) },
+	{ "Tx DMA chan: requeue", CPDMA_TX_STAT(requeue) },
+	{ "Tx DMA chan: teardown_dequeue", CPDMA_TX_STAT(teardown_dequeue) },
+};
+
+#define CPSW_STATS_LEN	ARRAY_SIZE(cpsw_gstrings_stats)
+
+#define napi_to_priv(napi)	container_of(napi, struct cpsw_priv, napi)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define for_each_slave(priv, func, arg...)				\
 	do {								\
 		struct cpsw_slave *slave;				\
@@ -1076,10 +1396,17 @@ static void _cpsw_adjust_link(struct cpsw_slave *slave,
 
 		/* set speed_in input in case RMII mode is used in 100Mbps */
 		if (phy->speed == 100)
+<<<<<<< HEAD
 			mac_control |= CPSW_SL_CTL_IFCTL_A;
 		/* in band mode only works in 10Mbps RGMII mode */
 		else if ((phy->speed == 10) && phy_interface_is_rgmii(phy))
 			mac_control |= CPSW_SL_CTL_EXT_EN; /* In Band mode */
+=======
+			mac_control |= BIT(15);
+		/* in band mode only works in 10Mbps RGMII mode */
+		else if ((phy->speed == 10) && phy_interface_is_rgmii(phy))
+			mac_control |= BIT(18); /* In Band mode */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (priv->rx_pause)
 			mac_control |= CPSW_SL_CTL_RX_FLOW_EN;

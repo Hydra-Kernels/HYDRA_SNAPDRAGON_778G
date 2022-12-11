@@ -141,7 +141,84 @@ static const struct pinctrl_ops meson_pctrl_ops = {
 	.pin_dbg_show		= meson_pin_dbg_show,
 };
 
+<<<<<<< HEAD
 int meson_pmx_get_funcs_count(struct pinctrl_dev *pcdev)
+=======
+/**
+ * meson_pmx_disable_other_groups() - disable other groups using a given pin
+ *
+ * @pc:		meson pin controller device
+ * @pin:	number of the pin
+ * @sel_group:	index of the selected group, or -1 if none
+ *
+ * The function disables all pinmux groups using a pin except the
+ * selected one. If @sel_group is -1 all groups are disabled, leaving
+ * the pin in GPIO mode.
+ */
+static void meson_pmx_disable_other_groups(struct meson_pinctrl *pc,
+					   unsigned int pin, int sel_group)
+{
+	struct meson_pmx_group *group;
+	struct meson_domain *domain;
+	int i, j;
+
+	for (i = 0; i < pc->data->num_groups; i++) {
+		group = &pc->data->groups[i];
+		if (group->is_gpio || i == sel_group)
+			continue;
+
+		for (j = 0; j < group->num_pins; j++) {
+			if (group->pins[j] == pin) {
+				/* We have found a group using the pin */
+				domain = &pc->domains[group->domain];
+				regmap_update_bits(domain->reg_mux,
+						   group->reg * 4,
+						   BIT(group->bit), 0);
+			}
+		}
+	}
+}
+
+static int meson_pmx_set_mux(struct pinctrl_dev *pcdev, unsigned func_num,
+			     unsigned group_num)
+{
+	struct meson_pinctrl *pc = pinctrl_dev_get_drvdata(pcdev);
+	struct meson_pmx_func *func = &pc->data->funcs[func_num];
+	struct meson_pmx_group *group = &pc->data->groups[group_num];
+	struct meson_domain *domain = &pc->domains[group->domain];
+	int i, ret = 0;
+
+	dev_dbg(pc->dev, "enable function %s, group %s\n", func->name,
+		group->name);
+
+	/*
+	 * Disable groups using the same pin.
+	 * The selected group is not disabled to avoid glitches.
+	 */
+	for (i = 0; i < group->num_pins; i++)
+		meson_pmx_disable_other_groups(pc, group->pins[i], group_num);
+
+	/* Function 0 (GPIO) doesn't need any additional setting */
+	if (func_num)
+		ret = regmap_update_bits(domain->reg_mux, group->reg * 4,
+					 BIT(group->bit), BIT(group->bit));
+
+	return ret;
+}
+
+static int meson_pmx_request_gpio(struct pinctrl_dev *pcdev,
+				  struct pinctrl_gpio_range *range,
+				  unsigned offset)
+{
+	struct meson_pinctrl *pc = pinctrl_dev_get_drvdata(pcdev);
+
+	meson_pmx_disable_other_groups(pc, offset, -1);
+
+	return 0;
+}
+
+static int meson_pmx_get_funcs_count(struct pinctrl_dev *pcdev)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct meson_pinctrl *pc = pinctrl_dev_get_drvdata(pcdev);
 

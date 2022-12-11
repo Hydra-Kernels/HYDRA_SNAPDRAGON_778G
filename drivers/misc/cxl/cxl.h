@@ -519,6 +519,18 @@ struct cxl_afu {
 	bool enabled;
 };
 
+/* AFU refcount management */
+static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu)
+{
+
+	return (get_device(&afu->dev) == NULL) ? NULL : afu;
+}
+
+static inline void  cxl_afu_put(struct cxl_afu *afu)
+{
+	put_device(&afu->dev);
+}
+
 
 struct cxl_irq_name {
 	struct list_head list;
@@ -555,6 +567,11 @@ struct cxl_context {
 	unsigned int sst_size, sst_lru;
 
 	wait_queue_head_t wq;
+<<<<<<< HEAD
+=======
+	/* pid of the group leader associated with the pid */
+	struct pid *glpid;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* use mm context associated with this pid for ds faults */
 	struct pid *pid;
 	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */

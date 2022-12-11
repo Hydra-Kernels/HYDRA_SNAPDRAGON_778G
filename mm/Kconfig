@@ -661,10 +661,18 @@ config BALANCE_ANON_FILE_RECLAIM
 	  treating anonymous and file backed pages equally.
 
 config DEFERRED_STRUCT_PAGE_INIT
+<<<<<<< HEAD
 	bool "Defer initialisation of struct pages to kthreads"
 	depends on SPARSEMEM
 	depends on !NEED_PER_CPU_KM
 	depends on 64BIT
+=======
+	bool "Defer initialisation of struct pages to kswapd"
+	default n
+	depends on ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+	depends on MEMORY_HOTPLUG
+	depends on !NEED_PER_CPU_KM
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  Ordinarily all struct pages are initialised during early boot in a
 	  single thread. On very large machines this can take a considerable

@@ -245,6 +245,7 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
 	umem = kzalloc(sizeof(*umem), GFP_KERNEL);
 	if (!umem)
 		return ERR_PTR(-ENOMEM);
+<<<<<<< HEAD
 	umem->ibdev = context->device;
 	umem->length     = size;
 	umem->address    = addr;
@@ -256,6 +257,36 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
 	if (!page_list) {
 		ret = -ENOMEM;
 		goto umem_kfree;
+=======
+
+	umem->context   = context;
+	umem->length    = size;
+	umem->address   = addr;
+	umem->page_size = PAGE_SIZE;
+	umem->pid       = get_task_pid(current, PIDTYPE_PID);
+	umem->writable   = ib_access_writable(access);
+
+	if (access & IB_ACCESS_ON_DEMAND) {
+		put_pid(umem->pid);
+		ret = ib_umem_odp_get(context, umem);
+		if (ret) {
+			kfree(umem);
+			return ERR_PTR(ret);
+		}
+		return umem;
+	}
+
+	umem->odp_data = NULL;
+
+	/* We assume the memory is from hugetlb until proved otherwise */
+	umem->hugetlb   = 1;
+
+	page_list = (struct page **) __get_free_page(GFP_KERNEL);
+	if (!page_list) {
+		put_pid(umem->pid);
+		kfree(umem);
+		return ERR_PTR(-ENOMEM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	npages = ib_umem_num_pages(umem);
@@ -275,6 +306,14 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
 
 	cur_base = addr & PAGE_MASK;
 
+<<<<<<< HEAD
+=======
+	if (npages == 0 || npages > UINT_MAX) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = sg_alloc_table(&umem->sg_head, npages, GFP_KERNEL);
 	if (ret)
 		goto vma;
@@ -390,7 +429,11 @@ int ib_umem_copy_from(void *dst, struct ib_umem *umem, size_t offset,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	ret = sg_pcopy_to_buffer(umem->sg_head.sgl, umem->sg_nents, dst, length,
+=======
+	ret = sg_pcopy_to_buffer(umem->sg_head.sgl, umem->npages, dst, length,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 offset + ib_umem_offset(umem));
 
 	if (ret < 0)

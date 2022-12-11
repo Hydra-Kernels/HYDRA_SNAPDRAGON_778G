@@ -53,6 +53,13 @@ static void create_ib_ah(struct ib_ah *ib_ah, struct rdma_ah_attr *ah_attr)
 	if (rdma_ah_get_ah_flags(ah_attr) & IB_AH_GRH) {
 		const struct ib_global_route *grh = rdma_ah_read_grh(ah_attr);
 
+<<<<<<< HEAD
+=======
+	ah->av.ib.port_pd = cpu_to_be32(to_mpd(pd)->pdn | (ah_attr->port_num << 24));
+	ah->av.ib.g_slid  = ah_attr->src_path_bits;
+	ah->av.ib.sl_tclass_flowlabel = cpu_to_be32(ah_attr->sl << 28);
+	if (ah_attr->ah_flags & IB_AH_GRH) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ah->av.ib.g_slid   |= 0x80;
 		ah->av.ib.gid_index = grh->sgid_index;
 		ah->av.ib.hop_limit = grh->hop_limit;
@@ -62,10 +69,20 @@ static void create_ib_ah(struct ib_ah *ib_ah, struct rdma_ah_attr *ah_attr)
 		memcpy(ah->av.ib.dgid, grh->dgid.raw, 16);
 	}
 
+<<<<<<< HEAD
 	ah->av.ib.dlid = cpu_to_be16(rdma_ah_get_dlid(ah_attr));
 	if (rdma_ah_get_static_rate(ah_attr)) {
 		u8 static_rate = rdma_ah_get_static_rate(ah_attr) +
 					MLX4_STAT_RATE_OFFSET;
+=======
+	ah->av.ib.dlid    = cpu_to_be16(ah_attr->dlid);
+	if (ah_attr->static_rate) {
+		ah->av.ib.stat_rate = ah_attr->static_rate + MLX4_STAT_RATE_OFFSET;
+		while (ah->av.ib.stat_rate > IB_RATE_2_5_GBPS + MLX4_STAT_RATE_OFFSET &&
+		       !(1 << ah->av.ib.stat_rate & dev->caps.stat_rate_support))
+			--ah->av.ib.stat_rate;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		while (static_rate > IB_RATE_2_5_GBPS + MLX4_STAT_RATE_OFFSET &&
 		       !(1 << static_rate & dev->caps.stat_rate_support))
@@ -114,9 +131,18 @@ static int create_iboe_ah(struct ib_ah *ib_ah, struct rdma_ah_attr *ah_attr)
 	}
 
 	if (vlan_tag < 0x1000)
+<<<<<<< HEAD
 		vlan_tag |= (rdma_ah_get_sl(ah_attr) & 7) << 13;
 	ah->av.eth.port_pd = cpu_to_be32(to_mpd(ib_ah->pd)->pdn |
 					 (rdma_ah_get_port_num(ah_attr) << 24));
+=======
+		vlan_tag |= (ah_attr->sl & 7) << 13;
+	ah->av.eth.port_pd = cpu_to_be32(to_mpd(pd)->pdn | (ah_attr->port_num << 24));
+	ret = mlx4_ib_gid_index_to_real_index(ibdev, ah_attr->port_num, ah_attr->grh.sgid_index);
+	if (ret < 0)
+		return ERR_PTR(ret);
+	ah->av.eth.gid_index = ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ah->av.eth.vlan = cpu_to_be16(vlan_tag);
 	ah->av.eth.hop_limit = grh->hop_limit;
 	if (rdma_ah_get_static_rate(ah_attr)) {
@@ -127,18 +153,30 @@ static int create_iboe_ah(struct ib_ah *ib_ah, struct rdma_ah_attr *ah_attr)
 			--ah->av.eth.stat_rate;
 	}
 	ah->av.eth.sl_tclass_flowlabel |=
+<<<<<<< HEAD
 			cpu_to_be32((grh->traffic_class << 20) |
 				    grh->flow_label);
+=======
+			cpu_to_be32((ah_attr->grh.traffic_class << 20) |
+				    ah_attr->grh.flow_label);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * HW requires multicast LID so we just choose one.
 	 */
 	if (is_mcast)
 		ah->av.ib.dlid = cpu_to_be16(0xc000);
 
+<<<<<<< HEAD
 	memcpy(ah->av.eth.dgid, grh->dgid.raw, 16);
 	ah->av.eth.sl_tclass_flowlabel |= cpu_to_be32(rdma_ah_get_sl(ah_attr)
 						      << 29);
 	return 0;
+=======
+	memcpy(ah->av.eth.dgid, ah_attr->grh.dgid.raw, 16);
+	ah->av.eth.sl_tclass_flowlabel |= cpu_to_be32(ah_attr->sl << 29);
+
+	return &ah->ibah;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int mlx4_ib_create_ah(struct ib_ah *ib_ah, struct rdma_ah_attr *ah_attr,

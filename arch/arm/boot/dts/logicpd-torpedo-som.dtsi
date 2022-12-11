@@ -90,6 +90,7 @@
 
 &i2c2 {
 	pinctrl-names = "default";
+<<<<<<< HEAD
 	pinctrl-0 = <&i2c2_pins>;
 	clock-frequency = <400000>;
 };
@@ -102,6 +103,21 @@
 		compatible = "atmel,24c64";
 		readonly;
 		reg = <0x50>;
+=======
+	vmmc-supply = <&wl12xx_vmmc>;
+	non-removable;
+	bus-width = <4>;
+	cap-power-off-card;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	wlcore: wlcore@2 {
+		compatible = "ti,wl1283";
+		reg = <2>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <24 IRQ_TYPE_LEVEL_HIGH>; /* gpio 152 */
+		ref-clock-frequency = <26000000>;
+		tcxo-clock-frequency = <26000000>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	};
 };
 
@@ -164,6 +180,12 @@
 		pinctrl-single,pins = <
 			OMAP3_CORE1_IOPAD(0x21c2, PIN_INPUT | MUX_MODE0)	/* i2c3_scl */
 			OMAP3_CORE1_IOPAD(0x21c4, PIN_INPUT | MUX_MODE0)	/* i2c3_sda */
+		>;
+	};
+	i2c1_pins: pinmux_i2c1_pins {
+		pinctrl-single,pins = <
+			OMAP3_CORE1_IOPAD(0x21ba, PIN_INPUT | MUX_MODE0)        /* i2c1_scl.i2c1_scl */
+			OMAP3_CORE1_IOPAD(0x21bc, PIN_INPUT | MUX_MODE0)        /* i2c1_sda.i2c1_sda */
 		>;
 	};
 };

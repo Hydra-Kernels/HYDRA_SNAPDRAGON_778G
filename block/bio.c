@@ -476,8 +476,12 @@ struct bio *bio_alloc_bioset(gfp_t gfp_mask, unsigned int nr_iovecs,
 
 		if (current->bio_list &&
 		    (!bio_list_empty(&current->bio_list[0]) ||
+<<<<<<< HEAD
 		     !bio_list_empty(&current->bio_list[1])) &&
 		    bs->rescue_workqueue)
+=======
+		     !bio_list_empty(&current->bio_list[1])))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			gfp_mask &= ~__GFP_DIRECT_RECLAIM;
 
 		p = mempool_alloc(&bs->bio_pool, gfp_mask);
@@ -644,8 +648,12 @@ void __bio_clone_fast(struct bio *bio, struct bio *bio_src)
 	bio->bi_iter = bio_src->bi_iter;
 	bio->bi_io_vec = bio_src->bi_io_vec;
 
+<<<<<<< HEAD
 	bio_clone_blkg_association(bio, bio_src);
 	blkcg_bio_issue_init(bio);
+=======
+	bio_clone_blkcg_association(bio, bio_src);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(__bio_clone_fast);
 
@@ -692,6 +700,7 @@ static inline bool page_is_mergeable(const struct bio_vec *bv,
 	if (xen_domain() && !xen_biovec_phys_mergeable(bv, page))
 		return false;
 
+<<<<<<< HEAD
 	*same_page = ((vec_end_addr & PAGE_MASK) == page_addr);
 	if (*same_page)
 		return true;
@@ -712,6 +721,42 @@ static bool bio_try_merge_pc_page(struct request_queue *q, struct bio *bio,
 	if (bv->bv_len + len > queue_max_segment_size(q))
 		return false;
 	return __bio_try_merge_page(bio, page, len, offset, same_page);
+=======
+	bio = bio_alloc_bioset(gfp_mask, bio_segments(bio_src), bs);
+	if (!bio)
+		return NULL;
+
+	bio->bi_bdev		= bio_src->bi_bdev;
+	bio->bi_rw		= bio_src->bi_rw;
+	bio->bi_iter.bi_sector	= bio_src->bi_iter.bi_sector;
+	bio->bi_iter.bi_size	= bio_src->bi_iter.bi_size;
+
+	if (bio->bi_rw & REQ_DISCARD)
+		goto integrity_clone;
+
+	if (bio->bi_rw & REQ_WRITE_SAME) {
+		bio->bi_io_vec[bio->bi_vcnt++] = bio_src->bi_io_vec[0];
+		goto integrity_clone;
+	}
+
+	bio_for_each_segment(bv, bio_src, iter)
+		bio->bi_io_vec[bio->bi_vcnt++] = bv;
+
+integrity_clone:
+	if (bio_integrity(bio_src)) {
+		int ret;
+
+		ret = bio_integrity_clone(bio, bio_src, gfp_mask);
+		if (ret < 0) {
+			bio_put(bio);
+			return NULL;
+		}
+	}
+
+	bio_clone_blkcg_association(bio, bio_src);
+
+	return bio;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1393,7 +1438,15 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 {
 	int j;
 	struct bio *bio;
+<<<<<<< HEAD
 	int ret;
+=======
+	int cur_page = 0;
+	int ret, offset;
+	struct iov_iter i;
+	struct iovec iov;
+	struct bio_vec *bvec;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!iov_iter_count(iter))
 		return ERR_PTR(-EINVAL);
@@ -1408,6 +1461,7 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 		size_t offs, added = 0;
 		int npages;
 
+<<<<<<< HEAD
 		bytes = iov_iter_get_pages_alloc(iter, &pages, LONG_MAX, &offs);
 		if (unlikely(bytes <= 0)) {
 			ret = bytes ? bytes : -EFAULT;
@@ -1415,6 +1469,33 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 		}
 
 		npages = DIV_ROUND_UP(offs + bytes, PAGE_SIZE);
+=======
+	iov_for_each(iov, i, *iter) {
+		unsigned long uaddr = (unsigned long) iov.iov_base;
+		unsigned long len = iov.iov_len;
+		unsigned long end = (uaddr + len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+		unsigned long start = uaddr >> PAGE_SHIFT;
+		const int local_nr_pages = end - start;
+		const int page_limit = cur_page + local_nr_pages;
+
+		ret = get_user_pages_fast(uaddr, local_nr_pages,
+				(iter->type & WRITE) != WRITE,
+				&pages[cur_page]);
+		if (unlikely(ret < local_nr_pages)) {
+			for (j = cur_page; j < page_limit; j++) {
+				if (!pages[j])
+					break;
+				put_page(pages[j]);
+			}
+			ret = -EFAULT;
+			goto out_unmap;
+		}
+
+		offset = uaddr & ~PAGE_MASK;
+		for (j = cur_page; j < page_limit; j++) {
+			unsigned int bytes = PAGE_SIZE - offset;
+			unsigned short prev_bi_vcnt = bio->bi_vcnt;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (unlikely(offs & queue_dma_alignment(q))) {
 			ret = -EINVAL;
@@ -1428,6 +1509,7 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 				if (n > bytes)
 					n = bytes;
 
+<<<<<<< HEAD
 				if (!__bio_add_pc_page(q, bio, page, n, offs,
 						&same_page)) {
 					if (same_page)
@@ -1440,6 +1522,17 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 				offs = 0;
 			}
 			iov_iter_advance(iter, added);
+=======
+			/*
+			 * check if vector was merged with previous
+			 * drop page reference if needed
+			 */
+			if (bio->bi_vcnt == prev_bi_vcnt)
+				put_page(pages[j]);
+
+			len -= bytes;
+			offset = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		/*
 		 * release the pages we didn't map into the bio, if any
@@ -1464,7 +1557,15 @@ struct bio *bio_map_user_iov(struct request_queue *q,
 	return bio;
 
  out_unmap:
+<<<<<<< HEAD
 	bio_release_pages(bio, false);
+=======
+	bio_for_each_segment_all(bvec, bio, j) {
+		put_page(bvec->bv_page);
+	}
+ out:
+	kfree(pages);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bio_put(bio);
 	return ERR_PTR(ret);
 }
@@ -2070,6 +2171,7 @@ void bio_disassociate_blkg(struct bio *bio)
 EXPORT_SYMBOL_GPL(bio_disassociate_blkg);
 
 /**
+<<<<<<< HEAD
  * __bio_associate_blkg - associate a bio with the a blkg
  * @bio: target bio
  * @blkg: the blkg to associate
@@ -2185,6 +2287,18 @@ void bio_clone_blkg_association(struct bio *dst, struct bio *src)
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL_GPL(bio_clone_blkg_association);
+=======
+ * bio_clone_blkcg_association - clone blkcg association from src to dst bio
+ * @dst: destination bio
+ * @src: source bio
+ */
+void bio_clone_blkcg_association(struct bio *dst, struct bio *src)
+{
+	if (src->bi_css)
+		WARN_ON(bio_associate_blkcg(dst, src->bi_css));
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_BLK_CGROUP */
 
 static void __init biovec_init_slabs(void)

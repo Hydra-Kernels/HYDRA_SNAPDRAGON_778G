@@ -2991,10 +2991,16 @@ sector_t generic_block_bmap(struct address_space *mapping, sector_t block,
 			    get_block_t *get_block)
 {
 	struct inode *inode = mapping->host;
+<<<<<<< HEAD
 	struct buffer_head tmp = {
 		.b_size = i_blocksize(inode),
 	};
 
+=======
+	tmp.b_state = 0;
+	tmp.b_blocknr = 0;
+	tmp.b_size = i_blocksize(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	get_block(inode, block, &tmp, 0);
 	return tmp.b_blocknr;
 }

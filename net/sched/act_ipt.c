@@ -45,7 +45,10 @@ static int ipt_init_target(struct net *net, struct xt_entry_target *t,
 
 	t->u.kernel.target = target;
 	memset(&par, 0, sizeof(par));
+<<<<<<< HEAD
 	par.net       = net;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	par.table     = table;
 	par.entryinfo = &e;
 	par.target    = target;

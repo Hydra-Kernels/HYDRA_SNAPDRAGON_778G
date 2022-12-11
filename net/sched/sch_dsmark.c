@@ -210,7 +210,11 @@ static int dsmark_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 	if (p->set_tc_index) {
 		int wlen = skb_network_offset(skb);
 
+<<<<<<< HEAD
 		switch (skb_protocol(skb, true)) {
+=======
+		switch (tc_skb_protocol(skb)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case htons(ETH_P_IP):
 			wlen += sizeof(struct iphdr);
 			if (!pskb_may_pull(skb, wlen) ||
@@ -274,7 +278,11 @@ static int dsmark_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 		return err;
 	}
 
+<<<<<<< HEAD
 	sch->qstats.backlog += len;
+=======
+	qdisc_qstats_backlog_inc(sch, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sch->q.qlen++;
 
 	return NET_XMIT_SUCCESS;
@@ -406,8 +414,12 @@ static void dsmark_reset(struct Qdisc *sch)
 	struct dsmark_qdisc_data *p = qdisc_priv(sch);
 
 	pr_debug("%s(sch %p,[qdisc %p])\n", __func__, sch, p);
+<<<<<<< HEAD
 	if (p->q)
 		qdisc_reset(p->q);
+=======
+	qdisc_reset(p->q);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sch->qstats.backlog = 0;
 	sch->q.qlen = 0;
 }

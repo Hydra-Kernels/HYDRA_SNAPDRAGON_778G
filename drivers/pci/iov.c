@@ -517,6 +517,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
 
 	rc = pcibios_sriov_enable(dev, initial);
 	if (rc) {
+<<<<<<< HEAD
 		pci_err(dev, "failure %d from pcibios_sriov_enable()\n", rc);
 		goto err_pcibios;
 	}
@@ -531,6 +532,24 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
 	rc = sriov_add_vfs(dev, initial);
 	if (rc)
 		goto err_pcibios;
+=======
+		dev_err(&dev->dev, "failure %d from pcibios_sriov_enable()\n", rc);
+		goto err_pcibios;
+	}
+
+	pci_iov_set_numvfs(dev, nr_virtfn);
+	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
+	pci_cfg_access_lock(dev);
+	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+	msleep(100);
+	pci_cfg_access_unlock(dev);
+
+	for (i = 0; i < initial; i++) {
+		rc = virtfn_add(dev, i, 0);
+		if (rc)
+			goto failed;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kobject_uevent(&dev->dev.kobj, KOBJ_CHANGE);
 	iov->num_VFs = nr_virtfn;
@@ -770,6 +789,7 @@ void pci_iov_release(struct pci_dev *dev)
 }
 
 /**
+<<<<<<< HEAD
  * pci_iov_remove - clean up SR-IOV state after PF driver is detached
  * @dev: the PCI device
  */
@@ -786,6 +806,8 @@ void pci_iov_remove(struct pci_dev *dev)
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * pci_iov_update_resource - update a VF BAR
  * @dev: the PCI device
  * @resno: the resource number

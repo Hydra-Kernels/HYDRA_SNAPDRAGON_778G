@@ -44,6 +44,7 @@
 #define PCI_DEVICE_ID_INTEL_BROXTON_B_XHCI		0x1aa8
 #define PCI_DEVICE_ID_INTEL_APL_XHCI			0x5aa8
 #define PCI_DEVICE_ID_INTEL_DNV_XHCI			0x19d0
+<<<<<<< HEAD
 #define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_XHCI	0x15b5
 #define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_XHCI	0x15b6
 #define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_LP_XHCI	0x15c1
@@ -64,6 +65,8 @@
 #define PCI_DEVICE_ID_ASMEDIA_1142_XHCI			0x1242
 #define PCI_DEVICE_ID_ASMEDIA_2142_XHCI			0x2142
 #define PCI_DEVICE_ID_ASMEDIA_3242_XHCI			0x3242
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static const char hcd_name[] = "xhci_hcd";
 
@@ -200,6 +203,7 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 		 pdev->device == PCI_DEVICE_ID_INTEL_BROXTON_M_XHCI ||
 		 pdev->device == PCI_DEVICE_ID_INTEL_BROXTON_B_XHCI ||
 		 pdev->device == PCI_DEVICE_ID_INTEL_APL_XHCI ||
+<<<<<<< HEAD
 		 pdev->device == PCI_DEVICE_ID_INTEL_DNV_XHCI ||
 		 pdev->device == PCI_DEVICE_ID_INTEL_CML_XHCI)) {
 		xhci->quirks |= XHCI_PME_STUCK_QUIRK;
@@ -216,10 +220,18 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 	    (pdev->device == PCI_DEVICE_ID_INTEL_CHERRYVIEW_XHCI ||
 	     pdev->device == PCI_DEVICE_ID_INTEL_SUNRISEPOINT_LP_XHCI ||
 	     pdev->device == PCI_DEVICE_ID_INTEL_SUNRISEPOINT_H_XHCI ||
+=======
+		 pdev->device == PCI_DEVICE_ID_INTEL_DNV_XHCI)) {
+		xhci->quirks |= XHCI_PME_STUCK_QUIRK;
+	}
+	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
+	    (pdev->device == PCI_DEVICE_ID_INTEL_CHERRYVIEW_XHCI ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	     pdev->device == PCI_DEVICE_ID_INTEL_APL_XHCI ||
 	     pdev->device == PCI_DEVICE_ID_INTEL_DNV_XHCI))
 		xhci->quirks |= XHCI_MISSING_CAS;
 
+<<<<<<< HEAD
 	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
 	    (pdev->device == PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_XHCI ||
 	     pdev->device == PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_XHCI ||
@@ -232,6 +244,8 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 	     pdev->device == PCI_DEVICE_ID_INTEL_ICE_LAKE_XHCI))
 		xhci->quirks |= XHCI_DEFAULT_PM_RUNTIME_ALLOW;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (pdev->vendor == PCI_VENDOR_ID_ETRON &&
 			pdev->device == PCI_DEVICE_ID_EJ168) {
 		xhci->quirks |= XHCI_RESET_ON_RESUME;
@@ -239,12 +253,19 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 		xhci->quirks |= XHCI_BROKEN_STREAMS;
 	}
 	if (pdev->vendor == PCI_VENDOR_ID_RENESAS &&
+<<<<<<< HEAD
 	    pdev->device == 0x0014) {
 		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
 		xhci->quirks |= XHCI_ZERO_64B_REGS;
 	}
 	if (pdev->vendor == PCI_VENDOR_ID_RENESAS &&
 	    pdev->device == 0x0015) {
+=======
+			pdev->device == 0x0014)
+		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
+	if (pdev->vendor == PCI_VENDOR_ID_RENESAS &&
+			pdev->device == 0x0015)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		xhci->quirks |= XHCI_RESET_ON_RESUME;
 		xhci->quirks |= XHCI_ZERO_64B_REGS;
 	}
@@ -260,6 +281,7 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 		pdev->device == PCI_DEVICE_ID_ASMEDIA_1042_XHCI)
 		xhci->quirks |= XHCI_BROKEN_STREAMS;
 	if (pdev->vendor == PCI_VENDOR_ID_ASMEDIA &&
+<<<<<<< HEAD
 		pdev->device == PCI_DEVICE_ID_ASMEDIA_1042A_XHCI) {
 		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
 		xhci->quirks |= XHCI_NO_64BIT_SUPPORT;
@@ -286,6 +308,10 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 	    (pdev->device == PCI_DEVICE_ID_AMD_PROMONTORYA_2 ||
 	     pdev->device == PCI_DEVICE_ID_AMD_PROMONTORYA_4))
 		xhci->quirks |= XHCI_NO_SOFT_RETRY;
+=======
+			pdev->device == 0x1142)
+		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (xhci->quirks & XHCI_RESET_ON_RESUME)
 		xhci_dbg_trace(xhci, trace_xhci_dbg_quirks,
@@ -414,10 +440,13 @@ void xhci_pci_remove(struct pci_dev *dev)
 
 	xhci = hcd_to_xhci(pci_get_drvdata(dev));
 	xhci->xhc_state |= XHCI_STATE_REMOVING;
+<<<<<<< HEAD
 
 	if (xhci->quirks & XHCI_DEFAULT_PM_RUNTIME_ALLOW)
 		pm_runtime_forbid(&dev->dev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (xhci->shared_hcd) {
 		usb_remove_hcd(xhci->shared_hcd);
 		usb_put_hcd(xhci->shared_hcd);
@@ -452,22 +481,37 @@ static void xhci_ssic_port_unused_quirk(struct usb_hcd *hcd, bool suspend)
 				SSIC_PORT_CFG2 +
 				i * SSIC_PORT_CFG2_OFFSET;
 
+<<<<<<< HEAD
 		/* Notify SSIC that SSIC profile programming is not done. */
 		val = readl(reg) & ~PROG_DONE;
 		writel(val, reg);
+=======
+		for (i = 0; i < SSIC_PORT_NUM; i++) {
+			reg = (void __iomem *) xhci->cap_regs +
+					SSIC_PORT_CFG2 +
+					i * SSIC_PORT_CFG2_OFFSET;
 
-		/* Mark SSIC port as unused(suspend) or used(resume) */
-		val = readl(reg);
-		if (suspend)
-			val |= SSIC_PORT_UNUSED;
-		else
-			val &= ~SSIC_PORT_UNUSED;
-		writel(val, reg);
+			/*
+			 * Notify SSIC that SSIC profile programming
+			 * is not done.
+			 */
+			val = readl(reg) & ~PROG_DONE;
+			writel(val, reg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
-		/* Notify SSIC that SSIC profile programming is done */
-		val = readl(reg) | PROG_DONE;
-		writel(val, reg);
-		readl(reg);
+			/* Mark SSIC port as unused(suspend) or used(resume) */
+			val = readl(reg);
+			if (suspend)
+				val |= SSIC_PORT_UNUSED;
+			else
+				val &= ~SSIC_PORT_UNUSED;
+			writel(val, reg);
+
+			/* Notify SSIC that SSIC profile programming is done */
+			val = readl(reg) | PROG_DONE;
+			writel(val, reg);
+			readl(reg);
+		}
 	}
 }
 

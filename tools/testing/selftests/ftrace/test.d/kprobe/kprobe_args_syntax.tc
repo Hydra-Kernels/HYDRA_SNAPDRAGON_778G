@@ -6,6 +6,12 @@
 
 grep "x8/16/32/64" README > /dev/null || exit_unsupported # version issue
 
+<<<<<<< HEAD
+=======
+echo 0 > events/enable
+echo > kprobe_events
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 PROBEFUNC="vfs_read"
 GOODREG=
 BADREG=
@@ -31,6 +37,7 @@ arm*)
   GOODREG=%r0
   BADREG=%ax
 ;;
+<<<<<<< HEAD
 ppc*)
   GOODREG=%r3
   BADREG=%msr
@@ -38,6 +45,8 @@ ppc*)
 *)
   echo "Please implement other architecture here"
   exit_untested
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 esac
 
 test_goodarg() # Good-args
@@ -75,11 +84,16 @@ test_badarg "\$stackp" "\$stack0+10" "\$stack1-10"
 echo "r ${PROBEFUNC} \$retval" > kprobe_events
 ! echo "p ${PROBEFUNC} \$retval" > kprobe_events
 
+<<<<<<< HEAD
 # $comm was introduced in 4.8, older kernels reject it.
 if grep -A1 "fetcharg:" README | grep -q '\$comm' ; then
 : "Comm access"
 test_goodarg "\$comm"
 fi
+=======
+: "Comm access"
+test_goodarg "\$comm"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 : "Indirect memory access"
 test_goodarg "+0(${GOODREG})" "-0(${GOODREG})" "+10(\$stack)" \
@@ -100,3 +114,8 @@ test_badarg "${GOODREG}::${GOODTYPE}" "${GOODREG}:${BADTYPE}" \
 
 test_goodarg "\$comm:string" "+0(\$stack):string"
 test_badarg "\$comm:x64" "\$stack:string" "${GOODREG}:string"
+<<<<<<< HEAD
+=======
+
+echo > kprobe_events
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

@@ -116,12 +116,15 @@ struct ip_tunnel {
 	u32		o_seqno;	/* The last output seqno */
 	int		tun_hlen;	/* Precalculated header length */
 
+<<<<<<< HEAD
 	/* These four fields used only by ERSPAN */
 	u32		index;		/* ERSPAN type II index */
 	u8		erspan_ver;	/* ERSPAN version */
 	u8		dir;		/* ERSPAN direction */
 	u16		hwid;		/* ERSPAN hardware ID */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct dst_cache dst_cache;
 
 	struct ip_tunnel_parm parms;
@@ -270,6 +273,11 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
 void ip_md_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
 		       const u8 proto, int tunnel_hlen);
 int ip_tunnel_ioctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd);
+<<<<<<< HEAD
+=======
+int ip_tunnel_encap(struct sk_buff *skb, struct ip_tunnel *t,
+		    u8 *protocol, struct flowi4 *fl4);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int __ip_tunnel_change_mtu(struct net_device *dev, int new_mtu, bool strict);
 int ip_tunnel_change_mtu(struct net_device *dev, int new_mtu);
 
@@ -286,6 +294,7 @@ int ip_tunnel_rcv(struct ip_tunnel *tunnel, struct sk_buff *skb,
 int ip_tunnel_changelink(struct net_device *dev, struct nlattr *tb[],
 			 struct ip_tunnel_parm *p, __u32 fwmark);
 int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
+<<<<<<< HEAD
 		      struct ip_tunnel_parm *p, __u32 fwmark);
 void ip_tunnel_setup(struct net_device *dev, unsigned int net_id);
 
@@ -306,6 +315,10 @@ int ip_tunnel_encap_add_ops(const struct ip_tunnel_encap_ops *op,
 int ip_tunnel_encap_del_ops(const struct ip_tunnel_encap_ops *op,
 			    unsigned int num);
 
+=======
+		      struct ip_tunnel_parm *p);
+void ip_tunnel_setup(struct net_device *dev, int net_id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int ip_tunnel_encap_setup(struct ip_tunnel *t,
 			  struct ip_tunnel_encap *ipencap);
 
@@ -420,6 +433,27 @@ struct metadata_dst *iptunnel_metadata_reply(struct metadata_dst *md,
 int iptunnel_handle_offloads(struct sk_buff *skb, int gso_type_mask);
 
 static inline int iptunnel_pull_offloads(struct sk_buff *skb)
+<<<<<<< HEAD
+=======
+{
+	if (skb_is_gso(skb)) {
+		int err;
+
+		err = skb_unclone(skb, GFP_ATOMIC);
+		if (unlikely(err))
+			return err;
+		skb_shinfo(skb)->gso_type &= ~(NETIF_F_GSO_ENCAP_ALL >>
+					       NETIF_F_GSO_SHIFT);
+	}
+
+	skb->encapsulation = 0;
+	return 0;
+}
+
+static inline void iptunnel_xmit_stats(int err,
+				       struct net_device_stats *err_stats,
+				       struct pcpu_sw_netstats __percpu *stats)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (skb_is_gso(skb)) {
 		int err;

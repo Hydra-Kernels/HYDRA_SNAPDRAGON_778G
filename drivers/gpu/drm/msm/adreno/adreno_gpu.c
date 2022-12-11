@@ -465,15 +465,22 @@ void adreno_flush(struct msm_gpu *gpu, struct msm_ringbuffer *ring)
 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
 	uint32_t wptr;
 
+<<<<<<< HEAD
 	/* Copy the shadow to the actual register */
 	ring->cur = ring->next;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Mask wptr value that we calculate to fit in the HW range. This is
 	 * to account for the possibility that the last command fit exactly into
 	 * the ringbuffer and rb->next hasn't wrapped to zero yet
 	 */
+<<<<<<< HEAD
 	wptr = get_wptr(ring);
+=======
+	wptr = get_wptr(gpu->rb) & ((gpu->rb->size / 4) - 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* ensure writes to ringbuffer have hit system memory: */
 	mb();

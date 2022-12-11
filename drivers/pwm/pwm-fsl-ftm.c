@@ -43,6 +43,13 @@ struct fsl_pwm_periodcfg {
 struct fsl_pwm_chip {
 	struct pwm_chip chip;
 	struct mutex lock;
+<<<<<<< HEAD
+=======
+
+	unsigned int cnt_select;
+	unsigned int clk_ps;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct regmap *regmap;
 
 	/* This value is valid iff a pwm is running */
@@ -323,7 +330,29 @@ static int fsl_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 			clk_disable_unprepare(fpc->clk[fpc->period.clk_select]);
 		}
 
+<<<<<<< HEAD
 		goto end_mutex;
+=======
+	return 0;
+}
+
+static int fsl_counter_clock_enable(struct fsl_pwm_chip *fpc)
+{
+	int ret;
+
+	/* select counter clock source */
+	regmap_update_bits(fpc->regmap, FTM_SC, FTM_SC_CLK_MASK,
+			   FTM_SC_CLK(fpc->cnt_select));
+
+	ret = clk_prepare_enable(fpc->clk[fpc->cnt_select]);
+	if (ret)
+		return ret;
+
+	ret = clk_prepare_enable(fpc->clk[FSL_PWM_CLK_CNTEN]);
+	if (ret) {
+		clk_disable_unprepare(fpc->clk[fpc->cnt_select]);
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = fsl_pwm_apply_config(fpc, pwm, newstate);
@@ -351,6 +380,28 @@ end_mutex:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static void fsl_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+{
+	struct fsl_pwm_chip *fpc = to_fsl_chip(chip);
+	u32 val;
+
+	mutex_lock(&fpc->lock);
+	regmap_update_bits(fpc->regmap, FTM_OUTMASK, BIT(pwm->hwpwm),
+			   BIT(pwm->hwpwm));
+
+	clk_disable_unprepare(fpc->clk[FSL_PWM_CLK_CNTEN]);
+	clk_disable_unprepare(fpc->clk[fpc->cnt_select]);
+
+	regmap_read(fpc->regmap, FTM_OUTMASK, &val);
+	if ((val & 0xFF) == 0xFF)
+		fpc->period_ns = 0;
+
+	mutex_unlock(&fpc->lock);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const struct pwm_ops fsl_pwm_ops = {
 	.request = fsl_pwm_request,
 	.free = fsl_pwm_free,
@@ -491,13 +542,21 @@ static int fsl_pwm_suspend(struct device *dev)
 		if (!test_bit(PWMF_REQUESTED, &pwm->flags))
 			continue;
 
+<<<<<<< HEAD
 		clk_disable_unprepare(fpc->ipg_clk);
+=======
+		clk_disable_unprepare(fpc->clk[FSL_PWM_CLK_SYS]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (!pwm_is_enabled(pwm))
 			continue;
 
 		clk_disable_unprepare(fpc->clk[FSL_PWM_CLK_CNTEN]);
+<<<<<<< HEAD
 		clk_disable_unprepare(fpc->clk[fpc->period.clk_select]);
+=======
+		clk_disable_unprepare(fpc->clk[fpc->cnt_select]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -507,6 +566,7 @@ static int fsl_pwm_resume(struct device *dev)
 {
 	struct fsl_pwm_chip *fpc = dev_get_drvdata(dev);
 	int i;
+<<<<<<< HEAD
 
 	for (i = 0; i < fpc->chip.npwm; i++) {
 		struct pwm_device *pwm = &fpc->chip.pwms[i];
@@ -515,11 +575,25 @@ static int fsl_pwm_resume(struct device *dev)
 			continue;
 
 		clk_prepare_enable(fpc->ipg_clk);
+=======
+
+	for (i = 0; i < fpc->chip.npwm; i++) {
+		struct pwm_device *pwm = &fpc->chip.pwms[i];
+
+		if (!test_bit(PWMF_REQUESTED, &pwm->flags))
+			continue;
+
+		clk_prepare_enable(fpc->clk[FSL_PWM_CLK_SYS]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (!pwm_is_enabled(pwm))
 			continue;
 
+<<<<<<< HEAD
 		clk_prepare_enable(fpc->clk[fpc->period.clk_select]);
+=======
+		clk_prepare_enable(fpc->clk[fpc->cnt_select]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		clk_prepare_enable(fpc->clk[FSL_PWM_CLK_CNTEN]);
 	}
 

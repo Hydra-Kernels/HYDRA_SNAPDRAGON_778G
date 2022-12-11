@@ -184,7 +184,11 @@ int io_mem_abort(struct kvm_vcpu *vcpu, struct kvm_run *run,
 					       len);
 
 		trace_kvm_mmio(KVM_TRACE_MMIO_WRITE, len, fault_ipa, &data);
+<<<<<<< HEAD:virt/kvm/arm/mmio.c
 		kvm_mmio_write_buf(data_buf, len, data);
+=======
+		mmio_write_buf(data_buf, len, data);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmio.c
 
 		ret = kvm_io_bus_write(vcpu, KVM_MMIO_BUS, fault_ipa, len,
 				       data_buf);

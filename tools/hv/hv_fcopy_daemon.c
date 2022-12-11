@@ -22,7 +22,11 @@
 #include <getopt.h>
 
 static int target_fd;
+<<<<<<< HEAD
 static char target_fname[PATH_MAX];
+=======
+static char target_fname[W_MAX_PATH];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static unsigned long long filesize;
 
 static int hv_start_fcopy(struct hv_start_fcopy *smsg)

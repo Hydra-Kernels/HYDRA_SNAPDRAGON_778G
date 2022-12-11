@@ -618,7 +618,10 @@ int xen_blkif_schedule(void *arg)
 	bool do_eoi;
 	unsigned int eoi_flags = XEN_EOI_FLAG_SPURIOUS;
 
+<<<<<<< HEAD
 	set_freezable();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while (!kthread_should_stop()) {
 		if (try_to_freeze())
 			continue;
@@ -678,7 +681,11 @@ purge_gnt_list:
 	if (log_stats)
 		print_stats(ring);
 
+<<<<<<< HEAD
 	ring->xenblkd = NULL;
+=======
+	blkif->xenblkd = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -1459,8 +1466,12 @@ static void make_response(struct xen_blkif_ring *ring, u64 id,
 	union blkif_back_rings *blk_rings;
 	int notify;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&ring->blk_ring_lock, flags);
 	blk_rings = &ring->blk_rings;
+=======
+	spin_lock_irqsave(&blkif->blk_ring_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Place on the response ring for the relevant domain. */
 	switch (ring->blkif->blk_protocol) {
 	case BLKIF_PROTOCOL_NATIVE:

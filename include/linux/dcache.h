@@ -149,6 +149,7 @@ struct dentry_operations {
 	void (*d_iput)(struct dentry *, struct inode *);
 	char *(*d_dname)(struct dentry *, char *, int);
 	struct vfsmount *(*d_automount)(struct path *);
+<<<<<<< HEAD
 	int (*d_manage)(const struct path *, bool);
 	struct dentry *(*d_real)(struct dentry *, const struct inode *);
 	void (*d_canonical_path)(const struct path *, struct path *);
@@ -157,6 +158,11 @@ struct dentry_operations {
 	ANDROID_KABI_RESERVE(2);
 	ANDROID_KABI_RESERVE(3);
 	ANDROID_KABI_RESERVE(4);
+=======
+	int (*d_manage)(struct dentry *, bool);
+	struct inode *(*d_select_inode)(struct dentry *, unsigned);
+	struct dentry *(*d_real)(struct dentry *, struct inode *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } ____cacheline_aligned;
 
 /*
@@ -221,12 +227,17 @@ struct dentry_operations {
 
 #define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_FALLTHRU			0x01000000 /* Fall through to lower layer */
+<<<<<<< HEAD
 #define DCACHE_ENCRYPTED_NAME		0x02000000 /* Encrypted name (dir key was unavailable) */
 #define DCACHE_OP_REAL			0x04000000
 
 #define DCACHE_PAR_LOOKUP		0x10000000 /* being looked up (with parent locked shared) */
 #define DCACHE_DENTRY_CURSOR		0x20000000
 #define DCACHE_NORCU			0x40000000 /* No RCU delay for freeing */
+=======
+#define DCACHE_OP_SELECT_INODE		0x02000000 /* Unioned entry: dcache op selects inode */
+#define DCACHE_OP_REAL			0x08000000
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern seqlock_t rename_lock;
 
@@ -569,6 +580,7 @@ static inline struct dentry *d_backing_dentry(struct dentry *upper)
 	return upper;
 }
 
+<<<<<<< HEAD
 /**
  * d_real - Return the real dentry
  * @dentry: the dentry to query
@@ -584,14 +596,35 @@ static inline struct dentry *d_real(struct dentry *dentry,
 {
 	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
 		return dentry->d_op->d_real(dentry, inode);
+=======
+static inline struct dentry *d_real(struct dentry *dentry)
+{
+	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
+		return dentry->d_op->d_real(dentry, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	else
 		return dentry;
 }
 
+<<<<<<< HEAD
+=======
+static inline struct inode *vfs_select_inode(struct dentry *dentry,
+					     unsigned open_flags)
+{
+	struct inode *inode = d_inode(dentry);
+
+	if (inode && unlikely(dentry->d_flags & DCACHE_OP_SELECT_INODE))
+		inode = dentry->d_op->d_select_inode(dentry, open_flags);
+
+	return inode;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * d_real_inode - Return the real inode
  * @dentry: The dentry to query
  *
+<<<<<<< HEAD
  * If dentry is on a union/overlay, then return the underlying, real inode.
  * Otherwise return d_inode().
  */
@@ -604,6 +637,19 @@ static inline struct inode *d_real_inode(const struct dentry *dentry)
 struct name_snapshot {
 	struct qstr name;
 	unsigned char inline_name[DNAME_INLINE_LEN];
+=======
+ * If dentry is on an union/overlay, then return the underlying, real inode.
+ * Otherwise return d_inode().
+ */
+static inline struct inode *d_real_inode(struct dentry *dentry)
+{
+	return d_backing_inode(d_real(dentry));
+}
+
+struct name_snapshot {
+	const char *name;
+	char inline_name[DNAME_INLINE_LEN];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 void take_dentry_name_snapshot(struct name_snapshot *, struct dentry *);
 void release_dentry_name_snapshot(struct name_snapshot *);

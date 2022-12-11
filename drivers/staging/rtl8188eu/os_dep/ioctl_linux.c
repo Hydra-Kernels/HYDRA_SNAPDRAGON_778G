@@ -1383,8 +1383,13 @@ static int rtw_wx_get_essid(struct net_device *dev,
 
 	if ((check_fwstate(pmlmepriv, _FW_LINKED)) ||
 	    (check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE))) {
+<<<<<<< HEAD
 		len = pcur_bss->ssid.ssid_length;
 		memcpy(extra, pcur_bss->ssid.ssid, len);
+=======
+		len = pcur_bss->Ssid.SsidLength;
+		memcpy(extra, pcur_bss->Ssid.Ssid, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		len = 0;
 		*extra = 0;
@@ -1392,7 +1397,11 @@ static int rtw_wx_get_essid(struct net_device *dev,
 	wrqu->essid.length = len;
 	wrqu->essid.flags = 1;
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int rtw_wx_set_rate(struct net_device *dev,

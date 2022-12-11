@@ -1880,6 +1880,7 @@ static void bch_btree_gc(struct cache_set *c)
 }
 
 static bool gc_should_run(struct cache_set *c)
+<<<<<<< HEAD
 {
 	struct cache *ca;
 	unsigned int i;
@@ -1906,6 +1907,31 @@ static int bch_gc_thread(void *arg)
 
 		if (kthread_should_stop() ||
 		    test_bit(CACHE_SET_IO_DISABLE, &c->flags))
+=======
+{
+	struct cache *ca;
+	unsigned i;
+
+	for_each_cache(ca, c, i)
+		if (ca->invalidate_needs_gc)
+			return true;
+
+	if (atomic_read(&c->sectors_to_gc) < 0)
+		return true;
+
+	return false;
+}
+
+static int bch_gc_thread(void *arg)
+{
+	struct cache_set *c = arg;
+
+	while (1) {
+		wait_event_interruptible(c->gc_wait,
+			   kthread_should_stop() || gc_should_run(c));
+
+		if (kthread_should_stop())
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 
 		set_gc_sectors(c);
@@ -1919,7 +1945,14 @@ static int bch_gc_thread(void *arg)
 int bch_gc_thread_start(struct cache_set *c)
 {
 	c->gc_thread = kthread_run(bch_gc_thread, c, "bcache_gc");
+<<<<<<< HEAD
 	return PTR_ERR_OR_ZERO(c->gc_thread);
+=======
+	if (IS_ERR(c->gc_thread))
+		return PTR_ERR(c->gc_thread);
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Initial partial gc */
@@ -2290,10 +2323,17 @@ int bch_btree_insert_check_key(struct btree *b, struct btree_op *op,
 		rw_lock(true, b, b->level);
 
 		if (b->key.ptr[0] != btree_ptr ||
+<<<<<<< HEAD
 		    b->seq != seq + 1) {
 			op->lock = b->level;
 			goto out;
 		}
+=======
+                   b->seq != seq + 1) {
+                       op->lock = b->level;
+			goto out;
+               }
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	SET_KEY_PTRS(check_key, 1);

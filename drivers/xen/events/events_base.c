@@ -739,6 +739,7 @@ static void eoi_pirq(struct irq_data *data)
 
 	if (unlikely(irqd_is_setaffinity_pending(data)) &&
 	    likely(!irqd_irq_disabled(data))) {
+<<<<<<< HEAD
 		do_mask(info, EVT_MASK_REASON_TEMPORARY);
 
 		event_handler_exit(info);
@@ -748,6 +749,18 @@ static void eoi_pirq(struct irq_data *data)
 		do_unmask(info, EVT_MASK_REASON_TEMPORARY);
 	} else
 		event_handler_exit(info);
+=======
+		int masked = test_and_set_mask(evtchn);
+
+		clear_evtchn(evtchn);
+
+		irq_move_masked_irq(data);
+
+		if (!masked)
+			unmask_evtchn(evtchn);
+	} else
+		clear_evtchn(evtchn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (pirq_needs_eoi(data->irq)) {
 		rc = HYPERVISOR_physdev_op(PHYSDEVOP_eoi, &eoi);
@@ -1770,6 +1783,7 @@ static void ack_dynirq(struct irq_data *data)
 
 	if (unlikely(irqd_is_setaffinity_pending(data)) &&
 	    likely(!irqd_irq_disabled(data))) {
+<<<<<<< HEAD
 		do_mask(info, EVT_MASK_REASON_TEMPORARY);
 
 		event_handler_exit(info);
@@ -1779,6 +1793,18 @@ static void ack_dynirq(struct irq_data *data)
 		do_unmask(info, EVT_MASK_REASON_TEMPORARY);
 	} else
 		event_handler_exit(info);
+=======
+		int masked = test_and_set_mask(evtchn);
+
+		clear_evtchn(evtchn);
+
+		irq_move_masked_irq(data);
+
+		if (!masked)
+			unmask_evtchn(evtchn);
+	} else
+		clear_evtchn(evtchn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void mask_ack_dynirq(struct irq_data *data)

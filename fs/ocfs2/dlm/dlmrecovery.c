@@ -2375,6 +2375,7 @@ static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node)
 						break;
 					}
 				}
+<<<<<<< HEAD
 
 				if ((res->owner == dead_node) &&
 							(res->state & DLM_LOCK_RES_DROPPING_REF)) {
@@ -2386,6 +2387,10 @@ static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node)
 					continue;
 				} else if (res->owner == dlm->node_num)
 					dlm_lockres_clear_refmap_bit(dlm, res, dead_node);
+=======
+				dlm_lockres_clear_refmap_bit(dlm, res,
+						dead_node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				spin_unlock(&res->spinlock);
 				continue;
 			}

@@ -1071,9 +1071,12 @@ const struct tegra_mc_soc tegra124_mc_soc = {
 	.intmask = MC_INT_DECERR_MTS | MC_INT_SECERR_SEC | MC_INT_DECERR_VPR |
 		   MC_INT_INVALID_APB_ASID_UPDATE | MC_INT_INVALID_SMMU_PAGE |
 		   MC_INT_SECURITY_VIOLATION | MC_INT_DECERR_EMEM,
+<<<<<<< HEAD
 	.reset_ops = &tegra_mc_reset_ops_common,
 	.resets = tegra124_mc_resets,
 	.num_resets = ARRAY_SIZE(tegra124_mc_resets),
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 #endif /* CONFIG_ARCH_TEGRA_124_SOC */
 
@@ -1101,8 +1104,11 @@ const struct tegra_mc_soc tegra132_mc_soc = {
 	.intmask = MC_INT_DECERR_MTS | MC_INT_SECERR_SEC | MC_INT_DECERR_VPR |
 		   MC_INT_INVALID_APB_ASID_UPDATE | MC_INT_INVALID_SMMU_PAGE |
 		   MC_INT_SECURITY_VIOLATION | MC_INT_DECERR_EMEM,
+<<<<<<< HEAD
 	.reset_ops = &tegra_mc_reset_ops_common,
 	.resets = tegra124_mc_resets,
 	.num_resets = ARRAY_SIZE(tegra124_mc_resets),
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 #endif /* CONFIG_ARCH_TEGRA_132_SOC */

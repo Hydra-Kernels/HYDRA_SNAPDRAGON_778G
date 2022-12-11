@@ -185,6 +185,7 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
 		return irq;
+<<<<<<< HEAD
 
 	/*
 	 * sysdev must point to a device that is known to the system firmware
@@ -213,6 +214,8 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	if (sysdev->parent && sysdev->parent->of_node &&
 		device_property_read_bool(sysdev, "linux,sysdev_is_parent"))
 		sysdev = sysdev->parent;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Try to set 64-bit DMA first */
 	if (WARN_ON(!sysdev->dma_mask))
@@ -244,6 +247,34 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	hcd->rsrc_start = res->start;
 	hcd->rsrc_len = resource_size(res);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Not all platforms have a clk so it is not an error if the
+	 * clock does not exists.
+	 */
+	clk = devm_clk_get(&pdev->dev, NULL);
+	if (!IS_ERR(clk)) {
+		ret = clk_prepare_enable(clk);
+		if (ret)
+			goto put_hcd;
+	} else if (PTR_ERR(clk) == -EPROBE_DEFER) {
+		ret = -EPROBE_DEFER;
+		goto put_hcd;
+	}
+
+	if (of_device_is_compatible(pdev->dev.of_node,
+				    "marvell,armada-375-xhci") ||
+	    of_device_is_compatible(pdev->dev.of_node,
+				    "marvell,armada-380-xhci")) {
+		ret = xhci_mvebu_mbus_init_quirk(pdev);
+		if (ret)
+			goto disable_clk;
+	}
+
+	device_wakeup_enable(hcd->self.controller);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xhci = hcd_to_xhci(hcd);
 
 	/*
@@ -301,6 +332,7 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	/* imod_interval is the interrupt moderation value in nanoseconds. */
 	xhci->imod_interval = 40000;
 
+<<<<<<< HEAD
 	/* Iterate over all parent nodes for finding quirks */
 	for (tmpdev = &pdev->dev; tmpdev; tmpdev = tmpdev->parent) {
 
@@ -318,6 +350,9 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	}
 
 	hcd->usb_phy = devm_usb_get_phy_by_phandle(sysdev, "usb-phy", 0);
+=======
+	hcd->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(hcd->usb_phy)) {
 		ret = PTR_ERR(hcd->usb_phy);
 		if (ret == -EPROBE_DEFER)
@@ -395,10 +430,16 @@ static int xhci_plat_remove(struct platform_device *dev)
 	struct clk *reg_clk = xhci->reg_clk;
 	struct usb_hcd *shared_hcd = xhci->shared_hcd;
 
+<<<<<<< HEAD
 	pm_runtime_get_sync(&dev->dev);
 	xhci->xhc_state |= XHCI_STATE_REMOVING;
 
 	usb_remove_hcd(shared_hcd);
+=======
+	xhci->xhc_state |= XHCI_STATE_REMOVING;
+
+	usb_remove_hcd(xhci->shared_hcd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	usb_phy_shutdown(hcd->usb_phy);
 
 	usb_remove_hcd(hcd);

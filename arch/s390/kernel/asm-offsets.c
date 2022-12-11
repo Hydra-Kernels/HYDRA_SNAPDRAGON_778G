@@ -140,6 +140,7 @@ int main(void)
 	OFFSET(__LC_MCK_NEW_PSW, lowcore, mcck_new_psw);
 	OFFSET(__LC_IO_NEW_PSW, lowcore, io_new_psw);
 	/* software defined lowcore locations 0x200 - 0xdff*/
+<<<<<<< HEAD
 	OFFSET(__LC_SAVE_AREA_SYNC, lowcore, save_area_sync);
 	OFFSET(__LC_SAVE_AREA_ASYNC, lowcore, save_area_async);
 	OFFSET(__LC_SAVE_AREA_RESTART, lowcore, save_area_restart);
@@ -177,9 +178,47 @@ int main(void)
 	OFFSET(__LC_PREEMPT_COUNT, lowcore, preempt_count);
 	OFFSET(__LC_GMAP, lowcore, gmap);
 	OFFSET(__LC_BR_R1, lowcore, br_r1_trampoline);
+=======
+	OFFSET(__LC_SAVE_AREA_SYNC, _lowcore, save_area_sync);
+	OFFSET(__LC_SAVE_AREA_ASYNC, _lowcore, save_area_async);
+	OFFSET(__LC_SAVE_AREA_RESTART, _lowcore, save_area_restart);
+	OFFSET(__LC_CPU_FLAGS, _lowcore, cpu_flags);
+	OFFSET(__LC_RETURN_PSW, _lowcore, return_psw);
+	OFFSET(__LC_RETURN_MCCK_PSW, _lowcore, return_mcck_psw);
+	OFFSET(__LC_SYNC_ENTER_TIMER, _lowcore, sync_enter_timer);
+	OFFSET(__LC_ASYNC_ENTER_TIMER, _lowcore, async_enter_timer);
+	OFFSET(__LC_MCCK_ENTER_TIMER, _lowcore, mcck_enter_timer);
+	OFFSET(__LC_EXIT_TIMER, _lowcore, exit_timer);
+	OFFSET(__LC_USER_TIMER, _lowcore, user_timer);
+	OFFSET(__LC_SYSTEM_TIMER, _lowcore, system_timer);
+	OFFSET(__LC_STEAL_TIMER, _lowcore, steal_timer);
+	OFFSET(__LC_LAST_UPDATE_TIMER, _lowcore, last_update_timer);
+	OFFSET(__LC_LAST_UPDATE_CLOCK, _lowcore, last_update_clock);
+	OFFSET(__LC_INT_CLOCK, _lowcore, int_clock);
+	OFFSET(__LC_MCCK_CLOCK, _lowcore, mcck_clock);
+	OFFSET(__LC_CURRENT, _lowcore, current_task);
+	OFFSET(__LC_THREAD_INFO, _lowcore, thread_info);
+	OFFSET(__LC_KERNEL_STACK, _lowcore, kernel_stack);
+	OFFSET(__LC_ASYNC_STACK, _lowcore, async_stack);
+	OFFSET(__LC_PANIC_STACK, _lowcore, panic_stack);
+	OFFSET(__LC_RESTART_STACK, _lowcore, restart_stack);
+	OFFSET(__LC_RESTART_FN, _lowcore, restart_fn);
+	OFFSET(__LC_RESTART_DATA, _lowcore, restart_data);
+	OFFSET(__LC_RESTART_SOURCE, _lowcore, restart_source);
+	OFFSET(__LC_USER_ASCE, _lowcore, user_asce);
+	OFFSET(__LC_LPP, _lowcore, lpp);
+	OFFSET(__LC_CURRENT_PID, _lowcore, current_pid);
+	OFFSET(__LC_PERCPU_OFFSET, _lowcore, percpu_offset);
+	OFFSET(__LC_VDSO_PER_CPU, _lowcore, vdso_per_cpu_data);
+	OFFSET(__LC_MACHINE_FLAGS, _lowcore, machine_flags);
+	OFFSET(__LC_GMAP, _lowcore, gmap);
+	OFFSET(__LC_PASTE, _lowcore, paste);
+	OFFSET(__LC_BR_R1, _lowcore, br_r1_trampoline);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* software defined ABI-relevant lowcore locations 0xe00 - 0xe20 */
 	OFFSET(__LC_DUMP_REIPL, lowcore, ipib);
 	/* hardware defined lowcore locations 0x1000 - 0x18ff */
+<<<<<<< HEAD
 	OFFSET(__LC_MCESAD, lowcore, mcesad);
 	OFFSET(__LC_EXT_PARAMS2, lowcore, ext_params2);
 	OFFSET(__LC_FPREGS_SAVE_AREA, lowcore, floating_pt_save_area);
@@ -196,6 +235,22 @@ int main(void)
 	BLANK();
 	/* extended machine check save area */
 	OFFSET(__MCESA_GS_SAVE_AREA, mcesa, guarded_storage_save_area);
+=======
+	OFFSET(__LC_VX_SAVE_AREA_ADDR, _lowcore, vector_save_area_addr);
+	OFFSET(__LC_EXT_PARAMS2, _lowcore, ext_params2);
+	OFFSET(SAVE_AREA_BASE, _lowcore, floating_pt_save_area);
+	OFFSET(__LC_FPREGS_SAVE_AREA, _lowcore, floating_pt_save_area);
+	OFFSET(__LC_GPREGS_SAVE_AREA, _lowcore, gpregs_save_area);
+	OFFSET(__LC_PSW_SAVE_AREA, _lowcore, psw_save_area);
+	OFFSET(__LC_PREFIX_SAVE_AREA, _lowcore, prefixreg_save_area);
+	OFFSET(__LC_FP_CREG_SAVE_AREA, _lowcore, fpt_creg_save_area);
+	OFFSET(__LC_TOD_PROGREG_SAVE_AREA, _lowcore, tod_progreg_save_area);
+	OFFSET(__LC_CPU_TIMER_SAVE_AREA, _lowcore, cpu_timer_save_area);
+	OFFSET(__LC_CLOCK_COMP_SAVE_AREA, _lowcore, clock_comp_save_area);
+	OFFSET(__LC_AREGS_SAVE_AREA, _lowcore, access_regs_save_area);
+	OFFSET(__LC_CREGS_SAVE_AREA, _lowcore, cregs_save_area);
+	OFFSET(__LC_PGM_TDB, _lowcore, pgm_tdb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BLANK();
 	/* gmap/sie offsets */
 	OFFSET(__GMAP_ASCE, gmap, asce);

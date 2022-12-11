@@ -13,6 +13,20 @@ cflags-y	+= -fno-common -pipe -fno-builtin -mmedium-calls -D__linux__
 cflags-$(CONFIG_ISA_ARCOMPACT)	+= -mA7
 cflags-$(CONFIG_ISA_ARCV2)	+= -mcpu=hs38
 
+is_700 = $(shell $(CC) -dM -E - < /dev/null | grep -q "ARC700" && echo 1 || echo 0)
+
+ifdef CONFIG_ISA_ARCOMPACT
+ifeq ($(is_700), 0)
+    $(error Toolchain not configured for ARCompact builds)
+endif
+endif
+
+ifdef CONFIG_ISA_ARCV2
+ifeq ($(is_700), 1)
+    $(error Toolchain not configured for ARCv2 builds)
+endif
+endif
+
 ifdef CONFIG_ARC_CURR_IN_REG
 # For a global register defintion, make sure it gets passed to every file
 # We had a customer reported bug where some code built in kernel was NOT using
@@ -45,8 +59,21 @@ endif
 
 endif
 
+<<<<<<< HEAD
 cfi := $(call as-instr,.cfi_startproc\n.cfi_endproc,-DARC_DW2_UNWIND_AS_CFI)
 cflags-$(CONFIG_ARC_DW2_UNWIND)		+= -fasynchronous-unwind-tables $(cfi)
+=======
+# By default gcc 4.8 generates dwarf4 which kernel unwinder can't grok
+ifeq ($(atleast_gcc48),y)
+cflags-$(CONFIG_ARC_DW2_UNWIND)		+= -gdwarf-2
+endif
+
+ifndef CONFIG_CC_OPTIMIZE_FOR_SIZE
+# Generic build system uses -O2, we want -O3
+# Note: No need to add to cflags-y as that happens anyways
+ARCH_CFLAGS += -O3
+endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 # small data is default for elf32 tool-chain. If not usable, disable it
 # This also allows repurposing GP as scratch reg to gcc reg allocator

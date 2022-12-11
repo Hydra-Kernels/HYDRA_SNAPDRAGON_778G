@@ -489,9 +489,18 @@ static void qla2x00_free_queues(struct qla_hw_data *ha)
 	int cnt;
 	unsigned long flags;
 
+<<<<<<< HEAD
 	if (ha->queue_pair_map) {
 		kfree(ha->queue_pair_map);
 		ha->queue_pair_map = NULL;
+=======
+	for (cnt = 0; cnt < ha->max_req_queues; cnt++) {
+		if (!test_bit(cnt, ha->req_qid_map))
+			continue;
+
+		req = ha->req_q_map[cnt];
+		qla2x00_free_req_que(ha, req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	if (ha->base_qpair) {
 		kfree(ha->base_qpair);
@@ -4249,11 +4258,14 @@ qla2x00_mem_alloc(struct qla_hw_data *ha, uint16_t req_len, uint16_t rsp_len,
 
 	return 0;
 
+<<<<<<< HEAD
 fail_flt_buffer:
 	dma_free_coherent(&ha->pdev->dev, SFP_DEV_SIZE,
 	    ha->sfp_data, ha->sfp_data_dma);
 fail_sfp_data:
 	kfree(ha->loop_id_map);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 fail_loop_id_map:
 	dma_pool_free(ha->s_dma_pool, ha->async_pd, ha->async_pd_dma);
 fail_async_pd:
@@ -4324,10 +4336,12 @@ fail_free_nvram:
 	kfree(ha->nvram);
 	ha->nvram = NULL;
 fail_free_ctx_mempool:
-	mempool_destroy(ha->ctx_mempool);
+	if (ha->ctx_mempool)
+		mempool_destroy(ha->ctx_mempool);
 	ha->ctx_mempool = NULL;
 fail_free_srb_mempool:
-	mempool_destroy(ha->srb_mempool);
+	if (ha->srb_mempool)
+		mempool_destroy(ha->srb_mempool);
 	ha->srb_mempool = NULL;
 fail_free_gid_list:
 	dma_free_coherent(&ha->pdev->dev, qla2x00_gid_list_size(ha),
@@ -6254,10 +6268,16 @@ qla2x00_do_dpc(void *data)
 			}
 		}
 
+<<<<<<< HEAD
 		if (test_and_clear_bit(DETECT_SFP_CHANGE,
 			&base_vha->dpc_flags) &&
 		    !test_bit(ISP_ABORT_NEEDED, &base_vha->dpc_flags)) {
 			qla24xx_detect_sfp(base_vha);
+=======
+		if (test_and_clear_bit
+		    (ISP_ABORT_NEEDED, &base_vha->dpc_flags) &&
+		    !test_bit(UNLOADING, &base_vha->dpc_flags)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			if (ha->flags.detected_lr_sfp !=
 			    ha->flags.using_lr_setting)

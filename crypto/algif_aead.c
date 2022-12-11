@@ -41,6 +41,7 @@ struct aead_tfm {
 	struct crypto_sync_skcipher *null_tfm;
 };
 
+<<<<<<< HEAD
 static inline bool aead_sufficient_data(struct sock *sk)
 {
 	struct alg_sock *ask = alg_sk(sk);
@@ -51,6 +52,15 @@ static inline bool aead_sufficient_data(struct sock *sk)
 	struct crypto_aead *tfm = aeadc->aead;
 	unsigned int as = crypto_aead_authsize(tfm);
 
+=======
+struct aead_tfm {
+	struct crypto_aead *aead;
+	bool has_key;
+};
+
+struct aead_ctx {
+	struct aead_sg_list tsgl;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * The minimum amount of memory needed for an AEAD cipher is
 	 * the AAD and in case of decryption the tag.
@@ -468,11 +478,110 @@ static struct proto_ops algif_aead_ops_nokey = {
 	.poll		=	af_alg_poll,
 };
 
+static int aead_check_key(struct socket *sock)
+{
+	int err = 0;
+	struct sock *psk;
+	struct alg_sock *pask;
+	struct aead_tfm *tfm;
+	struct sock *sk = sock->sk;
+	struct alg_sock *ask = alg_sk(sk);
+
+	lock_sock(sk);
+	if (ask->refcnt)
+		goto unlock_child;
+
+	psk = ask->parent;
+	pask = alg_sk(ask->parent);
+	tfm = pask->private;
+
+	err = -ENOKEY;
+	lock_sock_nested(psk, SINGLE_DEPTH_NESTING);
+	if (!tfm->has_key)
+		goto unlock;
+
+	if (!pask->refcnt++)
+		sock_hold(psk);
+
+	ask->refcnt = 1;
+	sock_put(psk);
+
+	err = 0;
+
+unlock:
+	release_sock(psk);
+unlock_child:
+	release_sock(sk);
+
+	return err;
+}
+
+static int aead_sendmsg_nokey(struct socket *sock, struct msghdr *msg,
+				  size_t size)
+{
+	int err;
+
+	err = aead_check_key(sock);
+	if (err)
+		return err;
+
+	return aead_sendmsg(sock, msg, size);
+}
+
+static ssize_t aead_sendpage_nokey(struct socket *sock, struct page *page,
+				       int offset, size_t size, int flags)
+{
+	int err;
+
+	err = aead_check_key(sock);
+	if (err)
+		return err;
+
+	return aead_sendpage(sock, page, offset, size, flags);
+}
+
+static int aead_recvmsg_nokey(struct socket *sock, struct msghdr *msg,
+				  size_t ignored, int flags)
+{
+	int err;
+
+	err = aead_check_key(sock);
+	if (err)
+		return err;
+
+	return aead_recvmsg(sock, msg, ignored, flags);
+}
+
+static struct proto_ops algif_aead_ops_nokey = {
+	.family		=	PF_ALG,
+
+	.connect	=	sock_no_connect,
+	.socketpair	=	sock_no_socketpair,
+	.getname	=	sock_no_getname,
+	.ioctl		=	sock_no_ioctl,
+	.listen		=	sock_no_listen,
+	.shutdown	=	sock_no_shutdown,
+	.getsockopt	=	sock_no_getsockopt,
+	.mmap		=	sock_no_mmap,
+	.bind		=	sock_no_bind,
+	.accept		=	sock_no_accept,
+	.setsockopt	=	sock_no_setsockopt,
+
+	.release	=	af_alg_release,
+	.sendmsg	=	aead_sendmsg_nokey,
+	.sendpage	=	aead_sendpage_nokey,
+	.recvmsg	=	aead_recvmsg_nokey,
+	.poll		=	aead_poll,
+};
+
 static void *aead_bind(const char *name, u32 type, u32 mask)
 {
 	struct aead_tfm *tfm;
 	struct crypto_aead *aead;
+<<<<<<< HEAD
 	struct crypto_sync_skcipher *null_tfm;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	tfm = kzalloc(sizeof(*tfm), GFP_KERNEL);
 	if (!tfm)
@@ -484,6 +593,7 @@ static void *aead_bind(const char *name, u32 type, u32 mask)
 		return ERR_CAST(aead);
 	}
 
+<<<<<<< HEAD
 	null_tfm = crypto_get_default_null_skcipher();
 	if (IS_ERR(null_tfm)) {
 		crypto_free_aead(aead);
@@ -493,6 +603,9 @@ static void *aead_bind(const char *name, u32 type, u32 mask)
 
 	tfm->aead = aead;
 	tfm->null_tfm = null_tfm;
+=======
+	tfm->aead = aead;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return tfm;
 }
@@ -502,7 +615,10 @@ static void aead_release(void *private)
 	struct aead_tfm *tfm = private;
 
 	crypto_free_aead(tfm->aead);
+<<<<<<< HEAD
 	crypto_put_default_null_skcipher();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(tfm);
 }
 
@@ -516,8 +632,17 @@ static int aead_setauthsize(void *private, unsigned int authsize)
 static int aead_setkey(void *private, const u8 *key, unsigned int keylen)
 {
 	struct aead_tfm *tfm = private;
+<<<<<<< HEAD
 
 	return crypto_aead_setkey(tfm->aead, key, keylen);
+=======
+	int err;
+
+	err = crypto_aead_setkey(tfm->aead, key, keylen);
+	tfm->has_key = !err;
+
+	return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void aead_sock_destruct(struct sock *sk)
@@ -542,7 +667,11 @@ static int aead_accept_parent_nokey(void *private, struct sock *sk)
 	struct alg_sock *ask = alg_sk(sk);
 	struct aead_tfm *tfm = private;
 	struct crypto_aead *aead = tfm->aead;
+<<<<<<< HEAD
 	unsigned int len = sizeof(*ctx);
+=======
+	unsigned int len = sizeof(*ctx) + crypto_aead_reqsize(aead);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int ivlen = crypto_aead_ivsize(aead);
 
 	ctx = sock_kmalloc(sk, len, GFP_KERNEL);
@@ -563,6 +692,13 @@ static int aead_accept_parent_nokey(void *private, struct sock *sk)
 
 	ask->private = ctx;
 
+<<<<<<< HEAD
+=======
+	aead_request_set_tfm(&ctx->aead_req, aead);
+	aead_request_set_callback(&ctx->aead_req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+				  af_alg_complete, &ctx->completion);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sk->sk_destruct = aead_sock_destruct;
 
 	return 0;
@@ -572,7 +708,11 @@ static int aead_accept_parent(void *private, struct sock *sk)
 {
 	struct aead_tfm *tfm = private;
 
+<<<<<<< HEAD
 	if (crypto_aead_get_flags(tfm->aead) & CRYPTO_TFM_NEED_KEY)
+=======
+	if (!tfm->has_key)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENOKEY;
 
 	return aead_accept_parent_nokey(private, sk);

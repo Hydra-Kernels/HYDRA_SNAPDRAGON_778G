@@ -926,8 +926,12 @@ again:
 		    cur->bytenr) {
 			btrfs_err(root->fs_info,
 	"couldn't find block (%llu) (level %d) in tree (%llu) with key (%llu %u %llu)",
+<<<<<<< HEAD
 				  cur->bytenr, level - 1,
 				  root->root_key.objectid,
+=======
+				  cur->bytenr, level - 1, root->objectid,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  node_key->objectid, node_key->type,
 				  node_key->offset);
 			err = -ENOENT;

@@ -109,10 +109,13 @@ struct xfs_buf_map {
 
 struct xfs_buf_ops {
 	char *name;
+<<<<<<< HEAD
 	union {
 		__be32 magic[2];	/* v4 and v5 on disk magic values */
 		__be16 magic16[2];	/* v4 and v5 on disk magic values */
 	};
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	void (*verify_read)(struct xfs_buf *);
 	void (*verify_write)(struct xfs_buf *);
 	xfs_failaddr_t (*verify_struct)(struct xfs_buf *bp);

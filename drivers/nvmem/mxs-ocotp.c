@@ -82,7 +82,11 @@ static int mxs_ocotp_read(void *context, unsigned int offset,
 	if (ret)
 		goto close_banks;
 
+<<<<<<< HEAD
 	while (bytes) {
+=======
+	while (val_size >= reg_size) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if ((offset < OCOTP_DATA_OFFSET) || (offset % 16)) {
 			/* fill up non-data register */
 			*buf++ = 0;
@@ -90,8 +94,14 @@ static int mxs_ocotp_read(void *context, unsigned int offset,
 			*buf++ = readl(otp->base + offset);
 		}
 
+<<<<<<< HEAD
 		bytes -= 4;
 		offset += 4;
+=======
+		buf++;
+		val_size -= reg_size;
+		offset += reg_size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 close_banks:

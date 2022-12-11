@@ -102,6 +102,16 @@ ifdef CONFIG_EXPOLINE
   endif
 endif
 
+ifdef CONFIG_EXPOLINE
+  ifeq ($(call cc-option-yn,$(CC_FLAGS_MARCH) -mindirect-branch=thunk),y)
+    CC_FLAGS_EXPOLINE := -mindirect-branch=thunk
+    CC_FLAGS_EXPOLINE += -mfunction-return=thunk
+    CC_FLAGS_EXPOLINE += -mindirect-branch-table
+    export CC_FLAGS_EXPOLINE
+    cflags-y += $(CC_FLAGS_EXPOLINE) -DCC_USING_EXPOLINE
+  endif
+endif
+
 ifdef CONFIG_FUNCTION_TRACER
   ifeq ($(call cc-option-yn,-mfentry -mnop-mcount),n)
     # make use of hotpatch feature if the compiler supports it

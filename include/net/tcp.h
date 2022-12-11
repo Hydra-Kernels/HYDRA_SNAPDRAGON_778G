@@ -350,6 +350,7 @@ ssize_t tcp_splice_read(struct socket *sk, loff_t *ppos,
 			struct pipe_inode_info *pipe, size_t len,
 			unsigned int flags);
 
+<<<<<<< HEAD
 /* sysctl master controller */
 extern int tcp_use_userconfig_sysctl_handler(struct ctl_table *table,
 				int write, void __user *buffer, size_t *length,
@@ -358,6 +359,8 @@ extern int tcp_proc_delayed_ack_control(struct ctl_table *table, int write,
 				void __user *buffer, size_t *length,
 				loff_t *ppos);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void tcp_enter_quickack_mode(struct sock *sk, unsigned int max_quickacks);
 static inline void tcp_dec_quickack_mode(struct sock *sk,
 					 const unsigned int pkts)
@@ -1361,8 +1364,33 @@ static inline bool tcp_checksum_complete(struct sk_buff *skb)
 		__skb_checksum_complete(skb);
 }
 
+<<<<<<< HEAD
 bool tcp_add_backlog(struct sock *sk, struct sk_buff *skb);
 int tcp_filter(struct sock *sk, struct sk_buff *skb);
+=======
+/* Prequeue for VJ style copy to user, combined with checksumming. */
+
+static inline void tcp_prequeue_init(struct tcp_sock *tp)
+{
+	tp->ucopy.task = NULL;
+	tp->ucopy.len = 0;
+	tp->ucopy.memory = 0;
+	skb_queue_head_init(&tp->ucopy.prequeue);
+}
+
+bool tcp_prequeue(struct sock *sk, struct sk_buff *skb);
+int tcp_filter(struct sock *sk, struct sk_buff *skb);
+
+#undef STATE_TRACE
+
+#ifdef STATE_TRACE
+static const char *statename[]={
+	"Unused","Established","Syn Sent","Syn Recv",
+	"Fin Wait 1","Fin Wait 2","Time Wait", "Close",
+	"Close Wait","Last ACK","Listen","Closing"
+};
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void tcp_set_state(struct sock *sk, int state);
 void tcp_done(struct sock *sk);
 int tcp_abort(struct sock *sk, int err);
@@ -1398,7 +1426,11 @@ void tcp_select_initial_window(const struct sock *sk, int __space,
 
 static inline int tcp_win_from_space(const struct sock *sk, int space)
 {
+<<<<<<< HEAD
 	int tcp_adv_win_scale = sock_net(sk)->ipv4.sysctl_tcp_adv_win_scale;
+=======
+	int tcp_adv_win_scale = sysctl_tcp_adv_win_scale;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return tcp_adv_win_scale <= 0 ?
 		(space>>(-tcp_adv_win_scale)) :
@@ -1804,7 +1836,14 @@ static inline bool tcp_write_queue_empty(const struct sock *sk)
 
 static inline bool tcp_rtx_queue_empty(const struct sock *sk)
 {
+<<<<<<< HEAD
 	return RB_EMPTY_ROOT(&sk->tcp_rtx_queue);
+=======
+	if (sk->sk_send_head == skb_unlinked)
+		sk->sk_send_head = NULL;
+	if (tcp_sk(sk)->highest_sack == skb_unlinked)
+		tcp_sk(sk)->highest_sack = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline bool tcp_rtx_and_write_queues_empty(const struct sock *sk)

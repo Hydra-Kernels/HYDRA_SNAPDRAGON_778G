@@ -183,6 +183,7 @@ static inline void tcp_event_ack_sent(struct sock *sk, unsigned int pkts,
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 
+<<<<<<< HEAD
 	if (unlikely(tp->compressed_ack > TCP_FASTRETRANS_THRESH)) {
 		NET_ADD_STATS(sock_net(sk), LINUX_MIB_TCPACKCOMPRESSED,
 			      tp->compressed_ack - TCP_FASTRETRANS_THRESH);
@@ -191,6 +192,8 @@ static inline void tcp_event_ack_sent(struct sock *sk, unsigned int pkts,
 			__sock_put(sk);
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(rcv_nxt != tp->rcv_nxt))
 		return;  /* Special ACK sent by DCTCP to reflect ECN */
 	tcp_dec_quickack_mode(sk, pkts);
@@ -233,7 +236,27 @@ void tcp_select_initial_window(const struct sock *sk, int __space, __u32 mss,
 	else
 		(*rcv_wnd) = min_t(u32, space, U16_MAX);
 
+<<<<<<< HEAD
 	if (init_rcv_wnd)
+=======
+	(*rcv_wscale) = 0;
+	if (wscale_ok) {
+		/* Set window scaling on max possible window
+		 * See RFC1323 for an explanation of the limit to 14
+		 */
+		space = max_t(u32, space, sysctl_tcp_rmem[2]);
+		space = max_t(u32, space, sysctl_rmem_max);
+		space = min_t(u32, space, *window_clamp);
+		while (space > 65535 && (*rcv_wscale) < 14) {
+			space >>= 1;
+			(*rcv_wscale)++;
+		}
+	}
+
+	if (mss > (1 << *rcv_wscale)) {
+		if (!init_rcv_wnd) /* Use default unless specified otherwise */
+			init_rcv_wnd = tcp_default_init_rwnd(mss);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		*rcv_wnd = min(*rcv_wnd, init_rcv_wnd * mss);
 
 	*rcv_wscale = 0;
@@ -1196,6 +1219,13 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
 				  tcp_sk(sk)->rcv_nxt);
 }
 
+static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+			    gfp_t gfp_mask)
+{
+	return __tcp_transmit_skb(sk, skb, clone_it, gfp_mask,
+				  tcp_sk(sk)->rcv_nxt);
+}
+
 /* This routine just queues the buffer for sending.
  *
  * NOTE: probe0 timer is not checked, do not forget tcp_push_pending_frames,
@@ -1453,7 +1483,11 @@ int tcp_trim_head(struct sock *sk, struct sk_buff *skb, u32 len)
 
 	if (delta_truesize) {
 		skb->truesize	   -= delta_truesize;
+<<<<<<< HEAD
 		sk_wmem_queued_add(sk, -delta_truesize);
+=======
+		sk->sk_wmem_queued -= delta_truesize;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sk_mem_uncharge(sk, delta_truesize);
 		sock_set_flag(sk, SOCK_QUEUE_SHRUNK);
 	}
@@ -2186,7 +2220,18 @@ static int tcp_mtu_probe(struct sock *sk)
 	len = 0;
 	tcp_for_write_queue_from_safe(skb, next, sk) {
 		copy = min_t(int, skb->len, probe_size - len);
+<<<<<<< HEAD
 		skb_copy_bits(skb, 0, skb_put(nskb, copy), copy);
+=======
+		if (nskb->ip_summed) {
+			skb_copy_bits(skb, 0, skb_put(nskb, copy), copy);
+		} else {
+			__wsum csum = skb_copy_and_csum_bits(skb, 0,
+							     skb_put(nskb, copy),
+							     copy, 0);
+			nskb->csum = csum_block_add(nskb->csum, csum, len);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (skb->len <= copy) {
 			/* We've eaten all the data from this skb.
@@ -2814,6 +2859,7 @@ static bool tcp_collapse_retrans(struct sock *sk, struct sk_buff *skb)
 
 	BUG_ON(tcp_skb_pcount(skb) != 1 || tcp_skb_pcount(next_skb) != 1);
 
+<<<<<<< HEAD
 	if (next_skb_size) {
 		if (next_skb_size <= skb_availroom(skb))
 			skb_copy_bits(next_skb, 0, skb_put(skb, next_skb_size),
@@ -2822,6 +2868,20 @@ static bool tcp_collapse_retrans(struct sock *sk, struct sk_buff *skb)
 			return false;
 	}
 	tcp_highest_sack_replace(sk, next_skb, skb);
+=======
+	tcp_highest_sack_replace(sk, next_skb, skb);
+
+	tcp_unlink_write_queue(next_skb, sk);
+
+	skb_copy_from_linear_data(next_skb, skb_put(skb, next_skb_size),
+				  next_skb_size);
+
+	if (next_skb->ip_summed == CHECKSUM_PARTIAL)
+		skb->ip_summed = CHECKSUM_PARTIAL;
+
+	if (skb->ip_summed != CHECKSUM_PARTIAL)
+		skb->csum = csum_block_add(skb->csum, next_skb->csum, skb_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Update sequence range on original skb. */
 	TCP_SKB_CB(skb)->end_seq = TCP_SKB_CB(next_skb)->end_seq;
@@ -2921,7 +2981,11 @@ int __tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb, int segs)
 	/* Do not sent more than we queued. 1/4 is reserved for possible
 	 * copying overhead: fragmentation, tunneling, mangling etc.
 	 */
+<<<<<<< HEAD
 	if (refcount_read(&sk->sk_wmem_alloc) >
+=======
+	if (atomic_read(&sk->sk_wmem_alloc) >
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    min_t(u32, sk->sk_wmem_queued + (sk->sk_wmem_queued >> 2),
 		  sk->sk_sndbuf))
 		return -EAGAIN;
@@ -2990,6 +3054,7 @@ int __tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb, int segs)
 		     skb_headroom(skb) >= 0xFFFF)) {
 		struct sk_buff *nskb;
 
+<<<<<<< HEAD
 		tcp_skb_tsorted_save(skb) {
 			nskb = __pskb_copy(skb, MAX_TCP_HEADER, GFP_ATOMIC);
 			if (nskb) {
@@ -3004,6 +3069,12 @@ int __tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb, int segs)
 			tcp_update_skb_after_send(sk, skb, tp->tcp_wstamp_ns);
 			tcp_rate_skb_sent(sk, skb);
 		}
+=======
+		skb_mstamp_get(&skb->skb_mstamp);
+		nskb = __pskb_copy(skb, MAX_TCP_HEADER, GFP_ATOMIC);
+		err = nskb ? tcp_transmit_skb(sk, nskb, 0, GFP_ATOMIC) :
+			     -ENOBUFS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		err = tcp_transmit_skb(sk, skb, 1, GFP_ATOMIC);
 	}
@@ -3350,7 +3421,10 @@ struct sk_buff *tcp_make_synack(const struct sock *sk, struct dst_entry *dst,
 	tcp_ecn_make_synack(req, th);
 	th->source = htons(ireq->ir_num);
 	th->dest = ireq->ir_rmt_port;
+<<<<<<< HEAD
 	skb->mark = ireq->ir_mark;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb->ip_summed = CHECKSUM_PARTIAL;
 	th->seq = htonl(tcp_rsk(req)->snt_isn);
 	/* XXX data is queued and acked as is. No buffer/window check */
@@ -3587,8 +3661,11 @@ int tcp_connect(struct sock *sk)
 	struct sk_buff *buff;
 	int err;
 
+<<<<<<< HEAD
 	tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_CONNECT_CB, 0, NULL);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (inet_csk(sk)->icsk_af_ops->rebuild_header(sk))
 		return -EHOSTUNREACH; /* Routing failure or similar. */
 
@@ -3726,7 +3803,12 @@ void __tcp_send_ack(struct sock *sk, u32 rcv_nxt)
 	skb_set_tcp_pure_ack(buff);
 
 	/* Send it off, this clears delayed acks for us. */
+<<<<<<< HEAD
 	__tcp_transmit_skb(sk, buff, 0, (__force gfp_t)0, rcv_nxt);
+=======
+	skb_mstamp_get(&buff->skb_mstamp);
+	__tcp_transmit_skb(sk, buff, 0, sk_gfp_atomic(sk, GFP_ATOMIC), rcv_nxt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(__tcp_send_ack);
 

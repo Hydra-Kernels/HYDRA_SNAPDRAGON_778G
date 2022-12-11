@@ -2056,6 +2056,12 @@ static int ebt_size_mwt(const struct compat_ebt_entry_mwt *match32,
 		if (match_kern)
 			match_kern->match_size = ret;
 
+<<<<<<< HEAD
+=======
+		if (WARN_ON(type == EBT_COMPAT_TARGET && size_left))
+			return -EINVAL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		match32 = (struct compat_ebt_entry_mwt *) buf;
 	} while (size_left);
 
@@ -2157,9 +2163,15 @@ static int size_entry_mwt(const struct ebt_entry *entry, const unsigned char *ba
 	if (next_expected_off != entry->next_offset)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (*total < entry->next_offset)
 		return -EINVAL;
 	*total -= entry->next_offset;
+=======
+	if (WARN_ON(*total < startoff))
+		return -EINVAL;
+	*total -= startoff;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -2290,10 +2302,15 @@ static int compat_do_replace(struct net *net, void __user *user,
 	state.buf_kern_len = size64;
 
 	ret = compat_copy_entries(entries_tmp, tmp.entries_size, &state);
+<<<<<<< HEAD
 	if (WARN_ON(ret < 0)) {
 		vfree(entries_tmp);
 		goto out_unlock;
 	}
+=======
+	if (WARN_ON(ret < 0))
+		goto out_unlock;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	vfree(entries_tmp);
 	tmp.entries_size = size64;

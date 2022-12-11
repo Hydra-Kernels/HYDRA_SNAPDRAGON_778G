@@ -499,7 +499,11 @@ static void hid_ctrl(struct urb *urb)
 		hid_warn(urb->dev, "ctrl urb status %d received\n", status);
 	}
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&usbhid->lock, flags);
+=======
+	spin_lock(&usbhid->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (unplug) {
 		usbhid->ctrltail = usbhid->ctrlhead;

@@ -43,14 +43,22 @@ static void xt_rateest_hash_insert(struct xt_rateest_net *xn,
 	hlist_add_head(&est->list, &xn->hash[h]);
 }
 
+<<<<<<< HEAD
 static struct xt_rateest *__xt_rateest_lookup(struct xt_rateest_net *xn,
 					      const char *name)
+=======
+static struct xt_rateest *__xt_rateest_lookup(const char *name)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct xt_rateest *est;
 	unsigned int h;
 
 	h = xt_rateest_hash(name);
+<<<<<<< HEAD
 	hlist_for_each_entry(est, &xn->hash[h], list) {
+=======
+	hlist_for_each_entry(est, &rateest_hash[h], list) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (strcmp(est->name, name) == 0) {
 			est->refcnt++;
 			return est;
@@ -60,6 +68,7 @@ static struct xt_rateest *__xt_rateest_lookup(struct xt_rateest_net *xn,
 	return NULL;
 }
 
+<<<<<<< HEAD
 struct xt_rateest *xt_rateest_lookup(struct net *net, const char *name)
 {
 	struct xt_rateest_net *xn = net_generic(net, xt_rateest_id);
@@ -68,6 +77,15 @@ struct xt_rateest *xt_rateest_lookup(struct net *net, const char *name)
 	mutex_lock(&xn->hash_lock);
 	est = __xt_rateest_lookup(xn, name);
 	mutex_unlock(&xn->hash_lock);
+=======
+struct xt_rateest *xt_rateest_lookup(const char *name)
+{
+	struct xt_rateest *est;
+
+	mutex_lock(&xt_rateest_mutex);
+	est = __xt_rateest_lookup(name);
+	mutex_unlock(&xt_rateest_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return est;
 }
 EXPORT_SYMBOL_GPL(xt_rateest_lookup);
@@ -118,12 +136,19 @@ static int xt_rateest_tg_checkentry(const struct xt_tgchk_param *par)
 	if (strnlen(info->name, sizeof(est->name)) >= sizeof(est->name))
 		return -ENAMETOOLONG;
 
+<<<<<<< HEAD
 	net_get_random_once(&jhash_rnd, sizeof(jhash_rnd));
 
 	mutex_lock(&xn->hash_lock);
 	est = __xt_rateest_lookup(xn, info->name);
 	if (est) {
 		mutex_unlock(&xn->hash_lock);
+=======
+	mutex_lock(&xt_rateest_mutex);
+	est = __xt_rateest_lookup(info->name);
+	if (est) {
+		mutex_unlock(&xt_rateest_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * If estimator parameters are specified, they must match the
 		 * existing estimator.
@@ -160,14 +185,23 @@ static int xt_rateest_tg_checkentry(const struct xt_tgchk_param *par)
 		goto err2;
 
 	info->est = est;
+<<<<<<< HEAD
 	xt_rateest_hash_insert(xn, est);
 	mutex_unlock(&xn->hash_lock);
+=======
+	xt_rateest_hash_insert(est);
+	mutex_unlock(&xt_rateest_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 err2:
 	kfree(est);
 err1:
+<<<<<<< HEAD
 	mutex_unlock(&xn->hash_lock);
+=======
+	mutex_unlock(&xt_rateest_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

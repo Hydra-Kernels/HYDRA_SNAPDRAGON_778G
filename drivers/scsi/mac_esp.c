@@ -370,6 +370,21 @@ static int esp_mac_probe(struct platform_device *dev)
 	}
 
 	host->irq = IRQ_MAC_SCSI;
+<<<<<<< HEAD
+=======
+
+	/* The request_irq() call is intended to succeed for the first device
+	 * and fail for the second device.
+	 */
+	err = request_irq(host->irq, mac_scsi_esp_intr, 0, "ESP", NULL);
+	spin_lock(&esp_chips_lock);
+	if (err < 0 && esp_chips[!dev->id] == NULL) {
+		spin_unlock(&esp_chips_lock);
+		goto fail_free_priv;
+	}
+	esp_chips[dev->id] = esp;
+	spin_unlock(&esp_chips_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* The request_irq() call is intended to succeed for the first device
 	 * and fail for the second device.
@@ -394,7 +409,11 @@ fail_free_irq:
 	esp_chips[dev->id] = NULL;
 	if (esp_chips[!dev->id] == NULL) {
 		spin_unlock(&esp_chips_lock);
+<<<<<<< HEAD
 		free_irq(host->irq, NULL);
+=======
+		free_irq(host->irq, esp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else
 		spin_unlock(&esp_chips_lock);
 fail_free_priv:

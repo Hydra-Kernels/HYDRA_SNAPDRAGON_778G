@@ -760,7 +760,10 @@ static void tun_detach_all(struct net_device *dev)
 	for (i = 0; i < n; i++) {
 		tfile = rtnl_dereference(tun->tfiles[i]);
 		BUG_ON(!tfile);
+<<<<<<< HEAD
 		tun_napi_disable(tfile);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		tfile->socket.sk->sk_shutdown = RCV_SHUTDOWN;
 		tfile->socket.sk->sk_data_ready(tfile->socket.sk);
 		RCU_INIT_POINTER(tfile->tun, NULL);
@@ -823,9 +826,14 @@ static int tun_attach(struct tun_struct *tun, struct file *file,
 
 	/* Re-attach the filter to persist device */
 	if (!skip_filter && (tun->filter_attached == true)) {
+<<<<<<< HEAD
 		lock_sock(tfile->socket.sk);
 		err = sk_attach_filter(&tun->fprog, tfile->socket.sk);
 		release_sock(tfile->socket.sk);
+=======
+		err = __sk_attach_filter(&tun->fprog, tfile->socket.sk,
+					 lockdep_rtnl_is_held());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!err)
 			goto out;
 	}
@@ -839,6 +847,12 @@ static int tun_attach(struct tun_struct *tun, struct file *file,
 
 	tfile->queue_index = tun->numqueues;
 	tfile->socket.sk->sk_shutdown &= ~RCV_SHUTDOWN;
+<<<<<<< HEAD
+=======
+	rcu_assign_pointer(tfile->tun, tun);
+	rcu_assign_pointer(tun->tfiles[tun->numqueues], tfile);
+	tun->numqueues++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (tfile->detached) {
 		/* Re-attach detached tfile, updating XDP queue_index */
@@ -1778,6 +1792,13 @@ static ssize_t tun_get_user(struct tun_struct *tun, struct tun_file *tfile,
 
 	if (tun->flags & IFF_VNET_HDR) {
 		int vnet_hdr_sz = READ_ONCE(tun->vnet_hdr_sz);
+<<<<<<< HEAD
+=======
+
+		if (len < vnet_hdr_sz)
+			return -EINVAL;
+		len -= vnet_hdr_sz;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (len < vnet_hdr_sz)
 			return -EINVAL;
@@ -2234,6 +2255,7 @@ static ssize_t tun_do_read(struct tun_struct *tun, struct tun_file *tfile,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	if (!ptr) {
 		/* Read frames from ring */
 		ptr = tun_ring_recv(tfile, noblock, &err);
@@ -2243,6 +2265,13 @@ static ssize_t tun_do_read(struct tun_struct *tun, struct tun_file *tfile,
 
 	if (tun_is_xdp_frame(ptr)) {
 		struct xdp_frame *xdpf = tun_ptr_to_xdp(ptr);
+=======
+	/* Read frames from queue */
+	skb = __skb_recv_datagram(tfile->socket.sk, noblock ? MSG_DONTWAIT : 0,
+				  &peeked, &off, &err);
+	if (!skb)
+		return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		ret = tun_put_user_xdp(tun, tfile, xdpf, to);
 		xdp_return_frame(xdpf);
@@ -2335,8 +2364,12 @@ static void tun_setup(struct net_device *dev)
 	tun_default_link_ksettings(dev, &tun->link_ksettings);
 
 	dev->ethtool_ops = &tun_ethtool_ops;
+<<<<<<< HEAD
 	dev->needs_free_netdev = true;
 	dev->priv_destructor = tun_free_netdev;
+=======
+	dev->destructor = tun_free_netdev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* We prefer our own queue length */
 	dev->tx_queue_len = TUN_READQ_SIZE;
 }
@@ -2956,9 +2989,13 @@ static void tun_detach_filter(struct tun_struct *tun, int n)
 
 	for (i = 0; i < n; i++) {
 		tfile = rtnl_dereference(tun->tfiles[i]);
+<<<<<<< HEAD
 		lock_sock(tfile->socket.sk);
 		sk_detach_filter(tfile->socket.sk);
 		release_sock(tfile->socket.sk);
+=======
+		__sk_detach_filter(tfile->socket.sk, lockdep_rtnl_is_held());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	tun->filter_attached = false;
@@ -2971,9 +3008,14 @@ static int tun_attach_filter(struct tun_struct *tun)
 
 	for (i = 0; i < tun->numqueues; i++) {
 		tfile = rtnl_dereference(tun->tfiles[i]);
+<<<<<<< HEAD
 		lock_sock(tfile->socket.sk);
 		ret = sk_attach_filter(&tun->fprog, tfile->socket.sk);
 		release_sock(tfile->socket.sk);
+=======
+		ret = __sk_attach_filter(&tun->fprog, tfile->socket.sk,
+					 lockdep_rtnl_is_held());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret) {
 			tun_detach_filter(tun, i);
 			return ret;

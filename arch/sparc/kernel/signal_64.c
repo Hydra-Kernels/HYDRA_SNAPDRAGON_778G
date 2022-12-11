@@ -320,7 +320,11 @@ void do_rt_sigreturn(struct pt_regs *regs)
 	set_current_blocked(&set);
 	return;
 segv:
+<<<<<<< HEAD
 	force_sig(SIGSEGV);
+=======
+	force_sig(SIGSEGV, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void __user *get_sigframe(struct ksignal *ksig, struct pt_regs *regs, unsigned long framesize)

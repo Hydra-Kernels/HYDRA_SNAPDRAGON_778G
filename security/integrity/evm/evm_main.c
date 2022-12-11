@@ -22,7 +22,10 @@
 #include <linux/magic.h>
 
 #include <crypto/hash.h>
+<<<<<<< HEAD
 #include <crypto/hash_info.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <crypto/algapi.h>
 #include "evm.h"
 
@@ -177,8 +180,13 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
 				   xattr_value_len, &digest);
 		if (rc)
 			break;
+<<<<<<< HEAD
 		rc = crypto_memneq(xattr_data->data, digest.digest,
 				   SHA1_DIGEST_SIZE);
+=======
+		rc = crypto_memneq(xattr_data->digest, calc.digest,
+			    sizeof(calc.digest));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (rc)
 			rc = -EINVAL;
 		break;

@@ -1637,7 +1637,11 @@ ims_pcu_get_cdc_union_desc(struct usb_interface *intf)
 				return union_desc;
 
 			dev_err(&intf->dev,
+<<<<<<< HEAD
 				"Union descriptor too short (%d vs %zd)\n",
+=======
+				"Union descriptor to short (%d vs %zd\n)",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				union_desc->bLength, sizeof(*union_desc));
 			return NULL;
 		}

@@ -1631,9 +1631,23 @@ restart:
 		status = __nfs4_reclaim_open_state(sp, state, ops);
 
 		switch (status) {
+<<<<<<< HEAD
 		default:
 			if (status >= 0) {
 				loop = 0;
+=======
+			default:
+				printk(KERN_ERR "NFS: %s: unhandled error %d\n",
+					__func__, status);
+			case -ENOENT:
+			case -ENOMEM:
+			case -EACCES:
+			case -EROFS:
+			case -EIO:
+			case -ESTALE:
+				/* Open state on this file cannot be recovered */
+				nfs4_state_mark_recovery_failed(state, status);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 			}
 			printk(KERN_ERR "NFS: %s: unhandled error %d\n", __func__, status);
@@ -1800,7 +1814,11 @@ static int nfs4_state_clear_reclaim_reboot(struct nfs_client *clp)
 static void nfs4_state_end_reclaim_reboot(struct nfs_client *clp)
 {
 	const struct nfs4_state_recovery_ops *ops;
+<<<<<<< HEAD
 	const struct cred *cred;
+=======
+	struct rpc_cred *cred;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err;
 
 	if (!nfs4_state_clear_reclaim_reboot(clp))
@@ -1808,9 +1826,21 @@ static void nfs4_state_end_reclaim_reboot(struct nfs_client *clp)
 	ops = clp->cl_mvops->reboot_recovery_ops;
 	cred = nfs4_get_clid_cred(clp);
 	err = nfs4_reclaim_complete(clp, ops, cred);
+<<<<<<< HEAD
 	put_cred(cred);
 	if (err == -NFS4ERR_CONN_NOT_BOUND_TO_SESSION)
 		set_bit(NFS4CLNT_RECLAIM_REBOOT, &clp->cl_state);
+=======
+	put_rpccred(cred);
+	if (err == -NFS4ERR_CONN_NOT_BOUND_TO_SESSION)
+		set_bit(NFS4CLNT_RECLAIM_REBOOT, &clp->cl_state);
+}
+
+static void nfs_delegation_clear_all(struct nfs_client *clp)
+{
+	nfs_delegation_mark_reclaim(clp);
+	nfs_delegation_reap_unclaimed(clp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void nfs4_state_start_reclaim_nograce(struct nfs_client *clp)
@@ -1822,6 +1852,7 @@ static void nfs4_state_start_reclaim_nograce(struct nfs_client *clp)
 static int nfs4_recovery_handle_error(struct nfs_client *clp, int error)
 {
 	switch (error) {
+<<<<<<< HEAD
 	case 0:
 		break;
 	case -NFS4ERR_CB_PATH_DOWN:
@@ -1854,6 +1885,40 @@ static int nfs4_recovery_handle_error(struct nfs_client *clp, int error)
 		dprintk("%s: failed to handle error %d for server %s\n",
 				__func__, error, clp->cl_hostname);
 		return error;
+=======
+		case 0:
+			break;
+		case -NFS4ERR_CB_PATH_DOWN:
+			nfs40_handle_cb_pathdown(clp);
+			break;
+		case -NFS4ERR_NO_GRACE:
+			nfs4_state_end_reclaim_reboot(clp);
+			break;
+		case -NFS4ERR_STALE_CLIENTID:
+			set_bit(NFS4CLNT_LEASE_EXPIRED, &clp->cl_state);
+			nfs4_state_start_reclaim_reboot(clp);
+			break;
+		case -NFS4ERR_EXPIRED:
+			set_bit(NFS4CLNT_LEASE_EXPIRED, &clp->cl_state);
+			nfs4_state_start_reclaim_nograce(clp);
+			break;
+		case -NFS4ERR_BADSESSION:
+		case -NFS4ERR_BADSLOT:
+		case -NFS4ERR_BAD_HIGH_SLOT:
+		case -NFS4ERR_DEADSESSION:
+		case -NFS4ERR_SEQ_FALSE_RETRY:
+		case -NFS4ERR_SEQ_MISORDERED:
+			set_bit(NFS4CLNT_SESSION_RESET, &clp->cl_state);
+			/* Zero session reset errors */
+			break;
+		case -NFS4ERR_CONN_NOT_BOUND_TO_SESSION:
+			set_bit(NFS4CLNT_BIND_CONN_TO_SESSION, &clp->cl_state);
+			break;
+		default:
+			dprintk("%s: failed to handle error %d for server %s\n",
+					__func__, error, clp->cl_hostname);
+			return error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	dprintk("%s: handled error %d for server %s\n", __func__, error,
 			clp->cl_hostname);

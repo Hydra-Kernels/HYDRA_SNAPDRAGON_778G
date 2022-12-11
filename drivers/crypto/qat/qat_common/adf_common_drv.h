@@ -236,6 +236,7 @@ void adf_disable_vf2pf_interrupts(struct adf_accel_dev *accel_dev,
 				  uint32_t vf_mask);
 void adf_enable_vf2pf_interrupts(struct adf_accel_dev *accel_dev,
 				 uint32_t vf_mask);
+<<<<<<< HEAD
 void adf_enable_pf2vf_interrupts(struct adf_accel_dev *accel_dev);
 void adf_disable_pf2vf_interrupts(struct adf_accel_dev *accel_dev);
 
@@ -245,6 +246,10 @@ int adf_init_pf_wq(void);
 void adf_exit_pf_wq(void);
 int adf_init_vf_wq(void);
 void adf_exit_vf_wq(void);
+=======
+int adf_init_pf_wq(void);
+void adf_exit_pf_wq(void);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 static inline int adf_sriov_configure(struct pci_dev *pdev, int numvfs)
 {
@@ -255,6 +260,7 @@ static inline void adf_disable_sriov(struct adf_accel_dev *accel_dev)
 {
 }
 
+<<<<<<< HEAD
 static inline void adf_enable_pf2vf_interrupts(struct adf_accel_dev *accel_dev)
 {
 }
@@ -272,6 +278,8 @@ static inline void adf_vf2pf_notify_shutdown(struct adf_accel_dev *accel_dev)
 {
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline int adf_init_pf_wq(void)
 {
 	return 0;
@@ -280,6 +288,7 @@ static inline int adf_init_pf_wq(void)
 static inline void adf_exit_pf_wq(void)
 {
 }
+<<<<<<< HEAD
 
 static inline int adf_init_vf_wq(void)
 {
@@ -290,5 +299,7 @@ static inline void adf_exit_vf_wq(void)
 {
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 #endif

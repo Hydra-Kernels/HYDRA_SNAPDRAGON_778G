@@ -310,6 +310,7 @@ extern unsigned long __copy_tofrom_user(void __user *to,
 static inline unsigned long
 raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
 {
+<<<<<<< HEAD
 	unsigned long ret;
 
 	barrier_nospec();
@@ -318,6 +319,34 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
 	prevent_read_write_user(to, from, n);
 	return ret;
 }
+=======
+	if (likely(access_ok(VERIFY_READ, from, n)))
+		return __copy_tofrom_user((__force void __user *)to, from, n);
+	memset(to, 0, n);
+	return n;
+}
+
+static inline unsigned long copy_to_user(void __user *to,
+		const void *from, unsigned long n)
+{
+	if (access_ok(VERIFY_WRITE, to, n))
+		return __copy_tofrom_user(to, (__force void __user *)from, n);
+	return n;
+}
+
+#else /* __powerpc64__ */
+
+#define __copy_in_user(to, from, size) \
+	__copy_tofrom_user((to), (from), (size))
+
+extern unsigned long copy_from_user(void *to, const void __user *from,
+				    unsigned long n);
+extern unsigned long copy_to_user(void __user *to, const void *from,
+				  unsigned long n);
+extern unsigned long copy_in_user(void __user *to, const void __user *from,
+				  unsigned long n);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* __powerpc64__ */
 
 static inline unsigned long raw_copy_from_user(void *to,
@@ -407,6 +436,7 @@ static inline unsigned long clear_user(void __user *addr, unsigned long size)
 {
 	unsigned long ret = size;
 	might_fault();
+<<<<<<< HEAD
 	if (likely(access_ok(addr, size))) {
 		allow_write_to_user(addr, size);
 		ret = __arch_clear_user(addr, size);
@@ -418,6 +448,11 @@ static inline unsigned long clear_user(void __user *addr, unsigned long size)
 static inline unsigned long __clear_user(void __user *addr, unsigned long size)
 {
 	return clear_user(addr, size);
+=======
+	if (likely(access_ok(VERIFY_WRITE, addr, size)))
+		return __clear_user(addr, size);
+	return size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 extern long strncpy_from_user(char *dst, const char __user *src, long count);

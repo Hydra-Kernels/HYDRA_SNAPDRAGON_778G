@@ -21,9 +21,13 @@
 #include <drm/drm_gem_cma_helper.h>
 #include <drm/drm_gem_framebuffer_helper.h>
 #include <drm/drm_of.h>
+<<<<<<< HEAD
 #include <drm/drm_plane_helper.h>
 #include <drm/drm_probe_helper.h>
 #include <drm/drm_vblank.h>
+=======
+#include <video/imx-ipu-v3.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "imx-drm.h"
 #include "ipuv3-plane.h"

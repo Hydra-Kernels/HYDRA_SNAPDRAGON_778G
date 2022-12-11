@@ -681,6 +681,7 @@ static struct dma_debug_entry *dma_entry_alloc(void)
 	unsigned long flags;
 
 	spin_lock_irqsave(&free_entries_lock, flags);
+<<<<<<< HEAD:kernel/dma/debug.c
 	if (num_free_entries == 0) {
 		if (dma_debug_create_entries(GFP_ATOMIC)) {
 			global_disable = true;
@@ -689,6 +690,14 @@ static struct dma_debug_entry *dma_entry_alloc(void)
 			return NULL;
 		}
 		__dma_entry_alloc_check_leak();
+=======
+
+	if (list_empty(&free_entries)) {
+		global_disable = true;
+		spin_unlock_irqrestore(&free_entries_lock, flags);
+		pr_err("DMA-API: debugging out of memory - disabling\n");
+		return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:lib/dma-debug.c
 	}
 
 	entry = __dma_entry_alloc();

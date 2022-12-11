@@ -1156,10 +1156,13 @@ static int intel_probe(struct platform_device *pdev)
 
 	idev->pdev = pdev;
 
+<<<<<<< HEAD
 	ret = devm_acpi_dev_add_driver_gpios(&pdev->dev, acpi_hci_intel_gpios);
 	if (ret)
 		dev_dbg(&pdev->dev, "Unable to add GPIO mapping table\n");
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	idev->reset = devm_gpiod_get(&pdev->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(idev->reset)) {
 		dev_err(&pdev->dev, "Unable to retrieve gpio\n");

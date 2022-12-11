@@ -210,10 +210,17 @@ int vhost_poll_start(struct vhost_poll *poll, struct file *file)
 
 	mask = vfs_poll(file, &poll->table);
 	if (mask)
+<<<<<<< HEAD
 		vhost_poll_wakeup(&poll->wait, 0, 0, poll_to_key(mask));
 	if (mask & EPOLLERR) {
 		vhost_poll_stop(poll);
 		return -EINVAL;
+=======
+		vhost_poll_wakeup(&poll->wait, 0, 0, (void *)mask);
+	if (mask & POLLERR) {
+		vhost_poll_stop(poll);
+		ret = -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;

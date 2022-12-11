@@ -47,6 +47,7 @@ static inline int sa11x0_pm_init(void) { return 0; }
 #endif
 
 int sa11xx_clk_init(void);
+<<<<<<< HEAD
 
 struct gpiod_lookup_table;
 void sa11x0_register_pcmcia(int socket, struct gpiod_lookup_table *);
@@ -56,3 +57,5 @@ struct regulator_consumer_supply;
 int sa11x0_register_fixed_regulator(int n, struct fixed_voltage_config *cfg,
 	struct regulator_consumer_supply *supplies, unsigned num_supplies,
 	bool uses_gpio);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

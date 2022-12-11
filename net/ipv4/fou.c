@@ -51,7 +51,11 @@ static inline struct fou *fou_from_sock(struct sock *sk)
 	return sk->sk_user_data;
 }
 
+<<<<<<< HEAD
 static int fou_recv_pull(struct sk_buff *skb, struct fou *fou, size_t len)
+=======
+static int fou_recv_pull(struct sk_buff *skb, size_t len)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/* Remove 'len' bytes from the packet (UDP header and
 	 * FOU header if present).
@@ -75,7 +79,11 @@ static int fou_udp_recv(struct sock *sk, struct sk_buff *skb)
 	if (!fou)
 		return 1;
 
+<<<<<<< HEAD
 	if (fou_recv_pull(skb, fou, sizeof(struct udphdr)))
+=======
+	if (fou_recv_pull(skb, sizeof(struct udphdr)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto drop;
 
 	return -fou->protocol;
@@ -219,7 +227,11 @@ static int gue_udp_recv(struct sock *sk, struct sk_buff *skb)
 	if (iptunnel_pull_offloads(skb))
 		goto drop;
 
+<<<<<<< HEAD
 	return -proto_ctype;
+=======
+	return -guehdr->proto_ctype;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 drop:
 	kfree_skb(skb);
@@ -445,7 +457,10 @@ next_proto:
 		goto out_unlock;
 
 	pp = call_gro_receive(ops->callbacks.gro_receive, head, skb);
+<<<<<<< HEAD
 	flush = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_unlock:
 	rcu_read_unlock();

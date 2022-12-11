@@ -896,6 +896,11 @@ static void usb_bus_init (struct usb_bus *bus)
 	bus->bandwidth_int_reqs  = 0;
 	bus->bandwidth_isoc_reqs = 0;
 	mutex_init(&bus->devnum_next_mutex);
+<<<<<<< HEAD
+=======
+
+	INIT_LIST_HEAD (&bus->bus_list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*-------------------------------------------------------------------------*/
@@ -998,7 +1003,11 @@ static int register_root_hub(struct usb_hcd *hcd)
 		if (!retval) {
 			usb_dev->lpm_capable = usb_device_supports_lpm(usb_dev);
 		} else if (usb_dev->speed >= USB_SPEED_SUPER) {
+<<<<<<< HEAD
 			mutex_unlock(&usb_bus_idr_lock);
+=======
+			mutex_unlock(&usb_bus_list_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_dbg(parent_dev, "can't read %s bos descriptor %d\n",
 					dev_name(&usb_dev->dev), retval);
 			return retval;
@@ -1774,7 +1783,11 @@ rescan:
 		/* kick hcd */
 		unlink1(hcd, urb, -ESHUTDOWN);
 		dev_dbg (hcd->self.controller,
+<<<<<<< HEAD
 			"shutdown urb %pK ep%d%s-%s\n",
+=======
+			"shutdown urb %pK ep%d%s%s\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			urb, usb_endpoint_num(&ep->desc),
 			is_in ? "in" : "out",
 			usb_ep_type_string(usb_endpoint_type(&ep->desc)));
@@ -2490,7 +2503,66 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
 		struct device *dev, const char *bus_name,
 		struct usb_hcd *primary_hcd)
 {
+<<<<<<< HEAD
 	return __usb_create_hcd(driver, dev, dev, bus_name, primary_hcd);
+=======
+	struct usb_hcd *hcd;
+
+	hcd = kzalloc(sizeof(*hcd) + driver->hcd_priv_size, GFP_KERNEL);
+	if (!hcd) {
+		dev_dbg (dev, "hcd alloc failed\n");
+		return NULL;
+	}
+	if (primary_hcd == NULL) {
+		hcd->address0_mutex = kmalloc(sizeof(*hcd->address0_mutex),
+				GFP_KERNEL);
+		if (!hcd->address0_mutex) {
+			kfree(hcd);
+			dev_dbg(dev, "hcd address0 mutex alloc failed\n");
+			return NULL;
+		}
+		mutex_init(hcd->address0_mutex);
+		hcd->bandwidth_mutex = kmalloc(sizeof(*hcd->bandwidth_mutex),
+				GFP_KERNEL);
+		if (!hcd->bandwidth_mutex) {
+			kfree(hcd->address0_mutex);
+			kfree(hcd);
+			dev_dbg(dev, "hcd bandwidth mutex alloc failed\n");
+			return NULL;
+		}
+		mutex_init(hcd->bandwidth_mutex);
+		dev_set_drvdata(dev, hcd);
+	} else {
+		mutex_lock(&usb_port_peer_mutex);
+		hcd->address0_mutex = primary_hcd->address0_mutex;
+		hcd->bandwidth_mutex = primary_hcd->bandwidth_mutex;
+		hcd->primary_hcd = primary_hcd;
+		primary_hcd->primary_hcd = primary_hcd;
+		hcd->shared_hcd = primary_hcd;
+		primary_hcd->shared_hcd = hcd;
+		mutex_unlock(&usb_port_peer_mutex);
+	}
+
+	kref_init(&hcd->kref);
+
+	usb_bus_init(&hcd->self);
+	hcd->self.controller = dev;
+	hcd->self.bus_name = bus_name;
+	hcd->self.uses_dma = (dev->dma_mask != NULL);
+
+	init_timer(&hcd->rh_timer);
+	hcd->rh_timer.function = rh_timer_func;
+	hcd->rh_timer.data = (unsigned long) hcd;
+#ifdef CONFIG_PM
+	INIT_WORK(&hcd->wakeup_work, hcd_resume_work);
+#endif
+
+	hcd->driver = driver;
+	hcd->speed = driver->flags & HCD_MASK;
+	hcd->product_desc = (driver->product_desc) ? driver->product_desc :
+			"USB Host Controller";
+	return hcd;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
 

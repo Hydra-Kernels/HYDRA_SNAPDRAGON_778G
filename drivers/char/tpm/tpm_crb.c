@@ -295,6 +295,7 @@ static int crb_recv(struct tpm_chip *chip, u8 *buf, size_t count)
 	if (ioread32(&priv->regs_t->ctrl_sts) & CRB_CTRL_STS_ERROR)
 		return -EIO;
 
+<<<<<<< HEAD
 	/* Read the first 8 bytes in order to get the length of the response.
 	 * We read exactly a quad word in order to make sure that the remaining
 	 * reads will be aligned.
@@ -303,6 +304,11 @@ static int crb_recv(struct tpm_chip *chip, u8 *buf, size_t count)
 
 	expected = be32_to_cpup((__be32 *)&buf[2]);
 	if (expected > count || expected < TPM_HEADER_SIZE)
+=======
+	memcpy_fromio(buf, priv->rsp, 6);
+	expected = be32_to_cpup((__be32 *) &buf[2]);
+	if (expected > count || expected < 6)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EIO;
 
 	memcpy_fromio(&buf[8], &priv->rsp[8], expected - 8);
@@ -363,11 +369,21 @@ static int crb_send(struct tpm_chip *chip, u8 *buf, size_t len)
 	/* Zero the cancel register so that the next command will not get
 	 * canceled.
 	 */
+<<<<<<< HEAD
 	iowrite32(0, &priv->regs_t->ctrl_cancel);
 
 	if (len > priv->cmd_size) {
 		dev_err(&chip->dev, "invalid command count value %zd %d\n",
 			len, priv->cmd_size);
+=======
+	iowrite32(0, &priv->cca->cancel);
+
+	if (len > le32_to_cpu(ioread32(&priv->cca->cmd_size))) {
+		dev_err(&chip->dev,
+			"invalid command count value %x %zx\n",
+			(unsigned int) len,
+			(size_t) le32_to_cpu(ioread32(&priv->cca->cmd_size)));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -E2BIG;
 	}
 
@@ -718,6 +734,12 @@ static int crb_acpi_remove(struct acpi_device *device)
 	struct device *dev = &device->dev;
 	struct tpm_chip *chip = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
+=======
+	if (chip->flags & TPM_CHIP_FLAG_TPM2)
+		tpm2_shutdown(chip, TPM2_SU_CLEAR);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tpm_chip_unregister(chip);
 
 	return 0;

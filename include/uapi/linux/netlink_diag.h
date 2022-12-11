@@ -51,6 +51,7 @@ enum {
 #define NDIAG_SHOW_MEMINFO	0x00000001 /* show memory info of a socket */
 #define NDIAG_SHOW_GROUPS	0x00000002 /* show groups of a netlink socket */
 #ifndef __KERNEL__
+<<<<<<< HEAD
 /* deprecated since 4.6 */
 #define NDIAG_SHOW_RING_CFG	0x00000004 /* show ring configuration */
 #endif
@@ -63,5 +64,9 @@ enum {
 #define NDIAG_FLAG_NO_ENOBUFS		0x00000008
 #define NDIAG_FLAG_LISTEN_ALL_NSID	0x00000010
 #define NDIAG_FLAG_CAP_ACK		0x00000020
+=======
+#define NDIAG_SHOW_RING_CFG	0x00000004 /* show ring configuration */
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif

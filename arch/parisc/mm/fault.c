@@ -143,6 +143,7 @@ int fixup_exception(struct pt_regs *regs)
 
 	fix = search_exception_tables(regs->iaoq[0]);
 	if (fix) {
+<<<<<<< HEAD
 		/*
 		 * Fix up get_user() and put_user().
 		 * ASM_EXCEPTIONTABLE_ENTRY_EFAULT() sets the least-significant
@@ -152,6 +153,14 @@ int fixup_exception(struct pt_regs *regs)
 		 */
 		if (fix->fixup & 1) {
 			regs->gr[8] = -EFAULT;
+=======
+		struct exception_data *d;
+		d = this_cpu_ptr(&exception_data);
+		d->fault_ip = regs->iaoq[0];
+		d->fault_gp = regs->gr[27];
+		d->fault_space = regs->isr;
+		d->fault_addr = regs->ior;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/* zero target register for get_user() */
 			if (parisc_acctyp(0, regs->iir) == VM_READ) {
@@ -361,8 +370,13 @@ bad_area:
 			/* send SIGSEGV when outside of vma */
 			if (!vma ||
 			    address < vma->vm_start || address >= vma->vm_end) {
+<<<<<<< HEAD
 				signo = SIGSEGV;
 				si_code = SEGV_MAPERR;
+=======
+				si.si_signo = SIGSEGV;
+				si.si_code = SEGV_MAPERR;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 			}
 

@@ -229,8 +229,12 @@ void ext4_evict_inode(struct inode *inode)
 		 */
 		if (inode->i_ino != EXT4_JOURNAL_INO &&
 		    ext4_should_journal_data(inode) &&
+<<<<<<< HEAD
 		    (S_ISLNK(inode->i_mode) || S_ISREG(inode->i_mode)) &&
 		    inode->i_data.nrpages) {
+=======
+		    (S_ISLNK(inode->i_mode) || S_ISREG(inode->i_mode))) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			journal_t *journal = EXT4_SB(inode->i_sb)->s_journal;
 			tid_t commit_tid = EXT4_I(inode)->i_datasync_tid;
 
@@ -747,6 +751,7 @@ out_sem:
 		 */
 		if (map->m_flags & EXT4_MAP_NEW &&
 		    !(map->m_flags & EXT4_MAP_UNWRITTEN) &&
+<<<<<<< HEAD
 		    !(flags & EXT4_GET_BLOCKS_ZERO) &&
 		    !ext4_is_quota_file(inode) &&
 		    ext4_should_order_data(inode)) {
@@ -760,6 +765,11 @@ out_sem:
 			else
 				ret = ext4_jbd2_inode_add_write(handle, inode,
 						start_byte, length);
+=======
+		    !IS_NOQUOTA(inode) &&
+		    ext4_should_order_data(inode)) {
+			ret = ext4_jbd2_file_inode(handle, inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (ret)
 				return ret;
 		}
@@ -794,6 +804,12 @@ static void ext4_update_bh_state(struct buffer_head *bh, unsigned long flags)
 	} while (unlikely(
 		 cmpxchg(&bh->b_state, old_state, new_state) != old_state));
 }
+<<<<<<< HEAD
+=======
+
+/* Maximum number of blocks we map for direct IO at once. */
+#define DIO_MAX_BLOCKS 4096
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int _ext4_get_block(struct inode *inode, sector_t iblock,
 			   struct buffer_head *bh, int flags)
@@ -812,6 +828,21 @@ static int _ext4_get_block(struct inode *inode, sector_t iblock,
 	if (ret > 0) {
 		map_bh(bh, inode->i_sb, map.m_pblk);
 		ext4_update_bh_state(bh, map.m_flags);
+<<<<<<< HEAD
+=======
+		if (IS_DAX(inode) && buffer_unwritten(bh)) {
+			/*
+			 * dgc: I suspect unwritten conversion on ext4+DAX is
+			 * fundamentally broken here when there are concurrent
+			 * read/write in progress on this inode.
+			 */
+			WARN_ON_ONCE(io_end);
+			bh->b_assoc_map = inode->i_mapping;
+			bh->b_private = (void *)(unsigned long)iblock;
+		}
+		if (io_end && io_end->flag & EXT4_IO_END_UNWRITTEN)
+			set_buffer_defer_completion(bh);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		bh->b_size = inode->i_sb->s_blocksize * map.m_len;
 		ret = 0;
 	} else if (ret == 0) {
@@ -1438,7 +1469,10 @@ static int ext4_write_end(struct file *file,
 	int ret = 0, ret2;
 	int i_size_changed = 0;
 	int inline_data = ext4_has_inline_data(inode);
+<<<<<<< HEAD
 	bool verity = ext4_verity_in_progress(inode);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	trace_android_fs_datawrite_end(inode, pos, len);
 	trace_ext4_write_end(inode, pos, len, copied);
@@ -1549,7 +1583,10 @@ static int ext4_journalled_write_end(struct file *file,
 	unsigned from, to;
 	int size_changed = 0;
 	int inline_data = ext4_has_inline_data(inode);
+<<<<<<< HEAD
 	bool verity = ext4_verity_in_progress(inode);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	trace_android_fs_datawrite_end(inode, pos, len);
 	trace_ext4_journalled_write_end(inode, pos, len, copied);
@@ -1743,7 +1780,11 @@ static void mpage_release_unused_pages(struct mpage_da_data *mpd,
 			if (invalidate) {
 				if (page_mapped(page))
 					clear_page_dirty_for_io(page);
+<<<<<<< HEAD
 				block_invalidatepage(page, 0, PAGE_SIZE);
+=======
+				block_invalidatepage(page, 0, PAGE_CACHE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				ClearPageUptodate(page);
 			}
 			unlock_page(page);
@@ -2245,8 +2286,12 @@ static int mpage_submit_page(struct mpage_da_data *mpd, struct page *page)
 	 * after page tables are updated.
 	 */
 	size = i_size_read(mpd->inode);
+<<<<<<< HEAD
 	if (page->index == size >> PAGE_SHIFT &&
 	    !ext4_verity_in_progress(mpd->inode))
+=======
+	if (page->index == size >> PAGE_SHIFT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		len = size & ~PAGE_MASK;
 	else
 		len = PAGE_SIZE;
@@ -2922,6 +2967,7 @@ retry:
 		if (!ext4_handle_valid(handle) || handle->h_sync == 0) {
 			ext4_journal_stop(handle);
 			handle = NULL;
+<<<<<<< HEAD
 			mpd.do_map = 0;
 		}
 		/* Unlock pages we didn't use */
@@ -2929,6 +2975,13 @@ retry:
 		/* Submit prepared bio */
 		ext4_io_submit(&mpd.io_submit);
 
+=======
+		}
+		/* Submit prepared bio */
+		ext4_io_submit(&mpd.io_submit);
+		/* Unlock pages we didn't use */
+		mpage_release_unused_pages(&mpd, give_up_on_write);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * Drop our io_end reference we got from init. We have
 		 * to be careful and use deferred io_end finishing if
@@ -2941,7 +2994,10 @@ retry:
 			ext4_journal_stop(handle);
 		} else
 			ext4_put_io_end(mpd.io_submit.io_end);
+<<<<<<< HEAD
 		mpd.io_submit.io_end = NULL;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (ret == -ENOSPC && sbi->s_journal) {
 			/*
@@ -3774,6 +3830,7 @@ static ssize_t ext4_direct_IO_write(struct kiocb *iocb, struct iov_iter *iter)
 	 * case, we allocate an io_end structure to hook to the iocb.
 	 */
 	iocb->private = NULL;
+<<<<<<< HEAD
 	if (overwrite)
 		get_block_func = ext4_dio_get_block_overwrite;
 	else if (!ext4_test_inode_flag(inode, EXT4_INODE_EXTENTS) ||
@@ -3785,6 +3842,32 @@ static ssize_t ext4_direct_IO_write(struct kiocb *iocb, struct iov_iter *iter)
 		dio_flags = DIO_LOCKING;
 	} else {
 		get_block_func = ext4_dio_get_block_unwritten_async;
+=======
+	if (overwrite) {
+		get_block_func = ext4_get_block_write_nolock;
+	} else {
+		ext4_inode_aio_set(inode, NULL);
+		if (!is_sync_kiocb(iocb)) {
+			io_end = ext4_init_io_end(inode, GFP_NOFS);
+			if (!io_end) {
+				ret = -ENOMEM;
+				goto retake_lock;
+			}
+			/*
+			 * Grab reference for DIO. Will be dropped in
+			 * ext4_end_io_dio()
+			 */
+			iocb->private = ext4_get_io_end(io_end);
+			/*
+			 * we save the io structure for current async direct
+			 * IO, so that later ext4_map_blocks() could flag the
+			 * io structure whether there is a unwritten extents
+			 * needs to be converted when IO is completed.
+			 */
+			ext4_inode_aio_set(inode, io_end);
+		}
+		get_block_func = ext4_get_block_write;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dio_flags = DIO_LOCKING;
 	}
 	ret = __blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, iter,
@@ -4199,7 +4282,11 @@ static int ext4_block_truncate_page(handle_t *handle,
 	struct inode *inode = mapping->host;
 
 	/* If we are processing an encrypted inode during orphan list handling */
+<<<<<<< HEAD
 	if (IS_ENCRYPTED(inode) && !fscrypt_has_encryption_key(inode))
+=======
+	if (ext4_encrypted_inode(inode) && !ext4_has_encryption_key(inode))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	blocksize = inode->i_sb->s_blocksize;
@@ -4269,7 +4356,11 @@ int ext4_update_disksize_before_punch(struct inode *inode, loff_t offset,
 	handle_t *handle;
 	loff_t size = i_size_read(inode);
 
+<<<<<<< HEAD
 	WARN_ON(!inode_is_locked(inode));
+=======
+	WARN_ON(!mutex_is_locked(&inode->i_mutex));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (offset > size || offset + len < size)
 		return 0;
 
@@ -4286,6 +4377,7 @@ int ext4_update_disksize_before_punch(struct inode *inode, loff_t offset,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void ext4_wait_dax_page(struct ext4_inode_info *ei)
 {
 	up_write(&ei->i_mmap_sem);
@@ -4316,6 +4408,8 @@ int ext4_break_layouts(struct inode *inode)
 	return error;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * ext4_punch_hole: punches a hole in a file by releasing the blocks
  * associated with the given offset and length
@@ -4391,6 +4485,10 @@ int ext4_punch_hole(struct inode *inode, loff_t offset, loff_t length)
 	}
 
 	/* Wait all existing dio workers, newcomers will block on i_mutex */
+<<<<<<< HEAD
+=======
+	ext4_inode_block_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	inode_dio_wait(inode);
 
 	/*
@@ -4398,11 +4496,14 @@ int ext4_punch_hole(struct inode *inode, loff_t offset, loff_t length)
 	 * page cache.
 	 */
 	down_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
 
 	ret = ext4_break_layouts(inode);
 	if (ret)
 		goto out_dio;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	first_block_offset = round_up(offset, sb->s_blocksize);
 	last_block_offset = round_down((offset + length), sb->s_blocksize) - 1;
 
@@ -4460,7 +4561,11 @@ int ext4_punch_hole(struct inode *inode, loff_t offset, loff_t length)
 	if (IS_SYNC(inode))
 		ext4_handle_sync(handle);
 
+<<<<<<< HEAD
 	inode->i_mtime = inode->i_ctime = current_time(inode);
+=======
+	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ext4_mark_inode_dirty(handle, inode);
 	if (ret >= 0)
 		ext4_update_inode_fsync_trans(handle, inode, 1);
@@ -4468,6 +4573,10 @@ out_stop:
 	ext4_journal_stop(handle);
 out_dio:
 	up_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
+=======
+	ext4_inode_resume_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_mutex:
 	inode_unlock(inode);
 	return ret;
@@ -4936,18 +5045,25 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 	raw_inode = ext4_raw_inode(&iloc);
 
 	if ((ino == EXT4_ROOT_INO) && (raw_inode->i_links_count == 0)) {
+<<<<<<< HEAD
 		ext4_error_inode(inode, function, line, 0,
 				 "iget: root inode unallocated");
+=======
+		EXT4_ERROR_INODE(inode, "root inode unallocated");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = -EFSCORRUPTED;
 		goto bad_inode;
 	}
 
+<<<<<<< HEAD
 	if ((flags & EXT4_IGET_HANDLE) &&
 	    (raw_inode->i_links_count == 0) && (raw_inode->i_mode == 0)) {
 		ret = -ESTALE;
 		goto bad_inode;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
 		if (EXT4_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
@@ -5033,6 +5149,7 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 	if (ext4_has_feature_64bit(sb))
 		ei->i_file_acl |=
 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
+<<<<<<< HEAD
 	inode->i_size = ext4_isize(sb, raw_inode);
 	if ((size = i_size_read(inode)) < 0) {
 		ext4_error_inode(inode, function, line, 0,
@@ -5049,6 +5166,11 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 	    ext4_test_inode_flag(inode, EXT4_INODE_INDEX)) {
 		ext4_error_inode(inode, function, line, 0,
 			 "iget: Dir with htree data on filesystem without dir_index feature.");
+=======
+	inode->i_size = ext4_isize(raw_inode);
+	if ((size = i_size_read(inode)) < 0) {
+		EXT4_ERROR_INODE(inode, "bad i_size value: %lld", size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = -EFSCORRUPTED;
 		goto bad_inode;
 	}
@@ -5759,10 +5881,28 @@ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
 		}
 
 		/*
+<<<<<<< HEAD
+=======
+		 * Blocks are going to be removed from the inode. Wait
+		 * for dio in flight.  Temporarily disable
+		 * dioread_nolock to prevent livelock.
+		 */
+		if (orphan) {
+			if (!ext4_should_journal_data(inode)) {
+				ext4_inode_block_unlocked_dio(inode);
+				inode_dio_wait(inode);
+				ext4_inode_resume_unlocked_dio(inode);
+			} else
+				ext4_wait_for_tail_page_commit(inode);
+		}
+		down_write(&EXT4_I(inode)->i_mmap_sem);
+		/*
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 * Truncate pagecache after we've waited for commit
 		 * in data=journal mode to make pages freeable.
 		 */
 		truncate_pagecache(inode, inode->i_size);
+<<<<<<< HEAD
 		/*
 		 * Call ext4_truncate() even if i_size didn't change to
 		 * truncate possible preallocated blocks.
@@ -5773,6 +5913,10 @@ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
 				error = rc;
 		}
 out_mmap_sem:
+=======
+		if (shrink)
+			ext4_truncate(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		up_write(&EXT4_I(inode)->i_mmap_sem);
 	}
 
@@ -6171,11 +6315,42 @@ int ext4_mark_inode_dirty(handle_t *handle, struct inode *inode)
 	err = ext4_reserve_inode_write(handle, inode, &iloc);
 	if (err)
 		return err;
+<<<<<<< HEAD
 
 	if (EXT4_I(inode)->i_extra_isize < sbi->s_want_extra_isize)
 		ext4_try_to_expand_extra_isize(inode, sbi->s_want_extra_isize,
 					       iloc, handle);
 
+=======
+	if (ext4_handle_valid(handle) &&
+	    EXT4_I(inode)->i_extra_isize < sbi->s_want_extra_isize &&
+	    !ext4_test_inode_state(inode, EXT4_STATE_NO_EXPAND)) {
+		/*
+		 * We need extra buffer credits since we may write into EA block
+		 * with this same handle. If journal_extend fails, then it will
+		 * only result in a minor loss of functionality for that inode.
+		 * If this is felt to be critical, then e2fsck should be run to
+		 * force a large enough s_min_extra_isize.
+		 */
+		if ((jbd2_journal_extend(handle,
+			     EXT4_DATA_TRANS_BLOCKS(inode->i_sb))) == 0) {
+			ret = ext4_expand_extra_isize(inode,
+						      sbi->s_want_extra_isize,
+						      iloc, handle);
+			if (ret) {
+				if (mnt_count !=
+					le16_to_cpu(sbi->s_es->s_mnt_count)) {
+					ext4_warning(inode->i_sb,
+					"Unable to expand inode %lu. Delete"
+					" some EAs or run e2fsck.",
+					inode->i_ino);
+					mnt_count =
+					  le16_to_cpu(sbi->s_es->s_mnt_count);
+				}
+			}
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ext4_mark_iloc_dirty(handle, inode, &iloc);
 }
 
@@ -6329,8 +6504,13 @@ vm_fault_t ext4_page_mkwrite(struct vm_fault *vmf)
 
 	down_read(&EXT4_I(inode)->i_mmap_sem);
 
+<<<<<<< HEAD
 	err = ext4_convert_inline_data(inode);
 	if (err)
+=======
+	ret = ext4_convert_inline_data(inode);
+	if (ret)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out_ret;
 
 	/* Delalloc case is easy... */
@@ -6407,6 +6587,7 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 vm_fault_t ext4_filemap_fault(struct vm_fault *vmf)
 {
 	struct inode *inode = file_inode(vmf->vma->vm_file);
@@ -6417,4 +6598,16 @@ vm_fault_t ext4_filemap_fault(struct vm_fault *vmf)
 	up_read(&EXT4_I(inode)->i_mmap_sem);
 
 	return ret;
+=======
+int ext4_filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+{
+	struct inode *inode = file_inode(vma->vm_file);
+	int err;
+
+	down_read(&EXT4_I(inode)->i_mmap_sem);
+	err = filemap_fault(vma, vmf);
+	up_read(&EXT4_I(inode)->i_mmap_sem);
+
+	return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

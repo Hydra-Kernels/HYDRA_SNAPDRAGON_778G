@@ -255,6 +255,7 @@ int peernet2id_alloc(struct net *net, struct net *peer, gfp_t gfp)
 	bool alloc = false, alive = false;
 	int id;
 
+<<<<<<< HEAD
 	if (refcount_read(&net->count) == 0)
 		return NETNSA_NSID_NOT_ASSIGNED;
 	spin_lock_bh(&net->nsid_lock);
@@ -266,6 +267,12 @@ int peernet2id_alloc(struct net *net, struct net *peer, gfp_t gfp)
 	 */
 	if (maybe_get_net(peer))
 		alive = alloc = true;
+=======
+	if (atomic_read(&net->count) == 0)
+		return NETNSA_NSID_NOT_ASSIGNED;
+	spin_lock_irqsave(&net->nsid_lock, flags);
+	alloc = atomic_read(&peer->count) == 0 ? false : true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	id = __peernet2id_alloc(net, peer, &alloc);
 	spin_unlock_bh(&net->nsid_lock);
 	if (alloc && id >= 0)
@@ -308,6 +315,10 @@ struct net *get_net_ns_by_id(struct net *net, int id)
 	peer = idr_find(&net->netns_ids, id);
 	if (peer)
 		peer = maybe_get_net(peer);
+<<<<<<< HEAD
+=======
+	spin_unlock_irqrestore(&net->nsid_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rcu_read_unlock();
 
 	return peer;

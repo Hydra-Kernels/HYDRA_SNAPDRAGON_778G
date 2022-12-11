@@ -206,6 +206,7 @@ static void kvm_pit_ack_irq(struct kvm_irq_ack_notifier *kian)
 						 irq_ack_notifier);
 	struct kvm_pit *pit = pit_state_to_pit(ps);
 
+<<<<<<< HEAD
 	atomic_set(&ps->irq_ack, 1);
 	/* irq_ack should be set before pending is read.  Order accesses with
 	 * inc(pending) in pit_timer_fn and xchg(irq_ack, 0) in pit_do_work.
@@ -213,6 +214,22 @@ static void kvm_pit_ack_irq(struct kvm_irq_ack_notifier *kian)
 	smp_mb();
 	if (atomic_dec_if_positive(&ps->pending) > 0)
 		kthread_queue_work(pit->worker, &pit->expired);
+=======
+	spin_lock(&ps->inject_lock);
+	value = atomic_dec_return(&ps->pending);
+	if (value < 0)
+		/* spurious acks can be generated if, for example, the
+		 * PIC is being reset.  Handle it gracefully here
+		 */
+		atomic_inc(&ps->pending);
+	else if (value > 0 && ps->reinject)
+		/* in this case, we had multiple outstanding pit interrupts
+		 * that we needed to inject.  Reinject
+		 */
+		queue_kthread_work(&ps->pit->worker, &ps->pit->expired);
+	ps->irq_ack = 1;
+	spin_unlock(&ps->inject_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void __kvm_migrate_pit_timer(struct kvm_vcpu *vcpu)
@@ -259,9 +276,37 @@ static void pit_do_work(struct kthread_work *work)
 	 * VCPUs and only when LVT0 is in NMI mode.  The interrupt can
 	 * also be simultaneously delivered through PIC and IOAPIC.
 	 */
+<<<<<<< HEAD
 	if (atomic_read(&kvm->arch.vapics_in_nmi_mode) > 0)
 		kvm_for_each_vcpu(i, vcpu, kvm)
 			kvm_apic_nmi_wd_deliver(vcpu);
+=======
+	spin_lock(&ps->inject_lock);
+	if (!ps->reinject)
+		inject = 1;
+	else if (ps->irq_ack) {
+		ps->irq_ack = 0;
+		inject = 1;
+	}
+	spin_unlock(&ps->inject_lock);
+	if (inject) {
+		kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 1, false);
+		kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 0, false);
+
+		/*
+		 * Provides NMI watchdog support via Virtual Wire mode.
+		 * The route is: PIT -> PIC -> LVT0 in NMI mode.
+		 *
+		 * Note: Our Virtual Wire implementation is simplified, only
+		 * propagating PIT interrupts to all VCPUs when they have set
+		 * LVT0 to NMI delivery. Other PIC interrupts are just sent to
+		 * VCPU0, and only if its LVT0 is in EXTINT mode.
+		 */
+		if (atomic_read(&kvm->arch.vapics_in_nmi_mode) > 0)
+			kvm_for_each_vcpu(i, vcpu, kvm)
+				kvm_apic_nmi_wd_deliver(vcpu);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static enum hrtimer_restart pit_timer_fn(struct hrtimer *data)
@@ -269,10 +314,17 @@ static enum hrtimer_restart pit_timer_fn(struct hrtimer *data)
 	struct kvm_kpit_state *ps = container_of(data, struct kvm_kpit_state, timer);
 	struct kvm_pit *pt = pit_state_to_pit(ps);
 
+<<<<<<< HEAD
 	if (atomic_read(&ps->reinject))
 		atomic_inc(&ps->pending);
 
 	kthread_queue_work(pt->worker, &pt->expired);
+=======
+	if (ps->reinject)
+		atomic_inc(&ps->pending);
+
+	queue_kthread_work(&pt->worker, &pt->expired);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ps->is_periodic) {
 		hrtimer_add_expires_ns(&ps->timer, ps->period);

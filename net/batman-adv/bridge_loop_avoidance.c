@@ -139,7 +139,33 @@ static bool batadv_compare_claim(const struct hlist_node *node,
 	if (cl1->vid != cl2->vid)
 		return false;
 
+<<<<<<< HEAD
 	return true;
+=======
+	return 1;
+}
+
+/* free a backbone gw */
+static void
+batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
+{
+	if (atomic_dec_and_test(&backbone_gw->refcount))
+		kfree_rcu(backbone_gw, rcu);
+}
+
+/* finally deinitialize the claim */
+static void batadv_claim_release(struct batadv_bla_claim *claim)
+{
+	batadv_backbone_gw_free_ref(claim->backbone_gw);
+	kfree_rcu(claim, rcu);
+}
+
+/* free a claim, call claim_free_rcu if its the last reference */
+static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
+{
+	if (atomic_dec_and_test(&claim->refcount))
+		batadv_claim_release(claim);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -2076,15 +2102,25 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
 			 * older than 100 ms to make sure we really
 			 * have a roaming client here.
 			 */
+<<<<<<< HEAD
 			batadv_dbg(BATADV_DBG_BLA, bat_priv, "%s(): Roaming client %pM detected. Unclaim it.\n",
 				   __func__, ethhdr->h_source);
+=======
+			batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Roaming client %pM detected. Unclaim it.\n",
+				   ethhdr->h_source);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			batadv_handle_unclaim(bat_priv, primary_if,
 					      primary_if->net_dev->dev_addr,
 					      ethhdr->h_source, vid);
 			goto allow;
 		} else {
+<<<<<<< HEAD
 			batadv_dbg(BATADV_DBG_BLA, bat_priv, "%s(): Race for claim %pM detected. Drop packet.\n",
 				   __func__, ethhdr->h_source);
+=======
+			batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Race for claim %pM detected. Drop packet.\n",
+				   ethhdr->h_source);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto handled;
 		}
 	}

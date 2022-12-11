@@ -919,7 +919,11 @@ static int rcar_pcie_enable_msi(struct rcar_pcie *pcie)
 		irq_create_mapping(msi->domain, i);
 
 	/* Two irqs are for MSI, but they are also used for non-MSI irqs */
+<<<<<<< HEAD:drivers/pci/controller/pcie-rcar.c
 	err = devm_request_irq(dev, msi->irq1, rcar_pcie_msi_irq,
+=======
+	err = devm_request_irq(&pdev->dev, msi->irq1, rcar_pcie_msi_irq,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/pci/host/pcie-rcar.c
 			       IRQF_SHARED | IRQF_NO_THREAD,
 			       rcar_msi_irq_chip.name, pcie);
 	if (err < 0) {
@@ -927,7 +931,11 @@ static int rcar_pcie_enable_msi(struct rcar_pcie *pcie)
 		goto err;
 	}
 
+<<<<<<< HEAD:drivers/pci/controller/pcie-rcar.c
 	err = devm_request_irq(dev, msi->irq2, rcar_pcie_msi_irq,
+=======
+	err = devm_request_irq(&pdev->dev, msi->irq2, rcar_pcie_msi_irq,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/pci/host/pcie-rcar.c
 			       IRQF_SHARED | IRQF_NO_THREAD,
 			       rcar_msi_irq_chip.name, pcie);
 	if (err < 0) {

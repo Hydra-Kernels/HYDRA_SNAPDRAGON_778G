@@ -546,6 +546,11 @@ void __init arm64_memblock_init(void)
 		arm64_dma_phys_limit = max_zone_dma_phys();
 	else
 		arm64_dma_phys_limit = PHYS_MASK + 1;
+<<<<<<< HEAD
+=======
+	high_memory = __va(memblock_end_of_DRAM() - 1) + 1;
+	dma_contiguous_reserve(arm64_dma_phys_limit);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	reserve_crashkernel();
 
@@ -578,7 +583,11 @@ void __init bootmem_init(void)
 	sparse_init();
 	zone_sizes_init(min, max);
 
+<<<<<<< HEAD
 	memblock_dump_all();
+=======
+	max_pfn = max_low_pfn = max;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifndef CONFIG_SPARSEMEM_VMEMMAP
@@ -672,6 +681,52 @@ void __init mem_init(void)
 
 	mem_init_print_info(NULL);
 
+<<<<<<< HEAD
+=======
+#define MLK(b, t) b, t, ((t) - (b)) >> 10
+#define MLM(b, t) b, t, ((t) - (b)) >> 20
+#define MLG(b, t) b, t, ((t) - (b)) >> 30
+#define MLK_ROUNDUP(b, t) b, t, DIV_ROUND_UP(((t) - (b)), SZ_1K)
+
+	pr_notice("Virtual kernel memory layout:\n"
+#ifdef CONFIG_KASAN
+		  "    kasan   : 0x%16lx - 0x%16lx   (%6ld GB)\n"
+#endif
+		  "    vmalloc : 0x%16lx - 0x%16lx   (%6ld GB)\n"
+#ifdef CONFIG_SPARSEMEM_VMEMMAP
+		  "    vmemmap : 0x%16lx - 0x%16lx   (%6ld GB maximum)\n"
+		  "              0x%16lx - 0x%16lx   (%6ld MB actual)\n"
+#endif
+		  "    fixed   : 0x%16lx - 0x%16lx   (%6ld KB)\n"
+		  "    PCI I/O : 0x%16lx - 0x%16lx   (%6ld MB)\n"
+		  "    modules : 0x%16lx - 0x%16lx   (%6ld MB)\n"
+		  "    memory  : 0x%16lx - 0x%16lx   (%6ld MB)\n"
+		  "      .init : 0x%p" " - 0x%p" "   (%6ld KB)\n"
+		  "      .text : 0x%p" " - 0x%p" "   (%6ld KB)\n"
+		  "      .data : 0x%p" " - 0x%p" "   (%6ld KB)\n",
+#ifdef CONFIG_KASAN
+		  MLG(KASAN_SHADOW_START, KASAN_SHADOW_END),
+#endif
+		  MLG(VMALLOC_START, VMALLOC_END),
+#ifdef CONFIG_SPARSEMEM_VMEMMAP
+		  MLG(VMEMMAP_START,
+		      VMEMMAP_START + VMEMMAP_SIZE),
+		  MLM((unsigned long)virt_to_page(PAGE_OFFSET),
+		      (unsigned long)virt_to_page(high_memory)),
+#endif
+		  MLK(FIXADDR_START, FIXADDR_TOP),
+		  MLM(PCI_IO_START, PCI_IO_END),
+		  MLM(MODULES_VADDR, MODULES_END),
+		  MLM(PAGE_OFFSET, (unsigned long)high_memory),
+		  MLK_ROUNDUP(__init_begin, __init_end),
+		  MLK_ROUNDUP(_text, _etext),
+		  MLK_ROUNDUP(_sdata, _edata));
+
+#undef MLK
+#undef MLM
+#undef MLK_ROUNDUP
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Check boundaries twice: Some fundamental inconsistencies can be
 	 * detected at build time already.

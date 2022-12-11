@@ -1159,6 +1159,7 @@ struct key *find_keyring_by_name(const char *name, bool uid_keyring)
 		if (strcmp(keyring->description, name) != 0)
 			continue;
 
+<<<<<<< HEAD
 		if (uid_keyring) {
 			if (!test_bit(KEY_FLAG_UID_KEYRING,
 				      &keyring->flags))
@@ -1167,6 +1168,25 @@ struct key *find_keyring_by_name(const char *name, bool uid_keyring)
 			if (key_permission(make_key_ref(keyring, 0),
 					   KEY_NEED_SEARCH) < 0)
 				continue;
+=======
+			if (uid_keyring) {
+				if (!test_bit(KEY_FLAG_UID_KEYRING,
+					      &keyring->flags))
+					continue;
+			} else {
+				if (key_permission(make_key_ref(keyring, 0),
+						   KEY_NEED_SEARCH) < 0)
+					continue;
+			}
+
+			/* we've got a match but we might end up racing with
+			 * key_cleanup() if the keyring is currently 'dead'
+			 * (ie. it has a zero usage count) */
+			if (!atomic_inc_not_zero(&keyring->usage))
+				continue;
+			keyring->last_used_at = current_kernel_time().tv_sec;
+			goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/* we've got a match but we might end up racing with

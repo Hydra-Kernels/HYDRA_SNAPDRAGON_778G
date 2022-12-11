@@ -89,12 +89,16 @@ static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
 
 	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
 	    handler == SIG_DFL && !(force && sig_kernel_only(sig)))
+<<<<<<< HEAD
 		return true;
 
 	/* Only allow kernel generated signals to this kthread */
 	if (unlikely((t->flags & PF_KTHREAD) &&
 		     (handler == SIG_KTHREAD_KERNEL) && !force))
 		return true;
+=======
+		return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return sig_handler_ignored(handler, sig);
 }
@@ -107,6 +111,7 @@ static bool sig_ignored(struct task_struct *t, int sig, bool force)
 	 * unblocked.
 	 */
 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
+<<<<<<< HEAD
 		return false;
 
 	/*
@@ -117,6 +122,18 @@ static bool sig_ignored(struct task_struct *t, int sig, bool force)
 	if (t->ptrace && sig != SIGKILL)
 		return false;
 
+=======
+		return 0;
+
+	/*
+	 * Tracers may want to know about even ignored signal unless it
+	 * is SIGKILL which can't be reported anyway but can be ignored
+	 * by SIGNAL_UNKILLABLE task.
+	 */
+	if (t->ptrace && sig != SIGKILL)
+		return 0;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return sig_task_ignored(t, sig, force);
 }
 
@@ -566,7 +583,11 @@ bool unhandled_signal(struct task_struct *tsk, int sig)
 	return !tsk->ptrace;
 }
 
+<<<<<<< HEAD
 static void collect_signal(int sig, struct sigpending *list, kernel_siginfo_t *info,
+=======
+static void collect_signal(int sig, struct sigpending *list, siginfo_t *info,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			   bool *resched_timer)
 {
 	struct sigqueue *q, *first = NULL;
@@ -612,7 +633,11 @@ still_pending:
 }
 
 static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
+<<<<<<< HEAD
 			kernel_siginfo_t *info, bool *resched_timer)
+=======
+			siginfo_t *info, bool *resched_timer)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int sig = next_signal(pending, mask);
 
@@ -639,7 +664,10 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask, kernel_siginfo_t *in
 	if (!signr) {
 		signr = __dequeue_signal(&tsk->signal->shared_pending,
 					 mask, info, &resched_timer);
+<<<<<<< HEAD
 #ifdef CONFIG_POSIX_TIMERS
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * itimer signal ?
 		 *
@@ -685,7 +713,10 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask, kernel_siginfo_t *in
 		 */
 		current->jobctl |= JOBCTL_STOP_DEQUEUED;
 	}
+<<<<<<< HEAD
 #ifdef CONFIG_POSIX_TIMERS
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (resched_timer) {
 		/*
 		 * Release the siglock to ensure proper locking order

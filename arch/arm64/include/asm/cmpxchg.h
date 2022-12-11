@@ -18,6 +18,7 @@
  * barrier case is generated as release+dmb for the former and
  * acquire+release for the latter.
  */
+<<<<<<< HEAD
 #define __XCHG_CASE(w, sfx, name, sz, mb, nop_lse, acq, acq_lse, rel, cl)	\
 static inline u##sz __xchg_case_##name##sz(u##sz x, volatile void *ptr)		\
 {										\
@@ -40,6 +41,32 @@ static inline u##sz __xchg_case_##name##sz(u##sz x, volatile void *ptr)		\
 	: cl);									\
 										\
 	return ret;								\
+=======
+#define __XCHG_CASE(w, sz, name, mb, nop_lse, acq, acq_lse, rel, cl)	\
+static inline unsigned long __xchg_case_##name(unsigned long x,		\
+					       volatile void *ptr)	\
+{									\
+	unsigned long ret, tmp;						\
+									\
+	asm volatile(ARM64_LSE_ATOMIC_INSN(				\
+	/* LL/SC */							\
+	"	prfm	pstl1strm, %2\n"				\
+	"1:	ld" #acq "xr" #sz "\t%" #w "0, %2\n"			\
+	"	st" #rel "xr" #sz "\t%w1, %" #w "3, %2\n"		\
+	"	cbnz	%w1, 1b\n"					\
+	"	" #mb,							\
+	/* LSE atomics */						\
+	"	nop\n"							\
+	"	nop\n"							\
+	"	swp" #acq_lse #rel #sz "\t%" #w "3, %" #w "0, %2\n"	\
+	"	nop\n"							\
+	"	" #nop_lse)						\
+	: "=&r" (ret), "=&r" (tmp), "+Q" (*(unsigned long *)ptr)	\
+	: "r" (x)							\
+	: cl);								\
+									\
+	return ret;							\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 __XCHG_CASE(w, b,     ,  8,        ,    ,  ,  ,  ,         )

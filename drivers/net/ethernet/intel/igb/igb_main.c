@@ -3863,7 +3863,11 @@ static int igb_sw_init(struct igb_adapter *adapter)
 
 	/* Setup and initialize a copy of the hw vlan table array */
 	adapter->shadow_vfta = kcalloc(E1000_VLAN_FILTER_TBL_SIZE, sizeof(u32),
+<<<<<<< HEAD
 				       GFP_KERNEL);
+=======
+				       GFP_ATOMIC);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!adapter->shadow_vfta)
 		return -ENOMEM;
 
@@ -8757,7 +8761,12 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
 	if (netif_running(netdev))
 		__igb_close(netdev, true);
 
+<<<<<<< HEAD
 	igb_ptp_suspend(adapter);
+=======
+	igb_clear_interrupt_scheme(adapter);
+	rtnl_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	igb_clear_interrupt_scheme(adapter);
 	rtnl_unlock();

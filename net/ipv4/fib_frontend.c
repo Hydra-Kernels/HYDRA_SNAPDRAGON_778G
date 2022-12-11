@@ -302,7 +302,11 @@ __be32 fib_compute_spec_dst(struct sk_buff *skb)
 			.flowi4_iif = LOOPBACK_IFINDEX,
 			.flowi4_oif = l3mdev_master_ifindex_rcu(dev),
 			.daddr = ip_hdr(skb)->saddr,
+<<<<<<< HEAD
 			.flowi4_tos = ip_hdr(skb)->tos & IPTOS_RT_MASK,
+=======
+			.flowi4_tos = RT_TOS(ip_hdr(skb)->tos),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			.flowi4_scope = scope,
 			.flowi4_mark = vmark ? skb->mark : 0,
 		};
@@ -1030,7 +1034,11 @@ static int inet_dump_fib(struct sk_buff *skb, struct netlink_callback *cb)
 			if (dumped)
 				memset(&cb->args[2], 0, sizeof(cb->args) -
 						 2 * sizeof(cb->args[0]));
+<<<<<<< HEAD
 			err = fib_table_dump(tb, skb, cb, &filter);
+=======
+			err = fib_table_dump(tb, skb, cb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (err < 0) {
 				if (likely(skb->len))
 					goto out;
@@ -1630,7 +1638,13 @@ void __init ip_fib_init(void)
 	register_netdevice_notifier(&fib_netdev_notifier);
 	register_inetaddr_notifier(&fib_inetaddr_notifier);
 
+<<<<<<< HEAD
 	rtnl_register(PF_INET, RTM_NEWROUTE, inet_rtm_newroute, NULL, 0);
 	rtnl_register(PF_INET, RTM_DELROUTE, inet_rtm_delroute, NULL, 0);
 	rtnl_register(PF_INET, RTM_GETROUTE, NULL, inet_dump_fib, 0);
+=======
+	rtnl_register(PF_INET, RTM_NEWROUTE, inet_rtm_newroute, NULL, NULL);
+	rtnl_register(PF_INET, RTM_DELROUTE, inet_rtm_delroute, NULL, NULL);
+	rtnl_register(PF_INET, RTM_GETROUTE, NULL, inet_dump_fib, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

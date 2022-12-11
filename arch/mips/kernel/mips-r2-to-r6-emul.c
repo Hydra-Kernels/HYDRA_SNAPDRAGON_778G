@@ -1174,6 +1174,16 @@ repeat:
 fpu_emul:
 		regs->regs[31] = r31;
 		regs->cp0_epc = epc;
+<<<<<<< HEAD
+=======
+		if (!used_math()) {     /* First time FPU user.  */
+			preempt_disable();
+			err = init_fpu();
+			preempt_enable();
+			set_used_math();
+		}
+		lose_fpu(1);    /* Save FPU state for the emulator. */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		err = fpu_emulator_cop1Handler(regs, &current->thread.fpu, 0,
 					       &fault_addr);

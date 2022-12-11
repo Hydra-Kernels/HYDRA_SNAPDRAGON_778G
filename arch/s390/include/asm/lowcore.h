@@ -139,11 +139,20 @@ struct lowcore {
 	__u64	gmap;				/* 0x03d0 */
 	__u8	pad_0x03d8[0x0400-0x03d8];	/* 0x03d8 */
 
+<<<<<<< HEAD
 	/* br %r1 trampoline */
 	__u16	br_r1_trampoline;		/* 0x0400 */
 	__u32	return_lpswe;			/* 0x0402 */
 	__u32	return_mcck_lpswe;		/* 0x0406 */
 	__u8	pad_0x040a[0x0e00-0x040a];	/* 0x040a */
+=======
+	/* Per cpu primary space access list */
+	__u32	paste[16];			/* 0x0400 */
+
+	/* br %r1 trampoline */
+	__u16	br_r1_trampoline;		/* 0x0440 */
+	__u8	pad_0x0442[0x0e00-0x0442];	/* 0x0442 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * 0xe00 contains the address of the IPL Parameter Information

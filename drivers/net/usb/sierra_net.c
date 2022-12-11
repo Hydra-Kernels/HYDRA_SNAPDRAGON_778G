@@ -176,6 +176,13 @@ struct lsi_umts_dual {
 #define SIERRA_NET_LSI_UMTS_DS_LEN     (sizeof(struct lsi_umts_dual))
 #define SIERRA_NET_LSI_UMTS_DS_STATUS_LEN \
 	(SIERRA_NET_LSI_UMTS_DS_LEN - SIERRA_NET_LSI_COMMON_LEN)
+<<<<<<< HEAD
+=======
+
+/* Forward definitions */
+static void sierra_sync_timer(unsigned long syncdata);
+static int sierra_net_change_mtu(struct net_device *net, int new_mtu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Our own net device operations structure */
 static const struct net_device_ops sierra_net_device_ops = {
@@ -365,7 +372,11 @@ static int sierra_net_parse_lsi(struct usbnet *dev, char *data, int datalen)
 	u32 expected_length;
 
 	if (datalen < sizeof(struct lsi_umts_single)) {
+<<<<<<< HEAD
 		netdev_err(dev->net, "%s: Data length %d, exp >= %zu\n",
+=======
+		netdev_err(dev->net, "%s: Data length %d, exp >= %Zu\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			   __func__, datalen, sizeof(struct lsi_umts_single));
 		return -1;
 	}

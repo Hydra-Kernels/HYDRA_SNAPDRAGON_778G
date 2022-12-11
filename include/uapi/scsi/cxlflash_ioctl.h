@@ -37,7 +37,11 @@ struct dk_cxlflash_hdr {
 };
 
 /*
+<<<<<<< HEAD
  * Return flag definitions available to all superpipe ioctls
+=======
+ * Return flag definitions available to all ioctls
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Similar to the input flags, these are grown from the bottom-up with the
  * intention that ioctl-specific return flag definitions would grow from the
@@ -45,12 +49,19 @@ struct dk_cxlflash_hdr {
  * at this time, this provides future flexibility.
  */
 #define DK_CXLFLASH_ALL_PORTS_ACTIVE	0x0000000000000001ULL
+<<<<<<< HEAD
 #define DK_CXLFLASH_APP_CLOSE_ADAP_FD	0x0000000000000002ULL
 #define DK_CXLFLASH_CONTEXT_SQ_CMD_MODE	0x0000000000000004ULL
 
 /*
  * General Notes:
  * -------------
+=======
+
+/*
+ * Notes:
+ * -----
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * The 'context_id' field of all ioctl structures contains the context
  * identifier for a context in the lower 32-bits (upper 32-bits are not
  * to be used when identifying a context to the AFU). That said, the value

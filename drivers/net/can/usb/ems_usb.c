@@ -271,9 +271,17 @@ static void ems_usb_read_interrupt_callback(struct urb *urb)
 	switch (urb->status) {
 	case 0:
 		dev->free_slots = dev->intr_in_buffer[1];
+<<<<<<< HEAD
 		if (dev->free_slots > CPC_TX_QUEUE_TRIGGER_HIGH &&
 		    netif_queue_stopped(netdev))
 			netif_wake_queue(netdev);
+=======
+		if(dev->free_slots > CPC_TX_QUEUE_TRIGGER_HIGH){
+			if (netif_queue_stopped(netdev)){
+				netif_wake_queue(netdev);
+			}
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 
 	case -ECONNRESET: /* unlink */
@@ -1072,8 +1080,11 @@ static void ems_usb_disconnect(struct usb_interface *intf)
 
 		kfree(dev->intr_in_buffer);
 		kfree(dev->tx_msg_buffer);
+<<<<<<< HEAD
 
 		free_candev(dev->netdev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

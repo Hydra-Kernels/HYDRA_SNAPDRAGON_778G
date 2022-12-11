@@ -92,7 +92,11 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		vma = find_vma(mm, addr);
 		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
 		    (!vma || addr + len <= vm_start_gap(vma)))
+<<<<<<< HEAD
 			goto check_asce_limit;
+=======
+			return addr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	info.flags = 0;
@@ -143,7 +147,11 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 		vma = find_vma(mm, addr);
 		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
 				(!vma || addr + len <= vm_start_gap(vma)))
+<<<<<<< HEAD
 			goto check_asce_limit;
+=======
+			return addr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
@@ -184,6 +192,63 @@ check_asce_limit:
 	return addr;
 }
 
+<<<<<<< HEAD
+=======
+int s390_mmap_check(unsigned long addr, unsigned long len, unsigned long flags)
+{
+	if (is_compat_task() || (TASK_SIZE >= (1UL << 53)))
+		return 0;
+	if (!(flags & MAP_FIXED))
+		addr = 0;
+	if ((addr + len) >= TASK_SIZE)
+		return crst_table_upgrade(current->mm);
+	return 0;
+}
+
+static unsigned long
+s390_get_unmapped_area(struct file *filp, unsigned long addr,
+		unsigned long len, unsigned long pgoff, unsigned long flags)
+{
+	struct mm_struct *mm = current->mm;
+	unsigned long area;
+	int rc;
+
+	area = arch_get_unmapped_area(filp, addr, len, pgoff, flags);
+	if (!(area & ~PAGE_MASK))
+		return area;
+	if (area == -ENOMEM && !is_compat_task() && TASK_SIZE < (1UL << 53)) {
+		/* Upgrade the page table to 4 levels and retry. */
+		rc = crst_table_upgrade(mm);
+		if (rc)
+			return (unsigned long) rc;
+		area = arch_get_unmapped_area(filp, addr, len, pgoff, flags);
+	}
+	return area;
+}
+
+static unsigned long
+s390_get_unmapped_area_topdown(struct file *filp, const unsigned long addr,
+			  const unsigned long len, const unsigned long pgoff,
+			  const unsigned long flags)
+{
+	struct mm_struct *mm = current->mm;
+	unsigned long area;
+	int rc;
+
+	area = arch_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
+	if (!(area & ~PAGE_MASK))
+		return area;
+	if (area == -ENOMEM && !is_compat_task() && TASK_SIZE < (1UL << 53)) {
+		/* Upgrade the page table to 4 levels and retry. */
+		rc = crst_table_upgrade(mm);
+		if (rc)
+			return (unsigned long) rc;
+		area = arch_get_unmapped_area_topdown(filp, addr, len,
+						      pgoff, flags);
+	}
+	return area;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * This function, called very early during the creation of a new
  * process VM image, sets up which VM layout function to use:

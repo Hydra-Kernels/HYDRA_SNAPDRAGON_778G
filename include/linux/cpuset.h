@@ -19,6 +19,7 @@
 
 #ifdef CONFIG_CPUSETS
 
+<<<<<<< HEAD
 /*
  * Static branch rewrites can happen in an arbitrary order for a given
  * key. In code paths where we need to loop with read_mems_allowed_begin() and
@@ -33,6 +34,10 @@
  */
 extern struct static_key_false cpusets_pre_enable_key;
 extern struct static_key_false cpusets_enabled_key;
+=======
+extern struct static_key cpusets_pre_enable_key;
+extern struct static_key cpusets_enabled_key;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline bool cpusets_enabled(void)
 {
 	return static_branch_unlikely(&cpusets_enabled_key);
@@ -40,20 +45,34 @@ static inline bool cpusets_enabled(void)
 
 static inline void cpuset_inc(void)
 {
+<<<<<<< HEAD
 	static_branch_inc_cpuslocked(&cpusets_pre_enable_key);
 	static_branch_inc_cpuslocked(&cpusets_enabled_key);
+=======
+	static_key_slow_inc(&cpusets_pre_enable_key);
+	static_key_slow_inc(&cpusets_enabled_key);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void cpuset_dec(void)
 {
+<<<<<<< HEAD
 	static_branch_dec_cpuslocked(&cpusets_enabled_key);
 	static_branch_dec_cpuslocked(&cpusets_pre_enable_key);
+=======
+	static_key_slow_dec(&cpusets_enabled_key);
+	static_key_slow_dec(&cpusets_pre_enable_key);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 extern int cpuset_init(void);
 extern void cpuset_init_smp(void);
 extern void cpuset_force_rebuild(void);
+<<<<<<< HEAD
 extern void cpuset_update_active_cpus(void);
+=======
+extern void cpuset_update_active_cpus(bool cpu_online);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void cpuset_wait_for_hotplug(void);
 extern void cpuset_cpus_allowed(struct task_struct *p, struct cpumask *mask);
 extern void cpuset_cpus_allowed_fallback(struct task_struct *p);
@@ -127,7 +146,11 @@ extern void cpuset_print_current_mems_allowed(void);
  */
 static inline unsigned int read_mems_allowed_begin(void)
 {
+<<<<<<< HEAD
 	if (!static_branch_unlikely(&cpusets_pre_enable_key))
+=======
+	if (!static_key_false(&cpusets_pre_enable_key))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 
 	return read_seqcount_begin(&current->mems_allowed_seq);
@@ -141,7 +164,11 @@ static inline unsigned int read_mems_allowed_begin(void)
  */
 static inline bool read_mems_allowed_retry(unsigned int seq)
 {
+<<<<<<< HEAD
 	if (!static_branch_unlikely(&cpusets_enabled_key))
+=======
+	if (!static_key_false(&cpusets_enabled_key))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return false;
 
 	return read_seqcount_retry(&current->mems_allowed_seq, seq);
@@ -169,7 +196,11 @@ static inline void cpuset_init_smp(void) {}
 
 static inline void cpuset_force_rebuild(void) { }
 
+<<<<<<< HEAD
 static inline void cpuset_update_active_cpus(void)
+=======
+static inline void cpuset_update_active_cpus(bool cpu_online)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	partition_sched_domains(1, NULL, NULL);
 }

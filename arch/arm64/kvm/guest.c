@@ -549,6 +549,7 @@ static int get_timer_reg(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg)
 
 	val = kvm_arm_timer_get_reg(vcpu, reg->id);
 	return copy_to_user(uaddr, &val, KVM_REG_SIZE(reg->id)) ? -EFAULT : 0;
+<<<<<<< HEAD
 }
 
 static unsigned long num_sve_regs(const struct kvm_vcpu *vcpu)
@@ -610,6 +611,8 @@ static int copy_sve_reg_indices(const struct kvm_vcpu *vcpu,
 	}
 
 	return num_regs;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

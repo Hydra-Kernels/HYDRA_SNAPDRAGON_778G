@@ -41,9 +41,13 @@ void btrfs_queue_work(struct btrfs_workqueue *wq,
 void btrfs_destroy_workqueue(struct btrfs_workqueue *wq);
 void btrfs_workqueue_set_max(struct btrfs_workqueue *wq, int max);
 void btrfs_set_work_high_priority(struct btrfs_work *work);
+<<<<<<< HEAD
 struct btrfs_fs_info *btrfs_work_owner(const struct btrfs_work *work);
 struct btrfs_fs_info *btrfs_workqueue_owner(const struct __btrfs_workqueue *wq);
 bool btrfs_workqueue_normal_congested(const struct btrfs_workqueue *wq);
 void btrfs_flush_workqueue(struct btrfs_workqueue *wq);
 
+=======
+bool btrfs_workqueue_normal_congested(struct btrfs_workqueue *wq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif

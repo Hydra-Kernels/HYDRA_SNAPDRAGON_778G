@@ -247,6 +247,7 @@ static int iio_trigger_attach_poll_func(struct iio_trigger *trig,
 		= bitmap_empty(trig->pool, CONFIG_IIO_CONSUMERS_PER_TRIGGER);
 
 	/* Prevent the module from being removed whilst attached to a trigger */
+<<<<<<< HEAD
 	__module_get(pf->indio_dev->driver_module);
 
 	/* Get irq number */
@@ -256,6 +257,14 @@ static int iio_trigger_attach_poll_func(struct iio_trigger *trig,
 			trig->name, CONFIG_IIO_CONSUMERS_PER_TRIGGER);
 		goto out_put_module;
 	}
+=======
+	__module_get(pf->indio_dev->info->driver_module);
+
+	/* Get irq number */
+	pf->irq = iio_trigger_get_irq(trig);
+	if (pf->irq < 0)
+		goto out_put_module;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Request irq */
 	ret = request_threaded_irq(pf->irq, pf->h, pf->thread,
@@ -287,6 +296,14 @@ out_put_irq:
 	iio_trigger_put_irq(trig, pf->irq);
 out_put_module:
 	module_put(pf->indio_dev->driver_module);
+	return ret;
+
+out_free_irq:
+	free_irq(pf->irq, pf);
+out_put_irq:
+	iio_trigger_put_irq(trig, pf->irq);
+out_put_module:
+	module_put(pf->indio_dev->info->driver_module);
 	return ret;
 }
 

@@ -288,6 +288,12 @@ static int cmtp_session(void *arg)
 
 	add_wait_queue(sk_sleep(sk), &wait);
 	while (1) {
+<<<<<<< HEAD
+=======
+		/* Ensure session->terminate is updated */
+		smp_mb__before_atomic();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (atomic_read(&session->terminate))
 			break;
 		if (sk->sk_state != BT_CONNECTED)
@@ -303,10 +309,13 @@ static int cmtp_session(void *arg)
 
 		cmtp_process_transmit(session);
 
+<<<<<<< HEAD
 		/*
 		 * wait_woken() performs the necessary memory barriers
 		 * for us; see the header comment for this primitive.
 		 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wait_woken(&wait, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 	}
 	remove_wait_queue(sk_sleep(sk), &wait);
@@ -437,10 +446,16 @@ int cmtp_del_connection(struct cmtp_conndel_req *req)
 		/* Stop session thread */
 		atomic_inc(&session->terminate);
 
+<<<<<<< HEAD
 		/*
 		 * See the comment preceding the call to wait_woken()
 		 * in cmtp_session().
 		 */
+=======
+		/* Ensure session->terminate is updated */
+		smp_mb__after_atomic();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wake_up_interruptible(sk_sleep(session->sock->sk));
 	} else
 		err = -ENOENT;

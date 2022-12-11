@@ -32,6 +32,23 @@
 #include <string.h>
 #include <unistd.h>
 
+<<<<<<< HEAD
+=======
+/*
+ * glibc synced up and added the metag number but didn't add the relocations.
+ * Work around this in a crude manner for now.
+ */
+#ifndef EM_METAG
+#define EM_METAG      174
+#endif
+#ifndef R_METAG_ADDR32
+#define R_METAG_ADDR32                   2
+#endif
+#ifndef R_METAG_NONE
+#define R_METAG_NONE                     3
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef EM_AARCH64
 #define EM_AARCH64	183
 #define R_AARCH64_NONE		0

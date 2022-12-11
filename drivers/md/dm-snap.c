@@ -1651,6 +1651,7 @@ static void __invalidate_snapshot(struct dm_snapshot *s, int err)
 	dm_table_event(s->ti->table);
 }
 
+<<<<<<< HEAD
 static void invalidate_snapshot(struct dm_snapshot *s, int err)
 {
 	down_write(&s->lock);
@@ -1660,6 +1661,10 @@ static void invalidate_snapshot(struct dm_snapshot *s, int err)
 
 static void pending_complete(void *context, int success)
 {
+=======
+static void pending_complete(void *context, int success)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct dm_snap_pending_exception *pe = context;
 	struct dm_exception *e;
 	struct dm_snapshot *s = pe->snap;

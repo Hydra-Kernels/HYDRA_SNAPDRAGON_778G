@@ -469,10 +469,30 @@ static int drv260x_probe(struct i2c_client *client,
 	if (!haptics)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	error = device_property_read_u32(dev, "mode", &haptics->mode);
 	if (error) {
 		dev_err(dev, "Can't fetch 'mode' property: %d\n", error);
 		return error;
+=======
+	haptics->overdrive_voltage = DRV260X_DEF_OD_CLAMP_VOLT;
+	haptics->rated_voltage = DRV260X_DEF_RATED_VOLT;
+
+	if (pdata) {
+		haptics->mode = pdata->mode;
+		haptics->library = pdata->library_selection;
+		if (pdata->vib_overdrive_voltage)
+			haptics->overdrive_voltage = drv260x_calculate_voltage(pdata->vib_overdrive_voltage);
+		if (pdata->vib_rated_voltage)
+			haptics->rated_voltage = drv260x_calculate_voltage(pdata->vib_rated_voltage);
+	} else if (client->dev.of_node) {
+		error = drv260x_parse_dt(&client->dev, haptics);
+		if (error)
+			return error;
+	} else {
+		dev_err(&client->dev, "Platform data not set\n");
+		return -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (haptics->mode < DRV260X_LRA_MODE ||

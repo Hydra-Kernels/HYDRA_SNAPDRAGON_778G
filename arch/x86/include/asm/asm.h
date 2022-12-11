@@ -105,6 +105,7 @@
 
 #endif
 
+<<<<<<< HEAD
 /*
  * Macros to generate condition code outputs from inline assembly,
  * The output operand must be type "bool".
@@ -117,6 +118,8 @@
 # define CC_OUT(c) [_cc_ ## c] "=qm"
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Exception table entry */
 #ifdef __ASSEMBLY__
 # define _ASM_EXTABLE_HANDLE(from, to, handler)			\

@@ -44,6 +44,20 @@ asm (".pushsection .entry.text, \"ax\"\n"
      ".type _paravirt_nop, @function\n\t"
      ".popsection");
 
+<<<<<<< HEAD
+=======
+/* identity function, which can be inlined */
+u32 notrace _paravirt_ident_32(u32 x)
+{
+	return x;
+}
+
+u64 notrace _paravirt_ident_64(u64 x)
+{
+	return x;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void __init default_banner(void)
 {
 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
@@ -65,10 +79,18 @@ static unsigned paravirt_patch_call(void *insn_buff, const void *target,
 	struct branch *b = insn_buff;
 	unsigned long delta = (unsigned long)target - (addr+call_len);
 
+<<<<<<< HEAD
 	if (len < call_len) {
 		pr_warn("paravirt: Failed to patch indirect CALL at %ps\n", (void *)addr);
 		/* Kernel might not be viable if patching fails, bail out: */
 		BUG_ON(1);
+=======
+	if (len < 5) {
+#ifdef CONFIG_RETPOLINE
+		WARN_ONCE("Failing to patch indirect CALL in %ps\n", (void *)addr);
+#endif
+		return len;	/* call too long for patch site */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	b->opcode = 0xe8; /* call */
@@ -93,7 +115,11 @@ static unsigned paravirt_patch_jmp(void *insn_buff, const void *target,
 
 	if (len < 5) {
 #ifdef CONFIG_RETPOLINE
+<<<<<<< HEAD
 		WARN_ONCE(1, "Failing to patch indirect JMP in %ps\n", (void *)addr);
+=======
+		WARN_ONCE("Failing to patch indirect JMP in %ps\n", (void *)addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 		return len;	/* call too long for patch site */
 	}

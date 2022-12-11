@@ -4,7 +4,11 @@
  *
  * Interface to the FSF support functions.
  *
+<<<<<<< HEAD
  * Copyright IBM Corp. 2002, 2018
+=======
+ * Copyright IBM Corp. 2002, 2016
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #ifndef FSF_H

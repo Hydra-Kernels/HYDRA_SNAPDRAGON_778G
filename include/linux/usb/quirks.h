@@ -57,6 +57,7 @@
  */
 #define USB_QUIRK_LINEAR_FRAME_INTR_BINTERVAL	BIT(11)
 
+<<<<<<< HEAD
 /*
  * Device needs to be disconnected before suspend to prevent spurious
  * wakeup.
@@ -72,4 +73,9 @@
 /* device has blacklisted endpoints */
 #define USB_QUIRK_ENDPOINT_BLACKLIST		BIT(15)
 
+=======
+/* Device needs a pause after every control message. */
+#define USB_QUIRK_DELAY_CTRL_MSG		BIT(13)
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* __LINUX_USB_QUIRKS_H */

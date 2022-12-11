@@ -1651,6 +1651,7 @@ static void vmxnet3_rq_destroy(struct vmxnet3_rx_queue *rq,
 					  rq->rx_ring[i].basePA);
 			rq->rx_ring[i].base = NULL;
 		}
+<<<<<<< HEAD
 	}
 
 	if (rq->data_ring.base) {
@@ -1658,6 +1659,8 @@ static void vmxnet3_rq_destroy(struct vmxnet3_rx_queue *rq,
 				  rq->rx_ring[0].size * rq->data_ring.desc_size,
 				  rq->data_ring.base, rq->data_ring.basePA);
 		rq->data_ring.base = NULL;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (rq->comp_ring.base) {

@@ -821,6 +821,7 @@ static struct syscall_fmt {
 #if defined(__s390x__)
 	.alias = "old_mmap",
 #endif
+<<<<<<< HEAD
 	  .arg = { [2] = { .scnprintf = SCA_MMAP_PROT,	/* prot */ },
 		   [3] = { .scnprintf = SCA_MMAP_FLAGS,	/* flags */ },
 		   [5] = { .scnprintf = SCA_HEX,	/* offset */ }, }, },
@@ -839,6 +840,17 @@ static struct syscall_fmt {
 		   [2] = { .scnprintf = SCA_MMAP_PROT,	/* prot */ }, }, },
 	{ .name	    = "mq_unlink",
 	  .arg = { [0] = { .scnprintf = SCA_FILENAME, /* u_name */ }, }, },
+=======
+	  .arg_scnprintf = { [0] = SCA_HEX,	  /* addr */
+			     [2] = SCA_MMAP_PROT, /* prot */
+			     [3] = SCA_MMAP_FLAGS, /* flags */
+			     [4] = SCA_FD, 	  /* fd */ }, },
+	{ .name	    = "mprotect",   .errmsg = true,
+	  .arg_scnprintf = { [0] = SCA_HEX, /* start */
+			     [2] = SCA_MMAP_PROT, /* prot */ }, },
+	{ .name	    = "mq_unlink", .errmsg = true,
+	  .arg_scnprintf = { [0] = SCA_FILENAME, /* u_name */ }, },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ .name	    = "mremap",	    .hexret = true,
 	  .arg = { [3] = { .scnprintf = SCA_MREMAP_FLAGS, /* flags */ }, }, },
 	{ .name	    = "name_to_handle_at",

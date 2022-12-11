@@ -250,7 +250,11 @@ out:
 
 /**
  * ecryptfs_dir_open
+<<<<<<< HEAD
  * @inode: inode specifying file to open
+=======
+ * @inode: inode speciying file to open
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @file: Structure to return filled in
  *
  * Opens the file specified by inode.

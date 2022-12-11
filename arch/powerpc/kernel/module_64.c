@@ -699,21 +699,35 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 		         *	ld r2, ...(r12)
 			 *	add r2, r2, r12
 			 */
+<<<<<<< HEAD
 			if ((((uint32_t *)location)[0] & ~0xfffc) !=
 			    (PPC_INST_LD | __PPC_RT(R2) | __PPC_RA(R12)))
 				break;
 			if (((uint32_t *)location)[1] !=
 			    (PPC_INST_ADD | __PPC_RT(R2) | __PPC_RA(R2) | __PPC_RB(R12)))
+=======
+			if ((((uint32_t *)location)[0] & ~0xfffc)
+			    != 0xe84c0000)
+				break;
+			if (((uint32_t *)location)[1] != 0x7c426214)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				break;
 			/*
 			 * If found, replace it with:
 			 *	addis r2, r12, (.TOC.-func)@ha
+<<<<<<< HEAD
 			 *	addi  r2,  r2, (.TOC.-func)@l
 			 */
 			((uint32_t *)location)[0] = PPC_INST_ADDIS | __PPC_RT(R2) |
 						    __PPC_RA(R12) | PPC_HA(value);
 			((uint32_t *)location)[1] = PPC_INST_ADDI | __PPC_RT(R2) |
 						    __PPC_RA(R2) | PPC_LO(value);
+=======
+			 *	addi r2, r12, (.TOC.-func)@l
+			 */
+			((uint32_t *)location)[0] = 0x3c4c0000 + PPC_HA(value);
+			((uint32_t *)location)[1] = 0x38420000 + PPC_LO(value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 
 		case R_PPC64_REL16_HA:

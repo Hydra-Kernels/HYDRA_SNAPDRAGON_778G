@@ -148,6 +148,7 @@ static int dummycon_font_copy(struct vc_data *vc, int con)
  */
 
 const struct consw dummy_con = {
+<<<<<<< HEAD
 	.owner =		THIS_MODULE,
 	.con_startup =	dummycon_startup,
 	.con_init =		dummycon_init,
@@ -162,5 +163,24 @@ const struct consw dummy_con = {
 	.con_font_set =	dummycon_font_set,
 	.con_font_default =	dummycon_font_default,
 	.con_font_copy =	dummycon_font_copy,
+=======
+    .owner =		THIS_MODULE,
+    .con_startup =	dummycon_startup,
+    .con_init =		dummycon_init,
+    .con_deinit =	DUMMY,
+    .con_clear =	DUMMY,
+    .con_putc =		DUMMY,
+    .con_putcs =	DUMMY,
+    .con_cursor =	DUMMY,
+    .con_scroll =	DUMMY,
+    .con_bmove =	DUMMY,
+    .con_switch =	DUMMY,
+    .con_blank =	DUMMY,
+    .con_font_set =	DUMMY,
+    .con_font_default =	DUMMY,
+    .con_font_copy =	DUMMY,
+    .con_set_palette =	DUMMY,
+    .con_scrolldelta =	DUMMY,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 EXPORT_SYMBOL_GPL(dummy_con);

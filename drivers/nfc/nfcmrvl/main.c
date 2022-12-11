@@ -123,12 +123,20 @@ struct nfcmrvl_private *nfcmrvl_nci_register_dev(enum nfcmrvl_phy phy,
 
 	memcpy(&priv->config, pdata, sizeof(*pdata));
 
+<<<<<<< HEAD
 	if (gpio_is_valid(priv->config.reset_n_io)) {
+=======
+	if (priv->config.reset_n_io) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rc = gpio_request_one(priv->config.reset_n_io,
 				      GPIOF_OUT_INIT_LOW,
 				      "nfcmrvl_reset_n");
 		if (rc < 0) {
+<<<<<<< HEAD
 			priv->config.reset_n_io = -EINVAL;
+=======
+			priv->config.reset_n_io = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			nfc_err(dev, "failed to request reset_n io\n");
 		}
 	}
@@ -183,7 +191,11 @@ error_fw_dnld_deinit:
 error_free_dev:
 	nci_free_device(priv->ndev);
 error_free_gpio:
+<<<<<<< HEAD
 	if (gpio_is_valid(priv->config.reset_n_io))
+=======
+	if (priv->config.reset_n_io)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		gpio_free(priv->config.reset_n_io);
 	kfree(priv);
 	return ERR_PTR(rc);
@@ -199,7 +211,11 @@ void nfcmrvl_nci_unregister_dev(struct nfcmrvl_private *priv)
 
 	nfcmrvl_fw_dnld_deinit(priv);
 
+<<<<<<< HEAD
 	if (gpio_is_valid(priv->config.reset_n_io))
+=======
+	if (priv->config.reset_n_io)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		gpio_free(priv->config.reset_n_io);
 
 	nci_unregister_device(ndev);

@@ -5072,6 +5072,7 @@ static void pretty_print(struct trace_seq *s, void *data, int size, struct tep_e
 				if (isalnum(ptr[1]))
 					ptr++;
 
+<<<<<<< HEAD
 				if (arg->type == TEP_PRINT_BSTRING) {
 					trace_seq_puts(s, arg->string.string);
 					arg = arg->next;
@@ -5085,6 +5086,15 @@ static void pretty_print(struct trace_seq *s, void *data, int size, struct tep_e
 					print_mac_arg(s, *ptr, data, size, event, arg);
 					arg = arg->next;
 					break;
+=======
+				if (*ptr == 'F' || *ptr == 'f' ||
+				    *ptr == 'S' || *ptr == 's') {
+					show_func = *ptr;
+				} else if (*ptr == 'M' || *ptr == 'm') {
+					print_mac_arg(s, *ptr, data, size, event, arg);
+					arg = arg->next;
+					break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				} else if (*ptr == 'I' || *ptr == 'i') {
 					int n;
 

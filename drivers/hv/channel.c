@@ -17,7 +17,10 @@
 #include <linux/hyperv.h>
 #include <linux/uio.h>
 #include <linux/interrupt.h>
+<<<<<<< HEAD
 #include <asm/page.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "hyperv_vmbus.h"
 
@@ -120,6 +123,7 @@ static int __vmbus_open(struct vmbus_channel *newchannel,
 	struct page *page = newchannel->ringbuffer_page;
 	u32 send_pages, recv_pages;
 	unsigned long flags;
+<<<<<<< HEAD
 	int err;
 
 	if (userdatalen > MAX_USER_DEFINED_BYTES)
@@ -127,6 +131,10 @@ static int __vmbus_open(struct vmbus_channel *newchannel,
 
 	send_pages = newchannel->ringbuffer_send_offset;
 	recv_pages = newchannel->ringbuffer_pagecount - send_pages;
+=======
+	int ret, err = 0;
+	struct page *page;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_irqsave(&newchannel->lock, flags);
 	if (newchannel->state != CHANNEL_OPEN_STATE) {
@@ -191,6 +199,7 @@ static int __vmbus_open(struct vmbus_channel *newchannel,
 		goto error_free_info;
 	}
 
+<<<<<<< HEAD
 	err = vmbus_post_msg(open_msg,
 			     sizeof(struct vmbus_channel_open_channel), true);
 
@@ -199,6 +208,8 @@ static int __vmbus_open(struct vmbus_channel *newchannel,
 	if (err != 0)
 		goto error_clean_msglist;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	wait_for_completion(&open_info->waitevent);
 
 	spin_lock_irqsave(&vmbus_connection.channelmsg_lock, flags);
@@ -443,6 +454,10 @@ int vmbus_establish_gpadl(struct vmbus_channel *channel, void *kbuffer,
 	struct vmbus_channel_gpadl_body *gpadl_body;
 	struct vmbus_channel_msginfo *msginfo = NULL;
 	struct vmbus_channel_msginfo *submsginfo, *tmp;
+<<<<<<< HEAD
+=======
+	u32 msgcount;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct list_head *curr;
 	u32 next_gpadl_handle;
 	unsigned long flags;
@@ -529,6 +544,13 @@ cleanup:
 		kfree(submsginfo);
 	}
 
+	if (msgcount > 1) {
+		list_for_each_entry_safe(submsginfo, tmp, &msginfo->submsglist,
+			 msglistentry) {
+			kfree(submsginfo);
+		}
+	}
+
 	kfree(msginfo);
 	return ret;
 }
@@ -603,6 +625,7 @@ static void reset_channel_cb(void *arg)
 
 void vmbus_reset_channel_cb(struct vmbus_channel *channel)
 {
+<<<<<<< HEAD
 	/*
 	 * vmbus_on_event(), running in the per-channel tasklet, can race
 	 * with vmbus_close_internal() in the case of SMP guest, e.g., when
@@ -612,6 +635,25 @@ void vmbus_reset_channel_cb(struct vmbus_channel *channel)
 	 */
 	tasklet_disable(&channel->callback_event);
 
+=======
+	struct vmbus_channel_close_channel *msg;
+	struct tasklet_struct *tasklet;
+	int ret;
+
+	/*
+	 * process_chn_event(), running in the tasklet, can race
+	 * with vmbus_close_internal() in the case of SMP guest, e.g., when
+	 * the former is accessing channel->inbound.ring_buffer, the latter
+	 * could be freeing the ring_buffer pages.
+	 *
+	 * To resolve the race, we can serialize them by disabling the
+	 * tasklet when the latter is running here.
+	 */
+	tasklet = hv_context.event_dpc[channel->target_cpu];
+	tasklet_disable(tasklet);
+
+	channel->state = CHANNEL_OPEN_STATE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	channel->sc_creation_callback = NULL;
 
 	/* Stop the callback asap */
@@ -665,6 +707,10 @@ static int vmbus_close_internal(struct vmbus_channel *channel)
 		 * If we failed to post the close msg,
 		 * it is perhaps better to leak memory.
 		 */
+<<<<<<< HEAD
+=======
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Tear down the gpadl for the channel's ring buffer */
@@ -677,11 +723,28 @@ static int vmbus_close_internal(struct vmbus_channel *channel)
 			 * If we failed to teardown gpadl,
 			 * it is perhaps better to leak memory.
 			 */
+<<<<<<< HEAD
+=======
+			goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		channel->ringbuffer_gpadlhandle = 0;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Cleanup the ring buffers for this channel */
+	hv_ringbuffer_cleanup(&channel->outbound);
+	hv_ringbuffer_cleanup(&channel->inbound);
+
+	free_pages((unsigned long)channel->ringbuffer_pages,
+		get_order(channel->ringbuffer_pagecount * PAGE_SIZE));
+
+out:
+	tasklet_enable(tasklet);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -771,7 +834,61 @@ int vmbus_sendpacket(struct vmbus_channel *channel, void *buffer,
 	bufferlist[2].iov_base = &aligned_data;
 	bufferlist[2].iov_len = (packetlen_aligned - packetlen);
 
+<<<<<<< HEAD
 	return hv_ringbuffer_write(channel, bufferlist, num_vecs);
+=======
+	ret = hv_ringbuffer_write(&channel->outbound, bufferlist, num_vecs,
+				  &signal);
+
+	/*
+	 * Signalling the host is conditional on many factors:
+	 * 1. The ring state changed from being empty to non-empty.
+	 *    This is tracked by the variable "signal".
+	 * 2. The variable kick_q tracks if more data will be placed
+	 *    on the ring. We will not signal if more data is
+	 *    to be placed.
+	 *
+	 * Based on the channel signal state, we will decide
+	 * which signaling policy will be applied.
+	 *
+	 * If we cannot write to the ring-buffer; signal the host
+	 * even if we may not have written anything. This is a rare
+	 * enough condition that it should not matter.
+	 */
+
+	if (channel->signal_policy)
+		signal = true;
+	else
+		kick_q = true;
+
+	if (((ret == 0) && kick_q && signal) || (ret))
+		vmbus_setevent(channel);
+
+	return ret;
+}
+EXPORT_SYMBOL(vmbus_sendpacket_ctl);
+
+/**
+ * vmbus_sendpacket() - Send the specified buffer on the given channel
+ * @channel: Pointer to vmbus_channel structure.
+ * @buffer: Pointer to the buffer you want to receive the data into.
+ * @bufferlen: Maximum size of what the the buffer will hold
+ * @requestid: Identifier of the request
+ * @type: Type of packet that is being send e.g. negotiate, time
+ * packet etc.
+ *
+ * Sends data in @buffer directly to hyper-v via the vmbus
+ * This will send the data unparsed to hyper-v.
+ *
+ * Mainly used by Hyper-V drivers.
+ */
+int vmbus_sendpacket(struct vmbus_channel *channel, void *buffer,
+			   u32 bufferlen, u64 requestid,
+			   enum vmbus_packet_type type, u32 flags)
+{
+	return vmbus_sendpacket_ctl(channel, buffer, bufferlen, requestid,
+				    type, flags, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(vmbus_sendpacket);
 
@@ -830,7 +947,54 @@ int vmbus_sendpacket_pagebuffer(struct vmbus_channel *channel,
 	bufferlist[2].iov_base = &aligned_data;
 	bufferlist[2].iov_len = (packetlen_aligned - packetlen);
 
+<<<<<<< HEAD
 	return hv_ringbuffer_write(channel, bufferlist, 3);
+=======
+	ret = hv_ringbuffer_write(&channel->outbound, bufferlist, 3, &signal);
+
+	/*
+	 * Signalling the host is conditional on many factors:
+	 * 1. The ring state changed from being empty to non-empty.
+	 *    This is tracked by the variable "signal".
+	 * 2. The variable kick_q tracks if more data will be placed
+	 *    on the ring. We will not signal if more data is
+	 *    to be placed.
+	 *
+	 * Based on the channel signal state, we will decide
+	 * which signaling policy will be applied.
+	 *
+	 * If we cannot write to the ring-buffer; signal the host
+	 * even if we may not have written anything. This is a rare
+	 * enough condition that it should not matter.
+	 */
+
+	if (channel->signal_policy)
+		signal = true;
+	else
+		kick_q = true;
+
+	if (((ret == 0) && kick_q && signal) || (ret))
+		vmbus_setevent(channel);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(vmbus_sendpacket_pagebuffer_ctl);
+
+/*
+ * vmbus_sendpacket_pagebuffer - Send a range of single-page buffer
+ * packets using a GPADL Direct packet type.
+ */
+int vmbus_sendpacket_pagebuffer(struct vmbus_channel *channel,
+				     struct hv_page_buffer pagebuffers[],
+				     u32 pagecount, void *buffer, u32 bufferlen,
+				     u64 requestid)
+{
+	u32 flags = VMBUS_DATA_PACKET_FLAG_COMPLETION_REQUESTED;
+	return vmbus_sendpacket_pagebuffer_ctl(channel, pagebuffers, pagecount,
+					       buffer, bufferlen, requestid,
+					       flags, true);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(vmbus_sendpacket_pagebuffer);
 

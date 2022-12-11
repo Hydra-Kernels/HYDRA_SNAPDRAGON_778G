@@ -431,7 +431,11 @@ static int ds_wait_status(struct ds_device *dev, struct ds_status *st)
 		if (err >= 0) {
 			int i;
 			printk("0x%x: count=%d, status: ", dev->ep[EP_STATUS], err);
+<<<<<<< HEAD
 			for (i = 0; i < err; ++i)
+=======
+			for (i=0; i<err; ++i)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				printk("%02x ", dev->st_buf[i]);
 			printk("\n");
 		}
@@ -873,10 +877,18 @@ static void ds9490r_write_block(void *data, const u8 *buf, int len)
 	if (len <= 0)
 		return;
 
+<<<<<<< HEAD
 	tbuf = kmemdup(buf, len, GFP_KERNEL);
 	if (!tbuf)
 		return;
 
+=======
+	tbuf = kmalloc(len, GFP_KERNEL);
+	if (!tbuf)
+		return;
+
+	memcpy(tbuf, buf, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ds_write_block(dev, tbuf, len);
 
 	kfree(tbuf);

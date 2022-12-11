@@ -420,6 +420,9 @@ static int bcm_open(struct hci_uart *hu)
 
 	hu->priv = bcm;
 
+	if (!hu->tty->dev)
+		goto out;
+
 	mutex_lock(&bcm_device_lock);
 
 	if (hu->serdev) {
@@ -446,6 +449,7 @@ static int bcm_open(struct hci_uart *hu)
 		}
 	}
 
+<<<<<<< HEAD
 out:
 	if (bcm->dev) {
 		hu->init_speed = bcm->dev->init_speed;
@@ -456,6 +460,10 @@ out:
 	}
 
 	mutex_unlock(&bcm_device_lock);
+=======
+	mutex_unlock(&bcm_device_lock);
+out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 err_unset_hu:

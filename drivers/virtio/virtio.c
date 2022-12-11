@@ -343,11 +343,17 @@ int register_virtio_device(struct virtio_device *dev)
 
 	INIT_LIST_HEAD(&dev->vqs);
 
+<<<<<<< HEAD
 	/*
 	 * device_add() causes the bus infrastructure to look for a matching
 	 * driver.
 	 */
 	err = device_add(&dev->dev);
+=======
+	/* device_register() causes the bus infrastructure to look for a
+	 * matching driver. */
+	err = device_register(&dev->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err)
 		ida_simple_remove(&virtio_index_ida, dev->index);
 out:

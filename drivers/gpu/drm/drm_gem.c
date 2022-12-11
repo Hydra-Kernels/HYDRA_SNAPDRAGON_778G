@@ -397,8 +397,17 @@ drm_gem_handle_create_tail(struct drm_file *file_priv,
 	mutex_unlock(&dev->object_name_lock);
 	if (ret < 0)
 		goto err_unref;
+<<<<<<< HEAD
 
 	handle = ret;
+=======
+
+	*handlep = ret;
+
+	ret = drm_vma_node_allow(&obj->vma_node, file_priv->filp);
+	if (ret)
+		goto err_remove;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = drm_vma_node_allow(&obj->vma_node, file_priv);
 	if (ret)
@@ -418,6 +427,7 @@ drm_gem_handle_create_tail(struct drm_file *file_priv,
 	return 0;
 
 err_revoke:
+<<<<<<< HEAD
 	drm_vma_node_revoke(&obj->vma_node, file_priv);
 err_remove:
 	spin_lock(&file_priv->table_lock);
@@ -425,6 +435,15 @@ err_remove:
 	spin_unlock(&file_priv->table_lock);
 err_unref:
 	drm_gem_object_handle_put_unlocked(obj);
+=======
+	drm_vma_node_revoke(&obj->vma_node, file_priv->filp);
+err_remove:
+	spin_lock(&file_priv->table_lock);
+	idr_remove(&file_priv->object_idr, *handlep);
+	spin_unlock(&file_priv->table_lock);
+err_unref:
+	drm_gem_object_handle_unreference_unlocked(obj);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -922,6 +941,32 @@ drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
 	spin_lock_init(&file_private->table_lock);
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Called at device close to release the file's
+ * handle references on objects.
+ */
+static int
+drm_gem_object_release_handle(int id, void *ptr, void *data)
+{
+	struct drm_file *file_priv = data;
+	struct drm_gem_object *obj = ptr;
+	struct drm_device *dev = obj->dev;
+
+	if (dev->driver->gem_close_object)
+		dev->driver->gem_close_object(obj, file_priv);
+
+	if (drm_core_check_feature(dev, DRIVER_PRIME))
+		drm_gem_remove_prime_handles(obj, file_priv);
+	drm_vma_node_revoke(&obj->vma_node, file_priv->filp);
+
+	drm_gem_object_handle_unreference_unlocked(obj);
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * drm_gem_release - release file-private GEM resources
  * @dev: drm_device which is being closed by userspace

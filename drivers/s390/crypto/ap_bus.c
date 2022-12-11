@@ -1489,6 +1489,7 @@ static void _ap_scan_bus_adapter(int id)
 		}
 		if (rc)
 			continue;
+<<<<<<< HEAD
 		/* a new queue device is needed, check out comp type */
 		comp_type = ap_get_compatible_type(qid, type, func);
 		if (!comp_type)
@@ -1526,6 +1527,27 @@ static void _ap_scan_bus_adapter(int id)
 			continue;
 		}
 	} /* end domain loop */
+=======
+		ap_dev = kzalloc(sizeof(*ap_dev), GFP_KERNEL);
+		if (!ap_dev)
+			break;
+		ap_dev->qid = qid;
+		ap_dev->state = AP_STATE_RESET_START;
+		ap_dev->interrupt = AP_INTR_DISABLED;
+		ap_dev->queue_depth = queue_depth;
+		ap_dev->raw_hwtype = device_type;
+		ap_dev->device_type = device_type;
+		/* CEX6 toleration: map to CEX5 */
+		if (device_type == AP_DEVICE_TYPE_CEX6)
+			ap_dev->device_type = AP_DEVICE_TYPE_CEX5;
+		ap_dev->functions = device_functions;
+		spin_lock_init(&ap_dev->lock);
+		INIT_LIST_HEAD(&ap_dev->pendingq);
+		INIT_LIST_HEAD(&ap_dev->requestq);
+		INIT_LIST_HEAD(&ap_dev->list);
+		setup_timer(&ap_dev->timeout, ap_request_timeout,
+			    (unsigned long) ap_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ac)
 		put_device(&ac->ap_dev.device);

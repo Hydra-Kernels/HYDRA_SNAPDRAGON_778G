@@ -231,7 +231,11 @@ static int __test__bpf(int idx)
 
 	ret = test_llvm__fetch_bpf_obj(&obj_buf, &obj_buf_sz,
 				       bpf_testcase_table[idx].prog_id,
+<<<<<<< HEAD
 				       true, NULL);
+=======
+				       true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret != TEST_OK || !obj_buf || !obj_buf_sz) {
 		pr_debug("Unable to get BPF object, %s\n",
 			 bpf_testcase_table[idx].msg_compile_fail);
@@ -243,6 +247,7 @@ static int __test__bpf(int idx)
 
 	obj = prepare_bpf(obj_buf, obj_buf_sz,
 			  bpf_testcase_table[idx].name);
+<<<<<<< HEAD
 	if ((!!bpf_testcase_table[idx].target_func) != (!!obj)) {
 		if (!obj)
 			pr_debug("Fail to load BPF object: %s\n",
@@ -250,10 +255,14 @@ static int __test__bpf(int idx)
 		else
 			pr_debug("Success unexpectedly: %s\n",
 				 bpf_testcase_table[idx].msg_load_fail);
+=======
+	if (!obj) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = TEST_FAIL;
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (obj) {
 		ret = do_test(obj,
 			      bpf_testcase_table[idx].target_func,
@@ -282,6 +291,11 @@ static int __test__bpf(int idx)
 		}
 	}
 
+=======
+	ret = do_test(obj,
+		      bpf_testcase_table[idx].target_func,
+		      bpf_testcase_table[idx].expect_result);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	free(obj_buf);
 	bpf__clear();

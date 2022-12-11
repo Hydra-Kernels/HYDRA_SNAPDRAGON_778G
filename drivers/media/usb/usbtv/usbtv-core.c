@@ -113,8 +113,12 @@ static int usbtv_probe(struct usb_interface *intf,
 
 usbtv_audio_fail:
 	/* we must not free at this point */
+<<<<<<< HEAD
 	v4l2_device_get(&usbtv->v4l2_dev);
 	/* this will undo the v4l2_device_get() */
+=======
+	usb_get_dev(usbtv->udev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	usbtv_video_free(usbtv);
 
 usbtv_video_fail:
@@ -148,7 +152,10 @@ static void usbtv_disconnect(struct usb_interface *intf)
 static const struct usb_device_id usbtv_id_table[] = {
 	{ USB_DEVICE(0x1b71, 0x3002) },
 	{ USB_DEVICE(0x1f71, 0x3301) },
+<<<<<<< HEAD
 	{ USB_DEVICE(0x1f71, 0x3306) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 MODULE_DEVICE_TABLE(usb, usbtv_id_table);

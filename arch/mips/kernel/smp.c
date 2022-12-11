@@ -442,10 +442,13 @@ int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 {
 	int err;
 
+<<<<<<< HEAD
 	err = mp_ops->boot_secondary(cpu, tidle);
 	if (err)
 		return err;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Wait for CPU to start and be ready to sync counters */
 	if (!wait_for_completion_timeout(&cpu_starting,
 					 msecs_to_jiffies(1000))) {

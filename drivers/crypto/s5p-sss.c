@@ -1925,11 +1925,20 @@ static int s5p_set_outdata_start(struct s5p_aes_dev *dev,
 
 static void s5p_aes_crypt_start(struct s5p_aes_dev *dev, unsigned long mode)
 {
+<<<<<<< HEAD
 	struct ablkcipher_request *req = dev->req;
 	u32 aes_control;
 	unsigned long flags;
 	int err;
 	u8 *iv, *ctr;
+=======
+	struct ablkcipher_request  *req = dev->req;
+
+	uint32_t                    aes_control;
+	int                         err;
+	unsigned long               flags;
+	u8 *iv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* This sets bit [13:12] to 00, which selects 128-bit counter */
 	aes_control = SSS_AES_KEY_CHANGE_MODE;
@@ -1939,6 +1948,7 @@ static void s5p_aes_crypt_start(struct s5p_aes_dev *dev, unsigned long mode)
 	if ((mode & FLAGS_AES_MODE_MASK) == FLAGS_AES_CBC) {
 		aes_control |= SSS_AES_CHAIN_MODE_CBC;
 		iv = req->info;
+<<<<<<< HEAD
 		ctr = NULL;
 	} else if ((mode & FLAGS_AES_MODE_MASK) == FLAGS_AES_CTR) {
 		aes_control |= SSS_AES_CHAIN_MODE_CTR;
@@ -1949,6 +1959,14 @@ static void s5p_aes_crypt_start(struct s5p_aes_dev *dev, unsigned long mode)
 		ctr = NULL;
 	}
 
+=======
+	} else if ((mode & FLAGS_AES_MODE_MASK) == FLAGS_AES_CTR) {
+		aes_control |= SSS_AES_CHAIN_MODE_CTR;
+		iv = req->info;
+	} else {
+		iv = NULL; /* AES_ECB */
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dev->ctx->keylen == AES_KEYSIZE_192)
 		aes_control |= SSS_AES_KEY_SIZE_192;
 	else if (dev->ctx->keylen == AES_KEYSIZE_256)
@@ -1978,7 +1996,11 @@ static void s5p_aes_crypt_start(struct s5p_aes_dev *dev, unsigned long mode)
 		goto outdata_error;
 
 	SSS_AES_WRITE(dev, AES_CONTROL, aes_control);
+<<<<<<< HEAD
 	s5p_set_aes(dev, dev->ctx->aes_key, iv, ctr, dev->ctx->keylen);
+=======
+	s5p_set_aes(dev, dev->ctx->aes_key, iv, dev->ctx->keylen);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	s5p_set_dma_indata(dev,  dev->sg_src);
 	s5p_set_dma_outdata(dev, dev->sg_dst);

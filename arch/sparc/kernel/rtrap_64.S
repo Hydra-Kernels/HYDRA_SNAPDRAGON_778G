@@ -286,6 +286,14 @@ user_rtt_fill_fixup_mna:
 		ba,pt	%xcc, user_rtt_fill_fixup_common
 		 mov	2, %g3
 
+user_rtt_fill_fixup_dax:
+		ba,pt	%xcc, user_rtt_fill_fixup_common
+		 mov	1, %g3
+
+user_rtt_fill_fixup_mna:
+		ba,pt	%xcc, user_rtt_fill_fixup_common
+		 mov	2, %g3
+
 user_rtt_fill_fixup:
 		ba,pt	%xcc, user_rtt_fill_fixup_common
 		 clr	%g3

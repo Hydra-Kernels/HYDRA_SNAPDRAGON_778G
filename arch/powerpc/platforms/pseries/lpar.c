@@ -1083,8 +1083,14 @@ static void hugepage_block_invalidate(unsigned long *slot, unsigned long *vpn,
 				      int count, int psize, int ssize)
 {
 	unsigned long param[PLPAR_HCALL9_BUFSIZE];
+<<<<<<< HEAD
 	unsigned long shift, current_vpgb, vpgb;
 	int i, pix = 0;
+=======
+	int i = 0, pix = 0, rc;
+	unsigned long flags = 0;
+	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	shift = mmu_psize_defs[psize].shift;
 
@@ -1485,7 +1491,11 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
 	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
 	unsigned long param[PLPAR_HCALL9_BUFSIZE];
+<<<<<<< HEAD
 	unsigned long index, shift, slot;
+=======
+	unsigned long hash, index, shift, hidx, slot;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	real_pte_t pte;
 	int psize, ssize;
 

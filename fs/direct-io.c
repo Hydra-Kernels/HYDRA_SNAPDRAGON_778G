@@ -552,7 +552,12 @@ static blk_status_t dio_bio_complete(struct dio *dio, struct bio *bio)
 			dio->io_error = -EIO;
 	}
 
+<<<<<<< HEAD
 	if (dio->is_async && should_dirty) {
+=======
+	if (dio->is_async && dio->rw == READ && dio->should_dirty) {
+		err = bio->bi_error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		bio_check_pages_dirty(bio);	/* transfers ownership */
 	} else {
 		bio_release_pages(bio, should_dirty);
@@ -907,7 +912,11 @@ out:
 		ret = dio_send_cur_page(dio, sdio, map_bh);
 		if (sdio->bio)
 			dio_bio_submit(dio, sdio);
+<<<<<<< HEAD
 		put_page(sdio->cur_page);
+=======
+		page_cache_release(sdio->cur_page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sdio->cur_page = NULL;
 	}
 	return ret;

@@ -166,11 +166,19 @@ static void keyspan_pda_rx_interrupt(struct urb *urb)
 		break;
 	case 1:
 		/* status interrupt */
+<<<<<<< HEAD
 		if (len < 2) {
 			dev_warn(&port->dev, "short interrupt message received\n");
 			break;
 		}
 		dev_dbg(&port->dev, "rx int, d1=%d\n", data[1]);
+=======
+		if (len < 3) {
+			dev_warn(&port->dev, "short interrupt message received\n");
+			break;
+		}
+		dev_dbg(&port->dev, "rx int, d1=%d, d2=%d\n", data[1], data[2]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		switch (data[1]) {
 		case 1: /* modemline change */
 			break;
@@ -710,6 +718,19 @@ MODULE_FIRMWARE("keyspan_pda/keyspan_pda.fw");
 MODULE_FIRMWARE("keyspan_pda/xircom_pgs.fw");
 #endif
 
+static int keyspan_pda_attach(struct usb_serial *serial)
+{
+	unsigned char num_ports = serial->num_ports;
+
+	if (serial->num_bulk_out < num_ports ||
+			serial->num_interrupt_in < num_ports) {
+		dev_err(&serial->interface->dev, "missing endpoints\n");
+		return -ENODEV;
+	}
+
+	return 0;
+}
+
 static int keyspan_pda_port_probe(struct usb_serial_port *port)
 {
 
@@ -788,6 +809,7 @@ static struct usb_serial_driver keyspan_pda_device = {
 	.break_ctl =		keyspan_pda_break_ctl,
 	.tiocmget =		keyspan_pda_tiocmget,
 	.tiocmset =		keyspan_pda_tiocmset,
+	.attach =		keyspan_pda_attach,
 	.port_probe =		keyspan_pda_port_probe,
 	.port_remove =		keyspan_pda_port_remove,
 };

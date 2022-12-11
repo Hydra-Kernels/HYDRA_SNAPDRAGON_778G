@@ -30,6 +30,10 @@
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+<<<<<<< HEAD
+=======
+#include <asm/fpu/api.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/cpufeatures.h>
 #include <asm/cpu_device_id.h>
 #include <asm/simd.h>

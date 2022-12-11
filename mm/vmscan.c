@@ -463,8 +463,11 @@ void unregister_shrinker(struct shrinker *shrinker)
 {
 	if (!shrinker->nr_deferred)
 		return;
+<<<<<<< HEAD
 	if (shrinker->flags & SHRINKER_MEMCG_AWARE)
 		unregister_memcg_shrinker(shrinker);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	down_write(&shrinker_rwsem);
 	list_del(&shrinker->list);
 	up_write(&shrinker_rwsem);
@@ -488,6 +491,7 @@ static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 	long batch_size = shrinker->batch ? shrinker->batch
 					  : SHRINK_BATCH;
 	long scanned = 0, next_deferred;
+<<<<<<< HEAD
 	long min_cache_size = batch_size;
 
 	if (current_is_kswapd())
@@ -495,6 +499,8 @@ static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 
 	if (!(shrinker->flags & SHRINKER_NUMA_AWARE))
 		nid = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	freeable = shrinker->count_objects(shrinker, shrinkctl);
 	if (freeable == 0 || freeable == SHRINK_EMPTY)
@@ -583,9 +589,15 @@ static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 			break;
 		freed += ret;
 
+<<<<<<< HEAD
 		count_vm_events(SLABS_SCANNED, shrinkctl->nr_scanned);
 		total_scan -= shrinkctl->nr_scanned;
 		scanned += shrinkctl->nr_scanned;
+=======
+		count_vm_events(SLABS_SCANNED, nr_to_scan);
+		total_scan -= nr_to_scan;
+		scanned += nr_to_scan;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		cond_resched();
 	}
@@ -1667,6 +1679,13 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 		if (PageDirty(page)) {
 			struct address_space *mapping;
 			bool migrate_dirty;
+<<<<<<< HEAD
+=======
+
+			/* ISOLATE_CLEAN means only clean pages */
+			if (mode & ISOLATE_CLEAN)
+				return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/*
 			 * Only pages without mappings or that have a
@@ -2461,9 +2480,14 @@ static void get_scan_count(struct lruvec *lruvec, struct mem_cgroup *memcg,
 	 * lruvec even if it has plenty of old anonymous pages unless the
 	 * system is under heavy pressure.
 	 */
+<<<<<<< HEAD
 	if (!IS_ENABLED(CONFIG_BALANCE_ANON_FILE_RECLAIM) &&
 	    !inactive_list_is_low(lruvec, true, sc, false) &&
 	    lruvec_lru_size(lruvec, LRU_INACTIVE_FILE, sc->reclaim_idx) >> sc->priority) {
+=======
+	if (!inactive_file_is_low(lruvec) &&
+	    get_lru_size(lruvec, LRU_INACTIVE_FILE) >> sc->priority) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		scan_balance = SCAN_FILE;
 		goto out;
 	}
@@ -3055,7 +3079,21 @@ static void shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 	}
 
 	for_each_zone_zonelist_nodemask(zone, z, zonelist,
+<<<<<<< HEAD
 					sc->reclaim_idx, sc->nodemask) {
+=======
+					gfp_zone(sc->gfp_mask), sc->nodemask) {
+		enum zone_type classzone_idx;
+
+		if (!populated_zone(zone))
+			continue;
+
+		classzone_idx = gfp_zone(sc->gfp_mask);
+		while (!populated_zone(zone->zone_pgdat->node_zones +
+							classzone_idx))
+			classzone_idx--;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * Take care memory controller reclaiming has small influence
 		 * to global LRU.
@@ -3468,7 +3506,9 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 	psi_memstall_enter(&pflags);
 	noreclaim_flag = memalloc_noreclaim_save();
 
+	current->flags |= PF_MEMALLOC;
 	nr_reclaimed = do_try_to_free_pages(zonelist, &sc);
+	current->flags &= ~PF_MEMALLOC;
 
 	memalloc_noreclaim_restore(noreclaim_flag);
 	psi_memstall_leave(&pflags);

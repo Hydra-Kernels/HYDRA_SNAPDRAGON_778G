@@ -49,7 +49,11 @@
 #include <linux/rcupdate.h>
 
 #include <asm/cpufeature.h>
+<<<<<<< HEAD:arch/x86/kernel/cpu/mtrr/mtrr.c
 #include <asm/e820/api.h>
+=======
+#include <asm/e820.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mtrr/main.c
 #include <asm/mtrr.h>
 #include <asm/msr.h>
 #include <asm/pat.h>
@@ -775,7 +779,11 @@ void __init mtrr_bp_init(void)
 	}
 
 	if (!mtrr_enabled()) {
+<<<<<<< HEAD:arch/x86/kernel/cpu/mtrr/mtrr.c
 		pr_info("Disabled\n");
+=======
+		pr_info("MTRR: Disabled\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/mtrr/main.c
 
 		/*
 		 * PAT initialization relies on MTRR's rendezvous handler.

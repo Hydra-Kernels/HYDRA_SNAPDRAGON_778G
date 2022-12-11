@@ -704,10 +704,13 @@ static int ath9k_init_softc(u16 devid, struct ath_softc *sc,
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	ret = ath9k_of_init(sc);
 	if (ret)
 		return ret;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ath9k_led_active_high != -1)
 		ah->config.led_active_high = ath9k_led_active_high == 1;
 

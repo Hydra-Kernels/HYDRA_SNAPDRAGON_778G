@@ -116,8 +116,133 @@ static unsigned int ipgre_net_id __read_mostly;
 static unsigned int gre_tap_net_id __read_mostly;
 static unsigned int erspan_net_id __read_mostly;
 
+<<<<<<< HEAD
 static int ipgre_err(struct sk_buff *skb, u32 info,
 		     const struct tnl_ptk_info *tpi)
+=======
+static int ip_gre_calc_hlen(__be16 o_flags)
+{
+	int addend = 4;
+
+	if (o_flags & TUNNEL_CSUM)
+		addend += 4;
+	if (o_flags & TUNNEL_KEY)
+		addend += 4;
+	if (o_flags & TUNNEL_SEQ)
+		addend += 4;
+	return addend;
+}
+
+static __be16 gre_flags_to_tnl_flags(__be16 flags)
+{
+	__be16 tflags = 0;
+
+	if (flags & GRE_CSUM)
+		tflags |= TUNNEL_CSUM;
+	if (flags & GRE_ROUTING)
+		tflags |= TUNNEL_ROUTING;
+	if (flags & GRE_KEY)
+		tflags |= TUNNEL_KEY;
+	if (flags & GRE_SEQ)
+		tflags |= TUNNEL_SEQ;
+	if (flags & GRE_STRICT)
+		tflags |= TUNNEL_STRICT;
+	if (flags & GRE_REC)
+		tflags |= TUNNEL_REC;
+	if (flags & GRE_VERSION)
+		tflags |= TUNNEL_VERSION;
+
+	return tflags;
+}
+
+static __be16 tnl_flags_to_gre_flags(__be16 tflags)
+{
+	__be16 flags = 0;
+
+	if (tflags & TUNNEL_CSUM)
+		flags |= GRE_CSUM;
+	if (tflags & TUNNEL_ROUTING)
+		flags |= GRE_ROUTING;
+	if (tflags & TUNNEL_KEY)
+		flags |= GRE_KEY;
+	if (tflags & TUNNEL_SEQ)
+		flags |= GRE_SEQ;
+	if (tflags & TUNNEL_STRICT)
+		flags |= GRE_STRICT;
+	if (tflags & TUNNEL_REC)
+		flags |= GRE_REC;
+	if (tflags & TUNNEL_VERSION)
+		flags |= GRE_VERSION;
+
+	return flags;
+}
+
+/* Fills in tpi and returns header length to be pulled. */
+static int parse_gre_header(struct sk_buff *skb, struct tnl_ptk_info *tpi,
+			    bool *csum_err)
+{
+	const struct gre_base_hdr *greh;
+	__be32 *options;
+	int hdr_len;
+
+	if (unlikely(!pskb_may_pull(skb, sizeof(struct gre_base_hdr))))
+		return -EINVAL;
+
+	greh = (struct gre_base_hdr *)skb_transport_header(skb);
+	if (unlikely(greh->flags & (GRE_VERSION | GRE_ROUTING)))
+		return -EINVAL;
+
+	tpi->flags = gre_flags_to_tnl_flags(greh->flags);
+	hdr_len = ip_gre_calc_hlen(tpi->flags);
+
+	if (!pskb_may_pull(skb, hdr_len))
+		return -EINVAL;
+
+	greh = (struct gre_base_hdr *)skb_transport_header(skb);
+	tpi->proto = greh->protocol;
+
+	options = (__be32 *)(greh + 1);
+	if (greh->flags & GRE_CSUM) {
+		if (skb_checksum_simple_validate(skb)) {
+			*csum_err = true;
+			return -EINVAL;
+		}
+
+		skb_checksum_try_convert(skb, IPPROTO_GRE, 0,
+					 null_compute_pseudo);
+		options++;
+	}
+
+	if (greh->flags & GRE_KEY) {
+		tpi->key = *options;
+		options++;
+	} else {
+		tpi->key = 0;
+	}
+	if (unlikely(greh->flags & GRE_SEQ)) {
+		tpi->seq = *options;
+		options++;
+	} else {
+		tpi->seq = 0;
+	}
+	/* WCCP version 1 and 2 protocol decoding.
+	 * - Change protocol to IP
+	 * - When dealing with WCCPv2, Skip extra 4 bytes in GRE header
+	 */
+	if (greh->flags == 0 && tpi->proto == htons(ETH_P_WCCP)) {
+		tpi->proto = htons(ETH_P_IP);
+		if ((*(u8 *)options & 0xF0) != 0x40) {
+			hdr_len += 4;
+			if (!pskb_may_pull(skb, hdr_len))
+				return -EINVAL;
+		}
+	}
+	return hdr_len;
+}
+
+static void ipgre_err(struct sk_buff *skb, u32 info,
+		      const struct tnl_ptk_info *tpi)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 
 	/* All the routers (except for Linux) return only
@@ -230,9 +355,16 @@ static void gre_err(struct sk_buff *skb, u32 info)
 	const int code = icmp_hdr(skb)->code;
 	struct tnl_ptk_info tpi;
 
+<<<<<<< HEAD
 	if (gre_parse_header(skb, &tpi, NULL, htons(ETH_P_IP),
 			     iph->ihl * 4) < 0)
 		return;
+=======
+	if (parse_gre_header(skb, &tpi, &csum_err) < 0) {
+		if (!csum_err)		/* ignore csum errors. */
+			return;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) {
 		ipv4_update_pmtu(skb, dev_net(skb->dev), info,
@@ -406,8 +538,15 @@ static int gre_rcv(struct sk_buff *skb)
 	}
 #endif
 
+<<<<<<< HEAD
 	hdr_len = gre_parse_header(skb, &tpi, &csum_err, htons(ETH_P_IP), 0);
 	if (hdr_len < 0)
+=======
+	hdr_len = parse_gre_header(skb, &tpi, &csum_err);
+	if (hdr_len < 0)
+		goto drop;
+	if (iptunnel_pull_header(skb, hdr_len, tpi.proto) < 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto drop;
 
 	if (unlikely(tpi.proto == htons(ETH_P_ERSPAN) ||
@@ -1638,6 +1777,16 @@ struct net_device *gretap_fb_dev_create(struct net *net, const char *name,
 	if (err < 0)
 		goto out;
 
+<<<<<<< HEAD
+=======
+	/* openvswitch users expect packet sizes to be unrestricted,
+	 * so set the largest MTU we can.
+	 */
+	err = __ip_tunnel_change_mtu(dev, IP_MAX_MTU, false);
+	if (err)
+		goto out;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return dev;
 out:
 	ip_tunnel_dellink(dev, &list_kill);

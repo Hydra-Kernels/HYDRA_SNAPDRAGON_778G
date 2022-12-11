@@ -102,7 +102,56 @@ static const struct v4l2_ctrl_config sru_intensity_control = {
 };
 
 /* -----------------------------------------------------------------------------
+<<<<<<< HEAD
  * V4L2 Subdevice Operations
+=======
+ * V4L2 Subdevice Core Operations
+ */
+
+static int sru_s_stream(struct v4l2_subdev *subdev, int enable)
+{
+	struct vsp1_sru *sru = to_sru(subdev);
+	struct v4l2_mbus_framefmt *input;
+	struct v4l2_mbus_framefmt *output;
+	u32 ctrl0;
+	int ret;
+
+	ret = vsp1_entity_set_streaming(&sru->entity, enable);
+	if (ret < 0)
+		return ret;
+
+	if (!enable)
+		return 0;
+
+	input = &sru->entity.formats[SRU_PAD_SINK];
+	output = &sru->entity.formats[SRU_PAD_SOURCE];
+
+	if (input->code == MEDIA_BUS_FMT_ARGB8888_1X32)
+		ctrl0 = VI6_SRU_CTRL0_PARAM2 | VI6_SRU_CTRL0_PARAM3
+		      | VI6_SRU_CTRL0_PARAM4;
+	else
+		ctrl0 = VI6_SRU_CTRL0_PARAM3;
+
+	if (input->width != output->width)
+		ctrl0 |= VI6_SRU_CTRL0_MODE_UPSCALE;
+
+	/* Take the control handler lock to ensure that the CTRL0 value won't be
+	 * changed behind our back by a set control operation.
+	 */
+	mutex_lock(sru->ctrls.lock);
+	ctrl0 |= vsp1_sru_read(sru, VI6_SRU_CTRL0)
+	       & (VI6_SRU_CTRL0_PARAM0_MASK | VI6_SRU_CTRL0_PARAM1_MASK);
+	vsp1_sru_write(sru, VI6_SRU_CTRL0, ctrl0);
+	mutex_unlock(sru->ctrls.lock);
+
+	vsp1_sru_write(sru, VI6_SRU_CTRL1, VI6_SRU_CTRL1_PARAM5);
+
+	return 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * V4L2 Subdevice Pad Operations
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 static int sru_enum_mbus_code(struct v4l2_subdev *subdev,

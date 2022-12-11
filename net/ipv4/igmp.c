@@ -332,15 +332,25 @@ static __be32 igmpv3_get_srcaddr(struct net_device *dev,
 				 const struct flowi4 *fl4)
 {
 	struct in_device *in_dev = __in_dev_get_rcu(dev);
+<<<<<<< HEAD
 	const struct in_ifaddr *ifa;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!in_dev)
 		return htonl(INADDR_ANY);
 
+<<<<<<< HEAD
 	in_dev_for_each_ifa_rcu(ifa, in_dev) {
 		if (fl4->saddr == ifa->ifa_local)
 			return fl4->saddr;
 	}
+=======
+	for_ifa(in_dev) {
+		if (fl4->saddr == ifa->ifa_local)
+			return fl4->saddr;
+	} endfor_ifa(in_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return htonl(INADDR_ANY);
 }
@@ -443,7 +453,11 @@ static struct sk_buff *add_grhead(struct sk_buff *skb, struct ip_mc_list *pmc,
 		if (!skb)
 			return NULL;
 	}
+<<<<<<< HEAD
 	pgr = skb_put(skb, sizeof(struct igmpv3_grec));
+=======
+	pgr = (struct igmpv3_grec *)skb_put(skb, sizeof(struct igmpv3_grec));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pgr->grec_type = type;
 	pgr->grec_auxwords = 0;
 	pgr->grec_nsrcs = 0;
@@ -470,6 +484,10 @@ static struct sk_buff *add_grec(struct sk_buff *skb, struct ip_mc_list *pmc,
 	if (pmc->multiaddr == IGMP_ALL_HOSTS)
 		return skb;
 	if (ipv4_is_local_multicast(pmc->multiaddr) && !net->ipv4.sysctl_igmp_llm_reports)
+		return skb;
+
+	mtu = READ_ONCE(dev->mtu);
+	if (mtu < IPV4_MIN_MTU)
 		return skb;
 
 	mtu = READ_ONCE(dev->mtu);
@@ -2136,7 +2154,11 @@ static int ip_mc_add_src(struct in_device *in_dev, __be32 *pmca, int sfmode,
 
 static void ip_mc_clear_src(struct ip_mc_list *pmc)
 {
+<<<<<<< HEAD
 	struct ip_sf_list *tomb, *sources;
+=======
+	struct ip_sf_list *psf, *nextpsf, *tomb, *sources;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_bh(&pmc->lock);
 	tomb = pmc->tomb;
@@ -2148,8 +2170,19 @@ static void ip_mc_clear_src(struct ip_mc_list *pmc)
 	pmc->sfcount[MCAST_EXCLUDE] = 1;
 	spin_unlock_bh(&pmc->lock);
 
+<<<<<<< HEAD
 	ip_sf_list_clear_all(tomb);
 	ip_sf_list_clear_all(sources);
+=======
+	for (psf = tomb; psf; psf = nextpsf) {
+		nextpsf = psf->sf_next;
+		kfree(psf);
+	}
+	for (psf = sources; psf; psf = nextpsf) {
+		nextpsf = psf->sf_next;
+		kfree(psf);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Join a multicast group

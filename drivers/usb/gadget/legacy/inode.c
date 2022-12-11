@@ -24,7 +24,10 @@
 #include <linux/mmu_context.h>
 #include <linux/aio.h>
 #include <linux/uio.h>
+<<<<<<< HEAD
 #include <linux/refcount.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/moduleparam.h>
@@ -114,7 +117,11 @@ enum ep0_state {
 
 struct dev_data {
 	spinlock_t			lock;
+<<<<<<< HEAD
 	refcount_t			count;
+=======
+	atomic_t			count;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int				udc_usage;
 	enum ep0_state			state;		/* P: lock */
 	struct usb_gadgetfs_event	event [N_EVENT];

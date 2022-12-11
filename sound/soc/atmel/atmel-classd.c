@@ -345,8 +345,13 @@ static int atmel_classd_codec_dai_digital_mute(struct snd_soc_dai *codec_dai,
 	return 0;
 }
 
+<<<<<<< HEAD
 #define CLASSD_GCLK_RATE_11M2896_MPY_8 (112896 * 100 * 8)
 #define CLASSD_GCLK_RATE_12M288_MPY_8  (12288 * 1000 * 8)
+=======
+#define CLASSD_ACLK_RATE_11M2896_MPY_8 (112896 * 100 * 8)
+#define CLASSD_ACLK_RATE_12M288_MPY_8  (12288 * 1000 * 8)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static struct {
 	int rate;

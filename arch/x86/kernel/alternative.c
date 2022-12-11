@@ -594,7 +594,11 @@ void __init_or_module apply_paravirt(struct paravirt_patch_site *start,
 				     struct paravirt_patch_site *end)
 {
 	struct paravirt_patch_site *p;
+<<<<<<< HEAD
 	char insn_buff[MAX_PATCH_LEN];
+=======
+	char insnbuf[MAX_PATCH_LEN];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	for (p = start; p < end; p++) {
 		unsigned int used;

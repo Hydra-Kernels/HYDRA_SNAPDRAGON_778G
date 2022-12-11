@@ -20,8 +20,29 @@
 
 static int dev_ifname(struct net *net, struct ifreq *ifr)
 {
+<<<<<<< HEAD
 	ifr->ifr_name[IFNAMSIZ-1] = 0;
 	return netdev_get_name(net, ifr->ifr_name, ifr->ifr_ifindex);
+=======
+	struct ifreq ifr;
+	int error;
+
+	/*
+	 *	Fetch the caller's info block.
+	 */
+
+	if (copy_from_user(&ifr, arg, sizeof(struct ifreq)))
+		return -EFAULT;
+	ifr.ifr_name[IFNAMSIZ-1] = 0;
+
+	error = netdev_get_name(net, ifr.ifr_name, ifr.ifr_ifindex);
+	if (error)
+		return error;
+
+	if (copy_to_user(arg, &ifr, sizeof(struct ifreq)))
+		return -EFAULT;
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static gifconf_func_t *gifconf_list[NPROTO];

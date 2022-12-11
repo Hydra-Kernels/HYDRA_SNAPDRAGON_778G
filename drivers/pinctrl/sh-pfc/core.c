@@ -912,10 +912,13 @@ static int sh_pfc_probe(struct platform_device *pdev)
 		info = pfc->info;
 	}
 
+<<<<<<< HEAD
 	ret = sh_pfc_suspend_init(pfc);
 	if (ret)
 		return ret;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Enable dummy states for those platforms without pinctrl support */
 	if (!of_have_populated_dt())
 		pinctrl_provide_dummies();

@@ -161,6 +161,7 @@ struct sa_path_rec_ib {
 	__be16       dlid;
 	__be16       slid;
 	u8           raw_traffic;
+<<<<<<< HEAD
 };
 
 /**
@@ -191,6 +192,8 @@ struct sa_path_rec {
 	union ib_gid dgid;
 	union ib_gid sgid;
 	__be64       service_id;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* reserved */
 	__be32       flow_label;
 	u8           hop_limit;

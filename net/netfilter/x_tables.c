@@ -36,7 +36,10 @@ MODULE_AUTHOR("Harald Welte <laforge@netfilter.org>");
 MODULE_DESCRIPTION("{ip,ip6,arp,eb}_tables backend module");
 
 #define XT_PCPU_BLOCK_SIZE 4096
+<<<<<<< HEAD
 #define XT_MAX_TABLE_SIZE	(512 * 1024 * 1024)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct compat_delta {
 	unsigned int offset; /* offset in kernel */
@@ -552,6 +555,7 @@ static int xt_check_entry_match(const char *match, const char *target,
 	return 0;
 }
 
+<<<<<<< HEAD
 /** xt_check_table_hooks - check hook entry points are sane
  *
  * @info xt_table_info to check
@@ -641,6 +645,8 @@ static bool error_tg_ok(unsigned int usersize, unsigned int kernsize,
 	return usersize == kernsize && strnlen(msg, msglen) < msglen;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_COMPAT
 int xt_compat_add_offset(u_int8_t af, unsigned int offset, int delta)
 {
@@ -792,11 +798,14 @@ struct compat_xt_standard_target {
 	compat_uint_t verdict;
 };
 
+<<<<<<< HEAD
 struct compat_xt_error_target {
 	struct compat_xt_entry_target t;
 	char errorname[XT_FUNCTION_MAXNAMELEN];
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int xt_compat_check_entry_offsets(const void *base, const char *elems,
 				  unsigned int target_offset,
 				  unsigned int next_offset)
@@ -818,6 +827,7 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 	if (target_offset + t->u.target_size > next_offset)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0) {
 		const struct compat_xt_standard_target *st = (const void *)t;
 
@@ -835,6 +845,13 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 	}
 
 	/* compat_xt_entry match has less strict alignment requirements,
+=======
+	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0 &&
+	    COMPAT_XT_ALIGN(target_offset + sizeof(struct compat_xt_standard_target)) != next_offset)
+		return -EINVAL;
+
+	/* compat_xt_entry match has less strict aligment requirements,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * otherwise they are identical.  In case of padding differences
 	 * we need to add compat version of xt_check_entry_match.
 	 */
@@ -912,6 +929,7 @@ int xt_check_entry_offsets(const void *base,
 	if (target_offset + t->u.target_size > next_offset)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0) {
 		const struct xt_standard_target *st = (const void *)t;
 
@@ -927,6 +945,11 @@ int xt_check_entry_offsets(const void *base,
 				 et->errorname, sizeof(et->errorname)))
 			return -EINVAL;
 	}
+=======
+	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0 &&
+	    XT_ALIGN(target_offset + sizeof(struct xt_standard_target)) != next_offset)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return xt_check_entry_match(elems, base + target_offset,
 				    __alignof__(struct xt_entry_match));
@@ -942,11 +965,25 @@ EXPORT_SYMBOL(xt_check_entry_offsets);
  */
 unsigned int *xt_alloc_entry_offsets(unsigned int size)
 {
+<<<<<<< HEAD
 	if (size > XT_MAX_TABLE_SIZE / sizeof(unsigned int))
 		return NULL;
 
 	return kvmalloc_array(size, sizeof(unsigned int), GFP_KERNEL | __GFP_ZERO);
 
+=======
+	unsigned int *off;
+
+	off = kcalloc(size, sizeof(unsigned int), GFP_KERNEL | __GFP_NOWARN);
+
+	if (off)
+		return off;
+
+	if (size < (SIZE_MAX / sizeof(unsigned int)))
+		off = vmalloc(size * sizeof(unsigned int));
+
+	return off;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(xt_alloc_entry_offsets);
 
@@ -1065,7 +1102,11 @@ void *xt_copy_counters_from_user(const void __user *user, unsigned int len,
 		if (copy_from_user(&compat_tmp, user, sizeof(compat_tmp)) != 0)
 			return ERR_PTR(-EFAULT);
 
+<<<<<<< HEAD
 		memcpy(info->name, compat_tmp.name, sizeof(info->name) - 1);
+=======
+		strlcpy(info->name, compat_tmp.name, sizeof(info->name));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		info->num_counters = compat_tmp.num_counters;
 		user += sizeof(compat_tmp);
 	} else
@@ -1078,9 +1119,15 @@ void *xt_copy_counters_from_user(const void __user *user, unsigned int len,
 		if (copy_from_user(info, user, sizeof(*info)) != 0)
 			return ERR_PTR(-EFAULT);
 
+<<<<<<< HEAD
 		user += sizeof(*info);
 	}
 	info->name[sizeof(info->name) - 1] = '\0';
+=======
+		info->name[sizeof(info->name) - 1] = '\0';
+		user += sizeof(*info);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	size = sizeof(struct xt_counters);
 	size *= info->num_counters;
@@ -1166,11 +1213,22 @@ struct xt_table_info *xt_alloc_table_info(unsigned int size)
 	struct xt_table_info *info = NULL;
 	size_t sz = sizeof(*info) + size;
 
+<<<<<<< HEAD
 	if (sz < sizeof(*info) || sz >= XT_MAX_TABLE_SIZE)
 		return NULL;
 
 	info = kvmalloc(sz, GFP_KERNEL_ACCOUNT);
 	if (!info)
+=======
+	if (sz < sizeof(*info))
+		return NULL;
+
+	if (sz < sizeof(*info))
+		return NULL;
+
+	/* Pedantry: prevent them from hitting BUG() in vmalloc.c --RR */
+	if ((size >> PAGE_SHIFT) + 2 > totalram_pages)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return NULL;
 
 	memset(info, 0, sizeof(*info));
@@ -1817,9 +1875,13 @@ EXPORT_SYMBOL_GPL(xt_proto_fini);
  * to fetch the real percpu counter.
  *
  * To speed up allocation and improve data locality, a 4kb block is
+<<<<<<< HEAD
  * allocated.  Freeing any counter may free an entire block, so all
  * counters allocated using the same state must be freed at the same
  * time.
+=======
+ * allocated.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * xt_percpu_counter_alloc_state contains the base address of the
  * allocated page and the current sub-offset.

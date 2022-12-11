@@ -833,7 +833,11 @@ update_dl_revised_wakeup(struct sched_dl_entity *dl_se, struct rq *rq)
 	 */
 	WARN_ON(dl_time_before(dl_se->deadline, rq_clock(rq)));
 
+<<<<<<< HEAD
 	dl_se->runtime = (dl_se->dl_density * laxity) >> BW_SHIFT;
+=======
+	dl_se->runtime = (dl_se->dl_density * laxity) >> 20;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -1508,6 +1512,7 @@ static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 	if (!p->dl.dl_throttled && !dl_is_implicit(&p->dl))
 		dl_check_constrained_dl(&p->dl);
 
+<<<<<<< HEAD
 	if (p->on_rq == TASK_ON_RQ_MIGRATING || flags & ENQUEUE_RESTORE) {
 		add_rq_bw(&p->dl, &rq->dl);
 		add_running_bw(&p->dl, &rq->dl);
@@ -1515,6 +1520,10 @@ static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 
 	/*
 	 * If p is throttled, we do not enqueue it. In fact, if it exhausted
+=======
+	/*
+	 * If p is throttled, we do nothing. In fact, if it exhausted
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * its budget it needs a replenishment and, since it now is on
 	 * its rq, the bandwidth timer callback (which clearly has not
 	 * run yet) will take care of this.
@@ -2399,14 +2408,21 @@ static void switched_to_dl(struct rq *rq, struct task_struct *p)
 	if (rq->curr != p) {
 #ifdef CONFIG_SMP
 		if (p->nr_cpus_allowed > 1 && rq->dl.overloaded)
+<<<<<<< HEAD
 			deadline_queue_push_tasks(rq);
+=======
+			queue_push_tasks(rq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 		if (dl_task(rq->curr))
 			check_preempt_curr_dl(rq, p, 0);
 		else
 			resched_curr(rq);
+<<<<<<< HEAD
 	} else {
 		update_dl_rq_load_avg(rq_clock_pelt(rq), rq, 0);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

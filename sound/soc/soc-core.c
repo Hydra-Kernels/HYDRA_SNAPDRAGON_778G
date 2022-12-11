@@ -2200,6 +2200,40 @@ static int soc_probe(struct platform_device *pdev)
 	return snd_soc_register_card(card);
 }
 
+<<<<<<< HEAD
+=======
+static int soc_cleanup_card_resources(struct snd_soc_card *card)
+{
+	int i;
+
+	/* make sure any delayed work runs */
+	for (i = 0; i < card->num_rtd; i++) {
+		struct snd_soc_pcm_runtime *rtd = &card->rtd[i];
+		flush_delayed_work(&rtd->delayed_work);
+	}
+
+	/* remove auxiliary devices */
+	for (i = 0; i < card->num_aux_devs; i++)
+		soc_remove_aux_dev(card, i);
+
+	/* free the ALSA card at first; this syncs with pending operations */
+	snd_card_free(card->snd_card);
+
+	/* remove and free each DAI */
+	soc_remove_dai_links(card);
+
+	soc_cleanup_card_debugfs(card);
+
+	/* remove the card */
+	if (card->remove)
+		card->remove(card);
+
+	snd_soc_dapm_free(&card->dapm);
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* removes a socdev */
 static int soc_remove(struct platform_device *pdev)
 {

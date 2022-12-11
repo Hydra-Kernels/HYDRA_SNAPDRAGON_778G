@@ -36,9 +36,12 @@ static inline int bcm_phy_write_exp_sel(struct phy_device *phydev,
 	return bcm_phy_write_exp(phydev, reg | MII_BCM54XX_EXP_SEL_ER, val);
 }
 
+<<<<<<< HEAD
 int bcm54xx_auxctl_write(struct phy_device *phydev, u16 regnum, u16 val);
 int bcm54xx_auxctl_read(struct phy_device *phydev, u16 regnum);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int bcm_phy_write_misc(struct phy_device *phydev,
 		       u16 reg, u16 chl, u16 value);
 int bcm_phy_read_misc(struct phy_device *phydev,

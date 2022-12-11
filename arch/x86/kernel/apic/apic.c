@@ -1942,10 +1942,15 @@ void __init enable_IR_x2apic(void)
 	unsigned long flags;
 	int ret, ir_stat;
 
+<<<<<<< HEAD
 	if (skip_ioapic_setup) {
 		pr_info("Not enabling interrupt remapping due to skipped IO-APIC setup\n");
 		return;
 	}
+=======
+	if (skip_ioapic_setup)
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ir_stat = irq_remapping_prepare();
 	if (ir_stat < 0 && !x2apic_supported())

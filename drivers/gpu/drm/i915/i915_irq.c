@@ -1123,13 +1123,21 @@ static void vlv_c0_read(struct drm_i915_private *dev_priv,
 
 void gen6_rps_reset_ei(struct drm_i915_private *dev_priv)
 {
+<<<<<<< HEAD
 	memset(&dev_priv->gt_pm.rps.ei, 0, sizeof(dev_priv->gt_pm.rps.ei));
+=======
+	memset(&dev_priv->rps.ei, 0, sizeof(dev_priv->rps.ei));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static u32 vlv_wa_c0_ei(struct drm_i915_private *dev_priv, u32 pm_iir)
 {
+<<<<<<< HEAD
 	struct intel_rps *rps = &dev_priv->gt_pm.rps;
 	const struct intel_rps_ei *prev = &rps->ei;
+=======
+	const struct intel_rps_ei *prev = &dev_priv->rps.ei;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct intel_rps_ei now;
 	u32 events = 0;
 
@@ -1138,12 +1146,24 @@ static u32 vlv_wa_c0_ei(struct drm_i915_private *dev_priv, u32 pm_iir)
 
 	vlv_c0_read(dev_priv, &now);
 
+<<<<<<< HEAD
 	if (prev->ktime) {
 		u64 time, c0;
 		u32 render, media;
 
 		time = ktime_us_delta(now.ktime, prev->ktime);
 
+=======
+	if (prev->cz_clock) {
+		u64 time, c0;
+		unsigned int mul;
+
+		mul = VLV_CZ_CLOCK_TO_MILLI_SEC * 100; /* scale to threshold% */
+		if (I915_READ(VLV_COUNTER_CONTROL) & VLV_COUNT_RANGE_HIGH)
+			mul <<= 8;
+
+		time = now.cz_clock - prev->cz_clock;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		time *= dev_priv->czclk_freq;
 
 		/* Workload can be split between render + media,
@@ -1151,6 +1171,7 @@ static u32 vlv_wa_c0_ei(struct drm_i915_private *dev_priv, u32 pm_iir)
 		 * mesa. To account for this we need to combine both engines
 		 * into our activity counter.
 		 */
+<<<<<<< HEAD
 		render = now.render_c0 - prev->render_c0;
 		media = now.media_c0 - prev->media_c0;
 		c0 = max(render, media);
@@ -1163,6 +1184,19 @@ static u32 vlv_wa_c0_ei(struct drm_i915_private *dev_priv, u32 pm_iir)
 	}
 
 	rps->ei = now;
+=======
+		c0 = now.render_c0 - prev->render_c0;
+		c0 += now.media_c0 - prev->media_c0;
+		c0 *= mul;
+
+		if (c0 > time * dev_priv->rps.up_threshold)
+			events = GEN6_PM_RP_UP_THRESHOLD;
+		else if (c0 < time * dev_priv->rps.down_threshold)
+			events = GEN6_PM_RP_DOWN_THRESHOLD;
+	}
+
+	dev_priv->rps.ei = now;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return events;
 }
 
@@ -2789,7 +2823,11 @@ gen8_de_irq_handler(struct drm_i915_private *dev_priv, u32 master_ctl)
 			else if (INTEL_PCH_TYPE(dev_priv) >= PCH_SPT)
 				spt_irq_handler(dev_priv, iir);
 			else
+<<<<<<< HEAD
 				cpt_irq_handler(dev_priv, iir);
+=======
+				cpt_irq_handler(dev, pch_iir);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			/*
 			 * Like on previous PCH there seems to be something

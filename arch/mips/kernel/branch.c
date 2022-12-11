@@ -403,7 +403,11 @@ int __MIPS16e_compute_return_epc(struct pt_regs *regs)
  *
  * @regs:	Pointer to pt_regs
  * @insn:	branch instruction to decode
+<<<<<<< HEAD
  * Return:	-EFAULT on error and forces SIGILL, and on success
+=======
+ * @returns:	-EFAULT on error and forces SIGILL, and on success
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *		returns 0 or BRANCH_LIKELY_TAKEN as appropriate after
  *		evaluating the branch.
  *
@@ -451,7 +455,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 		case bltzl_op:
 			if (NO_R6EMU)
 				goto sigill_r2r6;
+<<<<<<< HEAD
 			/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case bltz_op:
 			if ((long)regs->regs[insn.i_format.rs] < 0) {
 				epc = epc + 4 + (insn.i_format.simmediate << 2);
@@ -465,7 +472,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 		case bgezl_op:
 			if (NO_R6EMU)
 				goto sigill_r2r6;
+<<<<<<< HEAD
 			/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case bgez_op:
 			if ((long)regs->regs[insn.i_format.rs] >= 0) {
 				epc = epc + 4 + (insn.i_format.simmediate << 2);
@@ -578,7 +588,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 	case beql_op:
 		if (NO_R6EMU)
 			goto sigill_r2r6;
+<<<<<<< HEAD
 		/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case beq_op:
 		if (regs->regs[insn.i_format.rs] ==
 		    regs->regs[insn.i_format.rt]) {
@@ -593,7 +606,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 	case bnel_op:
 		if (NO_R6EMU)
 			goto sigill_r2r6;
+<<<<<<< HEAD
 		/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case bne_op:
 		if (regs->regs[insn.i_format.rs] !=
 		    regs->regs[insn.i_format.rt]) {
@@ -608,7 +624,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 	case blezl_op: /* not really i_format */
 		if (!insn.i_format.rt && NO_R6EMU)
 			goto sigill_r2r6;
+<<<<<<< HEAD
 		/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case blez_op:
 		/*
 		 * Compact branches for R6 for the
@@ -644,7 +663,10 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 	case bgtzl_op:
 		if (!insn.i_format.rt && NO_R6EMU)
 			goto sigill_r2r6;
+<<<<<<< HEAD
 		/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case bgtz_op:
 		/*
 		 * Compact branches for R6 for the
@@ -827,6 +849,7 @@ int __compute_return_epc_for_insn(struct pt_regs *regs,
 	return ret;
 
 sigill_dsp:
+<<<<<<< HEAD
 	pr_debug("%s: DSP branch but not DSP ASE - sending SIGILL.\n",
 		 current->comm);
 	force_sig(SIGILL);
@@ -840,6 +863,16 @@ sigill_r6:
 	pr_debug("%s: R6 branch but no MIPSr6 ISA support - sending SIGILL.\n",
 		 current->comm);
 	force_sig(SIGILL);
+=======
+	pr_info("%s: DSP branch but not DSP ASE - sending SIGILL.\n",
+		current->comm);
+	force_sig(SIGILL, current);
+	return -EFAULT;
+sigill_r2r6:
+	pr_info("%s: R2 branch but r2-to-r6 emulator is not present - sending SIGILL.\n",
+		current->comm);
+	force_sig(SIGILL, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return -EFAULT;
 }
 EXPORT_SYMBOL_GPL(__compute_return_epc_for_insn);

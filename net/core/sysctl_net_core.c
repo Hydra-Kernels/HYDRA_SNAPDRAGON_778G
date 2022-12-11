@@ -26,8 +26,11 @@ static int two __maybe_unused = 2;
 static int min_sndbuf = SOCK_MIN_SNDBUF;
 static int min_rcvbuf = SOCK_MIN_RCVBUF;
 static int max_skb_frags = MAX_SKB_FRAGS;
+<<<<<<< HEAD
 static long long_one __maybe_unused = 1;
 static long long_max __maybe_unused = LONG_MAX;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int net_msg_warn;	/* Unused, but still a sysctl */
 
@@ -388,6 +391,7 @@ static struct ctl_table net_core_table[] = {
 		.data		= &bpf_jit_enable,
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
+<<<<<<< HEAD
 		.proc_handler	= proc_dointvec_minmax_bpf_enable,
 # ifdef CONFIG_BPF_JIT_ALWAYS_ON
 		.extra1		= SYSCTL_ONE,
@@ -425,6 +429,15 @@ static struct ctl_table net_core_table[] = {
 		.proc_handler	= proc_dolongvec_minmax_bpf_restricted,
 		.extra1		= &long_one,
 		.extra2		= &long_max,
+=======
+#ifndef CONFIG_BPF_JIT_ALWAYS_ON
+		.proc_handler	= proc_dointvec
+#else
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &one,
+		.extra2		= &one,
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 #endif
 	{
@@ -493,7 +506,11 @@ static struct ctl_table net_core_table[] = {
 		.maxlen		= sizeof(unsigned int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax,
+<<<<<<< HEAD
 		.extra1		= SYSCTL_ZERO,
+=======
+		.extra1		= &zero,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		.procname	= "busy_read",
@@ -501,7 +518,11 @@ static struct ctl_table net_core_table[] = {
 		.maxlen		= sizeof(unsigned int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax,
+<<<<<<< HEAD
 		.extra1		= SYSCTL_ZERO,
+=======
+		.extra1		= &zero,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 #endif
 #ifdef CONFIG_NET_SCHED
@@ -533,6 +554,7 @@ static struct ctl_table net_core_table[] = {
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax,
+<<<<<<< HEAD
 		.extra1		= SYSCTL_ONE,
 		.extra2		= &max_skb_frags,
 	},
@@ -577,6 +599,11 @@ static struct ctl_table net_core_table[] = {
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= SYSCTL_ONE,
 	},
+=======
+		.extra1		= &one,
+		.extra2		= &max_skb_frags,
+	},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ }
 };
 

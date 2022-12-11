@@ -96,8 +96,57 @@ static enum sctp_disposition sctp_stop_t1_and_abort(
 					const struct sctp_association *asoc,
 					struct sctp_transport *transport);
 
+<<<<<<< HEAD
 static enum sctp_disposition sctp_sf_abort_violation(
 					struct net *net,
+=======
+static sctp_disposition_t sctp_sf_abort_violation(
+				     struct net *net,
+				     const struct sctp_endpoint *ep,
+				     const struct sctp_association *asoc,
+				     void *arg,
+				     sctp_cmd_seq_t *commands,
+				     const __u8 *payload,
+				     const size_t paylen);
+
+static sctp_disposition_t sctp_sf_violation_chunklen(
+				     struct net *net,
+				     const struct sctp_endpoint *ep,
+				     const struct sctp_association *asoc,
+				     const sctp_subtype_t type,
+				     void *arg,
+				     sctp_cmd_seq_t *commands);
+
+static sctp_disposition_t sctp_sf_violation_paramlen(
+				     struct net *net,
+				     const struct sctp_endpoint *ep,
+				     const struct sctp_association *asoc,
+				     const sctp_subtype_t type,
+				     void *arg, void *ext,
+				     sctp_cmd_seq_t *commands);
+
+static sctp_disposition_t sctp_sf_violation_ctsn(
+				     struct net *net,
+				     const struct sctp_endpoint *ep,
+				     const struct sctp_association *asoc,
+				     const sctp_subtype_t type,
+				     void *arg,
+				     sctp_cmd_seq_t *commands);
+
+static sctp_disposition_t sctp_sf_violation_chunk(
+				     struct net *net,
+				     const struct sctp_endpoint *ep,
+				     const struct sctp_association *asoc,
+				     const sctp_subtype_t type,
+				     void *arg,
+				     sctp_cmd_seq_t *commands);
+
+static sctp_ierror_t sctp_sf_authenticate(
+				    const struct sctp_association *asoc,
+				    struct sctp_chunk *chunk);
+
+static sctp_disposition_t __sctp_sf_do_9_1_abort(struct net *net,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					const struct sctp_endpoint *ep,
 					const struct sctp_association *asoc,
 					void *arg,
@@ -1790,9 +1839,12 @@ static enum sctp_disposition sctp_sf_do_dupcook_a(
 			       GFP_ATOMIC))
 		goto nomem;
 
+<<<<<<< HEAD
 	if (sctp_auth_asoc_init_active_key(new_asoc, GFP_ATOMIC))
 		goto nomem;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sctp_auth_chunk_verify(net, chunk, new_asoc))
 		return SCTP_DISPOSITION_DISCARD;
 
@@ -1923,9 +1975,12 @@ static enum sctp_disposition sctp_sf_do_dupcook_b(
 			       GFP_ATOMIC))
 		goto nomem;
 
+<<<<<<< HEAD
 	if (sctp_auth_asoc_init_active_key(new_asoc, GFP_ATOMIC))
 		goto nomem;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!sctp_auth_chunk_verify(net, chunk, new_asoc))
 		return SCTP_DISPOSITION_DISCARD;
 
@@ -3575,6 +3630,12 @@ enum sctp_disposition sctp_sf_ootb(struct net *net,
 			return sctp_sf_violation_chunklen(net, ep, asoc, type, arg,
 						  commands);
 
+		/* Report violation if chunk len overflows */
+		ch_end = ((__u8 *)ch) + WORD_ROUND(ntohs(ch->length));
+		if (ch_end > skb_tail_pointer(skb))
+			return sctp_sf_violation_chunklen(net, ep, asoc, type, arg,
+						  commands);
+
 		/* Now that we know we at least have a chunk header,
 		 * do things that are type appropriate.
 		 */
@@ -3606,7 +3667,11 @@ enum sctp_disposition sctp_sf_ootb(struct net *net,
 			}
 		}
 
+<<<<<<< HEAD
 		ch = (struct sctp_chunkhdr *)ch_end;
+=======
+		ch = (sctp_chunkhdr_t *) ch_end;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} while (ch_end < skb_tail_pointer(skb));
 
 	if (ootb_shut_ack)
@@ -4215,9 +4280,15 @@ gen_shutdown:
  *
  * The return value is the disposition of the chunk.
  */
+<<<<<<< HEAD
 static enum sctp_ierror sctp_sf_authenticate(
 					const struct sctp_association *asoc,
 					struct sctp_chunk *chunk)
+=======
+static sctp_ierror_t sctp_sf_authenticate(
+				    const struct sctp_association *asoc,
+				    struct sctp_chunk *chunk)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct sctp_shared_key *sh_key = NULL;
 	struct sctp_authhdr *auth_hdr;

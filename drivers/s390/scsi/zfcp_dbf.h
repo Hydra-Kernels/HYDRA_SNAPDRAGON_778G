@@ -221,8 +221,13 @@ enum zfcp_dbf_scsi_id {
  * @scsi_opcode: scsi opcode
  * @fsf_req_id: request id of fsf request
  * @host_scribble: LLD specific data attached to SCSI request
+<<<<<<< HEAD
  * @pl_len: length of payload stored as zfcp_dbf_pay
  * @fcp_rsp: response for FCP request
+=======
+ * @pl_len: length of paload stored as zfcp_dbf_pay
+ * @fsf_rsp: response for fsf request
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @scsi_lun_64_hi: scsi device logical unit number, high part of 64 bit
  */
 struct zfcp_dbf_scsi {
@@ -310,7 +315,11 @@ bool zfcp_dbf_hba_fsf_resp_suppress(struct zfcp_fsf_req *req)
 
 	if (qtcb->prefix.qtcb_type != FSF_IO_COMMAND)
 		return false; /* not an FCP response */
+<<<<<<< HEAD
 	fcp_rsp = &qtcb->bottom.io.fcp_rsp.iu.resp;
+=======
+	fcp_rsp = (struct fcp_resp *)&qtcb->bottom.io.fcp_rsp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rsp_flags = fcp_rsp->fr_flags;
 	fr_status = fcp_rsp->fr_status;
 	return (fsf_stat == FSF_FCP_RSP_AVAILABLE) &&
@@ -367,7 +376,11 @@ void _zfcp_dbf_scsi(char *tag, int level, struct scsi_cmnd *scmd,
 					scmd->device->host->hostdata[0];
 
 	if (debug_level_enabled(adapter->dbf->scsi, level))
+<<<<<<< HEAD
 		zfcp_dbf_scsi_common(tag, level, scmd->device, scmd, req);
+=======
+		zfcp_dbf_scsi(tag, level, scmd, req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -417,7 +430,11 @@ void zfcp_dbf_scsi_abort(char *tag, struct scsi_cmnd *scmd,
  * @fsf_req: Pointer to FSF request representing the TMF, or NULL.
  */
 static inline
+<<<<<<< HEAD
 void zfcp_dbf_scsi_devreset(char *tag, struct scsi_device *sdev, u8 flag,
+=======
+void zfcp_dbf_scsi_devreset(char *tag, struct scsi_cmnd *scmnd, u8 flag,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			    struct zfcp_fsf_req *fsf_req)
 {
 	struct zfcp_adapter *adapter = (struct zfcp_adapter *)
@@ -434,7 +451,11 @@ void zfcp_dbf_scsi_devreset(char *tag, struct scsi_device *sdev, u8 flag,
 		memcpy(tmp_tag, "lr_", 3);
 
 	memcpy(&tmp_tag[3], tag, 4);
+<<<<<<< HEAD
 	zfcp_dbf_scsi_common(tmp_tag, level, sdev, NULL, fsf_req);
+=======
+	_zfcp_dbf_scsi(tmp_tag, 1, scmnd, fsf_req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

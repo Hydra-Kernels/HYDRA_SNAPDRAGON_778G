@@ -17,7 +17,11 @@ observed to extract secret information.
 
 For example, in the presence of branch prediction, it is possible for bounds
 checks to be ignored by code which is speculatively executed. Consider the
+<<<<<<< HEAD
 following code::
+=======
+following code:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	int load_array(int *array, unsigned int index)
 	{
@@ -27,7 +31,11 @@ following code::
 			return array[index];
 	}
 
+<<<<<<< HEAD
 Which, on arm64, may be compiled to an assembly sequence such as::
+=======
+Which, on arm64, may be compiled to an assembly sequence such as:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	CMP	<index>, #MAX_ARRAY_ELEMS
 	B.LT	less
@@ -44,7 +52,11 @@ microarchitectural state which can be subsequently measured.
 
 More complex sequences involving multiple dependent memory accesses may
 result in sensitive information being leaked. Consider the following
+<<<<<<< HEAD
 code, building on the prior example::
+=======
+code, building on the prior example:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	int load_dependent_arrays(int *arr1, int *arr2, int index)
 	{
@@ -77,7 +89,11 @@ A call to array_index_nospec(index, size) returns a sanitized index
 value that is bounded to [0, size) even under cpu speculation
 conditions.
 
+<<<<<<< HEAD
 This can be used to protect the earlier load_array() example::
+=======
+This can be used to protect the earlier load_array() example:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	int load_array(int *array, unsigned int index)
 	{

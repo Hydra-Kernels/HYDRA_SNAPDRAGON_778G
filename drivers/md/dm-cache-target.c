@@ -411,8 +411,13 @@ struct cache {
 	/*
 	 * Invalidation fields.
 	 */
+<<<<<<< HEAD
 	spinlock_t invalidation_lock;
 	struct list_head invalidation_requests;
+=======
+	sector_t sectors_per_block;
+	int sectors_per_block_shift;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sector_t migration_threshold;
 	wait_queue_head_t migration_wait;
@@ -969,8 +974,12 @@ static void set_cache_mode(struct cache *cache, enum cache_metadata_mode new_mod
 	enum cache_metadata_mode old_mode = get_cache_mode(cache);
 
 	if (dm_cache_metadata_needs_check(cache->cmd, &needs_check)) {
+<<<<<<< HEAD
 		DMERR("%s: unable to read needs_check flag, setting failure mode.",
 		      cache_device_name(cache));
+=======
+		DMERR("unable to read needs_check flag, setting failure mode");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		new_mode = CM_FAIL;
 	}
 

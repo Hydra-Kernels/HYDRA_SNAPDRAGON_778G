@@ -161,6 +161,7 @@ int module_frob_arch_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 
 	/* Increase core size by size of got & plt and set start
 	   offsets for got and plt. */
+<<<<<<< HEAD
 	me->core_layout.size = ALIGN(me->core_layout.size, 4);
 	me->arch.got_offset = me->core_layout.size;
 	me->core_layout.size += me->arch.got_size;
@@ -169,6 +170,16 @@ int module_frob_arch_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 		if (IS_ENABLED(CONFIG_EXPOLINE) && !nospec_disable)
 			me->arch.plt_size += PLT_ENTRY_SIZE;
 		me->core_layout.size += me->arch.plt_size;
+=======
+	me->core_size = ALIGN(me->core_size, 4);
+	me->arch.got_offset = me->core_size;
+	me->core_size += me->arch.got_size;
+	me->arch.plt_offset = me->core_size;
+	if (me->arch.plt_size) {
+		if (IS_ENABLED(CONFIG_EXPOLINE) && !nospec_disable)
+			me->arch.plt_size += PLT_ENTRY_SIZE;
+		me->core_size += me->arch.plt_size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }
@@ -327,7 +338,11 @@ static int apply_rela(Elf_Rela *rela, Elf_Addr base, Elf_Sym *symtab,
 			ip[1] = 0x100a0004;	/* lg	1,10(1) */
 			if (IS_ENABLED(CONFIG_EXPOLINE) && !nospec_disable) {
 				unsigned int *ij;
+<<<<<<< HEAD
 				ij = me->core_layout.base +
+=======
+				ij = me->module_core +
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					me->arch.plt_offset +
 					me->arch.plt_size - PLT_ENTRY_SIZE;
 				ip[2] = 0xa7f40000 +	/* j __jump_r1 */
@@ -449,7 +464,11 @@ int module_finalize(const Elf_Ehdr *hdr,
 	    !nospec_disable && me->arch.plt_size) {
 		unsigned int *ij;
 
+<<<<<<< HEAD
 		ij = me->core_layout.base + me->arch.plt_offset +
+=======
+		ij = me->module_core + me->arch.plt_offset +
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			me->arch.plt_size - PLT_ENTRY_SIZE;
 		if (test_facility(35)) {
 			ij[0] = 0xc6000000;	/* exrl	%r0,.+10	*/
@@ -457,7 +476,11 @@ int module_finalize(const Elf_Ehdr *hdr,
 			ij[2] = 0x000007f1;	/* br	%r1		*/
 		} else {
 			ij[0] = 0x44000000 | (unsigned int)
+<<<<<<< HEAD
 				offsetof(struct lowcore, br_r1_trampoline);
+=======
+				offsetof(struct _lowcore, br_r1_trampoline);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ij[1] = 0xa7f40000;	/* j	.		*/
 		}
 	}
@@ -472,11 +495,19 @@ int module_finalize(const Elf_Ehdr *hdr,
 			apply_alternatives(aseg, aseg + s->sh_size);
 
 		if (IS_ENABLED(CONFIG_EXPOLINE) &&
+<<<<<<< HEAD
 		    (str_has_prefix(secname, ".s390_indirect")))
 			nospec_revert(aseg, aseg + s->sh_size);
 
 		if (IS_ENABLED(CONFIG_EXPOLINE) &&
 		    (str_has_prefix(secname, ".s390_return")))
+=======
+		    (!strncmp(".s390_indirect", secname, 14)))
+			nospec_revert(aseg, aseg + s->sh_size);
+
+		if (IS_ENABLED(CONFIG_EXPOLINE) &&
+		    (!strncmp(".s390_return", secname, 12)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			nospec_revert(aseg, aseg + s->sh_size);
 	}
 

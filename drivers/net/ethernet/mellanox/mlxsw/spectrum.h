@@ -162,6 +162,7 @@ struct mlxsw_sp {
 
 	struct mlxsw_sp_counter_pool *counter_pool;
 	struct {
+<<<<<<< HEAD
 		struct mlxsw_sp_span_entry *entries;
 		int entries_count;
 	} span;
@@ -179,6 +180,20 @@ struct mlxsw_sp {
 	const struct mlxsw_sp_ptp_ops *ptp_ops;
 	const struct mlxsw_listener *listeners;
 	size_t listeners_count;
+=======
+		struct delayed_work dw;
+#define MLXSW_SP_DEFAULT_LEARNING_INTERVAL 100
+		unsigned int interval; /* ms */
+	} fdb_notify;
+#define MLXSW_SP_MIN_AGEING_TIME 10
+#define MLXSW_SP_MAX_AGEING_TIME 1000000
+#define MLXSW_SP_DEFAULT_AGEING_TIME 300
+	u32 ageing_time;
+	struct {
+		struct net_device *dev;
+		unsigned int ref_count;
+	} master_bridge;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static inline struct mlxsw_sp_upper *

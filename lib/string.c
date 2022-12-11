@@ -700,6 +700,7 @@ bool sysfs_streq(const char *s1, const char *s2)
 }
 EXPORT_SYMBOL(sysfs_streq);
 
+<<<<<<< HEAD
 /**
  * match_string - matches given string in an array
  * @array:	array of strings
@@ -752,6 +753,8 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *str)
 }
 EXPORT_SYMBOL(__sysfs_match_string);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef __HAVE_ARCH_MEMSET
 /**
  * memset - Fill a region of memory with the given value

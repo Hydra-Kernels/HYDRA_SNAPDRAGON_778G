@@ -13,8 +13,13 @@ config VIDEO_EM28XX_V4L2
 	select VIDEO_TVP5150 if MEDIA_SUBDRV_AUTOSELECT
 	select VIDEO_MSP3400 if MEDIA_SUBDRV_AUTOSELECT
 	select VIDEO_MT9V011 if MEDIA_SUBDRV_AUTOSELECT && MEDIA_CAMERA_SUPPORT
+<<<<<<< HEAD
 	select VIDEO_OV2640 if MEDIA_SUBDRV_AUTOSELECT && MEDIA_CAMERA_SUPPORT
 	help
+=======
+
+	---help---
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	  This is a video4linux driver for Empia 28xx based TV cards.
 
 	  To compile this driver as a module, choose M here: the

@@ -256,18 +256,29 @@ void snd_seq_check_queue(struct snd_seq_queue *q, int atomic, int hop)
 
       __again:
 	/* Process tick queue... */
+<<<<<<< HEAD
 	cur_tick = snd_seq_timer_get_cur_tick(q->timer);
 	for (;;) {
 		cell = snd_seq_prioq_cell_out(q->tickq, &cur_tick);
+=======
+	for (;;) {
+		cell = snd_seq_prioq_cell_out(q->tickq,
+					      &q->timer->tick.cur_tick);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!cell)
 			break;
 		snd_seq_dispatch_event(cell, atomic, hop);
 	}
 
 	/* Process time queue... */
+<<<<<<< HEAD
 	cur_time = snd_seq_timer_get_cur_time(q->timer, false);
 	for (;;) {
 		cell = snd_seq_prioq_cell_out(q->timeq, &cur_time);
+=======
+	for (;;) {
+		cell = snd_seq_prioq_cell_out(q->timeq, &q->timer->cur_time);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!cell)
 			break;
 		snd_seq_dispatch_event(cell, atomic, hop);

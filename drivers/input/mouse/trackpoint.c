@@ -277,6 +277,7 @@ static int trackpoint_start_protocol(struct psmouse *psmouse,
 	if (error)
 		return error;
 
+<<<<<<< HEAD
 	switch (param[0]) {
 	case TP_VARIANT_IBM:
 	case TP_VARIANT_ALPS:
@@ -290,6 +291,11 @@ static int trackpoint_start_protocol(struct psmouse *psmouse,
 			*firmware_id = param[1];
 		return 0;
 	}
+=======
+	/* add new TP ID. */
+	if (!(param[0] & TP_MAGIC_IDENT))
+		return -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return -ENODEV;
 }
@@ -409,8 +415,21 @@ int trackpoint_detect(struct psmouse *psmouse, bool set_properties)
 	if (!set_properties)
 		return 0;
 
+<<<<<<< HEAD
 	tp = kzalloc(sizeof(*tp), GFP_KERNEL);
 	if (!tp)
+=======
+	if (trackpoint_read(&psmouse->ps2dev, TP_EXT_BTN, &button_info)) {
+		psmouse_warn(psmouse, "failed to get extended button data, assuming 3 buttons\n");
+		button_info = 0x33;
+	} else if (!button_info) {
+		psmouse_warn(psmouse, "got 0 in extended button data, assuming 3 buttons\n");
+		button_info = 0x33;
+	}
+
+	psmouse->private = kzalloc(sizeof(struct trackpoint_data), GFP_KERNEL);
+	if (!psmouse->private)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENOMEM;
 
 	trackpoint_defaults(tp);

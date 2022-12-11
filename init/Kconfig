@@ -1247,7 +1247,24 @@ endif
 
 choice
 	prompt "Compiler optimization level"
+<<<<<<< HEAD
 	default CC_OPTIMIZE_FOR_PERFORMANCE
+=======
+	default CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
+
+config CC_OPTIMIZE_FOR_PERFORMANCE
+	bool "Optimize for performance"
+	help
+	  This is the default optimization level for the kernel, building
+	  with the "-O2" compiler flag for best performance and most
+	  helpful compile-time warnings.
+
+config CC_OPTIMIZE_FOR_SIZE
+	bool "Optimize for size"
+	help
+	  Enabling this option will pass "-Os" instead of "-O2" to
+	  your compiler resulting in a smaller kernel.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 config CC_OPTIMIZE_FOR_PERFORMANCE
 	bool "Optimize for performance (-O2)"
@@ -1299,6 +1316,8 @@ config LD_DEAD_CODE_DATA_ELIMINATION
 	  silently broken kernel if the required annotations are not
 	  present. This option is not well tested yet, so use at your
 	  own risk.
+
+endchoice
 
 config SYSCTL
 	bool
@@ -1538,6 +1557,26 @@ config EVENTFD
 
 	  If unsure, say Y.
 
+<<<<<<< HEAD
+=======
+# syscall, maps, verifier
+config BPF_SYSCALL
+	bool "Enable bpf() system call"
+	select ANON_INODES
+	select BPF
+	default n
+	help
+	  Enable the bpf() system call that allows to manipulate eBPF
+	  programs and maps via file descriptors.
+
+config BPF_JIT_ALWAYS_ON
+	bool "Permanently enable BPF JIT and remove BPF interpreter"
+	depends on BPF_SYSCALL && HAVE_EBPF_JIT && BPF_JIT
+	help
+	  Enables BPF JIT and removes BPF interpreter to avoid
+	  speculative execution of BPF instructions by the interpreter
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config SHMEM
 	bool "Use full shmem filesystem" if EXPERT
 	default y

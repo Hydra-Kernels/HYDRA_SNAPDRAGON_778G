@@ -92,8 +92,13 @@ extern void __bpon(void);
  * User space process size: 2GB for 31 bit, 4TB or 8PT for 64 bit.
  */
 
+<<<<<<< HEAD
 #define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk, TIF_31BIT) ? \
 					(1UL << 31) : -PAGE_SIZE)
+=======
+#define TASK_SIZE_OF(tsk)	((tsk)->mm ? \
+				 (tsk)->mm->context.asce_limit : TASK_MAX_SIZE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define TASK_UNMAPPED_BASE	(test_thread_flag(TIF_31BIT) ? \
 					(1UL << 30) : (1UL << 41))
 #define TASK_SIZE		TASK_SIZE_OF(current)
@@ -342,6 +347,9 @@ extern void memcpy_absolute(void *, void *, size_t);
 	BUILD_BUG_ON(sizeof(__tmp) != sizeof(val));		\
 	memcpy_absolute(&(dest), &__tmp, sizeof(__tmp));	\
 } while (0)
+
+extern int s390_isolate_bp(void);
+extern int s390_isolate_bp_guest(void);
 
 extern int s390_isolate_bp(void);
 extern int s390_isolate_bp_guest(void);

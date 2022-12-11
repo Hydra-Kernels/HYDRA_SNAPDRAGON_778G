@@ -1920,6 +1920,10 @@ static int n_tty_open(struct tty_struct *tty)
 	mutex_init(&ldata->output_lock);
 
 	tty->disc_data = ldata;
+<<<<<<< HEAD
+=======
+	ldata->minimum_to_wake = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tty->closing = 0;
 	/* indicate buffer work may resume */
 	clear_bit(TTY_LDISC_HALTED, &tty->flags);
@@ -2194,6 +2198,13 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		if (((minimum - (b - buf)) < ldata->minimum_to_wake) &&
+		    ((minimum - (b - buf)) >= 1))
+			ldata->minimum_to_wake = (minimum - (b - buf));
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!input_available_p(tty, 0)) {
 			up_read(&tty->termios_rwsem);
 			tty_buffer_flush_work(tty->port);
@@ -2213,7 +2224,11 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 					break;
 				if (!timeout)
 					break;
+<<<<<<< HEAD
 				if (tty_io_nonblock(tty, file)) {
+=======
+				if (file->f_flags & O_NONBLOCK) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					retval = -EAGAIN;
 					break;
 				}
@@ -2407,11 +2422,31 @@ static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 	poll_wait(file, &tty->read_wait, wait);
 	poll_wait(file, &tty->write_wait, wait);
 	if (input_available_p(tty, 1))
+<<<<<<< HEAD
 		mask |= EPOLLIN | EPOLLRDNORM;
 	else {
 		tty_buffer_flush_work(tty->port);
 		if (input_available_p(tty, 1))
 			mask |= EPOLLIN | EPOLLRDNORM;
+=======
+		mask |= POLLIN | POLLRDNORM;
+	else {
+		tty_buffer_flush_work(tty->port);
+		if (input_available_p(tty, 1))
+			mask |= POLLIN | POLLRDNORM;
+	}
+	if (tty->packet && tty->link->ctrl_status)
+		mask |= POLLPRI | POLLIN | POLLRDNORM;
+	if (test_bit(TTY_OTHER_CLOSED, &tty->flags))
+		mask |= POLLHUP;
+	if (tty_hung_up_p(file))
+		mask |= POLLHUP;
+	if (!(mask & (POLLHUP | POLLIN | POLLRDNORM))) {
+		if (MIN_CHAR(tty) && !TIME_CHAR(tty))
+			ldata->minimum_to_wake = MIN_CHAR(tty);
+		else
+			ldata->minimum_to_wake = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	if (tty->packet && tty->link->ctrl_status)
 		mask |= EPOLLPRI | EPOLLIN | EPOLLRDNORM;

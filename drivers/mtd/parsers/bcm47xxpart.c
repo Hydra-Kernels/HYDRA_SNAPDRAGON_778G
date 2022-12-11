@@ -71,6 +71,7 @@ static void bcm47xxpart_add_part(struct mtd_partition *part, const char *name,
  */
 static int bcm47xxpart_bootpartition(void)
 {
+<<<<<<< HEAD:drivers/mtd/parsers/bcm47xxpart.c
 	char buf[4];
 	int bootpartition;
 
@@ -78,6 +79,18 @@ static int bcm47xxpart_bootpartition(void)
 	if (bcm47xx_nvram_getenv("bootpartition", buf, sizeof(buf)) > 0) {
 		if (!kstrtoint(buf, 0, &bootpartition))
 			return bootpartition;
+=======
+	uint32_t buf;
+	size_t bytes_read;
+	int err;
+
+	err  = mtd_read(master, offset, sizeof(buf), &bytes_read,
+			(uint8_t *)&buf);
+	if (err && !mtd_is_bitflip(err)) {
+		pr_err("mtd_read error while parsing (offset: 0x%X): %d\n",
+			offset, err);
+		goto out_default;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mtd/bcm47xxpart.c
 	}
 
 	return 0;
@@ -121,7 +134,11 @@ static int bcm47xxpart_parse(struct mtd_info *master,
 	for (offset = 0; offset <= master->size - blocksize;
 	     offset += blocksize) {
 		/* Nothing more in higher memory on BCM47XX (MIPS) */
+<<<<<<< HEAD:drivers/mtd/parsers/bcm47xxpart.c
 		if (IS_ENABLED(CONFIG_BCM47XX) && offset >= 0x2000000)
+=======
+		if (config_enabled(CONFIG_BCM47XX) && offset >= 0x2000000)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mtd/bcm47xxpart.c
 			break;
 
 		if (curr_part >= BCM47XXPART_MAX_PARTS) {
@@ -209,7 +226,27 @@ static int bcm47xxpart_parse(struct mtd_info *master,
 			 * Skip the TRX data. Decrease offset by block size as
 			 * the next loop iteration will increase it.
 			 */
+<<<<<<< HEAD:drivers/mtd/parsers/bcm47xxpart.c
 			offset += roundup(trx_size, blocksize) - blocksize;
+=======
+			if (trx->offset[i]) {
+				const char *name;
+
+				name = bcm47xxpart_trx_data_part_name(master, offset + trx->offset[i]);
+				bcm47xxpart_add_part(&parts[curr_part++],
+						     name,
+						     offset + trx->offset[i],
+						     0);
+				i++;
+			}
+
+			last_trx_part = curr_part - 1;
+
+			/* Jump to the end of TRX */
+			offset = roundup(offset + trx->length, blocksize);
+			/* Next loop iteration will increase the offset */
+			offset -= blocksize;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mtd/bcm47xxpart.c
 			continue;
 		}
 

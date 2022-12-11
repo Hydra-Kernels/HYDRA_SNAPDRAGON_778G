@@ -438,8 +438,13 @@ static struct sock *dccp_v6_request_recv_sock(const struct sock *sk,
 		newnp->ipv6_mc_list = NULL;
 		newnp->ipv6_ac_list = NULL;
 		newnp->ipv6_fl_list = NULL;
+<<<<<<< HEAD
 		newnp->mcast_oif   = inet_iif(skb);
 		newnp->mcast_hops  = ip_hdr(skb)->ttl;
+=======
+		newnp->mcast_oif   = inet6_iif(skb);
+		newnp->mcast_hops  = ipv6_hdr(skb)->hop_limit;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * No need to charge this sock to the relevant IPv6 refcnt debug socks count
@@ -745,7 +750,10 @@ lookup:
 			goto lookup;
 		}
 		sock_hold(sk);
+<<<<<<< HEAD
 		refcounted = true;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		nsk = dccp_check_req(sk, skb, req);
 		if (!nsk) {
 			reqsk_put(req);
@@ -995,6 +1003,7 @@ static const struct inet_connection_sock_af_ops dccp_ipv6_mapped = {
 	.getsockopt	   = ipv6_getsockopt,
 	.addr2sockaddr	   = inet6_csk_addr2sockaddr,
 	.sockaddr_len	   = sizeof(struct sockaddr_in6),
+	.bind_conflict	   = inet6_csk_bind_conflict,
 #ifdef CONFIG_COMPAT
 	.compat_setsockopt = compat_ipv6_setsockopt,
 	.compat_getsockopt = compat_ipv6_getsockopt,

@@ -688,6 +688,7 @@ static const struct samsung_pll_rate_table exynos3250_pll_rates[] __initconst = 
 };
 
 /* EPLL */
+<<<<<<< HEAD
 static const struct samsung_pll_rate_table exynos3250_epll_rates[] __initconst = {
 	PLL_36XX_RATE(24 * MHZ, 800000000, 200, 3, 1,     0),
 	PLL_36XX_RATE(24 * MHZ, 288000000,  96, 2, 2,     0),
@@ -703,10 +704,28 @@ static const struct samsung_pll_rate_table exynos3250_epll_rates[] __initconst =
 	PLL_36XX_RATE(24 * MHZ,  49152002, 131, 2, 5,  4719),
 	PLL_36XX_RATE(24 * MHZ,  48000000, 128, 2, 5,     0),
 	PLL_36XX_RATE(24 * MHZ,  45158401, 180, 3, 5, 41524),
+=======
+static struct samsung_pll_rate_table exynos3250_epll_rates[] = {
+	PLL_36XX_RATE(800000000, 200, 3, 1,     0),
+	PLL_36XX_RATE(288000000,  96, 2, 2,     0),
+	PLL_36XX_RATE(192000000, 128, 2, 3,     0),
+	PLL_36XX_RATE(144000000,  96, 2, 3,     0),
+	PLL_36XX_RATE( 96000000, 128, 2, 4,     0),
+	PLL_36XX_RATE( 84000000, 112, 2, 4,     0),
+	PLL_36XX_RATE( 80000003, 106, 2, 4, 43691),
+	PLL_36XX_RATE( 73728000,  98, 2, 4, 19923),
+	PLL_36XX_RATE( 67737598, 270, 3, 5, 62285),
+	PLL_36XX_RATE( 65535999, 174, 2, 5, 49982),
+	PLL_36XX_RATE( 50000000, 200, 3, 5,     0),
+	PLL_36XX_RATE( 49152002, 131, 2, 5,  4719),
+	PLL_36XX_RATE( 48000000, 128, 2, 5,     0),
+	PLL_36XX_RATE( 45158401, 180, 3, 5, 41524),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ /* sentinel */ }
 };
 
 /* VPLL */
+<<<<<<< HEAD
 static const struct samsung_pll_rate_table exynos3250_vpll_rates[] __initconst = {
 	PLL_36XX_RATE(24 * MHZ, 600000000, 100, 2, 1,     0),
 	PLL_36XX_RATE(24 * MHZ, 533000000, 266, 3, 2, 32768),
@@ -734,6 +753,35 @@ static const struct samsung_pll_rate_table exynos3250_vpll_rates[] __initconst =
 	PLL_36XX_RATE(24 * MHZ,  74176002,  98, 2, 4, 59070),
 	PLL_36XX_RATE(24 * MHZ,  54054000, 216, 3, 5, 14156),
 	PLL_36XX_RATE(24 * MHZ,  54000000, 144, 2, 5,     0),
+=======
+static struct samsung_pll_rate_table exynos3250_vpll_rates[] = {
+	PLL_36XX_RATE(600000000, 100, 2, 1,     0),
+	PLL_36XX_RATE(533000000, 266, 3, 2, 32768),
+	PLL_36XX_RATE(519230987, 173, 2, 2,  5046),
+	PLL_36XX_RATE(500000000, 250, 3, 2,     0),
+	PLL_36XX_RATE(445500000, 148, 2, 2, 32768),
+	PLL_36XX_RATE(445055007, 148, 2, 2, 23047),
+	PLL_36XX_RATE(400000000, 200, 3, 2,     0),
+	PLL_36XX_RATE(371250000, 123, 2, 2, 49152),
+	PLL_36XX_RATE(370878997, 185, 3, 2, 28803),
+	PLL_36XX_RATE(340000000, 170, 3, 2,     0),
+	PLL_36XX_RATE(335000015, 111, 2, 2, 43691),
+	PLL_36XX_RATE(333000000, 111, 2, 2,     0),
+	PLL_36XX_RATE(330000000, 110, 2, 2,     0),
+	PLL_36XX_RATE(320000015, 106, 2, 2, 43691),
+	PLL_36XX_RATE(300000000, 100, 2, 2,     0),
+	PLL_36XX_RATE(275000000, 275, 3, 3,     0),
+	PLL_36XX_RATE(222750000, 148, 2, 3, 32768),
+	PLL_36XX_RATE(222528007, 148, 2, 3, 23069),
+	PLL_36XX_RATE(160000000, 160, 3, 3,     0),
+	PLL_36XX_RATE(148500000,  99, 2, 3,     0),
+	PLL_36XX_RATE(148352005,  98, 2, 3, 59070),
+	PLL_36XX_RATE(108000000, 144, 2, 4,     0),
+	PLL_36XX_RATE( 74250000,  99, 2, 4,     0),
+	PLL_36XX_RATE( 74176002,  98, 2, 4, 59070),
+	PLL_36XX_RATE( 54054000, 216, 3, 5, 14156),
+	PLL_36XX_RATE( 54000000, 144, 2, 5,     0),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ /* sentinel */ }
 };
 

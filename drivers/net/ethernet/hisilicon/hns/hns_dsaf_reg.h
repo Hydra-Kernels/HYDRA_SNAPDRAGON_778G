@@ -1025,6 +1025,7 @@ static inline void dsaf_write_reg(u8 __iomem *base, u32 reg, u32 value)
 static inline u32 dsaf_read_reg(u8 __iomem *base, u32 reg)
 {
 	return readl(base + reg);
+<<<<<<< HEAD
 }
 
 static inline void dsaf_write_syscon(struct regmap *base, u32 reg, u32 value)
@@ -1035,6 +1036,8 @@ static inline void dsaf_write_syscon(struct regmap *base, u32 reg, u32 value)
 static inline int dsaf_read_syscon(struct regmap *base, u32 reg, u32 *val)
 {
 	return regmap_read(base, reg, val);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define dsaf_read_dev(a, reg) \

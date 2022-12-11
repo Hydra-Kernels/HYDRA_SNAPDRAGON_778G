@@ -280,8 +280,15 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
 
 	/* READ_ON and urb submission */
 	rc = usb_serial_generic_open(tty, port);
+<<<<<<< HEAD
 	if (rc)
 		return rc;
+=======
+	if (rc) {
+		retval = rc;
+		goto err_free_cfg;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rc = usb_control_msg(port->serial->dev,
 			     usb_sndctrlpipe(port->serial->dev, 0),
@@ -304,6 +311,7 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
 		retval = rc;
 		goto err_disable_read;
 	}
+<<<<<<< HEAD
 
 	spin_lock_irqsave(&priv->lock, flags);
 	priv->line_state = line_state;
@@ -325,6 +333,31 @@ err_disable_read:
 err_generic_close:
 	usb_serial_generic_close(port);
 
+=======
+
+	spin_lock_irqsave(&priv->lock, flags);
+	priv->line_state = line_state;
+	spin_unlock_irqrestore(&priv->lock, flags);
+	dev_dbg(&port->dev, "%s - read line state 0x%lx\n", __func__,
+			line_state);
+
+	return 0;
+
+err_disable_read:
+	usb_control_msg(port->serial->dev,
+			     usb_sndctrlpipe(port->serial->dev, 0),
+			     KL5KUSB105A_SIO_CONFIGURE,
+			     USB_TYPE_VENDOR | USB_DIR_OUT,
+			     KL5KUSB105A_SIO_CONFIGURE_READ_OFF,
+			     0, /* index */
+			     NULL, 0,
+			     KLSI_TIMEOUT);
+err_generic_close:
+	usb_serial_generic_close(port);
+err_free_cfg:
+	kfree(cfg);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return retval;
 }
 

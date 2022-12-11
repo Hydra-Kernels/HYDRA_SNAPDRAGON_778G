@@ -144,8 +144,12 @@ static inline int IP6_ECN_set_ce(struct sk_buff *skb, struct ipv6hdr *iph)
 	to = from | htonl(INET_ECN_CE << 20);
 	*(__be32 *)iph = to;
 	if (skb->ip_summed == CHECKSUM_COMPLETE)
+<<<<<<< HEAD
 		skb->csum = csum_add(csum_sub(skb->csum, (__force __wsum)from),
 				     (__force __wsum)to);
+=======
+		skb->csum = csum_add(csum_sub(skb->csum, from), to);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 1;
 }
 
@@ -184,6 +188,7 @@ static inline int INET_ECN_set_ce(struct sk_buff *skb)
 		if (skb_network_header(skb) + sizeof(struct ipv6hdr) <=
 		    skb_tail_pointer(skb))
 			return IP6_ECN_set_ce(skb, ipv6_hdr(skb));
+<<<<<<< HEAD
 		break;
 	}
 
@@ -203,6 +208,8 @@ static inline int INET_ECN_set_ect1(struct sk_buff *skb)
 		if (skb_network_header(skb) + sizeof(struct ipv6hdr) <=
 		    skb_tail_pointer(skb))
 			return IP6_ECN_set_ect1(skb, ipv6_hdr(skb));
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	}
 

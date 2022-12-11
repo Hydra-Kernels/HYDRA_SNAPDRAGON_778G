@@ -22,6 +22,7 @@
 #include <linux/highmem.h>
 #include <linux/perf_event.h>
 #include <linux/preempt.h>
+<<<<<<< HEAD
 #include <linux/hugetlb.h>
 
 #ifdef CONFIG_TLB_CONF_HANDLER
@@ -31,6 +32,10 @@
 #include <asm/acpi.h>
 #include <asm/bug.h>
 #include <asm/cmpxchg.h>
+=======
+
+#include <asm/bug.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/cpufeature.h>
 #include <asm/exception.h>
 #include <asm/daifflags.h>
@@ -86,6 +91,7 @@ static void data_abort_decode(unsigned int esr)
 		 (esr & ESR_ELx_WNR) >> ESR_ELx_WNR_SHIFT);
 }
 
+<<<<<<< HEAD
 static void mem_abort_decode(unsigned int esr)
 {
 	pr_alert("Mem abort info:\n");
@@ -124,7 +130,75 @@ static inline unsigned long mm_to_pgd_phys(struct mm_struct *mm)
 		return __pa_symbol(mm->pgd);
 
 	return (unsigned long)virt_to_phys(mm->pgd);
+=======
+		pud = pud_offset(pgd, addr);
+		pr_cont(", *pud=%016llx", pud_val(*pud));
+		if (pud_none(*pud) || pud_bad(*pud))
+			break;
+
+		pmd = pmd_offset(pud, addr);
+		pr_cont(", *pmd=%016llx", pmd_val(*pmd));
+		if (pmd_none(*pmd) || pmd_bad(*pmd))
+			break;
+
+		pte = pte_offset_map(pmd, addr);
+		pr_cont(", *pte=%016llx", pte_val(*pte));
+		pte_unmap(pte);
+	} while(0);
+
+	pr_cont("\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
+
+#ifdef CONFIG_ARM64_HW_AFDBM
+/*
+ * This function sets the access flags (dirty, accessed), as well as write
+ * permission, and only to a more permissive setting.
+ *
+ * It needs to cope with hardware update of the accessed/dirty state by other
+ * agents in the system and can safely skip the __sync_icache_dcache() call as,
+ * like set_pte_at(), the PTE is never changed from no-exec to exec here.
+ *
+ * Returns whether or not the PTE actually changed.
+ */
+int ptep_set_access_flags(struct vm_area_struct *vma,
+			  unsigned long address, pte_t *ptep,
+			  pte_t entry, int dirty)
+{
+	pteval_t old_pteval;
+	unsigned int tmp;
+
+	if (pte_same(*ptep, entry))
+		return 0;
+
+	/* only preserve the access flags and write permission */
+	pte_val(entry) &= PTE_AF | PTE_WRITE | PTE_DIRTY;
+
+	/*
+	 * PTE_RDONLY is cleared by default in the asm below, so set it in
+	 * back if necessary (read-only or clean PTE).
+	 */
+	if (!pte_write(entry) || !pte_sw_dirty(entry))
+		pte_val(entry) |= PTE_RDONLY;
+
+	/*
+	 * Setting the flags must be done atomically to avoid racing with the
+	 * hardware update of the access/dirty state.
+	 */
+	asm volatile("//	ptep_set_access_flags\n"
+	"	prfm	pstl1strm, %2\n"
+	"1:	ldxr	%0, %2\n"
+	"	and	%0, %0, %3		// clear PTE_RDONLY\n"
+	"	orr	%0, %0, %4		// set flags\n"
+	"	stxr	%w1, %0, %2\n"
+	"	cbnz	%w1, 1b\n"
+	: "=&r" (old_pteval), "=&r" (tmp), "+Q" (pte_val(*ptep))
+	: "L" (~PTE_RDONLY), "r" (pte_val(entry)));
+
+	flush_tlb_fix_spurious_fault(vma, address);
+	return 1;
+}
+#endif
 
 /*
  * Dump out the page tables associated with 'addr' in the currently active mm.
@@ -534,8 +608,21 @@ retry:
 	if (!vma || !can_reuse_spf_vma(vma, addr))
 		vma = find_vma(mm, addr);
 
+<<<<<<< HEAD
 	fault = __do_page_fault(vma, addr, mm_flags, vm_flags);
 	major |= fault & VM_FAULT_MAJOR;
+=======
+	/*
+	 * If we need to retry but a fatal signal is pending, handle the
+	 * signal first. We do not need to release the mmap_sem because it
+	 * would already be released in __lock_page_or_retry in mm/filemap.c.
+	 */
+	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current)) {
+		if (!user_mode(regs))
+			goto no_context;
+		return 0;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (fault & VM_FAULT_RETRY) {
 		/*
@@ -713,7 +800,11 @@ static const struct fault_info fault_info[] = {
 	{ do_translation_fault,	SIGSEGV, SEGV_MAPERR,	"level 1 translation fault"	},
 	{ do_translation_fault,	SIGSEGV, SEGV_MAPERR,	"level 2 translation fault"	},
 	{ do_translation_fault,	SIGSEGV, SEGV_MAPERR,	"level 3 translation fault"	},
+<<<<<<< HEAD
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 8"			},
+=======
+	{ do_bad,		SIGBUS,  0,		"unknown 8"			},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ do_page_fault,	SIGSEGV, SEGV_ACCERR,	"level 1 access flag fault"	},
 	{ do_page_fault,	SIGSEGV, SEGV_ACCERR,	"level 2 access flag fault"	},
 	{ do_page_fault,	SIGSEGV, SEGV_ACCERR,	"level 3 access flag fault"	},
@@ -938,6 +1029,7 @@ cortex_a76_erratum_1463225_debug_handler(struct pt_regs *regs)
 }
 #endif /* CONFIG_ARM64_ERRATUM_1463225 */
 
+<<<<<<< HEAD
 asmlinkage void __exception do_debug_exception(unsigned long addr_if_watchpoint,
 					       unsigned int esr,
 					       struct pt_regs *regs)
@@ -959,5 +1051,19 @@ asmlinkage void __exception do_debug_exception(unsigned long addr_if_watchpoint,
 	}
 
 	debug_exception_exit(regs);
+=======
+#ifdef CONFIG_ARM64_PAN
+int cpu_enable_pan(void *__unused)
+{
+	/*
+	 * We modify PSTATE. This won't work from irq context as the PSTATE
+	 * is discarded once we return from the exception.
+	 */
+	WARN_ON_ONCE(in_interrupt());
+
+	config_sctlr_el1(SCTLR_EL1_SPAN, 0);
+	asm(SET_PSTATE_PAN(1));
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 NOKPROBE_SYMBOL(do_debug_exception);

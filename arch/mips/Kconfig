@@ -9,6 +9,7 @@ config MIPS
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select ARCH_SUPPORTS_UPROBES
 	select ARCH_USE_BUILTIN_BSWAP
+<<<<<<< HEAD
 	select ARCH_USE_CMPXCHG_LOCKREF if 64BIT
 	select ARCH_USE_QUEUED_RWLOCKS
 	select ARCH_USE_QUEUED_SPINLOCKS
@@ -18,6 +19,32 @@ config MIPS
 	select CLONE_BACKWARDS
 	select CPU_NO_EFFICIENT_FFS if (TARGET_ISA_REV < 1)
 	select CPU_PM if CPU_IDLE
+=======
+	select HAVE_CONTEXT_TRACKING
+	select HAVE_GENERIC_DMA_COHERENT
+	select HAVE_IDE
+	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+	select HAVE_OPROFILE
+	select HAVE_PERF_EVENTS
+	select PERF_USE_VMALLOC
+	select HAVE_ARCH_KGDB
+	select HAVE_ARCH_SECCOMP_FILTER
+	select HAVE_ARCH_TRACEHOOK
+	select HAVE_BPF_JIT if !CPU_MICROMIPS
+	select HAVE_FUNCTION_TRACER
+	select HAVE_DYNAMIC_FTRACE
+	select HAVE_FTRACE_MCOUNT_RECORD
+	select HAVE_C_RECORDMCOUNT
+	select HAVE_FUNCTION_GRAPH_TRACER
+	select HAVE_KPROBES
+	select HAVE_KRETPROBES
+	select HAVE_SYSCALL_TRACEPOINTS
+	select HAVE_DEBUG_KMEMLEAK
+	select HAVE_SYSCALL_TRACEPOINTS
+	select ARCH_HAS_ELF_RANDOMIZE
+	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if CPU_SUPPORTS_HUGEPAGES && 64BIT
+	select RTC_LIB if !MACH_LOONGSON64
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select GENERIC_ATOMIC64 if !64BIT
 	select GENERIC_CLOCKEVENTS
 	select GENERIC_CMOS_UPDATE
@@ -1571,8 +1598,13 @@ config CPU_MIPS64_R6
 	select CPU_SUPPORTS_HIGHMEM
 	select CPU_SUPPORTS_HUGEPAGES
 	select CPU_SUPPORTS_MSA
+<<<<<<< HEAD
 	select MIPS_O32_FP64_SUPPORT if 32BIT || MIPS32_O32
 	select HAVE_KVM
+=======
+	select GENERIC_CSUM
+	select MIPS_O32_FP64_SUPPORT if 32BIT || MIPS32_O32
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  Choose this option to build a kernel for release 6 or later of the
 	  MIPS64 architecture.  New MIPS processors, starting with the Warrior
@@ -2310,6 +2342,10 @@ config MIPS_MT_SMP
 	select CPU_MIPSR2_IRQ_VI
 	select CPU_MIPSR2_IRQ_EI
 	select SYNC_R4K
+<<<<<<< HEAD
+=======
+	select MIPS_GIC_IPI if MIPS_GIC
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select MIPS_MT
 	select SMP
 	select SMP_UP
@@ -2412,6 +2448,10 @@ config MIPS_VPE_APSP_API_MT
 config MIPS_CMP
 	bool "MIPS CMP framework support (DEPRECATED)"
 	depends on SYS_SUPPORTS_MIPS_CMP && !CPU_MIPSR6
+<<<<<<< HEAD
+=======
+	select MIPS_GIC_IPI if MIPS_GIC
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select SMP
 	select SYNC_R4K
 	select SYS_SUPPORTS_SMP
@@ -2430,6 +2470,10 @@ config MIPS_CPS
 	depends on SYS_SUPPORTS_MIPS_CPS
 	select MIPS_CM
 	select MIPS_CPS_PM if HOTPLUG_CPU
+<<<<<<< HEAD
+=======
+	select MIPS_GIC_IPI if MIPS_GIC
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select SMP
 	select SYNC_R4K if (CEVT_R4K || CSRC_R4K)
 	select SYS_SUPPORTS_HOTPLUG_CPU
@@ -2445,6 +2489,14 @@ config MIPS_CPS
 
 config MIPS_CPS_PM
 	depends on MIPS_CPS
+<<<<<<< HEAD
+=======
+	select MIPS_CPC
+	bool
+
+config MIPS_GIC_IPI
+	depends on MIPS_GIC
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool
 
 config MIPS_CM

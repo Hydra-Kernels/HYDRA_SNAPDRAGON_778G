@@ -332,6 +332,36 @@ omap_intc_handle_irq(struct pt_regs *regs)
 	u32 irqnr;
 
 	irqnr = intc_readl(INTC_SIR);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * A spurious IRQ can result if interrupt that triggered the
+	 * sorting is no longer active during the sorting (10 INTC
+	 * functional clock cycles after interrupt assertion). Or a
+	 * change in interrupt mask affected the result during sorting
+	 * time. There is no special handling required except ignoring
+	 * the SIR register value just read and retrying.
+	 * See section 6.2.5 of AM335x TRM Literature Number: SPRUH73K
+	 *
+	 * Many a times, a spurious interrupt situation has been fixed
+	 * by adding a flush for the posted write acking the IRQ in
+	 * the device driver. Typically, this is going be the device
+	 * driver whose interrupt was handled just before the spurious
+	 * IRQ occurred. Pay attention to those device drivers if you
+	 * run into hitting the spurious IRQ condition below.
+	 */
+	if (unlikely((irqnr & SPURIOUSIRQ_MASK) == SPURIOUSIRQ_MASK)) {
+		pr_err_once("%s: spurious irq!\n", __func__);
+		irq_err_count++;
+		omap_ack_irq(NULL);
+		return;
+	}
+
+	irqnr &= ACTIVEIRQ_MASK;
+	handle_domain_irq(domain, irqnr, regs);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * A spurious IRQ can result if interrupt that triggered the

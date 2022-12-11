@@ -180,7 +180,11 @@ extern int console_trylock(void);
 extern void console_unlock(void);
 extern void console_conditional_schedule(void);
 extern void console_unblank(void);
+<<<<<<< HEAD
 extern void console_flush_on_panic(enum con_flush_mode mode);
+=======
+extern void console_flush_on_panic(void);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern struct tty_driver *console_device(int *);
 extern void console_stop(struct console *);
 extern void console_start(struct console *);

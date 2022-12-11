@@ -97,3 +97,16 @@ static inline int gpmc_onenand_init(struct omap_onenand_platform_data *d)
 	return 0;
 }
 #endif
+<<<<<<< HEAD
+=======
+
+#if IS_ENABLED(CONFIG_MTD_ONENAND_OMAP2)
+extern int gpmc_onenand_init(struct omap_onenand_platform_data *d);
+#else
+#define board_onenand_data	NULL
+static inline int gpmc_onenand_init(struct omap_onenand_platform_data *d)
+{
+	return 0;
+}
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

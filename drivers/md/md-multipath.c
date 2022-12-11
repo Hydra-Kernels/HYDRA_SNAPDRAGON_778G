@@ -121,7 +121,11 @@ static bool multipath_make_request(struct mddev *mddev, struct bio * bio)
 	}
 	multipath = conf->multipaths + mp_bh->path;
 
+<<<<<<< HEAD:drivers/md/md-multipath.c
 	bio_init(&mp_bh->bio, NULL, 0);
+=======
+	bio_init(&mp_bh->bio);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/md/multipath.c
 	__bio_clone_fast(&mp_bh->bio, bio);
 
 	mp_bh->bio.bi_iter.bi_sector += multipath->rdev->data_offset;

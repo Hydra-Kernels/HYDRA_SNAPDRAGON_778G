@@ -3092,12 +3092,15 @@ static int arcmsr_queue_command_lck(struct scsi_cmnd *cmd,
 	struct AdapterControlBlock *acb = (struct AdapterControlBlock *) host->hostdata;
 	struct CommandControlBlock *ccb;
 	int target = cmd->device->id;
+<<<<<<< HEAD
 
 	if (acb->acb_flags & ACB_F_ADAPTER_REMOVED) {
 		cmd->result = (DID_NO_CONNECT << 16);
 		cmd->scsi_done(cmd);
 		return 0;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cmd->scsi_done = done;
 	cmd->host_scribble = NULL;
 	cmd->result = 0;
@@ -3191,10 +3194,57 @@ static bool arcmsr_hbaB_get_config(struct AdapterControlBlock *acb)
 	if (!arcmsr_hbaB_wait_msgint_ready(acb)) {
 		printk(KERN_NOTICE "arcmsr%d: wait 'get adapter firmware \
 			miscellaneous data' timeout \n", acb->host->host_no);
-		return false;
+		goto err_free_dma;
 	}
+<<<<<<< HEAD
 	arcmsr_get_adapter_config(acb, reg->message_rwbuffer);
+=======
+	count = 8;
+	while (count){
+		*acb_firm_model = readb(iop_firm_model);
+		acb_firm_model++;
+		iop_firm_model++;
+		count--;
+	}
+	count = 16;
+	while (count){
+		*acb_firm_version = readb(iop_firm_version);
+		acb_firm_version++;
+		iop_firm_version++;
+		count--;
+	}
+
+	count = 16;
+	while(count){
+		*acb_device_map = readb(iop_device_map);
+		acb_device_map++;
+		iop_device_map++;
+		count--;
+	}
+	
+	pr_notice("Areca RAID Controller%d: Model %s, F/W %s\n",
+		acb->host->host_no,
+		acb->firm_model,
+		acb->firm_version);
+
+	acb->signature = readl(&reg->message_rwbuffer[0]);
+	/*firm_signature,1,00-03*/
+	acb->firm_request_len = readl(&reg->message_rwbuffer[1]);
+	/*firm_request_len,1,04-07*/
+	acb->firm_numbers_queue = readl(&reg->message_rwbuffer[2]);
+	/*firm_numbers_queue,2,08-11*/
+	acb->firm_sdram_size = readl(&reg->message_rwbuffer[3]);
+	/*firm_sdram_size,3,12-15*/
+	acb->firm_hd_channels = readl(&reg->message_rwbuffer[4]);
+	/*firm_ide_channels,4,16-19*/
+	acb->firm_cfg_version = readl(&reg->message_rwbuffer[25]);  /*firm_cfg_version,25,100-103*/
+	/*firm_ide_channels,4,16-19*/
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
+err_free_dma:
+	dma_free_coherent(&acb->pdev->dev, acb->roundup_ccbsize,
+			acb->dma_coherent2, acb->dma_coherent_handle2);
+	return false;
 }
 
 static bool arcmsr_hbaC_get_config(struct AdapterControlBlock *pACB)
@@ -3264,7 +3314,39 @@ static bool arcmsr_hbaE_get_config(struct AdapterControlBlock *pACB)
 			"miscellaneous data timeout\n", pACB->host->host_no);
 		return false;
 	}
+<<<<<<< HEAD
 	arcmsr_get_adapter_config(pACB, reg->msgcode_rwbuffer);
+=======
+	count = 16;
+	while (count) {
+		*acb_firm_version = readb(iop_firm_version);
+		acb_firm_version++;
+		iop_firm_version++;
+		count--;
+	}
+	count = 16;
+	while (count) {
+		*acb_device_map = readb(iop_device_map);
+		acb_device_map++;
+		iop_device_map++;
+		count--;
+	}
+	acb->signature = readl(&reg->msgcode_rwbuffer[0]);
+	/*firm_signature,1,00-03*/
+	acb->firm_request_len = readl(&reg->msgcode_rwbuffer[1]);
+	/*firm_request_len,1,04-07*/
+	acb->firm_numbers_queue = readl(&reg->msgcode_rwbuffer[2]);
+	/*firm_numbers_queue,2,08-11*/
+	acb->firm_sdram_size = readl(&reg->msgcode_rwbuffer[3]);
+	/*firm_sdram_size,3,12-15*/
+	acb->firm_hd_channels = readl(&reg->msgcode_rwbuffer[4]);
+	/*firm_hd_channels,4,16-19*/
+	acb->firm_cfg_version = readl(&reg->msgcode_rwbuffer[25]);
+	pr_notice("Areca RAID Controller%d: Model %s, F/W %s\n",
+		acb->host->host_no,
+		acb->firm_model,
+		acb->firm_version);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 

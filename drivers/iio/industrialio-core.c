@@ -621,9 +621,43 @@ ssize_t iio_format_value(char *buf, unsigned int type, int size, int *vals)
 {
 	ssize_t len;
 
+<<<<<<< HEAD
 	len = __iio_format_value(buf, PAGE_SIZE, type, size, vals);
 	if (len >= PAGE_SIZE - 1)
 		return -EFBIG;
+=======
+	switch (type) {
+	case IIO_VAL_INT:
+		return sprintf(buf, "%d\n", vals[0]);
+	case IIO_VAL_INT_PLUS_MICRO_DB:
+		scale_db = true;
+	case IIO_VAL_INT_PLUS_MICRO:
+		if (vals[1] < 0)
+			return sprintf(buf, "-%d.%06u%s\n", abs(vals[0]),
+				       -vals[1], scale_db ? " dB" : "");
+		else
+			return sprintf(buf, "%d.%06u%s\n", vals[0], vals[1],
+				scale_db ? " dB" : "");
+	case IIO_VAL_INT_PLUS_NANO:
+		if (vals[1] < 0)
+			return sprintf(buf, "-%d.%09u\n", abs(vals[0]),
+				       -vals[1]);
+		else
+			return sprintf(buf, "%d.%09u\n", vals[0], vals[1]);
+	case IIO_VAL_FRACTIONAL:
+		tmp = div_s64((s64)vals[0] * 1000000000LL, vals[1]);
+		vals[0] = (int)div_s64_rem(tmp, 1000000000, &vals[1]);
+		return sprintf(buf, "%d.%09u\n", vals[0], abs(vals[1]));
+	case IIO_VAL_FRACTIONAL_LOG2:
+		tmp = (s64)vals[0] * 1000000000LL >> vals[1];
+		vals[1] = do_div(tmp, 1000000000LL);
+		vals[0] = tmp;
+		return sprintf(buf, "%d.%09u\n", vals[0], vals[1]);
+	case IIO_VAL_INT_MULTIPLE:
+	{
+		int i;
+		int len = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return len + sprintf(buf + len, "\n");
 }

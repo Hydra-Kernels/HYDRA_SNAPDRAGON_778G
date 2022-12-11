@@ -1184,6 +1184,7 @@ ieee80211_tx_info_clear_status(struct ieee80211_tx_info *info)
  *	is stored in the @ampdu_delimiter_crc field)
  * @RX_FLAG_MIC_STRIPPED: The mic was stripped of this packet. Decryption was
  *	done by the hardware
+<<<<<<< HEAD
  * @RX_FLAG_ONLY_MONITOR: Report frame only to monitor interfaces without
  *	processing it in any regular way.
  *	This is useful if drivers offload some frames but still want to report
@@ -1192,6 +1193,12 @@ ieee80211_tx_info_clear_status(struct ieee80211_tx_info *info)
  *	monitor interfaces.
  *	This is useful if drivers offload some frames but still want to report
  *	them for sniffing purposes.
+=======
+ * @RX_FLAG_LDPC: LDPC was used
+ * @RX_FLAG_STBC_MASK: STBC 2 bit bitmask. 1 - Nss=1, 2 - Nss=2, 3 - Nss=3
+ * @RX_FLAG_10MHZ: 10 MHz (half channel) was used
+ * @RX_FLAG_5MHZ: 5 MHz (quarter channel) was used
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @RX_FLAG_AMSDU_MORE: Some drivers may prefer to report separate A-MSDU
  *	subframes instead of a one huge frame for performance reasons.
  *	All, but the last MSDU from an A-MSDU should have this flag set. E.g.
@@ -1209,6 +1216,7 @@ ieee80211_tx_info_clear_status(struct ieee80211_tx_info *info)
  *	the first subframe.
  * @RX_FLAG_ICV_STRIPPED: The ICV is stripped from this frame. CRC checking must
  *	be done in the hardware.
+<<<<<<< HEAD
  * @RX_FLAG_AMPDU_EOF_BIT: Value of the EOF bit in the A-MPDU delimiter for this
  *	frame
  * @RX_FLAG_AMPDU_EOF_BIT_KNOWN: The EOF value is known
@@ -1231,6 +1239,8 @@ ieee80211_tx_info_clear_status(struct ieee80211_tx_info *info)
  *	the "0-length PSDU" field included there.  The value for it is
  *	in &struct ieee80211_rx_status.  Note that if this value isn't
  *	known the frame shouldn't be reported.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 enum mac80211_rx_flags {
 	RX_FLAG_MMIC_ERROR		= BIT(0),
@@ -1241,6 +1251,7 @@ enum mac80211_rx_flags {
 	RX_FLAG_FAILED_FCS_CRC		= BIT(5),
 	RX_FLAG_FAILED_PLCP_CRC 	= BIT(6),
 	RX_FLAG_MACTIME_START		= BIT(7),
+<<<<<<< HEAD
 	RX_FLAG_NO_SIGNAL_VAL		= BIT(8),
 	RX_FLAG_AMPDU_DETAILS		= BIT(9),
 	RX_FLAG_PN_VALIDATED		= BIT(10),
@@ -1263,6 +1274,32 @@ enum mac80211_rx_flags {
 	RX_FLAG_RADIOTAP_HE_MU		= BIT(27),
 	RX_FLAG_RADIOTAP_LSIG		= BIT(28),
 	RX_FLAG_NO_PSDU			= BIT(29),
+=======
+	RX_FLAG_SHORTPRE		= BIT(8),
+	RX_FLAG_HT			= BIT(9),
+	RX_FLAG_40MHZ			= BIT(10),
+	RX_FLAG_SHORT_GI		= BIT(11),
+	RX_FLAG_NO_SIGNAL_VAL		= BIT(12),
+	RX_FLAG_HT_GF			= BIT(13),
+	RX_FLAG_AMPDU_DETAILS		= BIT(14),
+	RX_FLAG_PN_VALIDATED		= BIT(15),
+	/* bit 16 free */
+	RX_FLAG_AMPDU_LAST_KNOWN	= BIT(17),
+	RX_FLAG_AMPDU_IS_LAST		= BIT(18),
+	RX_FLAG_AMPDU_DELIM_CRC_ERROR	= BIT(19),
+	RX_FLAG_AMPDU_DELIM_CRC_KNOWN	= BIT(20),
+	RX_FLAG_MACTIME_END		= BIT(21),
+	RX_FLAG_VHT			= BIT(22),
+	RX_FLAG_LDPC			= BIT(23),
+	RX_FLAG_STBC_MASK		= BIT(26) | BIT(27),
+	RX_FLAG_10MHZ			= BIT(28),
+	RX_FLAG_5MHZ			= BIT(29),
+	RX_FLAG_AMSDU_MORE		= BIT(30),
+	RX_FLAG_RADIOTAP_VENDOR_DATA	= BIT(31),
+	RX_FLAG_MIC_STRIPPED		= BIT_ULL(32),
+	RX_FLAG_ALLOW_SAME_PN		= BIT_ULL(33),
+	RX_FLAG_ICV_STRIPPED		= BIT_ULL(34),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /**
@@ -1342,7 +1379,7 @@ struct ieee80211_rx_status {
 	u64 boottime_ns;
 	u32 device_timestamp;
 	u32 ampdu_reference;
-	u32 flag;
+	u64 flag;
 	u16 freq;
 	u8 enc_flags;
 	u8 encoding:2, bw:3, he_ru:3;
@@ -1938,7 +1975,10 @@ struct ieee80211_sta_txpwr {
  * @supp_rates: Bitmap of supported rates (per band)
  * @ht_cap: HT capabilities of this STA; restricted to our own capabilities
  * @vht_cap: VHT capabilities of this STA; restricted to our own capabilities
+<<<<<<< HEAD
  * @he_cap: HE capabilities of this STA
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @max_rx_aggregation_subframes: maximal amount of frames in a single AMPDU
  *	that this station is allowed to transmit to us.
  *	Can be modified by driver.
@@ -1976,8 +2016,12 @@ struct ieee80211_sta {
 	u16 aid;
 	struct ieee80211_sta_ht_cap ht_cap;
 	struct ieee80211_sta_vht_cap vht_cap;
+<<<<<<< HEAD
 	struct ieee80211_sta_he_cap he_cap;
 	u16 max_rx_aggregation_subframes;
+=======
+	u8 max_rx_aggregation_subframes;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool wme;
 	u8 uapsd_queues;
 	u8 max_sp;
@@ -3141,7 +3185,11 @@ struct ieee80211_ampdu_params {
 	struct ieee80211_sta *sta;
 	u16 tid;
 	u16 ssn;
+<<<<<<< HEAD
 	u16 buf_size;
+=======
+	u8 buf_size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool amsdu;
 	u16 timeout;
 };
@@ -3496,6 +3544,29 @@ enum ieee80211_reconfig_type {
  *	Returns non-zero if this device sent the last beacon.
  *	The callback can sleep.
  *
+<<<<<<< HEAD
+=======
+ * @ampdu_action: Perform a certain A-MPDU action
+ * 	The RA/TID combination determines the destination and TID we want
+ * 	the ampdu action to be performed for. The action is defined through
+ *	ieee80211_ampdu_mlme_action.
+ *	When the action is set to %IEEE80211_AMPDU_TX_OPERATIONAL the driver
+ *	may neither send aggregates containing more subframes than @buf_size
+ *	nor send aggregates in a way that lost frames would exceed the
+ *	buffer size. If just limiting the aggregate size, this would be
+ *	possible with a buf_size of 8:
+ *	 - TX: 1.....7
+ *	 - RX:  2....7 (lost frame #1)
+ *	 - TX:        8..1...
+ *	which is invalid since #1 was now re-transmitted well past the
+ *	buffer size of 8. Correct ways to retransmit #1 would be:
+ *	 - TX:       1 or 18 or 81
+ *	Even "189" would be wrong since 1 could be lost again.
+ *
+ *	Returns a negative error code on failure.
+ *	The callback can sleep.
+ *
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @get_survey: Return per-channel survey information
  *
  * @rfkill_poll: Poll rfkill hardware state. If you need this, you also

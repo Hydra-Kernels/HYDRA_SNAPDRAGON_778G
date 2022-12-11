@@ -41,8 +41,16 @@ static inline int aac_is_msix_mode(struct aac_dev *dev)
 {
 	u32 status = 0;
 
+<<<<<<< HEAD
 	if (aac_is_src(dev))
 		status = src_readl(dev, MUnit.OMR);
+=======
+	if (dev->pdev->device == PMC_DEVICE_S6 ||
+		dev->pdev->device == PMC_DEVICE_S7 ||
+		dev->pdev->device == PMC_DEVICE_S8) {
+		status = src_readl(dev, MUnit.OMR);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return (status & AAC_INT_MODE_MSIX);
 }
 

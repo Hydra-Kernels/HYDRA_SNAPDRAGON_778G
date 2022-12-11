@@ -6,10 +6,14 @@
 #include <linux/linkage.h>
 #include <asm/ptrace.h>
 #include <asm/ftrace.h>
+<<<<<<< HEAD:arch/x86/kernel/ftrace_64.S
 #include <asm/export.h>
 #include <asm/nospec-branch.h>
 #include <asm/unwind_hints.h>
 #include <asm/frame.h>
+=======
+#include <asm/nospec-branch.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/mcount_64.S
 
 	.code64
 	.section .entry.text, "ax"
@@ -164,10 +168,14 @@ GLOBAL(ftrace_graph_call)
 	jmp ftrace_stub
 #endif
 
+<<<<<<< HEAD:arch/x86/kernel/ftrace_64.S
 /*
  * This is weak to keep gas from relaxing the jumps.
  * It is also used to copy the retq for trampolines.
  */
+=======
+/* This is weak to keep gas from relaxing the jumps */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/mcount_64.S
 WEAK(ftrace_stub)
 	retq
 ENDPROC(ftrace_caller)
@@ -274,6 +282,10 @@ trace:
 	 * ip and parent ip are used and the list function is called when
 	 * function tracing is enabled.
 	 */
+<<<<<<< HEAD:arch/x86/kernel/ftrace_64.S
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/mcount_64.S
 	movq ftrace_trace_function, %r8
 	CALL_NOSPEC %r8
 	restore_mcount_regs
@@ -312,5 +324,8 @@ ENTRY(return_to_handler)
 	movq (%rsp), %rax
 	addq $24, %rsp
 	JMP_NOSPEC %rdi
+<<<<<<< HEAD:arch/x86/kernel/ftrace_64.S
 END(return_to_handler)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/mcount_64.S
 #endif

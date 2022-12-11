@@ -112,7 +112,11 @@ static inline int do_siga_output(unsigned long schid, unsigned long mask,
 static int qdio_do_eqbs(struct qdio_q *q, unsigned char *state,
 			int start, int count, int auto_ack)
 {
+<<<<<<< HEAD
 	int tmp_count = count, tmp_start = start, nr = q->nr;
+=======
+	int rc, tmp_count = count, tmp_start = start, nr = q->nr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int ccq = 0;
 
 	qperf_inc(q, eqbs);
@@ -134,6 +138,7 @@ again:
 		DBF_DEV_EVENT(DBF_WARN, q->irq_ptr, "EQBS part:%02x",
 			tmp_count);
 		return count - tmp_count;
+<<<<<<< HEAD
 	case 97:
 		/* no buffer processed */
 		DBF_DEV_EVENT(DBF_WARN, q->irq_ptr, "EQBS again:%2d", ccq);
@@ -145,6 +150,8 @@ again:
 		q->handler(q->irq_ptr->cdev, QDIO_ERROR_GET_BUF_STATE, q->nr,
 			   q->first_to_kick, count, q->irq_ptr->int_parm);
 		return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -212,6 +219,7 @@ static inline int get_buf_states(struct qdio_q *q, unsigned int bufnr,
 
 	/* get initial state: */
 	__state = q->slsb.val[bufnr];
+<<<<<<< HEAD
 
 	/* Bail out early if there is no work on the queue: */
 	if (__state & SLSB_OWNER_CU)
@@ -221,6 +229,12 @@ static inline int get_buf_states(struct qdio_q *q, unsigned int bufnr,
 		__state = SLSB_P_OUTPUT_EMPTY;
 
 	for (; i < count; i++) {
+=======
+	if (merge_pending && __state == SLSB_P_OUTPUT_PENDING)
+		__state = SLSB_P_OUTPUT_EMPTY;
+
+	for (i = 1; i < count; i++) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		bufnr = next_buf(bufnr);
 
 		/* merge PENDING into EMPTY: */

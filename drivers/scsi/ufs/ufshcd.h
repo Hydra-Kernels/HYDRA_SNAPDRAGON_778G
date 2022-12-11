@@ -959,6 +959,7 @@ struct ufs_hba {
 	 * the performance of ongoing read/write operations.
 	 */
 #define UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND (1 << 5)
+<<<<<<< HEAD
 	/*
 	 * This capability allows host controller driver to automatically
 	 * enable runtime power management by itself instead of waiting
@@ -976,6 +977,8 @@ struct ufs_hba {
 	 * provisioned to be used. This would increase the write performance.
 	 */
 #define	UFSHCD_CAP_WB_EN (1 << 8)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_SCSI_UFSHCD_QTI
 #define UFSHCD_CAP_POWER_COLLAPSE_DURING_HIBERN8 (1 << 9)
@@ -1190,6 +1193,7 @@ static inline bool ufshcd_keep_autobkops_enabled_except_suspend(
 {
 	return hba->caps & UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND;
 }
+<<<<<<< HEAD
 
 static inline u8 ufshcd_wb_get_query_index(struct ufs_hba *hba)
 {
@@ -1197,6 +1201,8 @@ static inline u8 ufshcd_wb_get_query_index(struct ufs_hba *hba)
 		return hba->dev_info.wb_dedicated_lu;
 	return 0;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern int ufshcd_runtime_suspend(struct ufs_hba *hba);
 extern int ufshcd_runtime_resume(struct ufs_hba *hba);

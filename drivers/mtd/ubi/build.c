@@ -822,7 +822,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	for (i = 0; i < UBI_MAX_DEVICES; i++) {
 		ubi = ubi_devices[i];
 		if (ubi && mtd->index == ubi->mtd->index) {
+<<<<<<< HEAD
 			pr_err("ubi: mtd%d is already attached to ubi%d\n",
+=======
+			pr_err("ubi: mtd%d is already attached to ubi%d",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				mtd->index, i);
 			return -EEXIST;
 		}
@@ -837,7 +841,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	 * no sense to attach emulated MTD devices, so we prohibit this.
 	 */
 	if (mtd->type == MTD_UBIVOLUME) {
+<<<<<<< HEAD
 		pr_err("ubi: refuse attaching mtd%d - it is already emulated on top of UBI\n",
+=======
+		pr_err("ubi: refuse attaching mtd%d - it is already emulated on top of UBI",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			mtd->index);
 		return -EINVAL;
 	}
@@ -859,7 +867,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 			if (!ubi_devices[ubi_num])
 				break;
 		if (ubi_num == UBI_MAX_DEVICES) {
+<<<<<<< HEAD
 			pr_err("ubi: only %d UBI devices may be created\n",
+=======
+			pr_err("ubi: only %d UBI devices may be created",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				UBI_MAX_DEVICES);
 			return -ENFILE;
 		}
@@ -869,7 +881,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 		/* Make sure ubi_num is not busy */
 		if (ubi_devices[ubi_num]) {
+<<<<<<< HEAD
 			pr_err("ubi: ubi%i already exists\n", ubi_num);
+=======
+			pr_err("ubi: ubi%i already exists", ubi_num);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EEXIST;
 		}
 	}
@@ -959,7 +975,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	/* Make device "available" before it becomes accessible via sysfs */
 	ubi_devices[ubi_num] = ubi;
 
+<<<<<<< HEAD
 	err = uif_init(ubi);
+=======
+	err = uif_init(ubi, &ref);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err)
 		goto out_detach;
 
@@ -1079,6 +1099,15 @@ int ubi_detach_mtd_dev(int ubi_num, int anyway)
 	if (ubi->bgt_thread)
 		kthread_stop(ubi->bgt_thread);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Get a reference to the device in order to prevent 'dev_release()'
+	 * from freeing the @ubi object.
+	 */
+	get_device(&ubi->dev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_MTD_UBI_FASTMAP
 	cancel_work_sync(&ubi->fm_work);
 #endif

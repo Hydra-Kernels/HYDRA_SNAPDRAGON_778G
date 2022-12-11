@@ -270,9 +270,14 @@ static int mpr_touchkey_probe(struct i2c_client *client,
 
 	input_dev->name = "Freescale MPR121 Touchkey";
 	input_dev->id.bustype = BUS_I2C;
+<<<<<<< HEAD
 	input_dev->dev.parent = dev;
 	if (device_property_read_bool(dev, "autorepeat"))
 		__set_bit(EV_REP, input_dev->evbit);
+=======
+	input_dev->dev.parent = &client->dev;
+	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	input_set_capability(input_dev, EV_MSC, MSC_SCAN);
 
 	input_dev->keycode = mpr121->keycodes;

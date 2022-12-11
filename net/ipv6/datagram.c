@@ -170,6 +170,20 @@ int __ip6_datagram_connect(struct sock *sk, struct sockaddr *uaddr,
 			usin->sin6_addr = in6addr_loopback;
 	}
 
+<<<<<<< HEAD
+=======
+	if (ipv6_addr_any(&usin->sin6_addr)) {
+		/*
+		 *	connect to self
+		 */
+		if (ipv6_addr_v4mapped(&sk->sk_v6_rcv_saddr))
+			ipv6_addr_set_v4mapped(htonl(INADDR_LOOPBACK),
+					       &usin->sin6_addr);
+		else
+			usin->sin6_addr = in6addr_loopback;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	addr_type = ipv6_addr_type(&usin->sin6_addr);
 
 	daddr = &usin->sin6_addr;
@@ -244,6 +258,7 @@ ipv4_connected:
 	 *	destination cache for it.
 	 */
 
+<<<<<<< HEAD
 	err = ip6_datagram_dst_update(sk, true);
 	if (err) {
 		/* Restore the socket peer info, to keep it consistent with
@@ -252,6 +267,33 @@ ipv4_connected:
 		sk->sk_v6_daddr = old_daddr;
 		np->flow_label = old_fl6_flowlabel;
 		inet->inet_dport = old_dport;
+=======
+	fl6.flowi6_proto = sk->sk_protocol;
+	fl6.daddr = sk->sk_v6_daddr;
+	fl6.saddr = np->saddr;
+	fl6.flowi6_oif = sk->sk_bound_dev_if;
+	fl6.flowi6_mark = sk->sk_mark;
+	fl6.fl6_dport = inet->inet_dport;
+	fl6.fl6_sport = inet->inet_sport;
+
+	if (!fl6.flowi6_oif)
+		fl6.flowi6_oif = np->sticky_pktinfo.ipi6_ifindex;
+
+	if (!fl6.flowi6_oif && (addr_type&IPV6_ADDR_MULTICAST))
+		fl6.flowi6_oif = np->mcast_oif;
+
+	security_sk_classify_flow(sk, flowi6_to_flowi(&fl6));
+
+	rcu_read_lock();
+	opt = flowlabel ? flowlabel->opt : rcu_dereference(np->opt);
+	final_p = fl6_update_dst(&fl6, opt, &final);
+	rcu_read_unlock();
+
+	dst = ip6_dst_lookup_flow(sk, &fl6, final_p);
+	err = 0;
+	if (IS_ERR(dst)) {
+		err = PTR_ERR(dst);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 
@@ -699,15 +741,28 @@ void ip6_datagram_recv_specific_ctl(struct sock *sk, struct msghdr *msg,
 	}
 	if (np->rxopt.bits.rxorigdstaddr) {
 		struct sockaddr_in6 sin6;
+<<<<<<< HEAD
 		__be16 _ports[2], *ports;
 
 		ports = skb_header_pointer(skb, skb_transport_offset(skb),
 					   sizeof(_ports), &_ports);
 		if (ports) {
+=======
+		__be16 *ports;
+		int end;
+
+		end = skb_transport_offset(skb) + 4;
+		if (end <= 0 || pskb_may_pull(skb, end)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* All current transport protocols have the port numbers in the
 			 * first four bytes of the transport header and this function is
 			 * written with this assumption in mind.
 			 */
+<<<<<<< HEAD
+=======
+			ports = (__be16 *)skb_transport_header(skb);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			sin6.sin6_family = AF_INET6;
 			sin6.sin6_addr = ipv6_hdr(skb)->daddr;
 			sin6.sin6_port = ports[1];

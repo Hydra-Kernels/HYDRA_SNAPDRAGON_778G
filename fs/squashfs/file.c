@@ -359,6 +359,7 @@ static int read_blocklist(struct inode *inode, int index, u64 *block)
 	if (res < 0)
 		return res;
 	return squashfs_block_size(size);
+<<<<<<< HEAD
 }
 
 void squashfs_fill_page(struct page *page, struct squashfs_cache_entry *buffer, int offset, int avail)
@@ -376,6 +377,8 @@ void squashfs_fill_page(struct page *page, struct squashfs_cache_entry *buffer, 
 		SetPageUptodate(page);
 	else
 		SetPageError(page);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Copy data into page cache  */

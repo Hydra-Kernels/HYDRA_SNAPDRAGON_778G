@@ -1112,6 +1112,7 @@ unclaimed_reg_debug(struct intel_uncore *uncore,
 	if (likely(!i915_modparams.mmio_debug))
 		return;
 
+<<<<<<< HEAD
 	/* interrupts are disabled and re-enabled around uncore->lock usage */
 	lockdep_assert_held(&uncore->lock);
 
@@ -1122,6 +1123,16 @@ unclaimed_reg_debug(struct intel_uncore *uncore,
 
 	if (!before)
 		spin_unlock(&uncore->debug->lock);
+=======
+	if (__raw_i915_read32(dev_priv, FPGA_DBG) & FPGA_DBG_RM_NOCLAIM) {
+		DRM_DEBUG("Unclaimed register detected, "
+			  "enabling oneshot unclaimed register reporting. "
+			  "Please use i915.mmio_debug=N for more information.\n");
+		__raw_i915_write32(dev_priv, FPGA_DBG, FPGA_DBG_RM_NOCLAIM);
+		i915.mmio_debug = mmio_debug_once;
+		mmio_debug_once = false;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define __vgpu_read(x) \
@@ -1512,8 +1523,17 @@ static int intel_uncore_fw_domains_init(struct intel_uncore *uncore)
 	} else if (IS_HASWELL(i915) || IS_BROADWELL(i915)) {
 		uncore->funcs.force_wake_get =
 			fw_domains_get_with_thread_status;
+<<<<<<< HEAD
 		uncore->funcs.force_wake_put = fw_domains_put;
 		fw_domain_init(uncore, FW_DOMAIN_ID_RENDER,
+=======
+		if (IS_HASWELL(dev))
+			dev_priv->uncore.funcs.force_wake_put =
+				fw_domains_put_with_fifo;
+		else
+			dev_priv->uncore.funcs.force_wake_put = fw_domains_put;
+		fw_domain_init(dev_priv, FW_DOMAIN_ID_RENDER,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			       FORCEWAKE_MT, FORCEWAKE_ACK_HSW);
 	} else if (IS_IVYBRIDGE(i915)) {
 		u32 ecobus;

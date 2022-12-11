@@ -45,7 +45,12 @@ static int net_ctl_permissions(struct ctl_table_header *head,
 	struct net *net = container_of(head->set, struct net, sysctls);
 
 	/* Allow network administrator to have same access as root. */
+<<<<<<< HEAD
 	if (ns_capable_noaudit(net->user_ns, CAP_NET_ADMIN)) {
+=======
+	if (ns_capable_noaudit(net->user_ns, CAP_NET_ADMIN) ||
+	    uid_eq(root_uid, current_euid())) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		int mode = (table->mode >> 6) & 7;
 		return (mode << 6) | (mode << 3) | mode;
 	}

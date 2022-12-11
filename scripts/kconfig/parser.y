@@ -111,12 +111,36 @@ static struct menu *current_menu, *current_entry;
 %%
 input: mainmenu_stmt stmt_list | stmt_list;
 
+<<<<<<< HEAD:scripts/kconfig/parser.y
 /* mainmenu entry */
 
 mainmenu_stmt: T_MAINMENU prompt T_EOL
 {
 	menu_add_prompt(P_MENU, $2, NULL);
 };
+=======
+start: mainmenu_stmt stmt_list | no_mainmenu_stmt stmt_list;
+
+/* mainmenu entry */
+
+mainmenu_stmt: T_MAINMENU prompt nl
+{
+	menu_add_prompt(P_MENU, $2, NULL);
+};
+
+/* Default main menu, if there's no mainmenu entry */
+
+no_mainmenu_stmt: /* empty */
+{
+	/*
+	 * Hack: Keep the main menu title on the heap so we can safely free it
+	 * later regardless of whether it comes from the 'prompt' in
+	 * mainmenu_stmt or here
+	 */
+	menu_add_prompt(P_MENU, strdup("Linux Kernel Configuration"), NULL);
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/kconfig/zconf.y
 
 stmt_list:
 	  /* empty */
@@ -332,6 +356,16 @@ if_end: end
 if_stmt: if_entry stmt_list if_end
 ;
 
+<<<<<<< HEAD:scripts/kconfig/parser.y
+=======
+if_block:
+	  /* empty */
+	| if_block common_stmt
+	| if_block menu_stmt
+	| if_block choice_stmt
+;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/kconfig/zconf.y
 /* menu entry */
 
 menu: T_MENU prompt T_EOL
@@ -489,6 +523,7 @@ assign_val:
 
 void conf_parse(const char *name)
 {
+	const char *tmp;
 	struct symbol *sym;
 	int i;
 
@@ -508,10 +543,17 @@ void conf_parse(const char *name)
 	if (!modules_sym)
 		modules_sym = sym_find( "n" );
 
+<<<<<<< HEAD:scripts/kconfig/parser.y
 	if (!menu_has_prompt(&rootmenu)) {
 		current_entry = &rootmenu;
 		menu_add_prompt(P_MENU, "Main menu", NULL);
 	}
+=======
+	tmp = rootmenu.prompt->text;
+	rootmenu.prompt->text = _(rootmenu.prompt->text);
+	rootmenu.prompt->text = sym_expand_string_value(rootmenu.prompt->text);
+	free((char*)tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/kconfig/zconf.y
 
 	menu_finalize(&rootmenu);
 	for_all_symbols(i, sym) {

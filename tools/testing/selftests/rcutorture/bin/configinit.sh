@@ -22,7 +22,26 @@ mkdir $T
 # Capture config spec file.
 
 c=$1
+<<<<<<< HEAD
 resdir=$2
+=======
+buildloc=$2
+builddir=
+if test -n $buildloc
+then
+	if echo $buildloc | grep -q '^O='
+	then
+		builddir=`echo $buildloc | sed -e 's/^O=//'`
+		if test ! -d $builddir
+		then
+			mkdir $builddir
+		fi
+	else
+		echo Bad build directory: \"$buildloc\"
+		exit 2
+	fi
+fi
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 sed -e 's/^\(CONFIG[0-9A-Z_]*\)=.*$/grep -v "^# \1" |/' < $c > $T/u.sh
 sed -e 's/^\(CONFIG[0-9A-Z_]*=\).*$/grep -v \1 |/' < $c >> $T/u.sh

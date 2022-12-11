@@ -29,10 +29,17 @@ void speakup_clear_selection(void)
 	console_unlock();
 }
 
+<<<<<<< HEAD
 static void __speakup_set_selection(struct work_struct *work)
 {
 	struct speakup_selection_work *ssw =
 		container_of(work, struct speakup_selection_work, work);
+=======
+	ld = tty_ldisc_ref(tty);
+	if (!ld)
+		goto tty_unref;
+	tty_buffer_lock_exclusive(&vc->port);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	struct tty_struct *tty;
 	struct tiocl_selection sel;
@@ -51,9 +58,15 @@ static void __speakup_set_selection(struct work_struct *work)
 		goto unref;
 	}
 
+<<<<<<< HEAD
 	set_selection_kernel(&sel, tty);
 
 unref:
+=======
+	tty_buffer_unlock_exclusive(&vc->port);
+	tty_ldisc_deref(ld);
+tty_unref:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	tty_kref_put(tty);
 }
 

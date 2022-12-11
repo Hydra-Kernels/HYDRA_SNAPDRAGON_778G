@@ -204,7 +204,39 @@ static inline int page_cache_get_speculative(struct page *page)
 
 static inline int page_cache_add_speculative(struct page *page, int count)
 {
+<<<<<<< HEAD
 	return __page_cache_add_speculative(page, count);
+=======
+	VM_BUG_ON(in_interrupt());
+
+#if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
+# ifdef CONFIG_PREEMPT_COUNT
+	VM_BUG_ON(!in_atomic() && !irqs_disabled());
+# endif
+	VM_BUG_ON_PAGE(page_count(page) == 0, page);
+	atomic_add(count, &page->_count);
+
+#else
+	if (unlikely(!atomic_add_unless(&page->_count, count, 0)))
+		return 0;
+#endif
+	VM_BUG_ON_PAGE(PageCompound(page) && page != compound_head(page), page);
+
+	return 1;
+}
+
+static inline int page_freeze_refs(struct page *page, int count)
+{
+	return likely(atomic_cmpxchg(&page->_count, count, 0) == count);
+}
+
+static inline void page_unfreeze_refs(struct page *page, int count)
+{
+	VM_BUG_ON_PAGE(page_count(page) != 0, page);
+	VM_BUG_ON(count == 0);
+
+	atomic_set(&page->_count, count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_NUMA
@@ -595,11 +627,73 @@ static inline int fault_in_pages_readable(const char __user *uaddr, int size)
 	if (unlikely(uaddr > end))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	do {
 		if (unlikely(__get_user(c, uaddr) != 0))
 			return -EFAULT;
 		uaddr += PAGE_SIZE;
 	} while (uaddr <= end);
+=======
+		if (((unsigned long)uaddr & PAGE_MASK) !=
+				((unsigned long)end & PAGE_MASK)) {
+			ret = __get_user(c, end);
+			(void)c;
+		}
+	}
+	return ret;
+}
+
+/*
+ * Multipage variants of the above prefault helpers, useful if more than
+ * PAGE_SIZE of data needs to be prefaulted. These are separate from the above
+ * functions (which only handle up to PAGE_SIZE) to avoid clobbering the
+ * filemap.c hotpaths.
+ */
+static inline int fault_in_multipages_writeable(char __user *uaddr, int size)
+{
+	char __user *end = uaddr + size - 1;
+
+	if (unlikely(size == 0))
+		return 0;
+
+	if (unlikely(uaddr > end))
+		return -EFAULT;
+	/*
+	 * Writing zeroes into userspace here is OK, because we know that if
+	 * the zero gets there, we'll be overwriting it.
+	 */
+	do {
+		if (unlikely(__put_user(0, uaddr) != 0))
+			return -EFAULT;
+		uaddr += PAGE_SIZE;
+	} while (uaddr <= end);
+
+	/* Check whether the range spilled into the next page. */
+	if (((unsigned long)uaddr & PAGE_MASK) ==
+			((unsigned long)end & PAGE_MASK))
+		return __put_user(0, end);
+
+	return 0;
+}
+
+static inline int fault_in_multipages_readable(const char __user *uaddr,
+					       int size)
+{
+	volatile char c;
+	const char __user *end = uaddr + size - 1;
+
+	if (unlikely(size == 0))
+		return 0;
+
+	if (unlikely(uaddr > end))
+		return -EFAULT;
+
+	do {
+		if (unlikely(__get_user(c, uaddr) != 0))
+			return -EFAULT;
+		uaddr += PAGE_SIZE;
+	} while (uaddr <= end);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Check whether the range spilled into the next page. */
 	if (((unsigned long)uaddr & PAGE_MASK) ==
@@ -607,7 +701,10 @@ static inline int fault_in_pages_readable(const char __user *uaddr, int size)
 		return __get_user(c, end);
 	}
 
+<<<<<<< HEAD
 	(void)c;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -146,6 +146,68 @@ void __init detect_memory_region(phys_addr_t start, phys_addr_t sz_min, phys_add
 	add_memory_region(start, size, BOOT_MEM_RAM);
 }
 
+<<<<<<< HEAD
+=======
+bool __init memory_region_available(phys_addr_t start, phys_addr_t size)
+{
+	int i;
+	bool in_ram = false, free = true;
+
+	for (i = 0; i < boot_mem_map.nr_map; i++) {
+		phys_addr_t start_, end_;
+
+		start_ = boot_mem_map.map[i].addr;
+		end_ = boot_mem_map.map[i].addr + boot_mem_map.map[i].size;
+
+		switch (boot_mem_map.map[i].type) {
+		case BOOT_MEM_RAM:
+			if (start >= start_ && start + size <= end_)
+				in_ram = true;
+			break;
+		case BOOT_MEM_RESERVED:
+			if ((start >= start_ && start < end_) ||
+			    (start < start_ && start + size >= start_))
+				free = false;
+			break;
+		default:
+			continue;
+		}
+	}
+
+	return in_ram && free;
+}
+
+static void __init print_memory_map(void)
+{
+	int i;
+	const int field = 2 * sizeof(unsigned long);
+
+	for (i = 0; i < boot_mem_map.nr_map; i++) {
+		printk(KERN_INFO " memory: %0*Lx @ %0*Lx ",
+		       field, (unsigned long long) boot_mem_map.map[i].size,
+		       field, (unsigned long long) boot_mem_map.map[i].addr);
+
+		switch (boot_mem_map.map[i].type) {
+		case BOOT_MEM_RAM:
+			printk(KERN_CONT "(usable)\n");
+			break;
+		case BOOT_MEM_INIT_RAM:
+			printk(KERN_CONT "(usable after init)\n");
+			break;
+		case BOOT_MEM_ROM_DATA:
+			printk(KERN_CONT "(ROM data)\n");
+			break;
+		case BOOT_MEM_RESERVED:
+			printk(KERN_CONT "(reserved)\n");
+			break;
+		default:
+			printk(KERN_CONT "type %lu\n", boot_mem_map.map[i].type);
+			break;
+		}
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * Manage initrd
  */
@@ -295,13 +357,28 @@ static void __init bootmem_init(void)
 
 #else  /* !CONFIG_SGI_IP27 */
 
+static unsigned long __init bootmap_bytes(unsigned long pages)
+{
+	unsigned long bytes = DIV_ROUND_UP(pages, 8);
+
+	return ALIGN(bytes, sizeof(long));
+}
+
 static void __init bootmem_init(void)
 {
+<<<<<<< HEAD
 	struct memblock_region *mem;
 	phys_addr_t ramstart, ramend;
 
 	ramstart = memblock_start_of_DRAM();
 	ramend = memblock_end_of_DRAM();
+=======
+	unsigned long reserved_end;
+	unsigned long mapstart = ~0UL;
+	unsigned long bootmap_size;
+	bool bootmap_valid = false;
+	int i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Sanity check any INITRD first. We don't take it into account
@@ -366,8 +443,126 @@ static void __init bootmem_init(void)
 		max_low_pfn = PFN_DOWN(HIGHMEM_START);
 		max_pfn = max_low_pfn;
 #endif
+<<<<<<< HEAD
 	}
 
+=======
+
+	/*
+	 * check that mapstart doesn't overlap with any of
+	 * memory regions that have been reserved through eg. DTB
+	 */
+	bootmap_size = bootmap_bytes(max_low_pfn - min_low_pfn);
+
+	bootmap_valid = memory_region_available(PFN_PHYS(mapstart),
+						bootmap_size);
+	for (i = 0; i < boot_mem_map.nr_map && !bootmap_valid; i++) {
+		unsigned long mapstart_addr;
+
+		switch (boot_mem_map.map[i].type) {
+		case BOOT_MEM_RESERVED:
+			mapstart_addr = PFN_ALIGN(boot_mem_map.map[i].addr +
+						boot_mem_map.map[i].size);
+			if (PHYS_PFN(mapstart_addr) < mapstart)
+				break;
+
+			bootmap_valid = memory_region_available(mapstart_addr,
+								bootmap_size);
+			if (bootmap_valid)
+				mapstart = PHYS_PFN(mapstart_addr);
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (!bootmap_valid)
+		panic("No memory area to place a bootmap bitmap");
+
+	/*
+	 * Initialize the boot-time allocator with low memory only.
+	 */
+	if (bootmap_size != init_bootmem_node(NODE_DATA(0), mapstart,
+					 min_low_pfn, max_low_pfn))
+		panic("Unexpected memory size required for bootmap");
+
+	for (i = 0; i < boot_mem_map.nr_map; i++) {
+		unsigned long start, end;
+
+		start = PFN_UP(boot_mem_map.map[i].addr);
+		end = PFN_DOWN(boot_mem_map.map[i].addr
+				+ boot_mem_map.map[i].size);
+
+		if (start <= min_low_pfn)
+			start = min_low_pfn;
+		if (start >= end)
+			continue;
+
+#ifndef CONFIG_HIGHMEM
+		if (end > max_low_pfn)
+			end = max_low_pfn;
+
+		/*
+		 * ... finally, is the area going away?
+		 */
+		if (end <= start)
+			continue;
+#endif
+
+		memblock_add_node(PFN_PHYS(start), PFN_PHYS(end - start), 0);
+	}
+
+	/*
+	 * Register fully available low RAM pages with the bootmem allocator.
+	 */
+	for (i = 0; i < boot_mem_map.nr_map; i++) {
+		unsigned long start, end, size;
+
+		start = PFN_UP(boot_mem_map.map[i].addr);
+		end   = PFN_DOWN(boot_mem_map.map[i].addr
+				    + boot_mem_map.map[i].size);
+
+		/*
+		 * Reserve usable memory.
+		 */
+		switch (boot_mem_map.map[i].type) {
+		case BOOT_MEM_RAM:
+			break;
+		case BOOT_MEM_INIT_RAM:
+			memory_present(0, start, end);
+			continue;
+		default:
+			/* Not usable memory */
+			if (start > min_low_pfn && end < max_low_pfn)
+				reserve_bootmem(boot_mem_map.map[i].addr,
+						boot_mem_map.map[i].size,
+						BOOTMEM_DEFAULT);
+			continue;
+		}
+
+		/*
+		 * We are rounding up the start address of usable memory
+		 * and at the end of the usable range downwards.
+		 */
+		if (start >= max_low_pfn)
+			continue;
+		if (start < reserved_end)
+			start = reserved_end;
+		if (end > max_low_pfn)
+			end = max_low_pfn;
+
+		/*
+		 * ... finally, is the area going away?
+		 */
+		if (end <= start)
+			continue;
+		size = end - start;
+
+		/* Register lowmem ranges */
+		free_bootmem(PFN_PHYS(start), size << PAGE_SHIFT);
+		memory_present(0, start, end);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * In any case the added to the memblock memory regions
@@ -667,6 +862,7 @@ static void __init arch_mem_init(char **cmdline_p)
 	plat_swiotlb_setup();
 
 	dma_contiguous_reserve(PFN_PHYS(max_low_pfn));
+<<<<<<< HEAD
 
 	/* Reserve for hibernation. */
 	memblock_reserve(__pa_symbol(&__nosave_begin),
@@ -677,6 +873,15 @@ static void __init arch_mem_init(char **cmdline_p)
 	memblock_dump_all();
 
 	early_memtest(PFN_PHYS(ARCH_PFN_OFFSET), PFN_PHYS(max_low_pfn));
+=======
+	/* Tell bootmem about cma reserved memblock section */
+	for_each_memblock(reserved, reg)
+		if (reg->size != 0)
+			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
+
+	reserve_bootmem_region(__pa_symbol(&__nosave_begin),
+			__pa_symbol(&__nosave_end)); /* Reserve for hibernation */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __init resource_init(void)

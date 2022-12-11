@@ -205,6 +205,7 @@ void set_personality_ia32(bool);
 
 #define ELF_CORE_COPY_REGS(pr_reg, regs)			\
 do {								\
+	unsigned long base;					\
 	unsigned v;						\
 	(pr_reg)[0] = (regs)->r15;				\
 	(pr_reg)[1] = (regs)->r14;				\
@@ -227,8 +228,13 @@ do {								\
 	(pr_reg)[18] = (regs)->flags;				\
 	(pr_reg)[19] = (regs)->sp;				\
 	(pr_reg)[20] = (regs)->ss;				\
+<<<<<<< HEAD
 	(pr_reg)[21] = x86_fsbase_read_cpu();			\
 	(pr_reg)[22] = x86_gsbase_read_cpu_inactive();		\
+=======
+	rdmsrl(MSR_FS_BASE, base); (pr_reg)[21] = base;		\
+	rdmsrl(MSR_KERNEL_GS_BASE, base); (pr_reg)[22] = base;	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	asm("movl %%ds,%0" : "=r" (v)); (pr_reg)[23] = v;	\
 	asm("movl %%es,%0" : "=r" (v)); (pr_reg)[24] = v;	\
 	asm("movl %%fs,%0" : "=r" (v)); (pr_reg)[25] = v;	\
@@ -252,7 +258,11 @@ extern int force_personality32;
  * space open for things that want to use the area for 32-bit pointers.
  */
 #define ELF_ET_DYN_BASE		(mmap_is_ia32() ? 0x000400000UL : \
+<<<<<<< HEAD
 						  (DEFAULT_MAP_WINDOW / 3 * 2))
+=======
+						  (TASK_SIZE / 3 * 2))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* This yields a mask that user programs can use to figure out what
    instruction set this CPU supports.  This could be done in user space,

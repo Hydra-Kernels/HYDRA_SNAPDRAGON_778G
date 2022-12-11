@@ -3178,9 +3178,16 @@ mpt3sas_base_unmap_resources(struct MPT3SAS_ADAPTER *ioc)
 	_base_free_irq(ioc);
 	_base_disable_msix(ioc);
 
+<<<<<<< HEAD
 	kfree(ioc->replyPostRegisterIndex);
 	ioc->replyPostRegisterIndex = NULL;
 
+=======
+	if (ioc->msix96_vector) {
+		kfree(ioc->replyPostRegisterIndex);
+		ioc->replyPostRegisterIndex = NULL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ioc->chip_phys) {
 		iounmap(ioc->chip);
@@ -3354,6 +3361,17 @@ mpt3sas_base_map_resources(struct MPT3SAS_ADAPTER *ioc)
 			* 4)));
 	}
 
+	if (ioc->is_warpdrive) {
+		ioc->reply_post_host_index[0] = (resource_size_t __iomem *)
+		    &ioc->chip->ReplyPostHostIndex;
+
+		for (i = 1; i < ioc->cpu_msix_table_sz; i++)
+			ioc->reply_post_host_index[i] =
+			(resource_size_t __iomem *)
+			((u8 __iomem *)&ioc->chip->Doorbell + (0x4000 + ((i - 1)
+			* 4)));
+	}
+
 	list_for_each_entry(reply_q, &ioc->reply_queue_list, list)
 		pr_info("%s: %s enabled: IRQ %d\n",
 			reply_q->name,
@@ -3455,6 +3473,12 @@ mpt3sas_base_get_reply_virt_addr(struct MPT3SAS_ADAPTER *ioc, u32 phys_addr)
 	return ioc->reply + (phys_addr - (u32)ioc->reply_dma);
 }
 
+static inline u8
+_base_get_msix_index(struct MPT3SAS_ADAPTER *ioc)
+{
+	return ioc->cpu_msix_table[raw_smp_processor_id()];
+}
+
 /**
  * _base_get_msix_index - get the msix index
  * @ioc: per adapter object
@@ -3554,9 +3578,16 @@ mpt3sas_base_get_smid_scsiio(struct MPT3SAS_ADAPTER *ioc, u8 cb_idx,
 
 	smid = tag + 1;
 	request->cb_idx = cb_idx;
+<<<<<<< HEAD
 	request->smid = smid;
 	request->scmd = scmd;
 	INIT_LIST_HEAD(&request->chain_list);
+=======
+	smid = request->smid;
+	request->msix_io = _base_get_msix_index(ioc);
+	list_del(&request->tracker_list);
+	spin_unlock_irqrestore(&ioc->scsi_lookup_lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return smid;
 }
 
@@ -3708,6 +3739,7 @@ _base_writeq(__u64 b, volatile void __iomem *addr, spinlock_t *writeq_lock)
 }
 #endif
 
+<<<<<<< HEAD
 /**
  * _base_set_and_get_msix_index - get the msix index and assign to msix_io
  *                                variable of scsi tracker
@@ -3731,6 +3763,8 @@ _base_set_and_get_msix_index(struct MPT3SAS_ADAPTER *ioc, u16 smid)
 	return st->msix_io;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * _base_put_smid_mpi_ep_scsi_io - send SCSI_IO request to firmware
  * @ioc: per adapter object
@@ -3810,9 +3844,16 @@ _base_put_smid_fast_path(struct MPT3SAS_ADAPTER *ioc, u16 smid,
  * @ioc: per adapter object
  * @smid: system request message index
  * @msix_task: msix_task will be same as msix of IO incase of task abort else 0.
+<<<<<<< HEAD
  */
 static void
 _base_put_smid_hi_priority(struct MPT3SAS_ADAPTER *ioc, u16 smid,
+=======
+ * Return nothing.
+ */
+void
+mpt3sas_base_put_smid_hi_priority(struct MPT3SAS_ADAPTER *ioc, u16 smid,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 msix_task)
 {
 	Mpi2RequestDescriptorUnion_t descriptor;
@@ -6741,7 +6782,11 @@ _base_make_ioc_ready(struct MPT3SAS_ADAPTER *ioc, enum reset_type type)
 static int
 _base_make_ioc_operational(struct MPT3SAS_ADAPTER *ioc)
 {
+<<<<<<< HEAD
 	int r, i, index, rc;
+=======
+	int r, i, index;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long	flags;
 	u32 reply_address;
 	u16 smid;

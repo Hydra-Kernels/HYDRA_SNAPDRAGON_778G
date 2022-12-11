@@ -306,6 +306,12 @@ static int pl031_remove(struct amba_device *adev)
 	device_init_wakeup(&adev->dev, false);
 	if (adev->irq[0])
 		free_irq(adev->irq[0], ldata);
+<<<<<<< HEAD
+=======
+	rtc_device_unregister(ldata->rtc);
+	iounmap(ldata->base);
+	kfree(ldata);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	amba_release_regions(adev);
 
 	return 0;
@@ -384,17 +390,24 @@ static int pl031_probe(struct amba_device *adev, const struct amba_id *id)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	ldata->rtc->ops = ops;
 
 	ret = rtc_register_device(ldata->rtc);
 	if (ret)
 		goto out;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (adev->irq[0]) {
 		ret = request_irq(adev->irq[0], pl031_interrupt,
 				  vendor->irqflags, "rtc-pl031", ldata);
 		if (ret)
+<<<<<<< HEAD
 			goto out;
+=======
+			goto out_no_irq;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_pm_set_wake_irq(&adev->dev, adev->irq[0]);
 	}
 	return 0;

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/device.h>
+<<<<<<< HEAD
 #include <linux/cpu.h>
+=======
+#include <asm/facility.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/nospec-branch.h>
 
 static int __init nobp_setup_early(char *str)
@@ -36,12 +40,19 @@ early_param("nospec", nospec_setup_early);
 
 static int __init nospec_report(void)
 {
+<<<<<<< HEAD
 	if (test_facility(156))
 		pr_info("Spectre V2 mitigation: etokens\n");
 	if (__is_defined(CC_USING_EXPOLINE) && !nospec_disable)
 		pr_info("Spectre V2 mitigation: execute trampolines\n");
 	if (__test_facility(82, S390_lowcore.alt_stfle_fac_list))
 		pr_info("Spectre V2 mitigation: limited branch prediction\n");
+=======
+	if (IS_ENABLED(CC_USING_EXPOLINE) && !nospec_disable)
+		pr_info("Spectre V2 mitigation: execute trampolines.\n");
+	if (__test_facility(82, S390_lowcore.alt_stfle_fac_list))
+		pr_info("Spectre V2 mitigation: limited branch prediction.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 arch_initcall(nospec_report);
@@ -59,6 +70,7 @@ early_param("nospectre_v2", nospectre_v2_setup_early);
 
 void __init nospec_auto_detect(void)
 {
+<<<<<<< HEAD
 	if (test_facility(156) || cpu_mitigations_off()) {
 		/*
 		 * The machine supports etokens.
@@ -68,6 +80,9 @@ void __init nospec_auto_detect(void)
 			nospec_disable = 1;
 		__clear_facility(82, S390_lowcore.alt_stfle_fac_list);
 	} else if (__is_defined(CC_USING_EXPOLINE)) {
+=======
+	if (IS_ENABLED(CC_USING_EXPOLINE)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * The kernel has been compiled with expolines.
 		 * Keep expolines enabled and disable nobp.

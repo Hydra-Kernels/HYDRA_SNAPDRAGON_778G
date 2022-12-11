@@ -30,7 +30,11 @@ struct urb *pickup_urb_and_free_priv(struct vhci_device *vdev, __u32 seqnum)
 			/* fall through */
 		case -ECONNRESET:
 			dev_dbg(&urb->dev->dev,
+<<<<<<< HEAD
 				 "urb seq# %u was unlinked %ssynchronously\n",
+=======
+				 "urb seq# %u was unlinked %ssynchronuously\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 seqnum, status == -ENOENT ? "" : "a");
 			break;
 		case -EINPROGRESS:
@@ -68,7 +72,11 @@ static void vhci_recv_ret_submit(struct vhci_device *vdev,
 	if (!urb) {
 		pr_err("cannot find a urb of seqnum %u max seqnum %d\n",
 			pdu->base.seqnum,
+<<<<<<< HEAD
 			atomic_read(&vhci_hcd->seqnum));
+=======
+			atomic_read(&the_controller->seqnum));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		usbip_event_add(ud, VDEV_EVENT_ERROR_TCP);
 		return;
 	}
@@ -95,10 +103,18 @@ error:
 	if (usbip_dbg_flag_vhci_rx)
 		usbip_dump_urb(urb);
 
+<<<<<<< HEAD
 	if (urb->num_sgs)
 		urb->transfer_flags &= ~URB_DMA_MAP_SG;
 
 	usbip_dbg_vhci_rx("now giveback urb %u\n", pdu->base.seqnum);
+=======
+	usbip_dbg_vhci_rx("now giveback urb %u\n", pdu->base.seqnum);
+
+	spin_lock_irqsave(&the_controller->lock, flags);
+	usb_hcd_unlink_urb_from_ep(vhci_to_hcd(the_controller), urb);
+	spin_unlock_irqrestore(&the_controller->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_irqsave(&vhci->lock, flags);
 	usb_hcd_unlink_urb_from_ep(vhci_hcd_to_hcd(vhci_hcd), urb);
@@ -171,9 +187,15 @@ static void vhci_recv_ret_unlink(struct vhci_device *vdev,
 		urb->status = pdu->u.ret_unlink.status;
 		pr_info("urb->status %d\n", urb->status);
 
+<<<<<<< HEAD
 		spin_lock_irqsave(&vhci->lock, flags);
 		usb_hcd_unlink_urb_from_ep(vhci_hcd_to_hcd(vhci_hcd), urb);
 		spin_unlock_irqrestore(&vhci->lock, flags);
+=======
+		spin_lock_irqsave(&the_controller->lock, flags);
+		usb_hcd_unlink_urb_from_ep(vhci_to_hcd(the_controller), urb);
+		spin_unlock_irqrestore(&the_controller->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		usb_hcd_giveback_urb(vhci_hcd_to_hcd(vhci_hcd), urb, urb->status);
 	}

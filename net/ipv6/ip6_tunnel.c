@@ -246,7 +246,10 @@ static void ip6_dev_free(struct net_device *dev)
 {
 	struct ip6_tnl *t = netdev_priv(dev);
 
+<<<<<<< HEAD
 	gro_cells_destroy(&t->gro_cells);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dst_cache_destroy(&t->dst_cache);
 	free_percpu(dev->tstats);
 }
@@ -1083,6 +1086,7 @@ int ip6_tnl_xmit(struct sk_buff *skb, struct net_device *dev, __u8 dsfield,
 			if (addr_type == IPV6_ADDR_ANY)
 				addr6 = &ipv6_hdr(skb)->daddr;
 
+<<<<<<< HEAD
 			memcpy(&fl6->daddr, addr6, sizeof(fl6->daddr));
 			neigh_release(neigh);
 		}
@@ -1096,6 +1100,11 @@ int ip6_tnl_xmit(struct sk_buff *skb, struct net_device *dev, __u8 dsfield,
 	}
 
 	if (use_cache)
+=======
+		memcpy(&fl6->daddr, addr6, sizeof(fl6->daddr));
+		neigh_release(neigh);
+	} else if (!fl6->flowi6_mark)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dst = dst_cache_get(&t->dst_cache);
 
 	if (!ip6_tnl_xmit_ctl(t, &fl6->saddr, &fl6->daddr))
@@ -1178,6 +1187,7 @@ route_lookup:
 		skb = new_skb;
 	}
 
+<<<<<<< HEAD
 	if (t->parms.collect_md) {
 		if (t->encap.type != TUNNEL_ENCAP_NONE)
 			goto tx_err_dst_release;
@@ -1185,6 +1195,10 @@ route_lookup:
 		if (use_cache && ndst)
 			dst_cache_set_ip6(&t->dst_cache, ndst, &fl6->saddr);
 	}
+=======
+	if (!fl6->flowi6_mark && ndst)
+		dst_cache_set_ip6(&t->dst_cache, ndst, &fl6->saddr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	skb_dst_set(skb, dst);
 
 	if (hop_limit == 0) {
@@ -1245,10 +1259,16 @@ ip4ip6_tnl_xmit(struct sk_buff *skb, struct net_device *dev)
 	u8 tproto;
 	int err;
 
+<<<<<<< HEAD
 	iph = ip_hdr(skb);
 	memset(&(IPCB(skb)->opt), 0, sizeof(IPCB(skb)->opt));
 
 	tproto = READ_ONCE(t->parms.proto);
+=======
+	memset(&(IPCB(skb)->opt), 0, sizeof(IPCB(skb)->opt));
+
+	tproto = ACCESS_ONCE(t->parms.proto);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (tproto != IPPROTO_IPIP && tproto != 0)
 		return -1;
 
@@ -1503,7 +1523,10 @@ ip6_tnl_change(struct ip6_tnl *t, const struct __ip6_tnl_parm *p)
 	t->parms.flowinfo = p->flowinfo;
 	t->parms.link = p->link;
 	t->parms.proto = p->proto;
+<<<<<<< HEAD
 	t->parms.fwmark = p->fwmark;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dst_cache_reset(&t->dst_cache);
 	ip6_tnl_link_config(t);
 	return 0;
@@ -1841,8 +1864,16 @@ ip6_tnl_dev_init_gen(struct net_device *dev)
 		return -ENOMEM;
 
 	ret = dst_cache_init(&t->dst_cache, GFP_KERNEL);
+<<<<<<< HEAD
 	if (ret)
 		goto free_stats;
+=======
+	if (ret) {
+		free_percpu(dev->tstats);
+		dev->tstats = NULL;
+		return ret;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = gro_cells_init(&t->gro_cells, dev);
 	if (ret)

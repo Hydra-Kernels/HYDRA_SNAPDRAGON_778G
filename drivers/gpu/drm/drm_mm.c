@@ -559,7 +559,146 @@ int drm_mm_insert_node_in_range(struct drm_mm * const mm,
 
 	return -ENOSPC;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(drm_mm_insert_node_in_range);
+=======
+EXPORT_SYMBOL(drm_mm_reserve_node);
+
+/**
+ * drm_mm_insert_node_generic - search for space and insert @node
+ * @mm: drm_mm to allocate from
+ * @node: preallocate node to insert
+ * @size: size of the allocation
+ * @alignment: alignment of the allocation
+ * @color: opaque tag value to use for this node
+ * @sflags: flags to fine-tune the allocation search
+ * @aflags: flags to fine-tune the allocation behavior
+ *
+ * The preallocated node must be cleared to 0.
+ *
+ * Returns:
+ * 0 on success, -ENOSPC if there's no suitable hole.
+ */
+int drm_mm_insert_node_generic(struct drm_mm *mm, struct drm_mm_node *node,
+			       u64 size, unsigned alignment,
+			       unsigned long color,
+			       enum drm_mm_search_flags sflags,
+			       enum drm_mm_allocator_flags aflags)
+{
+	struct drm_mm_node *hole_node;
+
+	hole_node = drm_mm_search_free_generic(mm, size, alignment,
+					       color, sflags);
+	if (!hole_node)
+		return -ENOSPC;
+
+	drm_mm_insert_helper(hole_node, node, size, alignment, color, aflags);
+	return 0;
+}
+EXPORT_SYMBOL(drm_mm_insert_node_generic);
+
+static void drm_mm_insert_helper_range(struct drm_mm_node *hole_node,
+				       struct drm_mm_node *node,
+				       u64 size, unsigned alignment,
+				       unsigned long color,
+				       u64 start, u64 end,
+				       enum drm_mm_allocator_flags flags)
+{
+	struct drm_mm *mm = hole_node->mm;
+	u64 hole_start = drm_mm_hole_node_start(hole_node);
+	u64 hole_end = drm_mm_hole_node_end(hole_node);
+	u64 adj_start = hole_start;
+	u64 adj_end = hole_end;
+
+	BUG_ON(!hole_node->hole_follows || node->allocated);
+
+	if (mm->color_adjust)
+		mm->color_adjust(hole_node, color, &adj_start, &adj_end);
+
+	adj_start = max(adj_start, start);
+	adj_end = min(adj_end, end);
+
+	if (flags & DRM_MM_CREATE_TOP)
+		adj_start = adj_end - size;
+
+	if (alignment) {
+		u64 tmp = adj_start;
+		unsigned rem;
+
+		rem = do_div(tmp, alignment);
+		if (rem) {
+			if (flags & DRM_MM_CREATE_TOP)
+				adj_start -= rem;
+			else
+				adj_start += alignment - rem;
+		}
+	}
+
+	if (adj_start == hole_start) {
+		hole_node->hole_follows = 0;
+		list_del(&hole_node->hole_stack);
+	}
+
+	node->start = adj_start;
+	node->size = size;
+	node->mm = mm;
+	node->color = color;
+	node->allocated = 1;
+
+	INIT_LIST_HEAD(&node->hole_stack);
+	list_add(&node->node_list, &hole_node->node_list);
+
+	BUG_ON(node->start < start);
+	BUG_ON(node->start < adj_start);
+	BUG_ON(node->start + node->size > adj_end);
+	BUG_ON(node->start + node->size > end);
+
+	node->hole_follows = 0;
+	if (__drm_mm_hole_node_start(node) < hole_end) {
+		list_add(&node->hole_stack, &mm->hole_stack);
+		node->hole_follows = 1;
+	}
+}
+
+/**
+ * drm_mm_insert_node_in_range_generic - ranged search for space and insert @node
+ * @mm: drm_mm to allocate from
+ * @node: preallocate node to insert
+ * @size: size of the allocation
+ * @alignment: alignment of the allocation
+ * @color: opaque tag value to use for this node
+ * @start: start of the allowed range for this node
+ * @end: end of the allowed range for this node
+ * @sflags: flags to fine-tune the allocation search
+ * @aflags: flags to fine-tune the allocation behavior
+ *
+ * The preallocated node must be cleared to 0.
+ *
+ * Returns:
+ * 0 on success, -ENOSPC if there's no suitable hole.
+ */
+int drm_mm_insert_node_in_range_generic(struct drm_mm *mm, struct drm_mm_node *node,
+					u64 size, unsigned alignment,
+					unsigned long color,
+					u64 start, u64 end,
+					enum drm_mm_search_flags sflags,
+					enum drm_mm_allocator_flags aflags)
+{
+	struct drm_mm_node *hole_node;
+
+	hole_node = drm_mm_search_free_in_range_generic(mm,
+							size, alignment, color,
+							start, end, sflags);
+	if (!hole_node)
+		return -ENOSPC;
+
+	drm_mm_insert_helper_range(hole_node, node,
+				   size, alignment, color,
+				   start, end, aflags);
+	return 0;
+}
+EXPORT_SYMBOL(drm_mm_insert_node_in_range_generic);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * drm_mm_remove_node - Remove a memory node from the allocator.
@@ -592,6 +731,115 @@ void drm_mm_remove_node(struct drm_mm_node *node)
 }
 EXPORT_SYMBOL(drm_mm_remove_node);
 
+<<<<<<< HEAD
+=======
+static int check_free_hole(u64 start, u64 end, u64 size, unsigned alignment)
+{
+	if (end - start < size)
+		return 0;
+
+	if (alignment) {
+		u64 tmp = start;
+		unsigned rem;
+
+		rem = do_div(tmp, alignment);
+		if (rem)
+			start += alignment - rem;
+	}
+
+	return end >= start + size;
+}
+
+static struct drm_mm_node *drm_mm_search_free_generic(const struct drm_mm *mm,
+						      u64 size,
+						      unsigned alignment,
+						      unsigned long color,
+						      enum drm_mm_search_flags flags)
+{
+	struct drm_mm_node *entry;
+	struct drm_mm_node *best;
+	u64 adj_start;
+	u64 adj_end;
+	u64 best_size;
+
+	BUG_ON(mm->scanned_blocks);
+
+	best = NULL;
+	best_size = ~0UL;
+
+	__drm_mm_for_each_hole(entry, mm, adj_start, adj_end,
+			       flags & DRM_MM_SEARCH_BELOW) {
+		u64 hole_size = adj_end - adj_start;
+
+		if (mm->color_adjust) {
+			mm->color_adjust(entry, color, &adj_start, &adj_end);
+			if (adj_end <= adj_start)
+				continue;
+		}
+
+		if (!check_free_hole(adj_start, adj_end, size, alignment))
+			continue;
+
+		if (!(flags & DRM_MM_SEARCH_BEST))
+			return entry;
+
+		if (hole_size < best_size) {
+			best = entry;
+			best_size = hole_size;
+		}
+	}
+
+	return best;
+}
+
+static struct drm_mm_node *drm_mm_search_free_in_range_generic(const struct drm_mm *mm,
+							u64 size,
+							unsigned alignment,
+							unsigned long color,
+							u64 start,
+							u64 end,
+							enum drm_mm_search_flags flags)
+{
+	struct drm_mm_node *entry;
+	struct drm_mm_node *best;
+	u64 adj_start;
+	u64 adj_end;
+	u64 best_size;
+
+	BUG_ON(mm->scanned_blocks);
+
+	best = NULL;
+	best_size = ~0UL;
+
+	__drm_mm_for_each_hole(entry, mm, adj_start, adj_end,
+			       flags & DRM_MM_SEARCH_BELOW) {
+		u64 hole_size = adj_end - adj_start;
+
+		if (mm->color_adjust) {
+			mm->color_adjust(entry, color, &adj_start, &adj_end);
+			if (adj_end <= adj_start)
+				continue;
+		}
+
+		adj_start = max(adj_start, start);
+		adj_end = min(adj_end, end);
+
+		if (!check_free_hole(adj_start, adj_end, size, alignment))
+			continue;
+
+		if (!(flags & DRM_MM_SEARCH_BEST))
+			return entry;
+
+		if (hole_size < best_size) {
+			best = entry;
+			best_size = hole_size;
+		}
+	}
+
+	return best;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * drm_mm_replace_node - move an allocation from @old to @new
  * @old: drm_mm_node to remove from the allocator

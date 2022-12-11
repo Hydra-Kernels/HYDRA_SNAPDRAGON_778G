@@ -276,9 +276,33 @@ amdgpu_mn_sync_pagetables_hsa(struct hmm_mirror *mirror,
 		list_for_each_entry(bo, &node->bos, mn_list) {
 			struct kgd_mem *mem = bo->kfd_bo;
 
+<<<<<<< HEAD
 			if (amdgpu_ttm_tt_affect_userptr(bo->tbo.ttm,
 							 start, end))
 				amdgpu_amdkfd_evict_userptr(mem, amn->mm);
+=======
+			if (!amdgpu_ttm_tt_affect_userptr(bo->tbo.ttm, start,
+							  end))
+				continue;
+
+			r = amdgpu_bo_reserve(bo, true);
+			if (r) {
+				DRM_ERROR("(%ld) failed to reserve user bo\n", r);
+				continue;
+			}
+
+			r = reservation_object_wait_timeout_rcu(bo->tbo.resv,
+				true, false, MAX_SCHEDULE_TIMEOUT);
+			if (r <= 0)
+				DRM_ERROR("(%ld) failed to wait for user bo\n", r);
+
+			amdgpu_ttm_placement_from_domain(bo, AMDGPU_GEM_DOMAIN_CPU);
+			r = ttm_bo_validate(&bo->tbo, &bo->placement, false, false);
+			if (r)
+				DRM_ERROR("(%ld) failed to validate user bo\n", r);
+
+			amdgpu_bo_unreserve(bo);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 

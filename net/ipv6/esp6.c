@@ -290,9 +290,18 @@ cow:
 		goto out;
 	tail = skb_tail_pointer(trailer);
 
+<<<<<<< HEAD
 skip_cow:
 	esp_output_fill_trailer(tail, esp->tfclen, esp->plen, esp->proto);
 	pskb_put(skb, trailer, tailen);
+=======
+	sg_init_table(sg, nfrags);
+	err = skb_to_sgvec(skb, sg,
+		           (unsigned char *)esph - skb->data,
+		           assoclen + ivlen + clen + alen);
+	if (unlikely(err < 0))
+		goto error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out:
 	return nfrags;
@@ -648,6 +657,7 @@ skip_cow:
 	req = esp_tmp_req(aead, iv);
 	sg = esp_req_sg(aead, req);
 
+<<<<<<< HEAD
 	esp_input_set_header(skb, seqhi);
 
 	sg_init_table(sg, nfrags);
@@ -663,6 +673,30 @@ skip_cow:
 		aead_request_set_callback(req, 0, esp_input_done_esn, skb);
 	else
 		aead_request_set_callback(req, 0, esp_input_done, skb);
+=======
+	skb->ip_summed = CHECKSUM_NONE;
+
+	esph = (struct ip_esp_hdr *)skb->data;
+
+	aead_request_set_callback(req, 0, esp_input_done, skb);
+
+	/* For ESN we move the header forward by 4 bytes to
+	 * accomodate the high bits.  We will move it back after
+	 * decryption.
+	 */
+	if ((x->props.flags & XFRM_STATE_ESN)) {
+		esph = (void *)skb_push(skb, 4);
+		*seqhi = esph->spi;
+		esph->spi = esph->seq_no;
+		esph->seq_no = XFRM_SKB_CB(skb)->seq.input.hi;
+		aead_request_set_callback(req, 0, esp_input_done_esn, skb);
+	}
+
+	sg_init_table(sg, nfrags);
+	ret = skb_to_sgvec(skb, sg, 0, skb->len);
+	if (unlikely(ret < 0))
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	aead_request_set_crypt(req, sg, sg, elen + ivlen, iv);
 	aead_request_set_ad(req, assoclen);

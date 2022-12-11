@@ -1297,7 +1297,11 @@ static inline int nla_put_u64_64bit(struct sk_buff *skb, int attrtype,
 {
 	u64 tmp = value;
 
+<<<<<<< HEAD
 	return nla_put_64bit(skb, attrtype, sizeof(u64), &tmp, padattr);
+=======
+	return nla_put(skb, attrtype, sizeof(u64), &tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1312,7 +1316,11 @@ static inline int nla_put_be64(struct sk_buff *skb, int attrtype, __be64 value,
 {
 	__be64 tmp = value;
 
+<<<<<<< HEAD
 	return nla_put_64bit(skb, attrtype, sizeof(__be64), &tmp, padattr);
+=======
+	return nla_put(skb, attrtype, sizeof(__be64), &tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1327,8 +1335,12 @@ static inline int nla_put_net64(struct sk_buff *skb, int attrtype, __be64 value,
 {
 	__be64 tmp = value;
 
+<<<<<<< HEAD
 	return nla_put_be64(skb, attrtype | NLA_F_NET_BYTEORDER, tmp,
 			    padattr);
+=======
+	return nla_put_be64(skb, attrtype | NLA_F_NET_BYTEORDER, tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1343,7 +1355,11 @@ static inline int nla_put_le64(struct sk_buff *skb, int attrtype, __le64 value,
 {
 	__le64 tmp = value;
 
+<<<<<<< HEAD
 	return nla_put_64bit(skb, attrtype, sizeof(__le64), &tmp, padattr);
+=======
+	return nla_put(skb, attrtype, sizeof(__le64), &tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1397,7 +1413,11 @@ static inline int nla_put_s64(struct sk_buff *skb, int attrtype, s64 value,
 {
 	s64 tmp = value;
 
+<<<<<<< HEAD
 	return nla_put_64bit(skb, attrtype, sizeof(s64), &tmp, padattr);
+=======
+	return nla_put(skb, attrtype, sizeof(s64), &tmp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

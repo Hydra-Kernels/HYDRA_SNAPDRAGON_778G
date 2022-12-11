@@ -1136,14 +1136,22 @@ int vmw_kms_sou_do_surface_dirty(struct vmw_private *dev_priv,
 	struct vmw_framebuffer_surface *vfbs =
 		container_of(framebuffer, typeof(*vfbs), base);
 	struct vmw_kms_sou_surface_dirty sdirty;
+<<<<<<< HEAD
 	DECLARE_VAL_CONTEXT(val_ctx, NULL, 0);
+=======
+	struct vmw_validation_ctx ctx;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret;
 
 	if (!srf)
 		srf = &vfbs->surface->res;
 
+<<<<<<< HEAD
 	ret = vmw_validation_add_resource(&val_ctx, srf, 0, VMW_RES_DIRTY_NONE,
 					  NULL, NULL);
+=======
+	ret = vmw_kms_helper_resource_prepare(srf, true, &ctx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		return ret;
 
@@ -1167,8 +1175,12 @@ int vmw_kms_sou_do_surface_dirty(struct vmw_private *dev_priv,
 	ret = vmw_kms_helper_dirty(dev_priv, framebuffer, clips, vclips,
 				   dest_x, dest_y, num_clips, inc,
 				   &sdirty.base);
+<<<<<<< HEAD
 	vmw_kms_helper_validation_finish(dev_priv, NULL, &val_ctx, out_fence,
 					 NULL);
+=======
+	vmw_kms_helper_resource_finish(&ctx, out_fence);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 

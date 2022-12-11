@@ -1796,10 +1796,194 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper *fb_helper)
 	}
 }
 
+<<<<<<< HEAD
 /* Note: Drops fb_helper->lock before returning. */
 static int
 __drm_fb_helper_initial_config_and_unlock(struct drm_fb_helper *fb_helper,
 					  int bpp_sel)
+=======
+static int drm_get_tile_offsets(struct drm_fb_helper *fb_helper,
+				struct drm_display_mode **modes,
+				struct drm_fb_offset *offsets,
+				int idx,
+				int h_idx, int v_idx)
+{
+	struct drm_fb_helper_connector *fb_helper_conn;
+	int i;
+	int hoffset = 0, voffset = 0;
+
+	for (i = 0; i < fb_helper->connector_count; i++) {
+		fb_helper_conn = fb_helper->connector_info[i];
+		if (!fb_helper_conn->connector->has_tile)
+			continue;
+
+		if (!modes[i] && (h_idx || v_idx)) {
+			DRM_DEBUG_KMS("no modes for connector tiled %d %d\n", i,
+				      fb_helper_conn->connector->base.id);
+			continue;
+		}
+		if (fb_helper_conn->connector->tile_h_loc < h_idx)
+			hoffset += modes[i]->hdisplay;
+
+		if (fb_helper_conn->connector->tile_v_loc < v_idx)
+			voffset += modes[i]->vdisplay;
+	}
+	offsets[idx].x = hoffset;
+	offsets[idx].y = voffset;
+	DRM_DEBUG_KMS("returned %d %d for %d %d\n", hoffset, voffset, h_idx, v_idx);
+	return 0;
+}
+
+static bool drm_target_preferred(struct drm_fb_helper *fb_helper,
+				 struct drm_display_mode **modes,
+				 struct drm_fb_offset *offsets,
+				 bool *enabled, int width, int height)
+{
+	struct drm_fb_helper_connector *fb_helper_conn;
+	int i;
+	uint64_t conn_configured = 0, mask;
+	int tile_pass = 0;
+	mask = (1 << fb_helper->connector_count) - 1;
+retry:
+	for (i = 0; i < fb_helper->connector_count; i++) {
+		fb_helper_conn = fb_helper->connector_info[i];
+
+		if (conn_configured & (1 << i))
+			continue;
+
+		if (enabled[i] == false) {
+			conn_configured |= (1 << i);
+			continue;
+		}
+
+		/* first pass over all the untiled connectors */
+		if (tile_pass == 0 && fb_helper_conn->connector->has_tile)
+			continue;
+
+		if (tile_pass == 1) {
+			if (fb_helper_conn->connector->tile_h_loc != 0 ||
+			    fb_helper_conn->connector->tile_v_loc != 0)
+				continue;
+
+		} else {
+			if (fb_helper_conn->connector->tile_h_loc != tile_pass -1 &&
+			    fb_helper_conn->connector->tile_v_loc != tile_pass - 1)
+			/* if this tile_pass doesn't cover any of the tiles - keep going */
+				continue;
+
+			/* find the tile offsets for this pass - need
+			   to find all tiles left and above */
+			drm_get_tile_offsets(fb_helper, modes, offsets,
+					     i, fb_helper_conn->connector->tile_h_loc, fb_helper_conn->connector->tile_v_loc);
+		}
+		DRM_DEBUG_KMS("looking for cmdline mode on connector %d\n",
+			      fb_helper_conn->connector->base.id);
+
+		/* got for command line mode first */
+		modes[i] = drm_pick_cmdline_mode(fb_helper_conn, width, height);
+		if (!modes[i]) {
+			DRM_DEBUG_KMS("looking for preferred mode on connector %d %d\n",
+				      fb_helper_conn->connector->base.id, fb_helper_conn->connector->tile_group ? fb_helper_conn->connector->tile_group->id : 0);
+			modes[i] = drm_has_preferred_mode(fb_helper_conn, width, height);
+		}
+		/* No preferred modes, pick one off the list */
+		if (!modes[i] && !list_empty(&fb_helper_conn->connector->modes)) {
+			list_for_each_entry(modes[i], &fb_helper_conn->connector->modes, head)
+				break;
+		}
+		DRM_DEBUG_KMS("found mode %s\n", modes[i] ? modes[i]->name :
+			  "none");
+		conn_configured |= (1 << i);
+	}
+
+	if ((conn_configured & mask) != mask) {
+		tile_pass++;
+		goto retry;
+	}
+	return true;
+}
+
+static int drm_pick_crtcs(struct drm_fb_helper *fb_helper,
+			  struct drm_fb_helper_crtc **best_crtcs,
+			  struct drm_display_mode **modes,
+			  int n, int width, int height)
+{
+	int c, o;
+	struct drm_connector *connector;
+	const struct drm_connector_helper_funcs *connector_funcs;
+	struct drm_encoder *encoder;
+	int my_score, best_score, score;
+	struct drm_fb_helper_crtc **crtcs, *crtc;
+	struct drm_fb_helper_connector *fb_helper_conn;
+
+	if (n == fb_helper->connector_count)
+		return 0;
+
+	fb_helper_conn = fb_helper->connector_info[n];
+	connector = fb_helper_conn->connector;
+
+	best_crtcs[n] = NULL;
+	best_score = drm_pick_crtcs(fb_helper, best_crtcs, modes, n+1, width, height);
+	if (modes[n] == NULL)
+		return best_score;
+
+	crtcs = kzalloc(fb_helper->connector_count *
+			sizeof(struct drm_fb_helper_crtc *), GFP_KERNEL);
+	if (!crtcs)
+		return best_score;
+
+	my_score = 1;
+	if (connector->status == connector_status_connected)
+		my_score++;
+	if (drm_has_cmdline_mode(fb_helper_conn))
+		my_score++;
+	if (drm_has_preferred_mode(fb_helper_conn, width, height))
+		my_score++;
+
+	connector_funcs = connector->helper_private;
+	encoder = connector_funcs->best_encoder(connector);
+	if (!encoder)
+		goto out;
+
+	/* select a crtc for this connector and then attempt to configure
+	   remaining connectors */
+	for (c = 0; c < fb_helper->crtc_count; c++) {
+		crtc = &fb_helper->crtc_info[c];
+
+		if ((encoder->possible_crtcs & (1 << c)) == 0)
+			continue;
+
+		for (o = 0; o < n; o++)
+			if (best_crtcs[o] == crtc)
+				break;
+
+		if (o < n) {
+			/* ignore cloning unless only a single crtc */
+			if (fb_helper->crtc_count > 1)
+				continue;
+
+			if (!drm_mode_equal(modes[o], modes[n]))
+				continue;
+		}
+
+		crtcs[n] = crtc;
+		memcpy(crtcs, best_crtcs, n * sizeof(struct drm_fb_helper_crtc *));
+		score = my_score + drm_pick_crtcs(fb_helper, crtcs, modes, n + 1,
+						  width, height);
+		if (score > best_score) {
+			best_score = score;
+			memcpy(best_crtcs, crtcs,
+			       fb_helper->connector_count *
+			       sizeof(struct drm_fb_helper_crtc *));
+		}
+	}
+out:
+	kfree(crtcs);
+	return best_score;
+}
+
+static void drm_setup_crtcs(struct drm_fb_helper *fb_helper)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct drm_device *dev = fb_helper->dev;
 	struct fb_info *info;

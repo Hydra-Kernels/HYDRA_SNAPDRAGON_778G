@@ -146,13 +146,21 @@ ENDPROC(U3_retl_o2_plus_GS_plus_0x08)
 ENTRY(U3_retl_o2_and_7_plus_GS)
 	and	%o2, 7, %o2
 	retl
+<<<<<<< HEAD
 	 add	%o2, GLOBAL_SPARE, %o0
+=======
+	 add	%o2, GLOBAL_SPARE, %o2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ENDPROC(U3_retl_o2_and_7_plus_GS)
 ENTRY(U3_retl_o2_and_7_plus_GS_plus_8)
 	add	GLOBAL_SPARE, 8, GLOBAL_SPARE
 	and	%o2, 7, %o2
 	retl
+<<<<<<< HEAD
 	 add	%o2, GLOBAL_SPARE, %o0
+=======
+	 add	%o2, GLOBAL_SPARE, %o2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ENDPROC(U3_retl_o2_and_7_plus_GS_plus_8)
 #endif
 
@@ -403,7 +411,11 @@ FUNC_NAME:	/* %o0=dst, %o1=src, %o2=len */
 	be,pt		%icc, end_return
 	 nop
 	EX_LD(LOAD(ldub, %o1, %o5), U3_retl_o2)
+<<<<<<< HEAD
 	ba,pt		%xcc, end_return
+=======
+	ba,pt		%xcc, 85f
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 EX_ST(STORE(stb, %o5, %o1 + %o3), U3_retl_o2)
 
 	.align		64

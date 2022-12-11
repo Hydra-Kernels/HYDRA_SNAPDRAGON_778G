@@ -112,13 +112,13 @@ bool task_wants_autogroup(struct task_struct *p, struct task_group *tg)
 	 * If we race with autogroup_move_group() the caller can use the old
 	 * value of signal->autogroup but in this case sched_move_task() will
 	 * be called again before autogroup_kref_put().
+<<<<<<< HEAD:kernel/sched/autogroup.c
 	 *
 	 * However, there is no way sched_autogroup_exit_task() could tell us
 	 * to avoid autogroup->tg, so we abuse PF_EXITING flag for this case.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/sched/auto_group.c
 	 */
-	if (p->flags & PF_EXITING)
-		return false;
-
 	return true;
 }
 
@@ -155,9 +155,12 @@ autogroup_move_group(struct task_struct *p, struct autogroup *ag)
 	 * In the latter case for_each_thread() can not miss a migrating thread,
 	 * cpu_cgroup_attach() must not be possible after cgroup_exit() and it
 	 * can't be removed from thread list, we hold ->siglock.
+<<<<<<< HEAD:kernel/sched/autogroup.c
 	 *
 	 * If an exiting thread was already removed from thread list we rely on
 	 * sched_autogroup_exit_task().
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/sched/auto_group.c
 	 */
 	for_each_thread(p, t)
 		sched_move_task(t);

@@ -1517,6 +1517,7 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
 		break;
 	}
 
+<<<<<<< HEAD
 	rc = srpt_get_desc_tbl(recv_ioctx, send_ioctx, srp_cmd, &dir,
 			       &sg, &sg_cnt, &data_len, ch->imm_data_offset);
 	if (rc) {
@@ -1541,6 +1542,29 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
 
 busy:
 	target_send_busy(cmd);
+=======
+	if (srpt_get_desc_tbl(send_ioctx, srp_cmd, &dir, &data_len)) {
+		pr_err("0x%llx: parsing SRP descriptor table failed.\n",
+		       srp_cmd->tag);
+		ret = TCM_INVALID_CDB_FIELD;
+		goto send_sense;
+	}
+
+	unpacked_lun = srpt_unpack_lun((uint8_t *)&srp_cmd->lun,
+				       sizeof(srp_cmd->lun));
+	rc = target_submit_cmd(cmd, ch->sess, srp_cmd->cdb,
+			&send_ioctx->sense_data[0], unpacked_lun, data_len,
+			TCM_SIMPLE_TAG, dir, TARGET_SCF_ACK_KREF);
+	if (rc != 0) {
+		ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+		goto send_sense;
+	}
+	return 0;
+
+send_sense:
+	transport_send_check_condition_and_sense(cmd, ret, 0);
+	return -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int srp_tmr_to_tcm(int fn)
@@ -1579,6 +1603,10 @@ static void srpt_handle_tsk_mgmt(struct srpt_rdma_ch *ch,
 	struct srp_tsk_mgmt *srp_tsk;
 	struct se_cmd *cmd;
 	struct se_session *sess = ch->sess;
+<<<<<<< HEAD
+=======
+	uint64_t unpacked_lun;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int tcm_tmr;
 	int rc;
 
@@ -1594,10 +1622,18 @@ static void srpt_handle_tsk_mgmt(struct srpt_rdma_ch *ch,
 	srpt_set_cmd_state(send_ioctx, SRPT_STATE_MGMT);
 	send_ioctx->cmd.tag = srp_tsk->tag;
 	tcm_tmr = srp_tmr_to_tcm(srp_tsk->tsk_mgmt_func);
+<<<<<<< HEAD
 	rc = target_submit_tmr(&send_ioctx->cmd, sess, NULL,
 			       scsilun_to_int(&srp_tsk->lun), srp_tsk, tcm_tmr,
 			       GFP_KERNEL, srp_tsk->task_tag,
 			       TARGET_SCF_ACK_KREF);
+=======
+	unpacked_lun = srpt_unpack_lun((uint8_t *)&srp_tsk->lun,
+				       sizeof(srp_tsk->lun));
+	rc = target_submit_tmr(&send_ioctx->cmd, sess, NULL, unpacked_lun,
+				srp_tsk, tcm_tmr, GFP_KERNEL, srp_tsk->task_tag,
+				TARGET_SCF_ACK_KREF);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (rc != 0) {
 		send_ioctx->cmd.se_tmr_req->response = TMR_FUNCTION_REJECTED;
 		cmd->se_tfo->queue_tm_rsp(cmd);
@@ -2818,8 +2854,15 @@ static void srpt_queue_response(struct se_cmd *cmd)
 		break;
 	}
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(state == SRPT_STATE_CMD_RSP_SENT))
 		return;
+=======
+	if (unlikely(WARN_ON_ONCE(state == SRPT_STATE_CMD_RSP_SENT)))
+		return;
+
+	dir = ioctx->cmd.data_direction;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* For read commands, transfer the data to the initiator. */
 	if (ioctx->cmd.data_direction == DMA_FROM_DEVICE &&
@@ -3404,7 +3447,12 @@ static int srpt_parse_i_port_id(u8 i_port_id[16], const char *name)
 	leading_zero_bytes = 16 - count;
 	memset(i_port_id, 0, leading_zero_bytes);
 	ret = hex2bin(i_port_id + leading_zero_bytes, p, count);
+<<<<<<< HEAD
 
+=======
+	if (ret < 0)
+		pr_debug("hex2bin failed for srpt_parse_i_port_id: %d\n", ret);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	return ret;
 }

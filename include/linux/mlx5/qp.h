@@ -553,6 +553,101 @@ struct mlx5_qp_context {
 	u8			rsvd1[24];
 };
 
+<<<<<<< HEAD
+=======
+struct mlx5_create_qp_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			input_qpn;
+	u8			rsvd0[4];
+	__be32			opt_param_mask;
+	u8			rsvd1[4];
+	struct mlx5_qp_context	ctx;
+	u8			rsvd3[16];
+	__be64			pas[0];
+};
+
+struct mlx5_create_qp_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	__be32			qpn;
+	u8			rsvd0[4];
+};
+
+struct mlx5_destroy_qp_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			qpn;
+	u8			rsvd0[4];
+};
+
+struct mlx5_destroy_qp_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd0[8];
+};
+
+struct mlx5_modify_qp_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			qpn;
+	u8			rsvd0[4];
+	__be32			optparam;
+	u8			rsvd1[4];
+	struct mlx5_qp_context	ctx;
+};
+
+struct mlx5_modify_qp_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd0[8];
+};
+
+struct mlx5_query_qp_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			qpn;
+	u8			rsvd[4];
+};
+
+struct mlx5_query_qp_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd1[8];
+	__be32			optparam;
+	u8			rsvd0[4];
+	struct mlx5_qp_context	ctx;
+	u8			rsvd2[16];
+	__be64			pas[0];
+};
+
+struct mlx5_conf_sqp_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			qpn;
+	u8			rsvd[3];
+	u8			type;
+};
+
+struct mlx5_conf_sqp_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd[8];
+};
+
+struct mlx5_alloc_xrcd_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	u8			rsvd[8];
+};
+
+struct mlx5_alloc_xrcd_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	__be32			xrcdn;
+	u8			rsvd[4];
+};
+
+struct mlx5_dealloc_xrcd_mbox_in {
+	struct mlx5_inbox_hdr	hdr;
+	__be32			xrcdn;
+	u8			rsvd[4];
+};
+
+struct mlx5_dealloc_xrcd_mbox_out {
+	struct mlx5_outbox_hdr	hdr;
+	u8			rsvd[8];
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline struct mlx5_core_qp *__mlx5_qp_lookup(struct mlx5_core_dev *dev, u32 qpn)
 {
 	return radix_tree_lookup(&dev->priv.qp_table.tree, qpn);

@@ -924,6 +924,14 @@ static int bgx_xaui_check_link(struct lmac *lmac)
 		return -1;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Clear receive packet disable */
+	cfg = bgx_reg_read(bgx, lmacid, BGX_SPUX_MISC_CONTROL);
+	cfg &= ~SPU_MISC_CTL_RX_DIS;
+	bgx_reg_write(bgx, lmacid, BGX_SPUX_MISC_CONTROL, cfg);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Check for MAC RX faults */
 	cfg = bgx_reg_read(bgx, lmacid, BGX_SMUX_RX_CTL);
 	/* 0 - Link is okay, 1 - Local fault, 2 - Remote fault */
@@ -934,6 +942,7 @@ static int bgx_xaui_check_link(struct lmac *lmac)
 	/* Rx local/remote fault seen.
 	 * Do lmac reinit to see if condition recovers
 	 */
+<<<<<<< HEAD
 	bgx_lmac_xaui_init(bgx, lmac);
 
 	return -1;
@@ -992,6 +1001,11 @@ next_poll:
 	}
 
 	queue_delayed_work(lmac->check_link, &lmac->dwork, HZ * 3);
+=======
+	bgx_lmac_xaui_init(bgx, lmacid, bgx->lmac_type);
+
+	return -1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void bgx_poll_for_link(struct work_struct *work)
@@ -1155,6 +1169,33 @@ static void bgx_lmac_disable(struct bgx *bgx, u8 lmacid)
 	cfg = bgx_reg_read(bgx, lmacid, BGX_CMRX_CFG);
 	cfg &= ~CMR_PKT_RX_EN;
 	bgx_reg_write(bgx, lmacid, BGX_CMRX_CFG, cfg);
+<<<<<<< HEAD
+=======
+
+	/* Give chance for Rx/Tx FIFO to get drained */
+	bgx_poll_reg(bgx, lmacid, BGX_CMRX_RX_FIFO_LEN, (u64)0x1FFF, true);
+	bgx_poll_reg(bgx, lmacid, BGX_CMRX_TX_FIFO_LEN, (u64)0x3FFF, true);
+
+	/* Disable packet transmission */
+	cfg = bgx_reg_read(bgx, lmacid, BGX_CMRX_CFG);
+	cfg &= ~CMR_PKT_TX_EN;
+	bgx_reg_write(bgx, lmacid, BGX_CMRX_CFG, cfg);
+
+	/* Disable serdes lanes */
+        if (!lmac->is_sgmii)
+                bgx_reg_modify(bgx, lmacid,
+                               BGX_SPUX_CONTROL1, SPU_CTL_LOW_POWER);
+        else
+                bgx_reg_modify(bgx, lmacid,
+                               BGX_GMP_PCS_MRX_CTL, PCS_MRX_CTL_PWR_DN);
+
+	/* Disable LMAC */
+	cfg = bgx_reg_read(bgx, lmacid, BGX_CMRX_CFG);
+	cfg &= ~CMR_EN;
+	bgx_reg_write(bgx, lmacid, BGX_CMRX_CFG, cfg);
+
+	bgx_flush_dmac_addrs(bgx, lmacid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Give chance for Rx/Tx FIFO to get drained */
 	bgx_poll_reg(bgx, lmacid, BGX_CMRX_RX_FIFO_LEN, (u64)0x1FFF, true);

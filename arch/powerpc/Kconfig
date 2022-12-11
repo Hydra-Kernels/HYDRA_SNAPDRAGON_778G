@@ -164,8 +164,25 @@ config PPC
 	select GENERIC_CPU_VULNERABILITIES	if PPC_BARRIER_NOSPEC
 	select GENERIC_IRQ_SHOW
 	select GENERIC_IRQ_SHOW_LEVEL
+<<<<<<< HEAD
 	select GENERIC_PCI_IOMAP		if PCI
 	select GENERIC_SMP_IDLE_THREAD
+=======
+	select IRQ_FORCED_THREADING
+	select HAVE_RCU_TABLE_FREE if SMP
+	select HAVE_SYSCALL_TRACEPOINTS
+	select HAVE_BPF_JIT if CPU_BIG_ENDIAN
+	select HAVE_ARCH_JUMP_LABEL
+	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+	select ARCH_HAS_GCOV_PROFILE_ALL
+	select GENERIC_SMP_IDLE_THREAD
+	select GENERIC_CMOS_UPDATE
+	select GENERIC_TIME_VSYSCALL_OLD
+	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+	select GENERIC_CLOCKEVENTS
+	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select GENERIC_STRNCPY_FROM_USER
 	select GENERIC_STRNLEN_USER
 	select GENERIC_TIME_VSYSCALL
@@ -1213,6 +1230,25 @@ endif
 config	ARCH_RANDOM
 	def_bool n
 
+<<<<<<< HEAD
+=======
+source "net/Kconfig"
+
+source "drivers/Kconfig"
+
+source "fs/Kconfig"
+
+source "arch/powerpc/sysdev/qe_lib/Kconfig"
+
+source "lib/Kconfig"
+
+source "arch/powerpc/Kconfig.debug"
+
+source "security/Kconfig"
+
+source "crypto/Kconfig"
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config PPC_LIB_RHEAP
 	bool
 

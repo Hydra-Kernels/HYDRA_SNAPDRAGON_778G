@@ -228,7 +228,11 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt,
 		qdisc = qdisc_create_dflt(dev_queue,
 					  get_default_qdisc_ops(dev, i),
 					  TC_H_MAKE(TC_H_MAJ(sch->handle),
+<<<<<<< HEAD
 						    TC_H_MIN(i + 1)), extack);
+=======
+						    TC_H_MIN(i + 1)));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!qdisc)
 			return -ENOMEM;
 
@@ -269,8 +273,11 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt,
 						    &mqprio);
 		if (err)
 			return err;
+<<<<<<< HEAD
 
 		priv->hw_offload = mqprio.qopt.hw;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		netdev_set_num_tc(dev, qopt->num_tc);
 		for (i = 0; i < qopt->num_tc; i++)

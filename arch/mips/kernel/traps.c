@@ -351,7 +351,11 @@ static void __show_regs(const struct pt_regs *regs)
  */
 void show_regs(struct pt_regs *regs)
 {
+<<<<<<< HEAD
 	__show_regs(regs);
+=======
+	__show_regs((struct pt_regs *)regs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dump_stack();
 }
 
@@ -701,11 +705,23 @@ static int simulate_sync(struct pt_regs *regs, unsigned int opcode)
 asmlinkage void do_ov(struct pt_regs *regs)
 {
 	enum ctx_state prev_state;
+<<<<<<< HEAD
+=======
+	siginfo_t info = {
+		.si_signo = SIGFPE,
+		.si_code = FPE_INTOVF,
+		.si_addr = (void __user *)regs->cp0_epc,
+	};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	prev_state = exception_enter();
 	die_if_kernel("Integer overflow", regs);
 
+<<<<<<< HEAD
 	force_sig_fault(SIGFPE, FPE_INTOVF, (void __user *)regs->cp0_epc);
+=======
+	force_sig_info(SIGFPE, &info, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	exception_exit(prev_state);
 }
 
@@ -918,6 +934,10 @@ static int simulate_fp(struct pt_regs *regs, unsigned int opcode,
 void do_trap_or_bp(struct pt_regs *regs, unsigned int code, int si_code,
 	const char *str)
 {
+<<<<<<< HEAD
+=======
+	siginfo_t info = { 0 };
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	char b[40];
 
 #ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
@@ -941,9 +961,19 @@ void do_trap_or_bp(struct pt_regs *regs, unsigned int code, int si_code,
 	case BRK_DIVZERO:
 		scnprintf(b, sizeof(b), "%s instruction in kernel code", str);
 		die_if_kernel(b, regs);
+<<<<<<< HEAD
 		force_sig_fault(SIGFPE,
 				code == BRK_DIVZERO ? FPE_INTDIV : FPE_INTOVF,
 				(void __user *) regs->cp0_epc);
+=======
+		if (code == BRK_DIVZERO)
+			info.si_code = FPE_INTDIV;
+		else
+			info.si_code = FPE_INTOVF;
+		info.si_signo = SIGFPE;
+		info.si_addr = (void __user *) regs->cp0_epc;
+		force_sig_info(SIGFPE, &info, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case BRK_BUG:
 		die_if_kernel("Kernel bug detected", regs);
@@ -1240,6 +1270,7 @@ static int enable_restore_fp_context(int msa)
 		err = own_fpu_inatomic(1);
 		if (msa && !err) {
 			enable_msa();
+<<<<<<< HEAD
 			/*
 			 * with MSA enabled, userspace can see MSACSR
 			 * and MSA regs, but the values in them are from
@@ -1251,6 +1282,8 @@ static int enable_restore_fp_context(int msa)
 			 * own_fpu_inatomic(1) just restore low 64bit,
 			 * fix the high 64bit
 			 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			init_msa_upper();
 			set_thread_flag(TIF_USEDMSA);
 			set_thread_flag(TIF_MSA_CTX_LIVE);

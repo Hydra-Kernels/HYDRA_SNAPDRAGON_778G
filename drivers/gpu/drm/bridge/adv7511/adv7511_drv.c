@@ -22,6 +22,49 @@
 
 #include "adv7511.h"
 
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+=======
+struct adv7511 {
+	struct i2c_client *i2c_main;
+	struct i2c_client *i2c_edid;
+
+	struct regmap *regmap;
+	struct regmap *packet_memory_regmap;
+	enum drm_connector_status status;
+	bool powered;
+
+	unsigned int f_tmds;
+
+	unsigned int current_edid_segment;
+	uint8_t edid_buf[256];
+	bool edid_read;
+
+	wait_queue_head_t wq;
+	struct work_struct hpd_work;
+
+	struct drm_encoder *encoder;
+	struct drm_connector connector;
+
+	bool embedded_sync;
+	enum adv7511_sync_polarity vsync_polarity;
+	enum adv7511_sync_polarity hsync_polarity;
+	bool rgb;
+
+	struct edid *edid;
+
+	struct gpio_desc *gpio_pd;
+};
+
+static const int edid_i2c_addr = 0x7e;
+static const int packet_i2c_addr = 0x70;
+static const int cec_i2c_addr = 0x78;
+
+static struct adv7511 *encoder_to_adv7511(struct drm_encoder *encoder)
+{
+	return to_encoder_slave(encoder)->slave_priv;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 /* ADI recommended values for proper operation. */
 static const struct reg_sequence adv7511_fixed_registers[] = {
 	{ 0x98, 0x03 },
@@ -338,11 +381,17 @@ static void __adv7511_power_on(struct adv7511 *adv7511)
 		 * Still, let's be safe and stick to the documentation.
 		 */
 		regmap_write(adv7511->regmap, ADV7511_REG_INT_ENABLE(0),
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
 			     ADV7511_INT0_EDID_READY | ADV7511_INT0_HPD);
 		regmap_update_bits(adv7511->regmap,
 				   ADV7511_REG_INT_ENABLE(1),
 				   ADV7511_INT1_DDC_ERROR,
 				   ADV7511_INT1_DDC_ERROR);
+=======
+			     ADV7511_INT0_EDID_READY);
+		regmap_write(adv7511->regmap, ADV7511_REG_INT_ENABLE(1),
+			     ADV7511_INT1_DDC_ERROR);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 	}
 
 	/*
@@ -423,7 +472,10 @@ static void adv7511_hpd_work(struct work_struct *work)
 	enum drm_connector_status status;
 	unsigned int val;
 	int ret;
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 	ret = regmap_read(adv7511->regmap, ADV7511_REG_STATUS, &val);
 	if (ret < 0)
 		status = connector_status_disconnected;
@@ -432,6 +484,7 @@ static void adv7511_hpd_work(struct work_struct *work)
 	else
 		status = connector_status_disconnected;
 
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
 	/*
 	 * The bridge resets its registers on unplug. So when we get a plug
 	 * event and we're already supposed to be powered, cycle the bridge to
@@ -448,6 +501,10 @@ static void adv7511_hpd_work(struct work_struct *work)
 		adv7511->connector.status = status;
 		if (status == connector_status_disconnected)
 			cec_phys_addr_invalidate(adv7511->cec_adap);
+=======
+	if (adv7511->connector.status != status) {
+		adv7511->connector.status = status;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 		drm_kms_helper_hotplug_event(adv7511->connector.dev);
 	}
 }
@@ -468,7 +525,11 @@ static int adv7511_irq_process(struct adv7511 *adv7511, bool process_hpd)
 	regmap_write(adv7511->regmap, ADV7511_REG_INT(0), irq0);
 	regmap_write(adv7511->regmap, ADV7511_REG_INT(1), irq1);
 
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
 	if (process_hpd && irq0 & ADV7511_INT0_HPD && adv7511->bridge.encoder)
+=======
+	if (process_hpd && irq0 & ADV7511_INT0_HDP && adv7511->encoder)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 		schedule_work(&adv7511->hpd_work);
 
 	if (irq0 & ADV7511_INT0_EDID_READY || irq1 & ADV7511_INT1_DDC_ERROR) {
@@ -600,6 +661,7 @@ static int adv7511_get_modes(struct adv7511 *adv7511,
 
 	/* Reading the EDID only works if the device is powered */
 	if (!adv7511->powered) {
+<<<<<<< HEAD:drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
 		unsigned int edid_i2c_addr =
 					(adv7511->i2c_edid->addr << 1);
 
@@ -608,6 +670,20 @@ static int adv7511_get_modes(struct adv7511 *adv7511,
 		/* Reset the EDID_I2C_ADDR register as it might be cleared */
 		regmap_write(adv7511->regmap, ADV7511_REG_EDID_I2C_ADDR,
 			     edid_i2c_addr);
+=======
+		regmap_update_bits(adv7511->regmap, ADV7511_REG_POWER,
+				   ADV7511_POWER_POWER_DOWN, 0);
+		if (adv7511->i2c_main->irq) {
+			regmap_write(adv7511->regmap, ADV7511_REG_INT_ENABLE(0),
+				     ADV7511_INT0_EDID_READY);
+			regmap_write(adv7511->regmap, ADV7511_REG_INT_ENABLE(1),
+				     ADV7511_INT1_DDC_ERROR);
+		}
+		adv7511->current_edid_segment = -1;
+		/* Reset the EDID_I2C_ADDR register as it might be cleared */
+		regmap_write(adv7511->regmap, ADV7511_REG_EDID_I2C_ADDR,
+				edid_i2c_addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/gpu/drm/i2c/adv7511.c
 	}
 
 	edid = drm_do_get_edid(connector, adv7511_get_edid_block, adv7511);
@@ -1194,6 +1270,8 @@ static int adv7511_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
 
 	regmap_write(adv7511->regmap, ADV7511_REG_CEC_I2C_ADDR,
 		     adv7511->i2c_cec->addr << 1);
+
+	INIT_WORK(&adv7511->hpd_work, adv7511_hpd_work);
 
 	INIT_WORK(&adv7511->hpd_work, adv7511_hpd_work);
 

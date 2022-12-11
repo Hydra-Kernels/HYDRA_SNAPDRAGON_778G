@@ -308,6 +308,7 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long len)
 	return __copy_user(to, (__force const void *)from, len);
 }
 
+<<<<<<< HEAD
 static inline unsigned long
 raw_copy_to_user(void __user *to, const void *from, unsigned long len)
 {
@@ -315,6 +316,55 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long len)
 }
 
 extern long __clear_user(void __user *to, long len);
+=======
+#define __copy_to_user(to, from, n)					\
+({									\
+	__chk_user_ptr(to);						\
+	__copy_tofrom_user_nocheck((__force void *)(to), (from), (n));	\
+})
+#define __copy_from_user(to, from, n)					\
+({									\
+	__chk_user_ptr(from);						\
+	__copy_tofrom_user_nocheck((to), (__force void *)(from), (n));	\
+})
+
+#define __copy_to_user_inatomic __copy_to_user
+#define __copy_from_user_inatomic __copy_from_user
+
+extern inline long
+copy_to_user(void __user *to, const void *from, long n)
+{
+	if (likely(__access_ok((unsigned long)to, n, get_fs())))
+		n = __copy_tofrom_user_nocheck((__force void *)to, from, n);
+	return n;
+}
+
+extern inline long
+copy_from_user(void *to, const void __user *from, long n)
+{
+	if (likely(__access_ok((unsigned long)from, n, get_fs())))
+		n = __copy_tofrom_user_nocheck(to, (__force void *)from, n);
+	else
+		memset(to, 0, n);
+	return n;
+}
+
+extern void __do_clear_user(void);
+
+extern inline long
+__clear_user(void __user *to, long len)
+{
+	register void __user * __cl_to __asm__("$6") = to;
+	register long __cl_len __asm__("$0") = len;
+	__asm__ __volatile__(
+		__module_call(28, 2, __do_clear_user)
+		: "=r"(__cl_len), "=r"(__cl_to)
+		: __module_address(__do_clear_user)
+		  "0"(__cl_len), "1"(__cl_to)
+		: "$1", "$2", "$3", "$4", "$5", "$28", "memory");
+	return __cl_len;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 extern inline long
 clear_user(void __user *to, long len)

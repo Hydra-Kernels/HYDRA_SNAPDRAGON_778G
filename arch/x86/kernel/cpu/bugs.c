@@ -14,7 +14,10 @@
 #include <linux/module.h>
 #include <linux/nospec.h>
 #include <linux/prctl.h>
+<<<<<<< HEAD
 #include <linux/sched/smt.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <asm/spec-ctrl.h>
 #include <asm/cmdline.h>
@@ -27,6 +30,7 @@
 #include <asm/paravirt.h>
 #include <asm/alternative.h>
 #include <asm/pgtable.h>
+<<<<<<< HEAD
 #include <asm/set_memory.h>
 #include <asm/intel-family.h>
 #include <asm/e820/api.h>
@@ -47,17 +51,38 @@ static void __init srbds_select_mitigation(void);
 u64 x86_spec_ctrl_base;
 EXPORT_SYMBOL_GPL(x86_spec_ctrl_base);
 static DEFINE_MUTEX(spec_ctrl_mutex);
+=======
+#include <asm/cacheflush.h>
+#include <asm/intel-family.h>
+#include <asm/e820.h>
+
+static void __init spectre_v2_select_mitigation(void);
+static void __init ssb_select_mitigation(void);
+static void __init l1tf_select_mitigation(void);
+
+/*
+ * Our boot-time value of the SPEC_CTRL MSR. We read it once so that any
+ * writes to SPEC_CTRL contain whatever reserved bits have been set.
+ */
+u64 x86_spec_ctrl_base;
+EXPORT_SYMBOL_GPL(x86_spec_ctrl_base);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * The vendor and possibly platform specific bits which can be modified in
  * x86_spec_ctrl_base.
  */
+<<<<<<< HEAD
 static u64 __ro_after_init x86_spec_ctrl_mask = SPEC_CTRL_IBRS;
+=======
+static u64 x86_spec_ctrl_mask = SPEC_CTRL_IBRS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * AMD specific MSR info for Speculative Store Bypass control.
  * x86_amd_ls_cfg_ssbd_mask is initialized in identify_boot_cpu().
  */
+<<<<<<< HEAD
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
@@ -74,11 +99,44 @@ EXPORT_SYMBOL_GPL(mds_user_clear);
 /* Control MDS CPU buffer clear before idling (halt, mwait) */
 DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
 EXPORT_SYMBOL_GPL(mds_idle_clear);
+=======
+u64 x86_amd_ls_cfg_base;
+u64 x86_amd_ls_cfg_ssbd_mask;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 void __init check_bugs(void)
 {
 	identify_boot_cpu();
 
+	if (!IS_ENABLED(CONFIG_SMP)) {
+		pr_info("CPU: ");
+		print_cpu_info(&boot_cpu_data);
+	}
+
+	/*
+	 * Read the SPEC_CTRL MSR to account for reserved bits which may
+	 * have unknown values. AMD64_LS_CFG MSR is cached in the early AMD
+	 * init code as it is not enumerated and depends on the family.
+	 */
+	if (boot_cpu_has(X86_FEATURE_MSR_SPEC_CTRL))
+		rdmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
+
+	/* Allow STIBP in MSR_SPEC_CTRL if supported */
+	if (boot_cpu_has(X86_FEATURE_STIBP))
+		x86_spec_ctrl_mask |= SPEC_CTRL_STIBP;
+
+	/* Select the proper spectre mitigation before patching alternatives */
+	spectre_v2_select_mitigation();
+
+	/*
+	 * Select proper mitigation for any exposure to the Speculative Store
+	 * Bypass vulnerability.
+	 */
+	ssb_select_mitigation();
+
+	l1tf_select_mitigation();
+
+#ifdef CONFIG_X86_32
 	/*
 	 * identify_boot_cpu() initialized SMT support information, let the
 	 * core code know.
@@ -151,6 +209,32 @@ void __init check_bugs(void)
 #endif
 }
 
+<<<<<<< HEAD
+=======
+/* The kernel command line selection */
+enum spectre_v2_mitigation_cmd {
+	SPECTRE_V2_CMD_NONE,
+	SPECTRE_V2_CMD_AUTO,
+	SPECTRE_V2_CMD_FORCE,
+	SPECTRE_V2_CMD_RETPOLINE,
+	SPECTRE_V2_CMD_RETPOLINE_GENERIC,
+	SPECTRE_V2_CMD_RETPOLINE_AMD,
+};
+
+static const char *spectre_v2_strings[] = {
+	[SPECTRE_V2_NONE]			= "Vulnerable",
+	[SPECTRE_V2_RETPOLINE_MINIMAL]		= "Vulnerable: Minimal generic ASM retpoline",
+	[SPECTRE_V2_RETPOLINE_MINIMAL_AMD]	= "Vulnerable: Minimal AMD ASM retpoline",
+	[SPECTRE_V2_RETPOLINE_GENERIC]		= "Mitigation: Full generic retpoline",
+	[SPECTRE_V2_RETPOLINE_AMD]		= "Mitigation: Full AMD retpoline",
+};
+
+#undef pr_fmt
+#define pr_fmt(fmt)     "Spectre V2 : " fmt
+
+static enum spectre_v2_mitigation spectre_v2_enabled = SPECTRE_V2_NONE;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void
 x86_virt_spec_ctrl(u64 guest_spec_ctrl, u64 guest_virt_spec_ctrl, bool setguest)
 {
@@ -168,6 +252,7 @@ x86_virt_spec_ctrl(u64 guest_spec_ctrl, u64 guest_virt_spec_ctrl, bool setguest)
 		guestval |= guest_spec_ctrl & x86_spec_ctrl_mask;
 
 		/* SSBD controlled in MSR_SPEC_CTRL */
+<<<<<<< HEAD
 		if (static_cpu_has(X86_FEATURE_SPEC_CTRL_SSBD) ||
 		    static_cpu_has(X86_FEATURE_AMD_SSBD))
 			hostval |= ssbd_tif_to_spec_ctrl(ti->flags);
@@ -176,6 +261,11 @@ x86_virt_spec_ctrl(u64 guest_spec_ctrl, u64 guest_virt_spec_ctrl, bool setguest)
 		if (static_branch_unlikely(&switch_to_cond_stibp))
 			hostval |= stibp_tif_to_spec_ctrl(ti->flags);
 
+=======
+		if (static_cpu_has(X86_FEATURE_SPEC_CTRL_SSBD))
+			hostval |= ssbd_tif_to_spec_ctrl(ti->flags);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (hostval != guestval) {
 			msrval = setguest ? guestval : hostval;
 			wrmsrl(MSR_IA32_SPEC_CTRL, msrval);
@@ -209,7 +299,11 @@ x86_virt_spec_ctrl(u64 guest_spec_ctrl, u64 guest_virt_spec_ctrl, bool setguest)
 		tif = setguest ? ssbd_spec_ctrl_to_tif(guestval) :
 				 ssbd_spec_ctrl_to_tif(hostval);
 
+<<<<<<< HEAD
 		speculation_ctrl_update(tif);
+=======
+		speculative_store_bypass_update(tif);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 EXPORT_SYMBOL_GPL(x86_virt_spec_ctrl);
@@ -224,6 +318,7 @@ static void x86_amd_ssb_disable(void)
 		wrmsrl(MSR_AMD64_LS_CFG, msrval);
 }
 
+<<<<<<< HEAD
 #undef pr_fmt
 #define pr_fmt(fmt)	"MDS: " fmt
 
@@ -587,6 +682,9 @@ static enum spectre_v2_user_mitigation spectre_v2_user_ibpb __ro_after_init =
 	SPECTRE_V2_USER_NONE;
 
 #ifdef CONFIG_RETPOLINE
+=======
+#ifdef RETPOLINE
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static bool spectre_v2_bad_module;
 
 bool retpoline_module_ok(bool has_retpoline)
@@ -607,6 +705,26 @@ static inline const char *spectre_v2_module_string(void)
 static inline const char *spectre_v2_module_string(void) { return ""; }
 #endif
 
+<<<<<<< HEAD
+=======
+static void __init spec2_print_if_insecure(const char *reason)
+{
+	if (boot_cpu_has_bug(X86_BUG_SPECTRE_V2))
+		pr_info("%s selected on command line.\n", reason);
+}
+
+static void __init spec2_print_if_secure(const char *reason)
+{
+	if (!boot_cpu_has_bug(X86_BUG_SPECTRE_V2))
+		pr_info("%s selected on command line.\n", reason);
+}
+
+static inline bool retp_compiler(void)
+{
+	return __is_defined(RETPOLINE);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline bool match_option(const char *arg, int arglen, const char *opt)
 {
 	int len = strlen(opt);
@@ -614,6 +732,7 @@ static inline bool match_option(const char *arg, int arglen, const char *opt)
 	return len == arglen && !strncmp(arg, opt, len);
 }
 
+<<<<<<< HEAD
 /* The kernel command line selection for spectre v2 */
 enum spectre_v2_mitigation_cmd {
 	SPECTRE_V2_CMD_NONE,
@@ -790,10 +909,13 @@ static const char * const spectre_v2_strings[] = {
 	[SPECTRE_V2_IBRS_ENHANCED]		= "Mitigation: Enhanced IBRS",
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const struct {
 	const char *option;
 	enum spectre_v2_mitigation_cmd cmd;
 	bool secure;
+<<<<<<< HEAD
 } mitigation_options[] __initconst = {
 	{ "off",		SPECTRE_V2_CMD_NONE,		  false },
 	{ "on",			SPECTRE_V2_CMD_FORCE,		  true  },
@@ -833,6 +955,41 @@ static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
 	if (i >= ARRAY_SIZE(mitigation_options)) {
 		pr_err("unknown option (%s). Switching to AUTO select\n", arg);
 		return SPECTRE_V2_CMD_AUTO;
+=======
+} mitigation_options[] = {
+	{ "off",               SPECTRE_V2_CMD_NONE,              false },
+	{ "on",                SPECTRE_V2_CMD_FORCE,             true },
+	{ "retpoline",         SPECTRE_V2_CMD_RETPOLINE,         false },
+	{ "retpoline,amd",     SPECTRE_V2_CMD_RETPOLINE_AMD,     false },
+	{ "retpoline,generic", SPECTRE_V2_CMD_RETPOLINE_GENERIC, false },
+	{ "auto",              SPECTRE_V2_CMD_AUTO,              false },
+};
+
+static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
+{
+	char arg[20];
+	int ret, i;
+	enum spectre_v2_mitigation_cmd cmd = SPECTRE_V2_CMD_AUTO;
+
+	if (cmdline_find_option_bool(boot_command_line, "nospectre_v2"))
+		return SPECTRE_V2_CMD_NONE;
+	else {
+		ret = cmdline_find_option(boot_command_line, "spectre_v2", arg, sizeof(arg));
+		if (ret < 0)
+			return SPECTRE_V2_CMD_AUTO;
+
+		for (i = 0; i < ARRAY_SIZE(mitigation_options); i++) {
+			if (!match_option(arg, ret, mitigation_options[i].option))
+				continue;
+			cmd = mitigation_options[i].cmd;
+			break;
+		}
+
+		if (i >= ARRAY_SIZE(mitigation_options)) {
+			pr_err("unknown option (%s). Switching to AUTO select\n", arg);
+			return SPECTRE_V2_CMD_AUTO;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if ((cmd == SPECTRE_V2_CMD_RETPOLINE ||
@@ -844,14 +1001,25 @@ static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
 	}
 
 	if (cmd == SPECTRE_V2_CMD_RETPOLINE_AMD &&
+<<<<<<< HEAD
 	    boot_cpu_data.x86_vendor != X86_VENDOR_HYGON &&
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    boot_cpu_data.x86_vendor != X86_VENDOR_AMD) {
 		pr_err("retpoline,amd selected but CPU is not AMD. Switching to AUTO select\n");
 		return SPECTRE_V2_CMD_AUTO;
 	}
 
+<<<<<<< HEAD
 	spec_v2_print_cond(mitigation_options[i].option,
 			   mitigation_options[i].secure);
+=======
+	if (mitigation_options[i].secure)
+		spec2_print_if_secure(mitigation_options[i].option);
+	else
+		spec2_print_if_insecure(mitigation_options[i].option);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return cmd;
 }
 
@@ -874,6 +1042,7 @@ static void __init spectre_v2_select_mitigation(void)
 
 	case SPECTRE_V2_CMD_FORCE:
 	case SPECTRE_V2_CMD_AUTO:
+<<<<<<< HEAD
 		if (boot_cpu_has(X86_FEATURE_IBRS_ENHANCED)) {
 			mode = SPECTRE_V2_IBRS_ENHANCED;
 			/* Force it so VMEXIT will restore correctly */
@@ -881,6 +1050,8 @@ static void __init spectre_v2_select_mitigation(void)
 			wrmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
 			goto specv2_set_mode;
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (IS_ENABLED(CONFIG_RETPOLINE))
 			goto retpoline_auto;
 		break;
@@ -901,23 +1072,40 @@ static void __init spectre_v2_select_mitigation(void)
 	return;
 
 retpoline_auto:
+<<<<<<< HEAD
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
 	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON) {
+=======
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	retpoline_amd:
 		if (!boot_cpu_has(X86_FEATURE_LFENCE_RDTSC)) {
 			pr_err("Spectre mitigation: LFENCE not serializing, switching to generic retpoline\n");
 			goto retpoline_generic;
 		}
+<<<<<<< HEAD
 		mode = SPECTRE_V2_RETPOLINE_AMD;
+=======
+		mode = retp_compiler() ? SPECTRE_V2_RETPOLINE_AMD :
+					 SPECTRE_V2_RETPOLINE_MINIMAL_AMD;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		setup_force_cpu_cap(X86_FEATURE_RETPOLINE_AMD);
 		setup_force_cpu_cap(X86_FEATURE_RETPOLINE);
 	} else {
 	retpoline_generic:
+<<<<<<< HEAD
 		mode = SPECTRE_V2_RETPOLINE_GENERIC;
 		setup_force_cpu_cap(X86_FEATURE_RETPOLINE);
 	}
 
 specv2_set_mode:
+=======
+		mode = retp_compiler() ? SPECTRE_V2_RETPOLINE_GENERIC :
+					 SPECTRE_V2_RETPOLINE_MINIMAL;
+		setup_force_cpu_cap(X86_FEATURE_RETPOLINE);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spectre_v2_enabled = mode;
 	pr_info("%s\n", spectre_v2_strings[mode]);
 
@@ -932,6 +1120,7 @@ specv2_set_mode:
 	setup_force_cpu_cap(X86_FEATURE_RSB_CTXSW);
 	pr_info("Spectre v2 / SpectreRSB mitigation: Filling RSB on context switch\n");
 
+<<<<<<< HEAD
 	/*
 	 * Retpoline means the kernel is safe because it has no indirect
 	 * branches. Enhanced IBRS protects firmware too, so, enable restricted
@@ -1049,12 +1238,32 @@ void cpu_bugs_smt_update(void)
 	}
 
 	mutex_unlock(&spec_ctrl_mutex);
+=======
+	/* Initialize Indirect Branch Prediction Barrier if supported */
+	if (boot_cpu_has(X86_FEATURE_IBPB)) {
+		setup_force_cpu_cap(X86_FEATURE_USE_IBPB);
+		pr_info("Spectre v2 mitigation: Enabling Indirect Branch Prediction Barrier\n");
+	}
+
+	/*
+	 * Retpoline means the kernel is safe because it has no indirect
+	 * branches. But firmware isn't, so use IBRS to protect that.
+	 */
+	if (boot_cpu_has(X86_FEATURE_IBRS)) {
+		setup_force_cpu_cap(X86_FEATURE_USE_IBRS_FW);
+		pr_info("Enabling Restricted Speculation for firmware calls\n");
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #undef pr_fmt
 #define pr_fmt(fmt)	"Speculative Store Bypass: " fmt
 
+<<<<<<< HEAD
 static enum ssb_mitigation ssb_mode __ro_after_init = SPEC_STORE_BYPASS_NONE;
+=======
+static enum ssb_mitigation ssb_mode = SPEC_STORE_BYPASS_NONE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* The kernel command line selection */
 enum ssb_mitigation_cmd {
@@ -1065,7 +1274,11 @@ enum ssb_mitigation_cmd {
 	SPEC_STORE_BYPASS_CMD_SECCOMP,
 };
 
+<<<<<<< HEAD
 static const char * const ssb_strings[] = {
+=======
+static const char *ssb_strings[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	[SPEC_STORE_BYPASS_NONE]	= "Vulnerable",
 	[SPEC_STORE_BYPASS_DISABLE]	= "Mitigation: Speculative Store Bypass disabled",
 	[SPEC_STORE_BYPASS_PRCTL]	= "Mitigation: Speculative Store Bypass disabled via prctl",
@@ -1075,7 +1288,11 @@ static const char * const ssb_strings[] = {
 static const struct {
 	const char *option;
 	enum ssb_mitigation_cmd cmd;
+<<<<<<< HEAD
 } ssb_mitigation_options[]  __initconst = {
+=======
+} ssb_mitigation_options[] = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ "auto",	SPEC_STORE_BYPASS_CMD_AUTO },    /* Platform decides */
 	{ "on",		SPEC_STORE_BYPASS_CMD_ON },      /* Disable Speculative Store Bypass */
 	{ "off",	SPEC_STORE_BYPASS_CMD_NONE },    /* Don't touch Speculative Store Bypass */
@@ -1089,8 +1306,12 @@ static enum ssb_mitigation_cmd __init ssb_parse_cmdline(void)
 	char arg[20];
 	int ret, i;
 
+<<<<<<< HEAD
 	if (cmdline_find_option_bool(boot_command_line, "nospec_store_bypass_disable") ||
 	    cpu_mitigations_off()) {
+=======
+	if (cmdline_find_option_bool(boot_command_line, "nospec_store_bypass_disable")) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return SPEC_STORE_BYPASS_CMD_NONE;
 	} else {
 		ret = cmdline_find_option(boot_command_line, "spec_store_bypass_disable",
@@ -1152,6 +1373,7 @@ static enum ssb_mitigation __init __ssb_select_mitigation(void)
 	}
 
 	/*
+<<<<<<< HEAD
 	 * If SSBD is controlled by the SPEC_CTRL MSR, then set the proper
 	 * bit in the mask to allow guests to use the mitigation even in the
 	 * case where the host does not enable it.
@@ -1162,6 +1384,8 @@ static enum ssb_mitigation __init __ssb_select_mitigation(void)
 	}
 
 	/*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * We have three CPU feature flags that are in play here:
 	 *  - X86_BUG_SPEC_STORE_BYPASS - CPU is susceptible.
 	 *  - X86_FEATURE_SSBD - CPU is able to turn off speculative store bypass
@@ -1170,6 +1394,7 @@ static enum ssb_mitigation __init __ssb_select_mitigation(void)
 	if (mode == SPEC_STORE_BYPASS_DISABLE) {
 		setup_force_cpu_cap(X86_FEATURE_SPEC_STORE_BYPASS_DISABLE);
 		/*
+<<<<<<< HEAD
 		 * Intel uses the SPEC CTRL MSR Bit(2) for this, while AMD may
 		 * use a completely different MSR and bit dependent on family.
 		 */
@@ -1179,6 +1404,20 @@ static enum ssb_mitigation __init __ssb_select_mitigation(void)
 		} else {
 			x86_spec_ctrl_base |= SPEC_CTRL_SSBD;
 			wrmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
+=======
+		 * Intel uses the SPEC CTRL MSR Bit(2) for this, while AMD uses
+		 * a completely different MSR and bit dependent on family.
+		 */
+		switch (boot_cpu_data.x86_vendor) {
+		case X86_VENDOR_INTEL:
+			x86_spec_ctrl_base |= SPEC_CTRL_SSBD;
+			x86_spec_ctrl_mask |= SPEC_CTRL_SSBD;
+			wrmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
+			break;
+		case X86_VENDOR_AMD:
+			x86_amd_ssb_disable();
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -1196,6 +1435,7 @@ static void ssb_select_mitigation(void)
 #undef pr_fmt
 #define pr_fmt(fmt)     "Speculation prctl: " fmt
 
+<<<<<<< HEAD
 static void task_update_spec_tif(struct task_struct *tsk)
 {
 	/* Force the update of the real TIF bits */
@@ -1215,6 +1455,12 @@ static void task_update_spec_tif(struct task_struct *tsk)
 
 static int ssb_prctl_set(struct task_struct *task, unsigned long ctrl)
 {
+=======
+static int ssb_prctl_set(struct task_struct *task, unsigned long ctrl)
+{
+	bool update;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ssb_mode != SPEC_STORE_BYPASS_PRCTL &&
 	    ssb_mode != SPEC_STORE_BYPASS_SECCOMP)
 		return -ENXIO;
@@ -1225,6 +1471,7 @@ static int ssb_prctl_set(struct task_struct *task, unsigned long ctrl)
 		if (task_spec_ssb_force_disable(task))
 			return -EPERM;
 		task_clear_spec_ssb_disable(task);
+<<<<<<< HEAD
 		task_clear_spec_ssb_noexec(task);
 		task_update_spec_tif(task);
 		break;
@@ -1232,10 +1479,18 @@ static int ssb_prctl_set(struct task_struct *task, unsigned long ctrl)
 		task_set_spec_ssb_disable(task);
 		task_clear_spec_ssb_noexec(task);
 		task_update_spec_tif(task);
+=======
+		update = test_and_clear_tsk_thread_flag(task, TIF_SSBD);
+		break;
+	case PR_SPEC_DISABLE:
+		task_set_spec_ssb_disable(task);
+		update = !test_and_set_tsk_thread_flag(task, TIF_SSBD);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case PR_SPEC_FORCE_DISABLE:
 		task_set_spec_ssb_disable(task);
 		task_set_spec_ssb_force_disable(task);
+<<<<<<< HEAD
 		task_clear_spec_ssb_noexec(task);
 		task_update_spec_tif(task);
 		break;
@@ -1245,10 +1500,14 @@ static int ssb_prctl_set(struct task_struct *task, unsigned long ctrl)
 		task_set_spec_ssb_disable(task);
 		task_set_spec_ssb_noexec(task);
 		task_update_spec_tif(task);
+=======
+		update = !test_and_set_tsk_thread_flag(task, TIF_SSBD);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	default:
 		return -ERANGE;
 	}
+<<<<<<< HEAD
 	return 0;
 }
 
@@ -1311,6 +1570,16 @@ static int ib_prctl_set(struct task_struct *task, unsigned long ctrl)
 	default:
 		return -ERANGE;
 	}
+=======
+
+	/*
+	 * If being set on non-current task, delay setting the CPU
+	 * mitigation until it is next scheduled.
+	 */
+	if (task == current && update)
+		speculative_store_bypass_update_current();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -1320,8 +1589,11 @@ int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
 	switch (which) {
 	case PR_SPEC_STORE_BYPASS:
 		return ssb_prctl_set(task, ctrl);
+<<<<<<< HEAD
 	case PR_SPEC_INDIRECT_BRANCH:
 		return ib_prctl_set(task, ctrl);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		return -ENODEV;
 	}
@@ -1332,9 +1604,12 @@ void arch_seccomp_spec_mitigate(struct task_struct *task)
 {
 	if (ssb_mode == SPEC_STORE_BYPASS_SECCOMP)
 		ssb_prctl_set(task, PR_SPEC_FORCE_DISABLE);
+<<<<<<< HEAD
 	if (spectre_v2_user_ibpb == SPECTRE_V2_USER_SECCOMP ||
 	    spectre_v2_user_stibp == SPECTRE_V2_USER_SECCOMP)
 		ib_prctl_set(task, PR_SPEC_FORCE_DISABLE);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 
@@ -1347,8 +1622,11 @@ static int ssb_prctl_get(struct task_struct *task)
 	case SPEC_STORE_BYPASS_PRCTL:
 		if (task_spec_ssb_force_disable(task))
 			return PR_SPEC_PRCTL | PR_SPEC_FORCE_DISABLE;
+<<<<<<< HEAD
 		if (task_spec_ssb_noexec(task))
 			return PR_SPEC_PRCTL | PR_SPEC_DISABLE_NOEXEC;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (task_spec_ssb_disable(task))
 			return PR_SPEC_PRCTL | PR_SPEC_DISABLE;
 		return PR_SPEC_PRCTL | PR_SPEC_ENABLE;
@@ -1359,6 +1637,7 @@ static int ssb_prctl_get(struct task_struct *task)
 	}
 }
 
+<<<<<<< HEAD
 static int ib_prctl_get(struct task_struct *task)
 {
 	if (!boot_cpu_has_bug(X86_BUG_SPECTRE_V2))
@@ -1381,13 +1660,18 @@ static int ib_prctl_get(struct task_struct *task)
 		return PR_SPEC_NOT_AFFECTED;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
 {
 	switch (which) {
 	case PR_SPEC_STORE_BYPASS:
 		return ssb_prctl_get(task);
+<<<<<<< HEAD
 	case PR_SPEC_INDIRECT_BRANCH:
 		return ib_prctl_get(task);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		return -ENODEV;
 	}
@@ -1402,6 +1686,7 @@ void x86_spec_ctrl_setup_ap(void)
 		x86_amd_ssb_disable();
 }
 
+<<<<<<< HEAD
 bool itlb_multihit_kvm_mitigation;
 EXPORT_SYMBOL_GPL(itlb_multihit_kvm_mitigation);
 
@@ -1455,6 +1740,10 @@ static void override_cache_bits(struct cpuinfo_x86 *c)
 	}
 }
 
+=======
+#undef pr_fmt
+#define pr_fmt(fmt)	"L1TF: " fmt
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void __init l1tf_select_mitigation(void)
 {
 	u64 half_pa;
@@ -1462,6 +1751,7 @@ static void __init l1tf_select_mitigation(void)
 	if (!boot_cpu_has_bug(X86_BUG_L1TF))
 		return;
 
+<<<<<<< HEAD
 	if (cpu_mitigations_off())
 		l1tf_mitigation = L1TF_MITIGATION_OFF;
 	else if (cpu_mitigations_auto_nosmt())
@@ -1483,11 +1773,14 @@ static void __init l1tf_select_mitigation(void)
 		break;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if CONFIG_PGTABLE_LEVELS == 2
 	pr_warn("Kernel not compiled for PAE. No mitigation for L1TF\n");
 	return;
 #endif
 
+<<<<<<< HEAD
 	half_pa = (u64)l1tf_pfn_limit() << PAGE_SHIFT;
 	if (l1tf_mitigation != L1TF_MITIGATION_OFF &&
 			e820__mapped_any(half_pa, ULLONG_MAX - half_pa, E820_TYPE_RAM)) {
@@ -1496,11 +1789,22 @@ static void __init l1tf_select_mitigation(void)
 				half_pa);
 		pr_info("However, doing so will make a part of your RAM unusable.\n");
 		pr_info("Reading https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/l1tf.html might help you decide.\n");
+=======
+	/*
+	 * This is extremely unlikely to happen because almost all
+	 * systems have far more MAX_PA/2 than RAM can be fit into
+	 * DIMM slots.
+	 */
+	half_pa = (u64)l1tf_pfn_limit() << PAGE_SHIFT;
+	if (e820_any_mapped(half_pa, ULLONG_MAX - half_pa, E820_RAM)) {
+		pr_warn("System has more than MAX_PA/2 memory. L1TF mitigation not effective.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	}
 
 	setup_force_cpu_cap(X86_FEATURE_L1TF_PTEINV);
 }
+<<<<<<< HEAD
 
 static int __init l1tf_cmdline(char *str)
 {
@@ -1649,6 +1953,12 @@ static ssize_t srbds_show_state(char *buf)
 	return sprintf(buf, "%s\n", srbds_strings[srbds_mitigation]);
 }
 
+=======
+#undef pr_fmt
+
+#ifdef CONFIG_SYSFS
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr,
 			       char *buf, unsigned int bug)
 {
@@ -1657,6 +1967,7 @@ static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr
 
 	switch (bug) {
 	case X86_BUG_CPU_MELTDOWN:
+<<<<<<< HEAD
 		if (boot_cpu_has(X86_FEATURE_PTI))
 			return sprintf(buf, "Mitigation: PTI\n");
 
@@ -1674,6 +1985,20 @@ static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr
 			       boot_cpu_has(X86_FEATURE_USE_IBRS_FW) ? ", IBRS_FW" : "",
 			       stibp_state(),
 			       boot_cpu_has(X86_FEATURE_RSB_CTXSW) ? ", RSB filling" : "",
+=======
+		if (boot_cpu_has(X86_FEATURE_KAISER))
+			return sprintf(buf, "Mitigation: PTI\n");
+
+		break;
+
+	case X86_BUG_SPECTRE_V1:
+		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
+
+	case X86_BUG_SPECTRE_V2:
+		return sprintf(buf, "%s%s%s%s\n", spectre_v2_strings[spectre_v2_enabled],
+			       boot_cpu_has(X86_FEATURE_USE_IBPB) ? ", IBPB" : "",
+			       boot_cpu_has(X86_FEATURE_USE_IBRS_FW) ? ", IBRS_FW" : "",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			       spectre_v2_module_string());
 
 	case X86_BUG_SPEC_STORE_BYPASS:
@@ -1681,6 +2006,7 @@ static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr
 
 	case X86_BUG_L1TF:
 		if (boot_cpu_has(X86_FEATURE_L1TF_PTEINV))
+<<<<<<< HEAD
 			return l1tf_show_state(buf);
 		break;
 
@@ -1696,6 +2022,11 @@ static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr
 	case X86_BUG_SRBDS:
 		return srbds_show_state(buf);
 
+=======
+			return sprintf(buf, "Mitigation: Page Table Inversion\n");
+		break;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		break;
 	}
@@ -1727,6 +2058,7 @@ ssize_t cpu_show_l1tf(struct device *dev, struct device_attribute *attr, char *b
 {
 	return cpu_show_common(dev, attr, buf, X86_BUG_L1TF);
 }
+<<<<<<< HEAD
 
 ssize_t cpu_show_mds(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1747,4 +2079,6 @@ ssize_t cpu_show_srbds(struct device *dev, struct device_attribute *attr, char *
 {
 	return cpu_show_common(dev, attr, buf, X86_BUG_SRBDS);
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif

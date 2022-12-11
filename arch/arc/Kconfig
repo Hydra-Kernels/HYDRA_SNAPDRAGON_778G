@@ -377,6 +377,14 @@ config ARC_HAS_LLSC
 	default y
 	depends on !ARC_CANT_LLSC
 
+<<<<<<< HEAD
+=======
+config ARC_STAR_9000923308
+	bool "Workaround for llock/scond livelock"
+	default n
+	depends on ISA_ARCV2 && SMP && ARC_HAS_LLSC
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config ARC_HAS_SWAPE
 	bool "Insn: SWAPE (endian-swap)"
 	default y

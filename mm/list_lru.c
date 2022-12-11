@@ -133,10 +133,14 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 	if (list_empty(item)) {
 		l = list_lru_from_kmem(nlru, item, &memcg);
 		list_add_tail(item, &l->list);
+<<<<<<< HEAD
 		/* Set shrinker bit if the first element was added */
 		if (!l->nr_items++)
 			memcg_set_shrinker_bit(memcg, nid,
 					       lru_shrinker_id(lru));
+=======
+		l->nr_items++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		nlru->nr_items++;
 		spin_unlock(&nlru->lock);
 		return true;

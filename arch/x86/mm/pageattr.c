@@ -38,7 +38,11 @@ struct cpa_data {
 	pgprot_t	mask_set;
 	pgprot_t	mask_clr;
 	unsigned long	numpages;
+<<<<<<< HEAD
 	unsigned long	curpage;
+=======
+	int		flags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long	pfn;
 	unsigned int	flags;
 	unsigned int	force_split		: 1,
@@ -66,7 +70,11 @@ static DEFINE_SPINLOCK(cpa_lock);
 #define CPA_FLUSHTLB 1
 #define CPA_ARRAY 2
 #define CPA_PAGES_ARRAY 4
+<<<<<<< HEAD
 #define CPA_NO_CHECK_ALIAS 8 /* Do not search for aliases */
+=======
+#define CPA_FREE_PAGETABLES 8
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_PROC_FS
 static unsigned long direct_pages_count[PG_LEVEL_NUM];
@@ -1061,9 +1069,12 @@ static int split_large_page(struct cpa_data *cpa, pte_t *kpte,
 	return 0;
 }
 
-static bool try_to_free_pte_page(pte_t *pte)
+static bool try_to_free_pte_page(struct cpa_data *cpa, pte_t *pte)
 {
 	int i;
+
+	if (!(cpa->flags & CPA_FREE_PAGETABLES))
+		return false;
 
 	for (i = 0; i < PTRS_PER_PTE; i++)
 		if (!pte_none(pte[i]))
@@ -1073,9 +1084,12 @@ static bool try_to_free_pte_page(pte_t *pte)
 	return true;
 }
 
-static bool try_to_free_pmd_page(pmd_t *pmd)
+static bool try_to_free_pmd_page(struct cpa_data *cpa, pmd_t *pmd)
 {
 	int i;
+
+	if (!(cpa->flags & CPA_FREE_PAGETABLES))
+		return false;
 
 	for (i = 0; i < PTRS_PER_PMD; i++)
 		if (!pmd_none(pmd[i]))
@@ -1085,7 +1099,25 @@ static bool try_to_free_pmd_page(pmd_t *pmd)
 	return true;
 }
 
+<<<<<<< HEAD
 static bool unmap_pte_range(pmd_t *pmd, unsigned long start, unsigned long end)
+=======
+static bool try_to_free_pud_page(pud_t *pud)
+{
+	int i;
+
+	for (i = 0; i < PTRS_PER_PUD; i++)
+		if (!pud_none(pud[i]))
+			return false;
+
+	free_page((unsigned long)pud);
+	return true;
+}
+
+static bool unmap_pte_range(struct cpa_data *cpa, pmd_t *pmd,
+			    unsigned long start,
+			    unsigned long end)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	pte_t *pte = pte_offset_kernel(pmd, start);
 
@@ -1096,22 +1128,23 @@ static bool unmap_pte_range(pmd_t *pmd, unsigned long start, unsigned long end)
 		pte++;
 	}
 
-	if (try_to_free_pte_page((pte_t *)pmd_page_vaddr(*pmd))) {
+	if (try_to_free_pte_page(cpa, (pte_t *)pmd_page_vaddr(*pmd))) {
 		pmd_clear(pmd);
 		return true;
 	}
 	return false;
 }
 
-static void __unmap_pmd_range(pud_t *pud, pmd_t *pmd,
+static void __unmap_pmd_range(struct cpa_data *cpa, pud_t *pud, pmd_t *pmd,
 			      unsigned long start, unsigned long end)
 {
-	if (unmap_pte_range(pmd, start, end))
-		if (try_to_free_pmd_page((pmd_t *)pud_page_vaddr(*pud)))
+	if (unmap_pte_range(cpa, pmd, start, end))
+		if (try_to_free_pmd_page(cpa, (pmd_t *)pud_page_vaddr(*pud)))
 			pud_clear(pud);
 }
 
-static void unmap_pmd_range(pud_t *pud, unsigned long start, unsigned long end)
+static void unmap_pmd_range(struct cpa_data *cpa, pud_t *pud,
+			    unsigned long start, unsigned long end)
 {
 	pmd_t *pmd = pmd_offset(pud, start);
 
@@ -1122,7 +1155,7 @@ static void unmap_pmd_range(pud_t *pud, unsigned long start, unsigned long end)
 		unsigned long next_page = (start + PMD_SIZE) & PMD_MASK;
 		unsigned long pre_end = min_t(unsigned long, end, next_page);
 
-		__unmap_pmd_range(pud, pmd, start, pre_end);
+		__unmap_pmd_range(cpa, pud, pmd, start, pre_end);
 
 		start = pre_end;
 		pmd++;
@@ -1135,7 +1168,8 @@ static void unmap_pmd_range(pud_t *pud, unsigned long start, unsigned long end)
 		if (pmd_large(*pmd))
 			pmd_clear(pmd);
 		else
-			__unmap_pmd_range(pud, pmd, start, start + PMD_SIZE);
+			__unmap_pmd_range(cpa, pud, pmd,
+					  start, start + PMD_SIZE);
 
 		start += PMD_SIZE;
 		pmd++;
@@ -1145,17 +1179,23 @@ static void unmap_pmd_range(pud_t *pud, unsigned long start, unsigned long end)
 	 * 4K leftovers?
 	 */
 	if (start < end)
-		return __unmap_pmd_range(pud, pmd, start, end);
+		return __unmap_pmd_range(cpa, pud, pmd, start, end);
 
 	/*
 	 * Try again to free the PMD page if haven't succeeded above.
 	 */
 	if (!pud_none(*pud))
-		if (try_to_free_pmd_page((pmd_t *)pud_page_vaddr(*pud)))
+		if (try_to_free_pmd_page(cpa, (pmd_t *)pud_page_vaddr(*pud)))
 			pud_clear(pud);
 }
 
+<<<<<<< HEAD
 static void unmap_pud_range(p4d_t *p4d, unsigned long start, unsigned long end)
+=======
+static void __unmap_pud_range(struct cpa_data *cpa, pgd_t *pgd,
+			      unsigned long start,
+			      unsigned long end)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	pud_t *pud = pud_offset(p4d, start);
 
@@ -1166,7 +1206,7 @@ static void unmap_pud_range(p4d_t *p4d, unsigned long start, unsigned long end)
 		unsigned long next_page = (start + PUD_SIZE) & PUD_MASK;
 		unsigned long pre_end	= min_t(unsigned long, end, next_page);
 
-		unmap_pmd_range(pud, start, pre_end);
+		unmap_pmd_range(cpa, pud, start, pre_end);
 
 		start = pre_end;
 		pud++;
@@ -1180,7 +1220,7 @@ static void unmap_pud_range(p4d_t *p4d, unsigned long start, unsigned long end)
 		if (pud_large(*pud))
 			pud_clear(pud);
 		else
-			unmap_pmd_range(pud, start, start + PUD_SIZE);
+			unmap_pmd_range(cpa, pud, start, start + PUD_SIZE);
 
 		start += PUD_SIZE;
 		pud++;
@@ -1190,7 +1230,7 @@ static void unmap_pud_range(p4d_t *p4d, unsigned long start, unsigned long end)
 	 * 2M leftovers?
 	 */
 	if (start < end)
-		unmap_pmd_range(pud, start, end);
+		unmap_pmd_range(cpa, pud, start, end);
 
 	/*
 	 * No need to try to free the PUD page because we'll free it in
@@ -1198,6 +1238,37 @@ static void unmap_pud_range(p4d_t *p4d, unsigned long start, unsigned long end)
 	 */
 }
 
+<<<<<<< HEAD
+=======
+static void unmap_pud_range(pgd_t *pgd, unsigned long start, unsigned long end)
+{
+	struct cpa_data cpa = {
+		.flags = CPA_FREE_PAGETABLES,
+	};
+
+	__unmap_pud_range(&cpa, pgd, start, end);
+}
+
+void unmap_pud_range_nofree(pgd_t *pgd, unsigned long start, unsigned long end)
+{
+	struct cpa_data cpa = {
+		.flags = 0,
+	};
+
+	__unmap_pud_range(&cpa, pgd, start, end);
+}
+
+static void unmap_pgd_range(pgd_t *root, unsigned long addr, unsigned long end)
+{
+	pgd_t *pgd_entry = root + pgd_index(addr);
+
+	unmap_pud_range(pgd_entry, addr, end);
+
+	if (try_to_free_pud_page((pud_t *)pgd_page_vaddr(*pgd_entry)))
+		pgd_clear(pgd_entry);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int alloc_pte_page(pmd_t *pmd)
 {
 	pte_t *pte = (pte_t *)get_zeroed_page(GFP_KERNEL);
@@ -1360,7 +1431,11 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
 	/*
 	 * Map everything starting from the Gb boundary, possibly with 1G pages
 	 */
+<<<<<<< HEAD
 	while (boot_cpu_has(X86_FEATURE_GBPAGES) && end - start >= PUD_SIZE) {
+=======
+	while (end - start >= PUD_SIZE) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		set_pud(pud, pud_mkhuge(pfn_pud(cpa->pfn,
 				   canon_pgprot(pud_pgprot))));
 
@@ -1654,9 +1729,19 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
 		 * CPA operation. Either a large page has been
 		 * preserved or a single page update happened.
 		 */
+<<<<<<< HEAD
 		BUG_ON(cpa->numpages > rempages || !cpa->numpages);
 		rempages -= cpa->numpages;
 		cpa->curpage += cpa->numpages;
+=======
+		BUG_ON(cpa->numpages > numpages || !cpa->numpages);
+		numpages -= cpa->numpages;
+		if (cpa->flags & (CPA_PAGES_ARRAY | CPA_ARRAY))
+			cpa->curpage++;
+		else
+			*cpa->vaddr += cpa->numpages * PAGE_SIZE;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 out:

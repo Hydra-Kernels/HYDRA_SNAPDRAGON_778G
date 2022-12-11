@@ -12,7 +12,10 @@ typedef struct {
 	unsigned int flush_mm;
 	struct list_head pgtable_list;
 	struct list_head gmap_list;
+<<<<<<< HEAD
 	unsigned long gmap_asce;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long asce;
 	unsigned long asce_limit;
 	unsigned long vdso_base;

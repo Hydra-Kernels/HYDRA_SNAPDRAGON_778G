@@ -1,4 +1,16 @@
+<<<<<<< HEAD
 # SPDX-License-Identifier: GPL-2.0
+=======
+$(obj)/qat_rsapubkey-asn1.o: $(obj)/qat_rsapubkey-asn1.c \
+			     $(obj)/qat_rsapubkey-asn1.h
+$(obj)/qat_rsaprivkey-asn1.o: $(obj)/qat_rsaprivkey-asn1.c \
+			      $(obj)/qat_rsaprivkey-asn1.h
+$(obj)/qat_asym_algs.o: $(obj)/qat_rsapubkey-asn1.h $(obj)/qat_rsaprivkey-asn1.h
+
+clean-files += qat_rsapubkey-asn1.c qat_rsapubkey-asn1.h
+clean-files += qat_rsaprivkey-asn1.c qat_rsapvivkey-asn1.h
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 obj-$(CONFIG_CRYPTO_DEV_QAT) += intel_qat.o
 intel_qat-objs := adf_cfg.o \
 	adf_isr.o \

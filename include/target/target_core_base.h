@@ -145,9 +145,19 @@ enum se_cmd_flags_table {
 	SCF_COMPARE_AND_WRITE		= 0x00080000,
 	SCF_PASSTHROUGH_PROT_SG_TO_MEM_NOALLOC = 0x00200000,
 	SCF_ACK_KREF			= 0x00400000,
+<<<<<<< HEAD
 	SCF_USE_CPUID			= 0x00800000,
 	SCF_TASK_ATTR_SET		= 0x01000000,
 	SCF_TREAT_READ_AS_NORMAL	= 0x02000000,
+=======
+	SCF_TASK_ATTR_SET		= 0x01000000,
+};
+
+/* struct se_dev_entry->lun_flags and struct se_lun->lun_access */
+enum transport_lunflags_table {
+	TRANSPORT_LUNFLAGS_READ_ONLY		= 0x01,
+	TRANSPORT_LUNFLAGS_READ_WRITE		= 0x02,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*
@@ -183,12 +193,15 @@ enum tcm_sense_reason_table {
 	TCM_LOGICAL_BLOCK_APP_TAG_CHECK_FAILED	= R(0x16),
 	TCM_LOGICAL_BLOCK_REF_TAG_CHECK_FAILED	= R(0x17),
 	TCM_COPY_TARGET_DEVICE_NOT_REACHABLE	= R(0x18),
+<<<<<<< HEAD
 	TCM_TOO_MANY_TARGET_DESCS		= R(0x19),
 	TCM_UNSUPPORTED_TARGET_DESC_TYPE_CODE	= R(0x1a),
 	TCM_TOO_MANY_SEGMENT_DESCS		= R(0x1b),
 	TCM_UNSUPPORTED_SEGMENT_DESC_TYPE_CODE	= R(0x1c),
 	TCM_INSUFFICIENT_REGISTRATION_RESOURCES	= R(0x1d),
 	TCM_LUN_BUSY				= R(0x1e),
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #undef R
 };
 
@@ -306,6 +319,11 @@ struct t10_alua_tg_pt_gp {
 	struct list_head tg_pt_gp_lun_list;
 	struct se_lun *tg_pt_gp_alua_lun;
 	struct se_node_acl *tg_pt_gp_alua_nacl;
+<<<<<<< HEAD
+=======
+	struct work_struct tg_pt_gp_transition_work;
+	struct completion *tg_pt_gp_transition_complete;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct t10_vpd {
@@ -500,8 +518,17 @@ struct se_cmd {
 #define CMD_T_COMPLETE		(1 << 2)
 #define CMD_T_SENT		(1 << 4)
 #define CMD_T_STOP		(1 << 5)
+<<<<<<< HEAD
 #define CMD_T_TAS		(1 << 10)
 #define CMD_T_FABRIC_STOP	(1 << 11)
+=======
+#define CMD_T_DEV_ACTIVE	(1 << 7)
+#define CMD_T_REQUEST_STOP	(1 << 8)
+#define CMD_T_BUSY		(1 << 9)
+#define CMD_T_TAS		(1 << 10)
+#define CMD_T_FABRIC_STOP	(1 << 11)
+#define CMD_T_PRE_EXECUTE	(1 << 12)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spinlock_t		t_state_lock;
 	struct kref		cmd_kref;
 	struct completion	t_transport_stop_comp;
@@ -548,6 +575,10 @@ struct se_node_acl {
 	char			initiatorname[TRANSPORT_IQN_LEN];
 	/* Used to signal demo mode created ACL, disabled by default */
 	bool			dynamic_node_acl;
+<<<<<<< HEAD
+=======
+	bool			acl_stop:1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool			dynamic_stop;
 	u32			queue_depth;
 	u32			acl_index;
@@ -714,8 +745,15 @@ struct scsi_port_stats {
 
 struct se_lun {
 	u64			unpacked_lun;
+<<<<<<< HEAD
 	bool			lun_shutdown;
 	bool			lun_access_ro;
+=======
+#define SE_LUN_LINK_MAGIC			0xffff7771
+	u32			lun_link_magic;
+	u32			lun_access;
+	bool			lun_shutdown;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32			lun_index;
 
 	/* RELATIVE TARGET PORT IDENTIFER */
@@ -741,6 +779,10 @@ struct se_lun {
 	struct scsi_port_stats	lun_stats;
 	struct config_group	lun_group;
 	struct se_port_stat_grps port_stat_grps;
+<<<<<<< HEAD
+=======
+	struct completion	lun_ref_comp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct completion	lun_shutdown_comp;
 	struct percpu_ref	lun_ref;
 	struct list_head	lun_dev_link;

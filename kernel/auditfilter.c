@@ -426,8 +426,15 @@ static int audit_field_valid(struct audit_entry *entry, struct audit_field *f)
 		if (f->val > AUDIT_MAX_FIELD_COMPARE)
 			return -EINVAL;
 		break;
+<<<<<<< HEAD
 	case AUDIT_SADDR_FAM:
 		if (f->val >= AF_MAX)
+=======
+	case AUDIT_EXE:
+		if (f->op != Audit_not_equal && f->op != Audit_equal)
+			return -EINVAL;
+		if (entry->rule.listnr != AUDIT_FILTER_EXIT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EINVAL;
 		break;
 	default:

@@ -45,8 +45,12 @@
 #include "dwxgmac2.h"
 #include "hwif.h"
 
+<<<<<<< HEAD
 #define	STMMAC_ALIGN(x)		ALIGN(ALIGN(x, SMP_CACHE_BYTES), 16)
 #define	TSO_MAX_BUFF_SIZE	(SZ_16K - 1)
+=======
+#define	STMMAC_ALIGN(x)		__ALIGN_KERNEL(x, SMP_CACHE_BYTES)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Module parameters */
 #define TX_TIMEO	5000
@@ -363,7 +367,19 @@ static void stmmac_eee_ctrl_timer(struct timer_list *t)
  */
 bool stmmac_eee_init(struct stmmac_priv *priv)
 {
+<<<<<<< HEAD
 	int tx_lpi_timer = priv->tx_lpi_timer;
+=======
+	char *phy_bus_name = priv->plat->phy_bus_name;
+	unsigned long flags;
+	int interface = priv->plat->interface;
+	bool ret = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	if ((interface != PHY_INTERFACE_MODE_MII) &&
+	    (interface != PHY_INTERFACE_MODE_GMII) &&
+	    !phy_interface_mode_is_rgmii(interface))
+		goto out;
 
 	/* Using PCS we cannot dial with the phy registers at this stage
 	 * so we do not support extra feature like EEE.
@@ -4764,7 +4780,14 @@ int stmmac_dvr_probe(struct device *device,
 		}
 	}
 
+<<<<<<< HEAD
 	mutex_init(&priv->lock);
+=======
+	netif_napi_add(ndev, &priv->napi, stmmac_poll, 64);
+
+	spin_lock_init(&priv->lock);
+	spin_lock_init(&priv->tx_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* If a specific clk_csr value is passed from the platform
 	 * this means that the CSR Clock Range selection cannot be
@@ -4792,6 +4815,7 @@ int stmmac_dvr_probe(struct device *device,
 		}
 	}
 
+<<<<<<< HEAD
 	ret = stmmac_phy_setup(priv);
 	if (ret) {
 		netdev_err(ndev, "failed to setup phy (%d)\n", ret);
@@ -4831,6 +4855,24 @@ error_mdio_register:
 		if (queue < priv->plat->tx_queues_to_use)
 			netif_napi_del(&ch->tx_napi);
 	}
+=======
+	ret = register_netdev(ndev);
+	if (ret) {
+		netdev_err(priv->dev, "%s: ERROR %i registering the device\n",
+			   __func__, ret);
+		goto error_netdev_register;
+	}
+
+	return ret;
+
+error_netdev_register:
+	if (priv->pcs != STMMAC_PCS_RGMII &&
+	    priv->pcs != STMMAC_PCS_TBI &&
+	    priv->pcs != STMMAC_PCS_RTBI)
+		stmmac_mdio_unregister(ndev);
+error_mdio_register:
+	netif_napi_del(&priv->napi);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 error_hw_init:
 	destroy_workqueue(priv->wq);
 

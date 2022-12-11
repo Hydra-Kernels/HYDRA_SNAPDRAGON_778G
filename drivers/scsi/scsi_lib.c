@@ -692,7 +692,111 @@ static void scsi_io_completion_action(struct scsi_cmnd *cmd, int result)
 	if (sense_valid)
 		sense_current = !scsi_sense_is_deferred(&sshdr);
 
+<<<<<<< HEAD
 	blk_stat = scsi_result_to_blk_status(cmd, result);
+=======
+	if (req->cmd_type == REQ_TYPE_BLOCK_PC) { /* SG_IO ioctl from block level */
+		if (result) {
+			if (sense_valid && req->sense) {
+				/*
+				 * SG_IO wants current and deferred errors
+				 */
+				int len = 8 + cmd->sense_buffer[7];
+
+				if (len > SCSI_SENSE_BUFFERSIZE)
+					len = SCSI_SENSE_BUFFERSIZE;
+				memcpy(req->sense, cmd->sense_buffer,  len);
+				req->sense_len = len;
+			}
+			if (!sense_deferred)
+				error = __scsi_error_from_host_byte(cmd, result);
+		}
+		/*
+		 * __scsi_error_from_host_byte may have reset the host_byte
+		 */
+		req->errors = cmd->result;
+
+		req->resid_len = scsi_get_resid(cmd);
+
+		if (scsi_bidi_cmnd(cmd)) {
+			/*
+			 * Bidi commands Must be complete as a whole,
+			 * both sides at once.
+			 */
+			req->next_rq->resid_len = scsi_in(cmd)->resid;
+			if (scsi_end_request(req, 0, blk_rq_bytes(req),
+					blk_rq_bytes(req->next_rq)))
+				BUG();
+			return;
+		}
+	} else if (blk_rq_bytes(req) == 0 && result && !sense_deferred) {
+		/*
+		 * Certain non BLOCK_PC requests are commands that don't
+		 * actually transfer anything (FLUSH), so cannot use
+		 * good_bytes != blk_rq_bytes(req) as the signal for an error.
+		 * This sets the error explicitly for the problem case.
+		 */
+		error = __scsi_error_from_host_byte(cmd, result);
+	}
+
+	/* no bidi support for !REQ_TYPE_BLOCK_PC yet */
+	BUG_ON(blk_bidi_rq(req));
+
+	/*
+	 * Next deal with any sectors which we were able to correctly
+	 * handle.
+	 */
+	SCSI_LOG_HLCOMPLETE(1, scmd_printk(KERN_INFO, cmd,
+		"%u sectors total, %d bytes done.\n",
+		blk_rq_sectors(req), good_bytes));
+
+	/*
+	 * Recovered errors need reporting, but they're always treated
+	 * as success, so fiddle the result code here.  For BLOCK_PC
+	 * we already took a copy of the original into rq->errors which
+	 * is what gets returned to the user
+	 */
+	if (sense_valid && (sshdr.sense_key == RECOVERED_ERROR)) {
+		/* if ATA PASS-THROUGH INFORMATION AVAILABLE skip
+		 * print since caller wants ATA registers. Only occurs on
+		 * SCSI ATA PASS_THROUGH commands when CK_COND=1
+		 */
+		if ((sshdr.asc == 0x0) && (sshdr.ascq == 0x1d))
+			;
+		else if (!(req->cmd_flags & REQ_QUIET))
+			scsi_print_sense(cmd);
+		result = 0;
+		/* BLOCK_PC may have set error */
+		error = 0;
+	}
+
+	/*
+	 * special case: failed zero length commands always need to
+	 * drop down into the retry code. Otherwise, if we finished
+	 * all bytes in the request we are done now.
+	 */
+	if (!(blk_rq_bytes(req) == 0 && error) &&
+	    !scsi_end_request(req, error, good_bytes, 0))
+		return;
+
+	/*
+	 * Kill remainder if no retrys.
+	 */
+	if (error && scsi_noretry_cmd(cmd)) {
+		if (scsi_end_request(req, error, blk_rq_bytes(req), 0))
+			BUG();
+		return;
+	}
+
+	/*
+	 * If there had been no error, but we have leftover bytes in the
+	 * requeues just queue the command up again.
+	 */
+	if (result == 0)
+		goto requeue;
+
+	error = __scsi_error_from_host_byte(cmd, result);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (host_byte(result) == DID_RESET) {
 		/* Third party bus reset or reset for error recovery
@@ -1028,8 +1132,13 @@ blk_status_t scsi_init_io(struct scsi_cmnd *cmd)
 	struct request *rq = cmd->request;
 	blk_status_t ret;
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(!blk_rq_nr_phys_segments(rq)))
 		return BLK_STS_IOERR;
+=======
+	if (WARN_ON_ONCE(!rq->nr_phys_segments))
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = scsi_init_sgtable(rq, &cmd->sdb);
 	if (ret)
@@ -1936,8 +2045,15 @@ struct scsi_device *scsi_device_from_queue(struct request_queue *q)
 {
 	struct scsi_device *sdev = NULL;
 
+<<<<<<< HEAD
 	if (q->mq_ops == &scsi_mq_ops_no_commit ||
 	    q->mq_ops == &scsi_mq_ops)
+=======
+	if (q->mq_ops) {
+		if (q->mq_ops == &scsi_mq_ops)
+			sdev = q->queuedata;
+	} else if (q->request_fn == scsi_request_fn)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sdev = q->queuedata;
 	if (!sdev || !get_device(&sdev->sdev_gendev))
 		sdev = NULL;

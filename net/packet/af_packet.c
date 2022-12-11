@@ -237,7 +237,42 @@ static void __fanout_link(struct sock *sk, struct packet_sock *po);
 
 static int packet_direct_xmit(struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	return dev_direct_xmit(skb, packet_pick_tx_queue(skb));
+=======
+	struct net_device *dev = skb->dev;
+	struct sk_buff *orig_skb = skb;
+	struct netdev_queue *txq;
+	int ret = NETDEV_TX_BUSY;
+
+	if (unlikely(!netif_running(dev) ||
+		     !netif_carrier_ok(dev)))
+		goto drop;
+
+	skb = validate_xmit_skb_list(skb, dev);
+	if (skb != orig_skb)
+		goto drop;
+
+	txq = skb_get_tx_queue(dev, skb);
+
+	local_bh_disable();
+
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
+	if (!netif_xmit_frozen_or_drv_stopped(txq))
+		ret = netdev_start_xmit(skb, dev, txq, false);
+	HARD_TX_UNLOCK(dev, txq);
+
+	local_bh_enable();
+
+	if (!dev_xmit_complete(ret))
+		kfree_skb(skb);
+
+	return ret;
+drop:
+	atomic_long_inc(&dev->tx_dropped);
+	kfree_skb_list(skb);
+	return NET_XMIT_DROP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct net_device *packet_cached_dev_get(struct packet_sock *po)
@@ -1672,6 +1707,7 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		atomic_long_set(&rollover->num, 0);
 		atomic_long_set(&rollover->num_huge, 0);
 		atomic_long_set(&rollover->num_failed, 0);
+<<<<<<< HEAD
 	}
 
 	if (type_flags & PACKET_FANOUT_FLAG_UNIQUEID) {
@@ -1685,6 +1721,8 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		}
 		/* ephemeral flag for the first socket in the group: drop it */
 		flags &= ~(PACKET_FANOUT_FLAG_UNIQUEID >> 8);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	match = NULL;
@@ -1731,14 +1769,22 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 			po->fanout = match;
 			po->rollover = rollover;
 			rollover = NULL;
+<<<<<<< HEAD
 			refcount_set(&match->sk_ref, refcount_read(&match->sk_ref) + 1);
+=======
+			atomic_inc(&match->sk_ref);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			__fanout_link(sk, po);
 			err = 0;
 		}
 	}
 	spin_unlock(&po->bind_lock);
 
+<<<<<<< HEAD
 	if (err && !refcount_read(&match->sk_ref)) {
+=======
+	if (err && !atomic_read(&match->sk_ref)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		list_del(&match->list);
 		kfree(match);
 	}
@@ -1764,7 +1810,11 @@ static struct packet_fanout *fanout_release(struct sock *sk)
 	if (f) {
 		po->fanout = NULL;
 
+<<<<<<< HEAD
 		if (refcount_dec_and_test(&f->sk_ref))
+=======
+		if (atomic_dec_and_test(&f->sk_ref))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			list_del(&f->list);
 		else
 			f = NULL;
@@ -2449,6 +2499,7 @@ static void tpacket_destruct_skb(struct sk_buff *skb)
 	sock_wfree(skb);
 }
 
+<<<<<<< HEAD
 static int __packet_snd_vnet_parse(struct virtio_net_hdr *vnet_hdr, size_t len)
 {
 	if ((vnet_hdr->flags & VIRTIO_NET_HDR_F_NEEDS_CSUM) &&
@@ -2467,6 +2518,10 @@ static int __packet_snd_vnet_parse(struct virtio_net_hdr *vnet_hdr, size_t len)
 
 static int packet_snd_vnet_parse(struct msghdr *msg, size_t *len,
 				 struct virtio_net_hdr *vnet_hdr)
+=======
+static void tpacket_set_protocol(const struct net_device *dev,
+				 struct sk_buff *skb)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (*len < sizeof(*vnet_hdr))
 		return -EINVAL;
@@ -2509,16 +2564,28 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
 				NULL, tp_len);
 		if (unlikely(err < 0))
 			return -EINVAL;
+<<<<<<< HEAD
 	} else if (copylen) {
 		int hdrlen = min_t(int, copylen, tp_len);
 
 		skb_push(skb, dev->hard_header_len);
 		skb_put(skb, copylen - dev->hard_header_len);
+=======
+	} else if (dev->hard_header_len) {
+		int hdrlen = min_t(int, dev->hard_header_len, tp_len);
+
+		skb_push(skb, dev->hard_header_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = skb_store_bits(skb, 0, data, hdrlen);
 		if (unlikely(err))
 			return err;
 		if (!dev_validate_header(dev, skb->data, hdrlen))
 			return -EINVAL;
+<<<<<<< HEAD
+=======
+		if (!skb->protocol)
+			tpacket_set_protocol(dev, skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		data += hdrlen;
 		to_write -= hdrlen;
@@ -2859,6 +2926,10 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 	struct virtio_net_hdr vnet_hdr = { 0 };
 	int offset = 0;
 	struct packet_sock *po = pkt_sk(sk);
+<<<<<<< HEAD
+=======
+	unsigned short gso_type = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool has_vnet_hdr = false;
 	int hlen, tlen, linear;
 	int extra_len = 0;
@@ -2907,6 +2978,51 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 		err = packet_snd_vnet_parse(msg, &len, &vnet_hdr);
 		if (err)
 			goto out_unlock;
+<<<<<<< HEAD
+=======
+
+		len -= vnet_hdr_len;
+
+		err = -EFAULT;
+		n = copy_from_iter(&vnet_hdr, vnet_hdr_len, &msg->msg_iter);
+		if (n != vnet_hdr_len)
+			goto out_unlock;
+
+		if ((vnet_hdr.flags & VIRTIO_NET_HDR_F_NEEDS_CSUM) &&
+		    (__virtio16_to_cpu(vio_le(), vnet_hdr.csum_start) +
+		     __virtio16_to_cpu(vio_le(), vnet_hdr.csum_offset) + 2 >
+		      __virtio16_to_cpu(vio_le(), vnet_hdr.hdr_len)))
+			vnet_hdr.hdr_len = __cpu_to_virtio16(vio_le(),
+				 __virtio16_to_cpu(vio_le(), vnet_hdr.csum_start) +
+				__virtio16_to_cpu(vio_le(), vnet_hdr.csum_offset) + 2);
+
+		err = -EINVAL;
+		if (__virtio16_to_cpu(vio_le(), vnet_hdr.hdr_len) > len)
+			goto out_unlock;
+
+		if (vnet_hdr.gso_type != VIRTIO_NET_HDR_GSO_NONE) {
+			switch (vnet_hdr.gso_type & ~VIRTIO_NET_HDR_GSO_ECN) {
+			case VIRTIO_NET_HDR_GSO_TCPV4:
+				gso_type = SKB_GSO_TCPV4;
+				break;
+			case VIRTIO_NET_HDR_GSO_TCPV6:
+				gso_type = SKB_GSO_TCPV6;
+				break;
+			case VIRTIO_NET_HDR_GSO_UDP:
+				gso_type = SKB_GSO_UDP;
+				break;
+			default:
+				goto out_unlock;
+			}
+
+			if (vnet_hdr.gso_type & VIRTIO_NET_HDR_GSO_ECN)
+				gso_type |= SKB_GSO_TCP_ECN;
+
+			if (vnet_hdr.gso_size == 0)
+				goto out_unlock;
+
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		has_vnet_hdr = true;
 	}
 
@@ -2942,9 +3058,12 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 			goto out_free;
 	} else if (reserve) {
 		skb_reserve(skb, -reserve);
+<<<<<<< HEAD
 		if (len < reserve + sizeof(struct ipv6hdr) &&
 		    dev->min_header_len != dev->hard_header_len)
 			skb_reset_network_header(skb);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Returns -EFAULT on error */
@@ -2957,6 +3076,11 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 		err = -EINVAL;
 		goto out_free;
 	}
+<<<<<<< HEAD
+=======
+
+	sock_tx_timestamp(sk, &skb_shinfo(skb)->tx_flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	skb_setup_tx_timestamp(skb, sockc.tsflags);
 
@@ -2972,12 +3096,36 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 	skb->mark = sockc.mark;
 	skb->tstamp = sockc.transmit_time;
 
+<<<<<<< HEAD
 	if (has_vnet_hdr) {
 		err = virtio_net_hdr_to_skb(skb, &vnet_hdr, vio_le());
 		if (err)
 			goto out_free;
 		len += sizeof(vnet_hdr);
 		virtio_net_hdr_set_proto(skb, &vnet_hdr);
+=======
+	packet_pick_tx_queue(dev, skb);
+
+	if (has_vnet_hdr) {
+		if (vnet_hdr.flags & VIRTIO_NET_HDR_F_NEEDS_CSUM) {
+			u16 s = __virtio16_to_cpu(vio_le(), vnet_hdr.csum_start);
+			u16 o = __virtio16_to_cpu(vio_le(), vnet_hdr.csum_offset);
+			if (!skb_partial_csum_set(skb, s, o)) {
+				err = -EINVAL;
+				goto out_free;
+			}
+		}
+
+		skb_shinfo(skb)->gso_size =
+			__virtio16_to_cpu(vio_le(), vnet_hdr.gso_size);
+		skb_shinfo(skb)->gso_type = gso_type;
+
+		/* Header must be checked, and gso_segs computed. */
+		skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
+		skb_shinfo(skb)->gso_segs = 0;
+
+		len += vnet_hdr_len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	packet_parse_headers(skb, sock);
@@ -3068,8 +3216,13 @@ static int packet_release(struct socket *sock)
 
 	synchronize_net();
 
+<<<<<<< HEAD
 	kfree(po->rollover);
 	if (f) {
+=======
+	if (f) {
+		kfree(po->rollover);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fanout_release_data(f);
 		kfree(f);
 	}
@@ -3141,7 +3294,11 @@ static int packet_do_bind(struct sock *sk, const char *name, int ifindex,
 			/* prevents packet_notifier() from calling
 			 * register_prot_hook()
 			 */
+<<<<<<< HEAD
 			WRITE_ONCE(po->num, 0);
+=======
+			po->num = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			__unregister_prot_hook(sk, true);
 			rcu_read_lock();
 			dev_curr = po->prot_hook.dev;
@@ -3151,7 +3308,11 @@ static int packet_do_bind(struct sock *sk, const char *name, int ifindex,
 		}
 
 		BUG_ON(po->running);
+<<<<<<< HEAD
 		WRITE_ONCE(po->num, proto);
+=======
+		po->num = proto;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		po->prot_hook.type = proto;
 
 		if (unlikely(unlisted)) {
@@ -3714,11 +3875,23 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 		if (optlen < len) {
 			ret = -EINVAL;
 		} else {
+<<<<<<< HEAD
 			if (copy_from_user(&req_u.req, optval, len))
 				ret = -EFAULT;
 			else
 				ret = packet_set_ring(sk, &req_u, 0,
 						    optname == PACKET_TX_RING);
+=======
+			if (pkt_sk(sk)->has_vnet_hdr) {
+				ret = -EINVAL;
+			} else {
+				if (copy_from_user(&req_u.req, optval, len))
+					ret = -EFAULT;
+				else
+					ret = packet_set_ring(sk, &req_u, 0,
+							      optname == PACKET_TX_RING);
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		release_sock(sk);
 		return ret;
@@ -4346,8 +4519,13 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 			goto out;
 		min_frame_size = po->tp_hdrlen + po->tp_reserve;
 		if (po->tp_version >= TPACKET_V3 &&
+<<<<<<< HEAD
 		    req->tp_block_size <
 		    BLK_PLUS_PRIV((u64)req_u->req3.tp_sizeof_priv) + min_frame_size)
+=======
+		    req->tp_block_size <=
+		    BLK_PLUS_PRIV((u64)req_u->req3.tp_sizeof_priv) + sizeof(struct tpacket3_hdr))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out;
 		if (unlikely(req->tp_frame_size < min_frame_size))
 			goto out;
@@ -4357,7 +4535,11 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 		rb->frames_per_block = req->tp_block_size / req->tp_frame_size;
 		if (unlikely(rb->frames_per_block == 0))
 			goto out;
+<<<<<<< HEAD
 		if (unlikely(rb->frames_per_block > UINT_MAX / req->tp_block_nr))
+=======
+		if (unlikely(req->tp_block_size > UINT_MAX / req->tp_block_nr))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out;
 		if (unlikely((rb->frames_per_block * req->tp_block_nr) !=
 					req->tp_frame_nr))

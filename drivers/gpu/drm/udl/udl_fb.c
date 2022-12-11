@@ -410,7 +410,11 @@ static int udlfb_create(struct drm_fb_helper *helper,
 
 	return ret;
 out_gfree:
+<<<<<<< HEAD
 	drm_gem_object_put_unlocked(&ufbdev->ufb.obj->base);
+=======
+	drm_gem_object_unreference_unlocked(&ufbdev->ufb.obj->base);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	return ret;
 }

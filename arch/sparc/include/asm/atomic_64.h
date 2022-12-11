@@ -51,6 +51,14 @@ ATOMIC_OPS(xor)
 #undef ATOMIC_OP
 
 #define atomic_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
+<<<<<<< HEAD
+=======
+
+static inline int atomic_xchg(atomic_t *v, int new)
+{
+	return xchg(&v->counter, new);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int atomic_xchg(atomic_t *v, int new)
 {

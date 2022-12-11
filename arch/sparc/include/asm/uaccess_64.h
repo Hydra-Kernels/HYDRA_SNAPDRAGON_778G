@@ -72,6 +72,26 @@ static inline int access_ok(const void __user * addr, unsigned long size)
 	return 1;
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * The exception table consists of pairs of addresses: the first is the
+ * address of an instruction that is allowed to fault, and the second is
+ * the address at which the program should continue.  No registers are
+ * modified, so it is entirely up to the continuation code to figure out
+ * what to do.
+ *
+ * All the routines below use bits of fixup code that are out of line
+ * with the main instruction path.  This means when everything is well,
+ * we don't even have to jump over them.  Further, they do not intrude
+ * on our cache or tlb entries.
+ */
+
+struct exception_table_entry {
+        unsigned int insn, fixup;
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void __retl_efault(void);
 
 /* Uh, these should become the main single-value transfer routines..
@@ -178,6 +198,7 @@ int __get_user_bad(void);
 unsigned long __must_check raw_copy_from_user(void *to,
 					     const void __user *from,
 					     unsigned long size);
+<<<<<<< HEAD
 
 unsigned long __must_check raw_copy_to_user(void __user *to,
 					   const void *from,
@@ -188,6 +209,34 @@ unsigned long __must_check raw_copy_to_user(void __user *to,
 unsigned long __must_check raw_copy_in_user(void __user *to,
 					   const void __user *from,
 					   unsigned long size);
+=======
+static inline unsigned long __must_check
+copy_from_user(void *to, const void __user *from, unsigned long size)
+{
+	return ___copy_from_user(to, from, size);
+}
+#define __copy_from_user copy_from_user
+
+unsigned long __must_check ___copy_to_user(void __user *to,
+					   const void *from,
+					   unsigned long size);
+static inline unsigned long __must_check
+copy_to_user(void __user *to, const void *from, unsigned long size)
+{
+	return ___copy_to_user(to, from, size);
+}
+#define __copy_to_user copy_to_user
+
+unsigned long __must_check ___copy_in_user(void __user *to,
+					   const void __user *from,
+					   unsigned long size);
+static inline unsigned long __must_check
+copy_in_user(void __user *to, void __user *from, unsigned long size)
+{
+	return ___copy_in_user(to, from, size);
+}
+#define __copy_in_user copy_in_user
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 unsigned long __must_check __clear_user(void __user *, unsigned long);
 

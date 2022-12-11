@@ -519,8 +519,14 @@ static int sfb_change(struct Qdisc *sch, struct nlattr *opt,
 		qdisc_hash_add(child, true);
 	sch_tree_lock(sch);
 
+<<<<<<< HEAD
 	qdisc_purge_queue(q->qdisc);
 	old = q->qdisc;
+=======
+	qdisc_tree_reduce_backlog(q->qdisc, q->qdisc->q.qlen,
+				  q->qdisc->qstats.backlog);
+	qdisc_destroy(q->qdisc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	q->qdisc = child;
 
 	q->rehash_interval = msecs_to_jiffies(ctl->rehash_interval);

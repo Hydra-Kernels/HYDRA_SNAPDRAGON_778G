@@ -5,6 +5,20 @@ include ../lib.mk
 
 .PHONY: all all_32 all_64 warn_32bit_failure clean
 
+<<<<<<< HEAD
+=======
+TARGETS_C_BOTHBITS := single_step_syscall sysret_ss_attrs ldt_gdt syscall_nt ptrace_syscall \
+			test_vsyscall
+TARGETS_C_32BIT_ONLY := entry_from_vm86 syscall_arg_fault sigreturn test_syscall_vdso unwind_vdso \
+			test_FCMOV test_FCOMI test_FISTTP
+
+TARGETS_C_32BIT_ALL := $(TARGETS_C_BOTHBITS) $(TARGETS_C_32BIT_ONLY)
+BINARIES_32 := $(TARGETS_C_32BIT_ALL:%=%_32)
+BINARIES_64 := $(TARGETS_C_BOTHBITS:%=%_64)
+
+CFLAGS := -O2 -g -std=gnu99 -pthread -Wall
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 UNAME_M := $(shell uname -m)
 CAN_BUILD_I386 := $(shell ./check_cc.sh $(CC) trivial_32bit_program.c -m32)
 CAN_BUILD_X86_64 := $(shell ./check_cc.sh $(CC) trivial_64bit_program.c)

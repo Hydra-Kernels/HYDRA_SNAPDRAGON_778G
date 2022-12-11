@@ -2201,7 +2201,11 @@ static int kvm_handle_cp_64(struct kvm_vcpu *vcpu,
 {
 	struct sys_reg_params params;
 	u32 hsr = kvm_vcpu_get_hsr(vcpu);
+<<<<<<< HEAD
 	int Rt = kvm_vcpu_sys_get_rt(vcpu);
+=======
+	int Rt = (hsr >> 5) & 0x1f;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int Rt2 = (hsr >> 10) & 0x1f;
 
 	params.is_aarch32 = true;
@@ -2258,7 +2262,11 @@ static int kvm_handle_cp_32(struct kvm_vcpu *vcpu,
 {
 	struct sys_reg_params params;
 	u32 hsr = kvm_vcpu_get_hsr(vcpu);
+<<<<<<< HEAD
 	int Rt  = kvm_vcpu_sys_get_rt(vcpu);
+=======
+	int Rt  = (hsr >> 5) & 0x1f;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	params.is_aarch32 = true;
 	params.is_32bit = true;

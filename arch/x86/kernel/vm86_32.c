@@ -199,7 +199,11 @@ static void mark_screen_rdonly(struct mm_struct *mm)
 	pte_unmap_unlock(pte, ptl);
 out:
 	up_write(&mm->mmap_sem);
+<<<<<<< HEAD
 	flush_tlb_mm_range(mm, 0xA0000, 0xA0000 + 32*PAGE_SIZE, PAGE_SHIFT, false);
+=======
+	flush_tlb_mm_range(mm, 0xA0000, 0xA0000 + 32*PAGE_SIZE, 0UL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 
@@ -369,6 +373,7 @@ static long do_sys_vm86(struct vm86plus_struct __user *user_vm86, bool plus)
 	preempt_disable();
 	tsk->thread.sp0 += 16;
 
+<<<<<<< HEAD
 	if (boot_cpu_has(X86_FEATURE_SEP)) {
 		tsk->thread.sysenter_cs = 0;
 		refresh_sysenter_cs(&tsk->thread);
@@ -376,6 +381,13 @@ static long do_sys_vm86(struct vm86plus_struct __user *user_vm86, bool plus)
 
 	update_task_stack(tsk);
 	preempt_enable();
+=======
+	if (static_cpu_has(X86_FEATURE_SEP))
+		tsk->thread.sysenter_cs = 0;
+
+	load_sp0(tss, &tsk->thread);
+	put_cpu();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (vm86->flags & VM86_SCREEN_BITMAP)
 		mark_screen_rdonly(tsk->mm);

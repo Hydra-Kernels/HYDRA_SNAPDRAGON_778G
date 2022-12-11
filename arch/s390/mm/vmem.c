@@ -402,6 +402,7 @@ void __init vmem_map_init(void)
 {
 	struct memblock_region *reg;
 
+<<<<<<< HEAD
 	for_each_memblock(memory, reg)
 		vmem_add_mem(reg->base, reg->size);
 	__set_memory((unsigned long)_stext,
@@ -421,6 +422,29 @@ void __init vmem_map_init(void)
 
 	pr_info("Write protected kernel read-only data: %luk\n",
 		(unsigned long)(__end_rodata - _stext) >> 10);
+=======
+	ro_start = PFN_ALIGN((unsigned long)&_stext);
+	ro_end = (unsigned long)&_eshared & PAGE_MASK;
+	for_each_memblock(memory, reg) {
+		start = reg->base;
+		end = reg->base + reg->size;
+		if (start >= ro_end || end <= ro_start)
+			vmem_add_mem(start, end - start, 0);
+		else if (start >= ro_start && end <= ro_end)
+			vmem_add_mem(start, end - start, 1);
+		else if (start >= ro_start) {
+			vmem_add_mem(start, ro_end - start, 1);
+			vmem_add_mem(ro_end, end - ro_end, 0);
+		} else if (end < ro_end) {
+			vmem_add_mem(start, ro_start - start, 0);
+			vmem_add_mem(ro_start, end - ro_start, 1);
+		} else {
+			vmem_add_mem(start, ro_start - start, 0);
+			vmem_add_mem(ro_start, ro_end - ro_start, 1);
+			vmem_add_mem(ro_end, end - ro_end, 0);
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

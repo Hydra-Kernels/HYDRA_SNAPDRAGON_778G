@@ -1588,7 +1588,11 @@ int debuginfo__find_probe_point(struct debuginfo *dbg, unsigned long addr,
 	int baseline = 0, lineno = 0, ret = 0;
 
 	/* We always need to relocate the address for aranges */
+<<<<<<< HEAD
 	if (debuginfo__get_text_offset(dbg, &baseaddr, false) == 0)
+=======
+	if (debuginfo__get_text_offset(dbg, &baseaddr) == 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		addr += baseaddr;
 	/* Find cu die */
 	if (!dwarf_addrdie(dbg->dbg, (Dwarf_Addr)addr, &cudie)) {

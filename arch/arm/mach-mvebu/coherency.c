@@ -174,7 +174,10 @@ static void __init armada_375_380_coherency_init(struct device_node *np)
 
 	coherency_cpu_base = of_iomap(np, 0);
 	arch_ioremap_caller = armada_wa_ioremap_caller;
+<<<<<<< HEAD
 	pci_ioremap_set_mem_type(MT_UNCACHED);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We should switch the PL310 to I/O coherency mode only if

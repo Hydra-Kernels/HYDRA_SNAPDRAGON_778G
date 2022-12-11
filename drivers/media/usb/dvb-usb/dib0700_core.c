@@ -709,7 +709,11 @@ static void dib0700_rc_urb_completion(struct urb *purb)
 {
 	struct dvb_usb_device *d = purb->context;
 	struct dib0700_rc_response *poll_reply;
+<<<<<<< HEAD
 	enum rc_proto protocol;
+=======
+	enum rc_type protocol;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32 keycode;
 	u8 toggle;
 
@@ -818,7 +822,11 @@ int dib0700_rc_setup(struct dvb_usb_device *d, struct usb_interface *intf)
 
 	/* Starting in firmware 1.20, the RC info is provided on a bulk pipe */
 
+<<<<<<< HEAD
 	if (intf->cur_altsetting->desc.bNumEndpoints < rc_ep + 1)
+=======
+	if (intf->altsetting[0].desc.bNumEndpoints < rc_ep + 1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENODEV;
 
 	purb = usb_alloc_urb(0, GFP_KERNEL);

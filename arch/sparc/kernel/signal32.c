@@ -82,13 +82,29 @@ static bool invalid_frame_pointer(void __user *fp, int fplen)
 	return false;
 }
 
+/* Checks if the fp is valid.  We always build signal frames which are
+ * 16-byte aligned, therefore we can always enforce that the restore
+ * frame has that property as well.
+ */
+static bool invalid_frame_pointer(void __user *fp, int fplen)
+{
+	if ((((unsigned long) fp) & 15) ||
+	    ((unsigned long)fp) > 0x100000000ULL - fplen)
+		return true;
+	return false;
+}
+
 void do_sigreturn32(struct pt_regs *regs)
 {
 	struct signal_frame32 __user *sf;
 	compat_uptr_t fpu_save;
 	compat_uptr_t rwin_save;
 	unsigned int psr, ufp;
+<<<<<<< HEAD
 	unsigned int pc, npc;
+=======
+	unsigned pc, npc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sigset_t set;
 	compat_sigset_t seta;
 	int err, i;
@@ -199,7 +215,11 @@ asmlinkage void do_rt_sigreturn32(struct pt_regs *regs)
 	if (ufp & 0x7)
 		goto segv;
 
+<<<<<<< HEAD
 	if (__get_user(pc, &sf->regs.pc) || 
+=======
+	if (__get_user(pc, &sf->regs.pc) ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    __get_user(npc, &sf->regs.npc))
 		goto segv;
 
@@ -256,7 +276,11 @@ asmlinkage void do_rt_sigreturn32(struct pt_regs *regs)
 	set_current_blocked(&set);
 	return;
 segv:
+<<<<<<< HEAD
 	force_sig(SIGSEGV);
+=======
+	force_sig(SIGSEGV, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __user *get_sigframe(struct ksignal *ksig, struct pt_regs *regs, unsigned long framesize)

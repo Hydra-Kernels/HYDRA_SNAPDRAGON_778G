@@ -403,6 +403,7 @@ config LWTUNNEL
 	  weight tunnel endpoint. Tunnel encapsulation parameters are stored
 	  with light weight tunnel state associated with fib routes.
 
+<<<<<<< HEAD
 config LWTUNNEL_BPF
 	bool "Execute BPF program as route nexthop action"
 	depends on LWTUNNEL && INET
@@ -411,10 +412,13 @@ config LWTUNNEL_BPF
 	  Allows to run BPF programs as a nexthop action following a route
 	  lookup for incoming and outgoing packets.
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 config DST_CACHE
 	bool
 	default n
 
+<<<<<<< HEAD
 config GRO_CELLS
 	bool
 	default n
@@ -473,6 +477,8 @@ config ENABLE_GSB
           Fulfills requirement of GSB network stack receive.
           Change is supposed to go only on targets supporting gsb.
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 endif   # if NET
 
 # Used by archs to tell that they support BPF JIT compiler plus which flavour.
@@ -484,5 +490,8 @@ config HAVE_CBPF_JIT
 	bool
 
 # Extended BPF JIT (eBPF)
+config HAVE_EBPF_JIT
+	bool
+
 config HAVE_EBPF_JIT
 	bool

@@ -175,7 +175,10 @@ static int ravb_tx_free(struct net_device *ndev, int q, bool free_txed_only)
 {
 	struct ravb_private *priv = netdev_priv(ndev);
 	struct net_device_stats *stats = &priv->stats[q];
+<<<<<<< HEAD
 	int num_tx_desc = priv->num_tx_desc;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ravb_tx_desc *desc;
 	int free_num = 0;
 	int entry;
@@ -185,7 +188,11 @@ static int ravb_tx_free(struct net_device *ndev, int q, bool free_txed_only)
 		bool txed;
 
 		entry = priv->dirty_tx[q] % (priv->num_tx_ring[q] *
+<<<<<<< HEAD
 					     num_tx_desc);
+=======
+					     NUM_TX_DESC);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		desc = &priv->tx_ring[q][entry];
 		txed = desc->die_dt == DT_FEMPTY;
 		if (free_txed_only && !txed)
@@ -194,12 +201,21 @@ static int ravb_tx_free(struct net_device *ndev, int q, bool free_txed_only)
 		dma_rmb();
 		size = le16_to_cpu(desc->ds_tagl) & TX_DS;
 		/* Free the original skb. */
+<<<<<<< HEAD
 		if (priv->tx_skb[q][entry / num_tx_desc]) {
 			dma_unmap_single(ndev->dev.parent, le32_to_cpu(desc->dptr),
 					 size, DMA_TO_DEVICE);
 			/* Last packet descriptor? */
 			if (entry % num_tx_desc == num_tx_desc - 1) {
 				entry /= num_tx_desc;
+=======
+		if (priv->tx_skb[q][entry / NUM_TX_DESC]) {
+			dma_unmap_single(ndev->dev.parent, le32_to_cpu(desc->dptr),
+					 size, DMA_TO_DEVICE);
+			/* Last packet descriptor? */
+			if (entry % NUM_TX_DESC == NUM_TX_DESC - 1) {
+				entry /= NUM_TX_DESC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				dev_kfree_skb_any(priv->tx_skb[q][entry]);
 				priv->tx_skb[q][entry] = NULL;
 				if (txed)
@@ -230,7 +246,11 @@ static void ravb_ring_free(struct net_device *ndev, int q)
 					       le32_to_cpu(desc->dptr)))
 				dma_unmap_single(ndev->dev.parent,
 						 le32_to_cpu(desc->dptr),
+<<<<<<< HEAD
 						 RX_BUF_SZ,
+=======
+						 PKT_BUF_SZ,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 						 DMA_FROM_DEVICE);
 		}
 		ring_size = sizeof(struct ravb_ex_rx_desc) *
@@ -244,7 +264,11 @@ static void ravb_ring_free(struct net_device *ndev, int q)
 		ravb_tx_free(ndev, q, false);
 
 		ring_size = sizeof(struct ravb_tx_desc) *
+<<<<<<< HEAD
 			    (priv->num_tx_ring[q] * num_tx_desc + 1);
+=======
+			    (priv->num_tx_ring[q] * NUM_TX_DESC + 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dma_free_coherent(ndev->dev.parent, ring_size, priv->tx_ring[q],
 				  priv->tx_desc_dma[q]);
 		priv->tx_ring[q] = NULL;
@@ -918,6 +942,7 @@ static int ravb_poll(struct napi_struct *napi, int budget)
 	if (ravb_rx(ndev, &quota, q))
 		goto out;
 
+<<<<<<< HEAD
 	/* Processing RX Descriptor Ring */
 	spin_lock_irqsave(&priv->lock, flags);
 	/* Clear TX interrupt */
@@ -925,6 +950,26 @@ static int ravb_poll(struct napi_struct *napi, int budget)
 	ravb_tx_free(ndev, q, true);
 	netif_wake_subqueue(ndev, q);
 	spin_unlock_irqrestore(&priv->lock, flags);
+=======
+		/* Processing RX Descriptor Ring */
+		if (ris0 & mask) {
+			/* Clear RX interrupt */
+			ravb_write(ndev, ~mask, RIS0);
+			if (ravb_rx(ndev, &quota, q))
+				goto out;
+		}
+		/* Processing TX Descriptor Ring */
+		if (tis & mask) {
+			spin_lock_irqsave(&priv->lock, flags);
+			/* Clear TX interrupt */
+			ravb_write(ndev, ~mask, TIS);
+			ravb_tx_free(ndev, q, true);
+			netif_wake_subqueue(ndev, q);
+			mmiowb();
+			spin_unlock_irqrestore(&priv->lock, flags);
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	napi_complete(napi);
 
@@ -1506,8 +1551,31 @@ static netdev_tx_t ravb_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	if (skb_put_padto(skb, ETH_ZLEN))
 		goto exit;
 
+<<<<<<< HEAD
 	entry = priv->cur_tx[q] % (priv->num_tx_ring[q] * num_tx_desc);
 	priv->tx_skb[q][entry / num_tx_desc] = skb;
+=======
+	buffer = PTR_ALIGN(priv->tx_align[q], DPTR_ALIGN) +
+		 entry / NUM_TX_DESC * DPTR_ALIGN;
+	len = PTR_ALIGN(skb->data, DPTR_ALIGN) - skb->data;
+	/* Zero length DMA descriptors are problematic as they seem to
+	 * terminate DMA transfers. Avoid them by simply using a length of
+	 * DPTR_ALIGN (4) when skb data is aligned to DPTR_ALIGN.
+	 *
+	 * As skb is guaranteed to have at least ETH_ZLEN (60) bytes of
+	 * data by the call to skb_put_padto() above this is safe with
+	 * respect to both the length of the first DMA descriptor (len)
+	 * overflowing the available data and the length of the second DMA
+	 * descriptor (skb->len - len) being negative.
+	 */
+	if (len == 0)
+		len = DPTR_ALIGN;
+
+	memcpy(buffer, skb->data, len);
+	dma_addr = dma_map_single(ndev->dev.parent, buffer, len, DMA_TO_DEVICE);
+	if (dma_mapping_error(ndev->dev.parent, dma_addr))
+		goto drop;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (num_tx_desc > 1) {
 		buffer = PTR_ALIGN(priv->tx_align[q], DPTR_ALIGN) +
@@ -1594,7 +1662,11 @@ static netdev_tx_t ravb_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 
 	priv->cur_tx[q] += num_tx_desc;
 	if (priv->cur_tx[q] - priv->dirty_tx[q] >
+<<<<<<< HEAD
 	    (priv->num_tx_ring[q] - 1) * num_tx_desc &&
+=======
+	    (priv->num_tx_ring[q] - 1) * NUM_TX_DESC &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    !ravb_tx_free(ndev, q, true))
 		netif_stop_subqueue(ndev, q);
 

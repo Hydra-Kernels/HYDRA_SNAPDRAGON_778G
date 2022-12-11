@@ -2066,6 +2066,40 @@ static bool is_orphaned_event(struct perf_event *event)
 	return event->state == PERF_EVENT_STATE_DEAD;
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Event has a parent but parent's task finished and it's
+ * alive only because of children holding refference.
+ */
+static bool is_orphaned_child(struct perf_event *event)
+{
+	return is_orphaned_event(event->parent);
+}
+
+static void orphans_remove_work(struct work_struct *work);
+
+static void schedule_orphans_remove(struct perf_event_context *ctx)
+{
+	if (!ctx->task || ctx->orphans_remove_sched || !perf_wq)
+		return;
+
+	if (queue_delayed_work(perf_wq, &ctx->orphans_remove, 1)) {
+		get_ctx(ctx);
+		ctx->orphans_remove_sched = true;
+	}
+}
+
+static int __init perf_workqueue_init(void)
+{
+	perf_wq = create_singlethread_workqueue("perf");
+	WARN(!perf_wq, "failed to create perf workqueue\n");
+	return perf_wq ? 0 : -1;
+}
+
+core_initcall(perf_workqueue_init);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline int __pmu_filter_match(struct perf_event *event)
 {
 	struct pmu *pmu = event->pmu;
@@ -2080,13 +2114,22 @@ static inline int __pmu_filter_match(struct perf_event *event)
  */
 static inline int pmu_filter_match(struct perf_event *event)
 {
+<<<<<<< HEAD
 	struct perf_event *sibling;
+=======
+	struct perf_event *child;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!__pmu_filter_match(event))
 		return 0;
 
+<<<<<<< HEAD
 	for_each_sibling_event(sibling, event) {
 		if (!__pmu_filter_match(sibling))
+=======
+	list_for_each_entry(child, &event->sibling_list, group_entry) {
+		if (!__pmu_filter_match(child))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return 0;
 	}
 
@@ -2122,8 +2165,19 @@ event_sched_out(struct perf_event *event,
 
 	perf_pmu_disable(event->pmu);
 
+<<<<<<< HEAD
 	event->pmu->del(event, 0);
 	event->oncpu = -1;
+=======
+	event->tstamp_stopped = tstamp;
+	event->pmu->del(event, 0);
+	event->oncpu = -1;
+	event->state = PERF_EVENT_STATE_INACTIVE;
+	if (event->pending_disable) {
+		event->pending_disable = 0;
+		event->state = PERF_EVENT_STATE_OFF;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (READ_ONCE(event->pending_disable) >= 0) {
 		WRITE_ONCE(event->pending_disable, -1);
@@ -9181,12 +9235,17 @@ static int perf_event_set_bpf_prog(struct perf_event *event, u32 prog_fd)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	/* Kprobe override only works for kprobes, not uprobes. */
 	if (prog->kprobe_override &&
 	    !(event->tp_event->flags & TRACE_EVENT_FL_KPROBE)) {
 		bpf_prog_put(prog);
 		return -EINVAL;
 	}
+=======
+	event->tp_event->prog = prog;
+	event->tp_event->bpf_prog_owner = event;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (is_tracepoint || is_syscall_tp) {
 		int off = trace_event_get_offsets(event->tp_event);
@@ -9208,6 +9267,14 @@ static void perf_event_free_bpf_prog(struct perf_event *event)
 	if (!perf_event_is_tracing(event)) {
 		perf_event_free_bpf_handler(event);
 		return;
+<<<<<<< HEAD
+=======
+
+	prog = event->tp_event->prog;
+	if (prog && event->tp_event->bpf_prog_owner == event) {
+		event->tp_event->prog = NULL;
+		bpf_prog_put_rcu(prog);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	perf_event_detach_bpf_prog(event);
 }
@@ -10822,10 +10889,13 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		}
 	}
 
+<<<<<<< HEAD
 	err = security_perf_event_alloc(event);
 	if (err)
 		goto err_callchain_buffer;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* symmetric to unaccount_event() in _free_event() */
 	account_event(event);
 
@@ -11093,7 +11163,11 @@ __perf_event_ctx_lock_double(struct perf_event *group_leader,
 again:
 	rcu_read_lock();
 	gctx = READ_ONCE(group_leader->ctx);
+<<<<<<< HEAD
 	if (!refcount_inc_not_zero(&gctx->refcount)) {
+=======
+	if (!atomic_inc_not_zero(&gctx->refcount)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rcu_read_unlock();
 		goto again;
 	}
@@ -11111,6 +11185,7 @@ again:
 	return gctx;
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_PERF_USER_SHARE
 static void perf_group_shared_event(struct perf_event *event,
 		struct perf_event *group_leader)
@@ -11136,6 +11211,8 @@ static void perf_group_shared_event(struct perf_event *event,
 }
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * sys_perf_event_open - open a performance event, associate it to a task/cpu
  *
@@ -11267,9 +11344,28 @@ SYSCALL_DEFINE5(perf_event_open,
 			goto err_cred;
 	}
 
+	if (task) {
+		err = mutex_lock_interruptible(&task->signal->cred_guard_mutex);
+		if (err)
+			goto err_cpus;
+
+		/*
+		 * Reuse ptrace permission checks for now.
+		 *
+		 * We must hold cred_guard_mutex across this and any potential
+		 * perf_install_in_context() call for this new event to
+		 * serialize against exec() altering our credentials (and the
+		 * perf_event_exit_task() that could imply).
+		 */
+		err = -EACCES;
+		if (!ptrace_may_access(task, PTRACE_MODE_READ_REALCREDS))
+			goto err_cred;
+	}
+
 	if (flags & PERF_FLAG_PID_CGROUP)
 		cgroup_fd = pid;
 
+<<<<<<< HEAD
 #ifdef CONFIG_PERF_USER_SHARE
 	event = perf_event_create_kernel_shared_check(&attr, cpu, task, NULL,
 			group_leader);
@@ -11281,6 +11377,13 @@ SYSCALL_DEFINE5(perf_event_open,
 			err = PTR_ERR(event);
 			goto err_cred;
 		}
+=======
+	event = perf_event_alloc(&attr, cpu, task, group_leader, NULL,
+				 NULL, NULL, cgroup_fd);
+	if (IS_ERR(event)) {
+		err = PTR_ERR(event);
+		goto err_cred;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (is_sampling_event(event)) {
@@ -11338,6 +11441,14 @@ SYSCALL_DEFINE5(perf_event_open,
 		goto err_alloc;
 	}
 
+<<<<<<< HEAD
+=======
+	if ((pmu->capabilities & PERF_PMU_CAP_EXCLUSIVE) && group_leader) {
+		err = -EBUSY;
+		goto err_context;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Look up the group leader (we will attach this event to it):
 	 */
@@ -11402,16 +11513,23 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (move_group) {
 		gctx = __perf_event_ctx_lock_double(group_leader, ctx);
 
+<<<<<<< HEAD
 		if (gctx->task == TASK_TOMBSTONE) {
 			err = -ESRCH;
 			goto err_locked;
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * Check if we raced against another sys_perf_event_open() call
 		 * moving the software group underneath us.
 		 */
+<<<<<<< HEAD
 		if (!(group_leader->group_caps & PERF_EV_CAP_SOFTWARE)) {
+=======
+		if (!(group_leader->group_flags & PERF_GROUP_SOFTWARE)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * If someone moved the group out from under us, check
 			 * if this new event wound up on the same ctx, if so
@@ -11425,6 +11543,7 @@ SYSCALL_DEFINE5(perf_event_open,
 				move_group = 0;
 			}
 		}
+<<<<<<< HEAD
 
 		/*
 		 * Failure to create exclusive events returns -EBUSY.
@@ -11437,6 +11556,8 @@ SYSCALL_DEFINE5(perf_event_open,
 			if (!exclusive_event_installable(sibling, ctx))
 				goto err_locked;
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		mutex_lock(&ctx->mutex);
 	}
@@ -11569,6 +11690,11 @@ SYSCALL_DEFINE5(perf_event_open,
 		mutex_unlock(&task->signal->cred_guard_mutex);
 		put_task_struct(task);
 	}
+<<<<<<< HEAD
+=======
+
+	put_online_cpus();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_PERF_KERNEL_SHARE
 	if (!event->shared) {
@@ -11617,6 +11743,11 @@ err_alloc:
 err_cred:
 	if (task)
 		mutex_unlock(&task->signal->cred_guard_mutex);
+<<<<<<< HEAD
+=======
+err_cpus:
+	put_online_cpus();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_task:
 	if (task)
 		put_task_struct(task);
@@ -11676,6 +11807,20 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
 	/*
 	 * Get the target context (task or percpu):
 	 */
+<<<<<<< HEAD
+=======
+
+	event = perf_event_alloc(attr, cpu, task, NULL, NULL,
+				 overflow_handler, context, -1);
+	if (IS_ERR(event)) {
+		err = PTR_ERR(event);
+		goto err;
+	}
+
+	/* Mark owner so we could distinguish it from user events. */
+	event->owner = EVENT_OWNER_KERNEL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ctx = find_get_context(event->pmu, task, event);
 	if (IS_ERR(ctx)) {
 		err = PTR_ERR(ctx);

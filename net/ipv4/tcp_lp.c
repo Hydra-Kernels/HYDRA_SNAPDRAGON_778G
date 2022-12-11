@@ -265,14 +265,21 @@ static void tcp_lp_pkts_acked(struct sock *sk, const struct ack_sample *sample)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct lp *lp = inet_csk_ca(sk);
+<<<<<<< HEAD
 	u32 now = tcp_time_stamp(tp);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32 delta;
 
 	if (sample->rtt_us > 0)
 		tcp_lp_rtt_sample(sk, sample->rtt_us);
 
 	/* calc inference */
+<<<<<<< HEAD
 	delta = now - tp->rx_opt.rcv_tsecr;
+=======
+	delta = tcp_time_stamp - tp->rx_opt.rcv_tsecr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if ((s32)delta > 0)
 		lp->inference = 3 * delta;
 

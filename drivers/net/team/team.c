@@ -249,6 +249,17 @@ static void __team_option_inst_mark_removed_port(struct team *team,
 	}
 }
 
+static bool __team_option_inst_tmp_find(const struct list_head *opts,
+					const struct team_option_inst *needle)
+{
+	struct team_option_inst *opt_inst;
+
+	list_for_each_entry(opt_inst, opts, tmp_list)
+		if (opt_inst == needle)
+			return true;
+	return false;
+}
+
 static int __team_options_register(struct team *team,
 				   const struct team_option *option,
 				   size_t option_count)
@@ -978,15 +989,22 @@ static void team_port_disable(struct team *team,
 			    NETIF_F_FRAGLIST | NETIF_F_ALL_TSO | \
 			    NETIF_F_HIGHDMA | NETIF_F_LRO)
 
+<<<<<<< HEAD
 #define TEAM_ENC_FEATURES	(NETIF_F_HW_CSUM | NETIF_F_SG | \
 				 NETIF_F_RXCSUM | NETIF_F_ALL_TSO)
 
 static void __team_compute_features(struct team *team)
+=======
+static void ___team_compute_features(struct team *team)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct team_port *port;
 	netdev_features_t vlan_features = TEAM_VLAN_FEATURES &
 					  NETIF_F_ALL_FOR_ALL;
+<<<<<<< HEAD
 	netdev_features_t enc_features  = TEAM_ENC_FEATURES;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned short max_hard_header_len = ETH_HLEN;
 	unsigned int dst_release_flag = IFF_XMIT_DST_RELEASE |
 					IFF_XMIT_DST_RELEASE_PERM;
@@ -1018,11 +1036,26 @@ static void __team_compute_features(struct team *team)
 	team->dev->priv_flags &= ~IFF_XMIT_DST_RELEASE;
 	if (dst_release_flag == (IFF_XMIT_DST_RELEASE | IFF_XMIT_DST_RELEASE_PERM))
 		team->dev->priv_flags |= IFF_XMIT_DST_RELEASE;
+<<<<<<< HEAD
+=======
+}
+
+static void __team_compute_features(struct team *team)
+{
+	___team_compute_features(team);
+	netdev_change_features(team->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void team_compute_features(struct team *team)
 {
+<<<<<<< HEAD
 	__team_compute_features(team);
+=======
+	mutex_lock(&team->lock);
+	___team_compute_features(team);
+	mutex_unlock(&team->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	netdev_change_features(team->dev);
 }
 
@@ -2645,6 +2678,14 @@ static int team_nl_cmd_options_set(struct sk_buff *skb, struct genl_info *info)
 			if (err)
 				goto team_put;
 			opt_inst->changed = true;
+
+			/* dumb/evil user-space can send us duplicate opt,
+			 * keep only the last one
+			 */
+			if (__team_option_inst_tmp_find(&opt_inst_list,
+							opt_inst))
+				continue;
+
 			list_add(&opt_inst->tmp_list, &opt_inst_list);
 		}
 		if (!opt_found) {

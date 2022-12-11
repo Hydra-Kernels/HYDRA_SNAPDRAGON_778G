@@ -165,6 +165,7 @@ static void finish_writeback_work(struct bdi_writeback *wb,
 
 	if (work->auto_free)
 		kfree(work);
+<<<<<<< HEAD
 	if (done) {
 		wait_queue_head_t *waitq = done->waitq;
 
@@ -172,6 +173,10 @@ static void finish_writeback_work(struct bdi_writeback *wb,
 		if (atomic_dec_and_test(&done->cnt))
 			wake_up_all(waitq);
 	}
+=======
+	if (done && atomic_dec_and_test(&done->cnt))
+		wake_up_all(&wb->bdi->wb_waitq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void wb_queue_work(struct bdi_writeback *wb,
@@ -243,6 +248,9 @@ void wb_wait_for_completion(struct wb_completion *done)
 #define WB_FRN_HIST_MAX_SLOTS	(WB_FRN_HIST_THR_SLOTS / 2 + 1)
 					/* one round can affect upto 5 slots */
 #define WB_FRN_MAX_IN_FLIGHT	1024	/* don't queue too many concurrently */
+
+static atomic_t isw_nr_in_flight = ATOMIC_INIT(0);
+static struct workqueue_struct *isw_wq;
 
 static atomic_t isw_nr_in_flight = ATOMIC_INIT(0);
 static struct workqueue_struct *isw_wq;
@@ -523,7 +531,11 @@ static void inode_switch_wbs(struct inode *inode, int new_wb_id)
 
 	/* while holding I_WB_SWITCH, no one else can update the association */
 	spin_lock(&inode->i_lock);
+<<<<<<< HEAD
 	if (!(inode->i_sb->s_flags & SB_ACTIVE) ||
+=======
+	if (!(inode->i_sb->s_flags & MS_ACTIVE) ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    inode->i_state & (I_WB_SWITCH | I_FREEING) ||
 	    inode_to_wb(inode) == isw->new_wb) {
 		spin_unlock(&inode->i_lock);
@@ -534,6 +546,8 @@ static void inode_switch_wbs(struct inode *inode, int new_wb_id)
 	spin_unlock(&inode->i_lock);
 
 	isw->inode = inode;
+
+	atomic_inc(&isw_nr_in_flight);
 
 	/*
 	 * In addition to synchronizing among switchers, I_WB_SWITCH tells
@@ -912,6 +926,7 @@ restart:
 }
 
 /**
+<<<<<<< HEAD
  * cgroup_writeback_by_id - initiate cgroup writeback from bdi and memcg IDs
  * @bdi_id: target bdi id
  * @memcg_id: target memcg css id
@@ -995,6 +1010,8 @@ out_bdi_put:
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * cgroup_writeback_umount - flush inode wb switches for umount
  *
  * This function is called when a super_block is about to be destroyed and
@@ -1007,11 +1024,15 @@ out_bdi_put:
 void cgroup_writeback_umount(void)
 {
 	if (atomic_read(&isw_nr_in_flight)) {
+<<<<<<< HEAD
 		/*
 		 * Use rcu_barrier() to wait for all pending callbacks to
 		 * ensure that all in-flight wb switches are in the workqueue.
 		 */
 		rcu_barrier();
+=======
+		synchronize_rcu();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		flush_workqueue(isw_wq);
 	}
 }

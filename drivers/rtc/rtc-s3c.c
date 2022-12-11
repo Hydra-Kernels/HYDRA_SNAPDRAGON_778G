@@ -156,9 +156,13 @@ static int s3c_rtc_setfreq(struct s3c_rtc *info, int freq)
 	if (!is_power_of_2(freq))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	ret = s3c_rtc_enable_clk(info);
 	if (ret)
 		return ret;
+=======
+	s3c_rtc_enable_clk(info);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_lock_irq(&info->pie_lock);
 
 	if (info->data->set_freq)

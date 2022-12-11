@@ -356,7 +356,11 @@ DECLARE_EVENT_CLASS(xen_mmu_pgd,
 DEFINE_XEN_MMU_PGD_EVENT(xen_mmu_pgd_pin);
 DEFINE_XEN_MMU_PGD_EVENT(xen_mmu_pgd_unpin);
 
+<<<<<<< HEAD
 TRACE_EVENT(xen_mmu_flush_tlb_one_user,
+=======
+TRACE_EVENT(xen_mmu_flush_tlb_single,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    TP_PROTO(unsigned long addr),
 	    TP_ARGS(addr),
 	    TP_STRUCT__entry(

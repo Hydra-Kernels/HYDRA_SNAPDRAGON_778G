@@ -636,6 +636,30 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
 		iscsit_deaccess_np(np, tpg, tpg_np);
 	}
 	return;
+<<<<<<< HEAD
+=======
+
+err:
+	iscsi_target_restore_sock_callbacks(conn);
+	iscsi_target_login_drop(conn, login);
+	iscsit_deaccess_np(np, tpg, tpg_np);
+}
+
+static void iscsi_target_do_cleanup(struct work_struct *work)
+{
+	struct iscsi_conn *conn = container_of(work,
+				struct iscsi_conn, login_cleanup_work.work);
+	struct sock *sk = conn->sock->sk;
+	struct iscsi_login *login = conn->login;
+	struct iscsi_np *np = login->np;
+	struct iscsi_portal_group *tpg = conn->tpg;
+	struct iscsi_tpg_np *tpg_np = conn->tpg_np;
+
+	pr_debug("Entering iscsi_target_do_cleanup\n");
+
+	cancel_delayed_work_sync(&conn->login_work);
+	conn->orig_state_change(sk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 err:
 	iscsi_target_restore_sock_callbacks(conn);
@@ -1275,8 +1299,13 @@ int iscsi_target_start_negotiation(
 {
 	int ret;
 
+<<<<<<< HEAD
 	if (conn->sock) {
 		struct sock *sk = conn->sock->sk;
+=======
+       if (conn->sock) {
+               struct sock *sk = conn->sock->sk;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		write_lock_bh(&sk->sk_callback_lock);
 		set_bit(LOGIN_FLAGS_READY, &conn->login_flags);

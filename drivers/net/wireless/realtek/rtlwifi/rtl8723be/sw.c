@@ -128,6 +128,10 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
 	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
+	rtlpriv->cfg->mod_params->sw_crypto =
+		 rtlpriv->cfg->mod_params->sw_crypto;
+	rtlpriv->cfg->mod_params->disable_watchdog =
+		 rtlpriv->cfg->mod_params->disable_watchdog;
 	if (rtlpriv->cfg->mod_params->disable_watchdog)
 		pr_info("watchdog disabled\n");
 	rtlpriv->psc.reg_fwctrl_lps = 2;
@@ -244,10 +248,15 @@ static struct rtl_mod_params rtl8723be_mod_params = {
 	.swctrl_lps = false,
 	.fwctrl_lps = true,
 	.msi_support = false,
+<<<<<<< HEAD
 	.aspm_support = 1,
 	.disable_watchdog = false,
 	.debug_level = 0,
 	.debug_mask = 0,
+=======
+	.disable_watchdog = false,
+	.debug = DBG_EMERG,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.ant_sel = 0,
 };
 

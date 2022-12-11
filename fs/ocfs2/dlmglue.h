@@ -56,6 +56,7 @@ struct ocfs2_orphan_scan_lvb {
 	__be32	lvb_os_seqno;
 };
 
+<<<<<<< HEAD
 #define OCFS2_TRIMFS_LVB_VERSION 1
 
 struct ocfs2_trim_fs_lvb {
@@ -83,6 +84,11 @@ struct ocfs2_lock_holder {
 	struct list_head oh_list;
 	struct pid *oh_owner_pid;
 	int oh_ex;
+=======
+struct ocfs2_lock_holder {
+	struct list_head oh_list;
+	struct pid *oh_owner_pid;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* ocfs2_inode_lock_full() 'arg_flags' flags */

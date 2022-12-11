@@ -258,7 +258,10 @@ int hvutil_transport_send(struct hvutil_transport *hvt, void *msg, int len,
 	if (hvt->outmsg) {
 		memcpy(hvt->outmsg, msg, len);
 		hvt->outmsg_len = len;
+<<<<<<< HEAD
 		hvt->on_read = on_read_cb;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wake_up_interruptible(&hvt->outmsg_q);
 	} else
 		ret = -ENOMEM;

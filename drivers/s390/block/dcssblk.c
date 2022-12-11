@@ -922,12 +922,23 @@ __dcssblk_direct_access(struct dcssblk_dev_info *dev_info, pgoff_t pgoff,
 	resource_size_t offset = pgoff * PAGE_SIZE;
 	unsigned long dev_sz;
 
+<<<<<<< HEAD
 	dev_sz = dev_info->end - dev_info->start + 1;
 	if (kaddr)
 		*kaddr = (void *) dev_info->start + offset;
 	if (pfn)
 		*pfn = __pfn_to_pfn_t(PFN_DOWN(dev_info->start + offset),
 				PFN_DEV|PFN_SPECIAL);
+=======
+	dev_info = bdev->bd_disk->private_data;
+	if (!dev_info)
+		return -ENODEV;
+	dev_sz = dev_info->end - dev_info->start + 1;
+	offset = secnum * 512;
+	addr = (void *) (dev_info->start + offset);
+	*pfn = virt_to_phys(addr) >> PAGE_SHIFT;
+	*kaddr = (void __pmem *) addr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return (dev_sz - offset) / PAGE_SIZE;
 }

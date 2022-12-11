@@ -1099,9 +1099,25 @@ static int replace_user_tlv(struct snd_kcontrol *kctl, unsigned int __user *buf,
 	if (size > 1024 * 128)	/* sane value */
 		return -EINVAL;
 
+<<<<<<< HEAD
 	container = vmemdup_user(buf, size);
 	if (IS_ERR(container))
 		return PTR_ERR(container);
+=======
+		new_data = memdup_user(tlv, size);
+		if (IS_ERR(new_data))
+			return PTR_ERR(new_data);
+		mutex_lock(&ue->card->user_ctl_lock);
+		change = ue->tlv_data_size != size;
+		if (!change)
+			change = memcmp(ue->tlv_data, new_data, size) != 0;
+		kfree(ue->tlv_data);
+		ue->tlv_data = new_data;
+		ue->tlv_data_size = size;
+		mutex_unlock(&ue->card->user_ctl_lock);
+	} else {
+		int ret = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	change = ue->tlv_data_size != size;
 	if (!change)
@@ -1477,6 +1493,7 @@ static int snd_ctl_tlv_ioctl(struct snd_ctl_file *file,
 	/* In design of control core, numerical ID starts at 1. */
 	if (header.numid == 0)
 		return -EINVAL;
+<<<<<<< HEAD
 
 	/* At least, container should include type and length fields.  */
 	if (header.length < sizeof(unsigned int) * 2)
@@ -1493,6 +1510,30 @@ static int snd_ctl_tlv_ioctl(struct snd_ctl_file *file,
 	snd_ctl_build_ioff(&id, kctl, header.numid - id.numid);
 	vd = &kctl->vd[snd_ctl_get_ioff(kctl, &id)];
 
+=======
+	if (!tlv.numid)
+		return -EINVAL;
+	down_read(&card->controls_rwsem);
+	kctl = snd_ctl_find_numid(card, tlv.numid);
+	if (kctl == NULL) {
+		err = -ENOENT;
+		goto __kctl_end;
+	}
+	if (kctl->tlv.p == NULL) {
+		err = -ENXIO;
+		goto __kctl_end;
+	}
+	vd = &kctl->vd[tlv.numid - kctl->id.numid];
+	if ((op_flag == SNDRV_CTL_TLV_OP_READ &&
+	     (vd->access & SNDRV_CTL_ELEM_ACCESS_TLV_READ) == 0) ||
+	    (op_flag == SNDRV_CTL_TLV_OP_WRITE &&
+	     (vd->access & SNDRV_CTL_ELEM_ACCESS_TLV_WRITE) == 0) ||
+	    (op_flag == SNDRV_CTL_TLV_OP_CMD &&
+	     (vd->access & SNDRV_CTL_ELEM_ACCESS_TLV_COMMAND) == 0)) {
+	    	err = -ENXIO;
+	    	goto __kctl_end;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (vd->access & SNDRV_CTL_ELEM_ACCESS_TLV_CALLBACK) {
 		return call_tlv_handler(file, op_flag, kctl, &id, container,
 					container_size);

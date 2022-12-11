@@ -5040,6 +5040,7 @@ static struct bpf_test tests[] = {
 		{ },
 		{ { 0, 1 } },
 	},
+<<<<<<< HEAD
 	/* BPF_JMP | BPF_JLE | BPF_X */
 	{
 		"JMP_JLE_X: if (2 <= 3) return 1",
@@ -5071,6 +5072,8 @@ static struct bpf_test tests[] = {
 		{ },
 		{ { 0, 1 } },
 	},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{
 		/* Mainly testing JIT + imm64 here. */
 		"JMP_JGE_X: ldimm64 test 1",
@@ -5079,8 +5082,13 @@ static struct bpf_test tests[] = {
 			BPF_LD_IMM64(R1, 3),
 			BPF_LD_IMM64(R2, 2),
 			BPF_JMP_REG(BPF_JGE, R1, R2, 2),
+<<<<<<< HEAD
 			BPF_LD_IMM64(R0, 0xffffffffffffffffULL),
 			BPF_LD_IMM64(R0, 0xeeeeeeeeeeeeeeeeULL),
+=======
+			BPF_LD_IMM64(R0, 0xffffffffffffffffUL),
+			BPF_LD_IMM64(R0, 0xeeeeeeeeeeeeeeeeUL),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			BPF_EXIT_INSN(),
 		},
 		INTERNAL,
@@ -5094,7 +5102,11 @@ static struct bpf_test tests[] = {
 			BPF_LD_IMM64(R1, 3),
 			BPF_LD_IMM64(R2, 2),
 			BPF_JMP_REG(BPF_JGE, R1, R2, 0),
+<<<<<<< HEAD
 			BPF_LD_IMM64(R0, 0xffffffffffffffffULL),
+=======
+			BPF_LD_IMM64(R0, 0xffffffffffffffffUL),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			BPF_EXIT_INSN(),
 		},
 		INTERNAL,
@@ -5108,6 +5120,7 @@ static struct bpf_test tests[] = {
 			BPF_LD_IMM64(R1, 3),
 			BPF_LD_IMM64(R2, 2),
 			BPF_JMP_REG(BPF_JGE, R1, R2, 4),
+<<<<<<< HEAD
 			BPF_LD_IMM64(R0, 0xffffffffffffffffULL),
 			BPF_LD_IMM64(R0, 0xeeeeeeeeeeeeeeeeULL),
 			BPF_EXIT_INSN(),
@@ -5154,6 +5167,10 @@ static struct bpf_test tests[] = {
 			BPF_JMP_REG(BPF_JLE, R2, R1, 4),
 			BPF_LD_IMM64(R0, 0xffffffffffffffffULL),
 			BPF_LD_IMM64(R0, 0xeeeeeeeeeeeeeeeeULL),
+=======
+			BPF_LD_IMM64(R0, 0xffffffffffffffffUL),
+			BPF_LD_IMM64(R0, 0xeeeeeeeeeeeeeeeeUL),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			BPF_EXIT_INSN(),
 		},
 		INTERNAL,
@@ -5328,7 +5345,11 @@ static struct bpf_test tests[] = {
 	{
 		"BPF_MAXINSNS: Jump, gap, jump, ...",
 		{ },
+<<<<<<< HEAD
 #if defined(CONFIG_BPF_JIT_ALWAYS_ON) && defined(CONFIG_X86)
+=======
+#ifdef CONFIG_BPF_JIT_ALWAYS_ON
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		CLASSIC | FLAG_NO_DATA | FLAG_EXPECTED_FAIL,
 #else
 		CLASSIC | FLAG_NO_DATA,
@@ -5337,6 +5358,7 @@ static struct bpf_test tests[] = {
 		{ { 0, 0xababcbac } },
 		.fill_helper = bpf_fill_maxinsns11,
 		.expected_errcode = -ENOTSUPP,
+<<<<<<< HEAD
 	},
 	{
 		"BPF_MAXINSNS: jump over MSH",
@@ -5359,6 +5381,8 @@ static struct bpf_test tests[] = {
 		{ { 4, 0xababab83 } },
 		.fill_helper = bpf_fill_maxinsns13,
 		.expected_errcode = -ENOTSUPP,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	{
 		"BPF_MAXINSNS: ld_abs+get_processor_id",
@@ -6625,10 +6649,14 @@ static struct bpf_prog *generate_filter(int which, int *err)
 		memcpy(fp->insnsi, fptr, fp->len * sizeof(struct bpf_insn));
 		fp->aux->stack_depth = tests[which].stack_depth;
 
+<<<<<<< HEAD
 		/* We cannot error here as we don't need type compatibility
 		 * checks.
 		 */
 		fp = bpf_prog_select_runtime(fp, err);
+=======
+		*err = bpf_prog_select_runtime(fp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (*err) {
 			pr_cont("FAIL to select_runtime err=%d\n", *err);
 			return NULL;

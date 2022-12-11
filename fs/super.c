@@ -448,6 +448,10 @@ void generic_shutdown_super(struct super_block *sb)
 		sync_filesystem(sb);
 		sb->s_flags &= ~SB_ACTIVE;
 
+<<<<<<< HEAD
+=======
+		fsnotify_unmount_inodes(sb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		cgroup_writeback_umount();
 
 		/* evict all inodes with zero refcount */
@@ -628,7 +632,15 @@ retry:
 	hlist_add_head(&s->s_instances, &type->fs_supers);
 	spin_unlock(&sb_lock);
 	get_filesystem(type);
+<<<<<<< HEAD
 	register_shrinker_prepared(&s->s_shrink);
+=======
+	err = register_shrinker(&s->s_shrink);
+	if (err) {
+		deactivate_locked_super(s);
+		s = ERR_PTR(err);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return s;
 }
 EXPORT_SYMBOL(sget);
@@ -1805,6 +1817,10 @@ static int thaw_super_locked(struct super_block *sb)
 {
 	int error;
 
+<<<<<<< HEAD
+=======
+	down_write(&sb->s_umount);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sb->s_writers.frozen != SB_FREEZE_COMPLETE) {
 		up_write(&sb->s_umount);
 		return -EINVAL;

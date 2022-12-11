@@ -88,7 +88,31 @@ const struct iommu_ops amd_iommu_ops;
 static ATOMIC_NOTIFIER_HEAD(ppr_notifier);
 int amd_iommu_max_glx_val = -1;
 
+<<<<<<< HEAD
 static const struct dma_map_ops amd_iommu_dma_ops;
+=======
+static struct dma_map_ops amd_iommu_dma_ops;
+
+/*
+ * This struct contains device specific data for the IOMMU
+ */
+struct iommu_dev_data {
+	struct list_head list;		  /* For domain->dev_list */
+	struct list_head dev_data_list;	  /* For global dev_data_list */
+	struct protection_domain *domain; /* Domain the device is bound to */
+	u16 devid;			  /* PCI Device ID */
+	u16 alias;			  /* Alias Device ID */
+	bool iommu_v2;			  /* Device can make use of IOMMUv2 */
+	bool passthrough;		  /* Device is identity mapped */
+	struct {
+		bool enabled;
+		int qdep;
+	} ats;				  /* ATS state */
+	bool pri_tlp;			  /* PASID TLB required for
+					     PPR completions */
+	u32 errata;			  /* Bitmap for errata to apply */
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * general struct to manage commands send to an IOMMU
@@ -187,10 +211,18 @@ static struct protection_domain *to_pdomain(struct iommu_domain *dom)
 	return container_of(dom, struct protection_domain, domain);
 }
 
+<<<<<<< HEAD
 static struct dma_ops_domain* to_dma_ops_domain(struct protection_domain *domain)
 {
 	BUG_ON(domain->flags != PD_DMA_OPS_MASK);
 	return container_of(domain, struct dma_ops_domain, domain);
+=======
+static inline u16 get_device_id(struct device *dev)
+{
+	struct pci_dev *pdev = to_pci_dev(dev);
+
+	return PCI_DEVID(pdev->bus->number, pdev->devfn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct iommu_dev_data *alloc_dev_data(u16 devid)
@@ -280,6 +312,68 @@ static struct pci_dev *setup_aliases(struct device *dev)
 	return pdev;
 }
 
+static int __last_alias(struct pci_dev *pdev, u16 alias, void *data)
+{
+	*(u16 *)data = alias;
+	return 0;
+}
+
+static u16 get_alias(struct device *dev)
+{
+	struct pci_dev *pdev = to_pci_dev(dev);
+	u16 devid, ivrs_alias, pci_alias;
+
+	devid = get_device_id(dev);
+	ivrs_alias = amd_iommu_alias_table[devid];
+	pci_for_each_dma_alias(pdev, __last_alias, &pci_alias);
+
+	if (ivrs_alias == pci_alias)
+		return ivrs_alias;
+
+	/*
+	 * DMA alias showdown
+	 *
+	 * The IVRS is fairly reliable in telling us about aliases, but it
+	 * can't know about every screwy device.  If we don't have an IVRS
+	 * reported alias, use the PCI reported alias.  In that case we may
+	 * still need to initialize the rlookup and dev_table entries if the
+	 * alias is to a non-existent device.
+	 */
+	if (ivrs_alias == devid) {
+		if (!amd_iommu_rlookup_table[pci_alias]) {
+			amd_iommu_rlookup_table[pci_alias] =
+				amd_iommu_rlookup_table[devid];
+			memcpy(amd_iommu_dev_table[pci_alias].data,
+			       amd_iommu_dev_table[devid].data,
+			       sizeof(amd_iommu_dev_table[pci_alias].data));
+		}
+
+		return pci_alias;
+	}
+
+	pr_info("AMD-Vi: Using IVRS reported alias %02x:%02x.%d "
+		"for device %s[%04x:%04x], kernel reported alias "
+		"%02x:%02x.%d\n", PCI_BUS_NUM(ivrs_alias), PCI_SLOT(ivrs_alias),
+		PCI_FUNC(ivrs_alias), dev_name(dev), pdev->vendor, pdev->device,
+		PCI_BUS_NUM(pci_alias), PCI_SLOT(pci_alias),
+		PCI_FUNC(pci_alias));
+
+	/*
+	 * If we don't have a PCI DMA alias and the IVRS alias is on the same
+	 * bus, then the IVRS table may know about a quirk that we don't.
+	 */
+	if (pci_alias == devid &&
+	    PCI_BUS_NUM(ivrs_alias) == pdev->bus->number) {
+		pdev->dev_flags |= PCI_DEV_FLAGS_DMA_ALIAS_DEVFN;
+		pdev->dma_alias_devfn = ivrs_alias & 0xff;
+		pr_info("AMD-Vi: Added PCI DMA alias %02x.%d for %s\n",
+			PCI_SLOT(ivrs_alias), PCI_FUNC(ivrs_alias),
+			dev_name(dev));
+	}
+
+	return ivrs_alias;
+}
+
 static struct iommu_dev_data *find_dev_data(u16 devid)
 {
 	struct iommu_dev_data *dev_data;
@@ -299,7 +393,11 @@ static struct iommu_dev_data *find_dev_data(u16 devid)
 	return dev_data;
 }
 
+<<<<<<< HEAD
 struct iommu_dev_data *get_dev_data(struct device *dev)
+=======
+static struct iommu_dev_data *get_dev_data(struct device *dev)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return dev->archdata.iommu;
 }
@@ -393,6 +491,19 @@ static void init_iommu_group(struct device *dev)
 	if (IS_ERR(group))
 		return;
 
+<<<<<<< HEAD
+=======
+	domain = iommu_group_default_domain(group);
+	if (!domain)
+		goto out;
+
+	if (to_pdomain(domain)->flags == PD_DMA_OPS_MASK) {
+		dma_domain = to_pdomain(domain)->priv;
+		init_unity_mappings_for_device(dev, dma_domain);
+	}
+
+out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	iommu_group_put(group);
 }
 
@@ -415,6 +526,7 @@ static int iommu_init_device(struct device *dev)
 	if (!dev_data)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	dev_data->pdev = setup_aliases(dev);
 
 	/*
@@ -425,6 +537,11 @@ static int iommu_init_device(struct device *dev)
 	 */
 	if ((iommu_default_passthrough() || !amd_iommu_force_isolation) &&
 	    dev_is_pci(dev) && pci_iommuv2_capable(to_pci_dev(dev))) {
+=======
+	dev_data->alias = get_alias(dev);
+
+	if (pci_iommuv2_capable(pdev)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct amd_iommu *iommu;
 
 		iommu = amd_iommu_rlookup_table[dev_data->devid];
@@ -443,8 +560,15 @@ static void iommu_ignore_device(struct device *dev)
 	int devid;
 
 	devid = get_device_id(dev);
+<<<<<<< HEAD
 	if (devid < 0)
 		return;
+=======
+	alias = get_alias(dev);
+
+	memset(&amd_iommu_dev_table[devid], 0, sizeof(struct dev_table_entry));
+	memset(&amd_iommu_dev_table[alias], 0, sizeof(struct dev_table_entry));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	amd_iommu_rlookup_table[devid] = NULL;
 	memset(&amd_iommu_dev_table[devid], 0, sizeof(struct dev_table_entry));
@@ -1044,8 +1168,15 @@ again:
 				return -EIO;
 			}
 
+<<<<<<< HEAD
 			udelay(1);
 		}
+=======
+	if (left <= 0x20) {
+		struct iommu_cmd sync_cmd;
+		volatile u64 sem = 0;
+		int ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Update head and recheck remaining space */
 		iommu->cmd_buf_head = readl(iommu->mmio_base +
@@ -1236,6 +1367,10 @@ static int device_flush_dte(struct iommu_dev_data *dev_data)
 	int ret;
 
 	iommu = amd_iommu_rlookup_table[dev_data->devid];
+<<<<<<< HEAD
+=======
+	alias = dev_data->alias;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (dev_data->pdev)
 		ret = pci_for_each_dma_alias(dev_data->pdev,
@@ -1901,6 +2036,9 @@ static void dma_ops_domain_free(struct dma_ops_domain *dom)
 	if (dom->domain.id)
 		domain_id_free(dom->domain.id);
 
+	if (dom->domain.id)
+		domain_id_free(dom->domain.id);
+
 	kfree(dom);
 }
 
@@ -2038,6 +2176,10 @@ static void do_attach(struct iommu_dev_data *dev_data,
 	bool ats;
 
 	iommu = amd_iommu_rlookup_table[dev_data->devid];
+<<<<<<< HEAD
+=======
+	alias = dev_data->alias;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ats   = dev_data->ats.enabled;
 
 	/* Update data structures */
@@ -2049,8 +2191,14 @@ static void do_attach(struct iommu_dev_data *dev_data,
 	domain->dev_cnt                 += 1;
 
 	/* Update device table */
+<<<<<<< HEAD
 	set_dte_entry(dev_data->devid, domain, ats, dev_data->iommu_v2);
 	clone_aliases(dev_data->pdev);
+=======
+	set_dte_entry(dev_data->devid, domain, ats);
+	if (alias != dev_data->devid)
+		set_dte_entry(alias, domain, ats);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	device_flush_dte(dev_data);
 }
@@ -2061,6 +2209,14 @@ static void do_detach(struct iommu_dev_data *dev_data)
 	struct amd_iommu *iommu;
 
 	iommu = amd_iommu_rlookup_table[dev_data->devid];
+<<<<<<< HEAD
+=======
+	alias = dev_data->alias;
+
+	/* decrease reference counters */
+	dev_data->domain->dev_iommu[iommu->index] -= 1;
+	dev_data->domain->dev_cnt                 -= 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Update data structures */
 	dev_data->domain = NULL;
@@ -2376,9 +2532,19 @@ static void update_device_table(struct protection_domain *domain)
 	struct iommu_dev_data *dev_data;
 
 	list_for_each_entry(dev_data, &domain->dev_list, list) {
+<<<<<<< HEAD
 		set_dte_entry(dev_data->devid, domain, dev_data->ats.enabled,
 			      dev_data->iommu_v2);
 		clone_aliases(dev_data->pdev);
+=======
+		set_dte_entry(dev_data->devid, domain, dev_data->ats.enabled);
+
+		if (dev_data->devid == dev_data->alias)
+			continue;
+
+		/* There is an alias, update device table entry for it */
+		set_dte_entry(dev_data->alias, domain, dev_data->ats.enabled);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -3015,8 +3181,12 @@ static void amd_iommu_domain_free(struct iommu_domain *dom)
 
 	switch (dom->type) {
 	case IOMMU_DOMAIN_DMA:
+<<<<<<< HEAD
 		/* Now release the domain */
 		dma_dom = to_dma_ops_domain(domain);
+=======
+		dma_dom = domain->priv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dma_ops_domain_free(dma_dom);
 		break;
 	default:
@@ -3135,6 +3305,12 @@ static size_t amd_iommu_unmap(struct iommu_domain *dom, unsigned long iova,
 	unmap_size = iommu_unmap_page(domain, iova, page_size);
 	mutex_unlock(&domain->api_lock);
 
+<<<<<<< HEAD
+=======
+	domain_flush_tlb_pde(domain);
+	domain_flush_complete(domain);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return unmap_size;
 }
 

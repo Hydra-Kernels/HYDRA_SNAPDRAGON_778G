@@ -8,8 +8,12 @@ quote   := "
 squote  := '
 empty   :=
 space   := $(empty) $(empty)
+<<<<<<< HEAD
 space_escape := _-_SPACE_-_
 pound := \#
+=======
+pound   := \#
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 ###
 # Name of target with a '.' as filename prefix. foo/bar.o => foo/.bar.o

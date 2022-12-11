@@ -2481,6 +2481,7 @@ bool pci_dev_run_wake(struct pci_dev *dev)
 	if (!dev->pme_support)
 		return false;
 
+<<<<<<< HEAD
 	/* PME-capable in principle, but not from the target power state */
 	if (!pci_pme_capable(dev, pci_target_state(dev, true)))
 		return false;
@@ -2488,6 +2489,12 @@ bool pci_dev_run_wake(struct pci_dev *dev)
 	if (device_can_wakeup(&dev->dev))
 		return true;
 
+=======
+	/* PME-capable in principle, but not from the intended sleep state */
+	if (!pci_pme_capable(dev, pci_target_state(dev)))
+		return false;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while (bus->parent) {
 		struct pci_dev *bridge = bus->self;
 
@@ -6388,10 +6395,15 @@ static int of_pci_bus_find_domain_nr(struct device *parent)
 {
 	static int use_dt_domains = -1;
 	int domain = -1;
+<<<<<<< HEAD
 
 	if (parent)
 		domain = of_get_pci_domain_nr(parent->of_node);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
+	if (parent)
+		domain = of_get_pci_domain_nr(parent->of_node);
 	/*
 	 * Check DT domain and use_dt_domains values.
 	 *

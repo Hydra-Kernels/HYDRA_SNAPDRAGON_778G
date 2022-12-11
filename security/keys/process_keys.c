@@ -109,6 +109,7 @@ int look_up_user_keyrings(struct key **_user_keyring,
 					    KEY_ALLOC_IN_QUOTA,
 					    NULL, reg_keyring);
 		if (IS_ERR(uid_keyring)) {
+<<<<<<< HEAD
 			ret = PTR_ERR(uid_keyring);
 			goto error;
 		}
@@ -117,6 +118,46 @@ int look_up_user_keyrings(struct key **_user_keyring,
 		goto error;
 	} else {
 		uid_keyring = key_ref_to_ptr(uid_keyring_r);
+=======
+			uid_keyring = keyring_alloc(buf, user->uid, INVALID_GID,
+						    cred, user_keyring_perm,
+						    KEY_ALLOC_UID_KEYRING |
+							KEY_ALLOC_IN_QUOTA,
+						    NULL);
+			if (IS_ERR(uid_keyring)) {
+				ret = PTR_ERR(uid_keyring);
+				goto error;
+			}
+		}
+
+		/* get a default session keyring (which might also exist
+		 * already) */
+		sprintf(buf, "_uid_ses.%u", uid);
+
+		session_keyring = find_keyring_by_name(buf, true);
+		if (IS_ERR(session_keyring)) {
+			session_keyring =
+				keyring_alloc(buf, user->uid, INVALID_GID,
+					      cred, user_keyring_perm,
+					      KEY_ALLOC_UID_KEYRING |
+						  KEY_ALLOC_IN_QUOTA,
+					      NULL);
+			if (IS_ERR(session_keyring)) {
+				ret = PTR_ERR(session_keyring);
+				goto error_release;
+			}
+
+			/* we install a link from the user session keyring to
+			 * the user keyring */
+			ret = key_link(session_keyring, uid_keyring);
+			if (ret < 0)
+				goto error_release_both;
+		}
+
+		/* install the keyrings */
+		user->uid_keyring = uid_keyring;
+		user->session_keyring = session_keyring;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Get a default session keyring (which might also exist already) */
@@ -179,6 +220,7 @@ error:
 }
 
 /*
+<<<<<<< HEAD
  * Get the user session keyring if it exists, but don't create it if it
  * doesn't.
  */
@@ -213,6 +255,8 @@ struct key *get_user_session_keyring_rcu(const struct cred *cred)
 }
 
 /*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Install a thread keyring to the given credentials struct if it didn't have
  * one already.  This is allowed to overrun the quota.
  *
@@ -310,7 +354,10 @@ static int install_process_keyring(void)
  * Install the given keyring as the session keyring of the given credentials
  * struct, replacing the existing one if any.  If the given keyring is NULL,
  * then install a new anonymous session keyring.
+<<<<<<< HEAD
  * @cred can not be in use by any task yet.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Return: 0 on success; -errno on failure.
  */
@@ -879,6 +926,7 @@ long join_session_keyring(const char *name)
 		ret = PTR_ERR(keyring);
 		goto error2;
 	} else if (keyring == new->session_keyring) {
+		key_put(keyring);
 		ret = 0;
 		goto error3;
 	}

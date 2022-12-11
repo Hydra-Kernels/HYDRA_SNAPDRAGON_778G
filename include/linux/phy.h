@@ -971,6 +971,7 @@ static inline bool phy_interface_mode_is_rgmii(phy_interface_t mode)
 };
 
 /**
+<<<<<<< HEAD
  * phy_interface_mode_is_8023z() - does the phy interface mode use 802.3z
  *   negotiation
  * @mode: one of &enum phy_interface_t
@@ -985,6 +986,8 @@ static inline bool phy_interface_mode_is_8023z(phy_interface_t mode)
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * phy_interface_is_rgmii - Convenience function for testing if a PHY interface
  * is RGMII (all variants)
  * @phydev: the phy_device struct
@@ -1104,16 +1107,20 @@ int genphy_suspend(struct phy_device *phydev);
 int genphy_resume(struct phy_device *phydev);
 int genphy_loopback(struct phy_device *phydev, bool enable);
 int genphy_soft_reset(struct phy_device *phydev);
+<<<<<<< HEAD
 
 static inline int genphy_config_aneg(struct phy_device *phydev)
 {
 	return __genphy_config_aneg(phydev, false);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline int genphy_no_soft_reset(struct phy_device *phydev)
 {
 	return 0;
 }
+<<<<<<< HEAD
 static inline int genphy_no_ack_interrupt(struct phy_device *phydev)
 {
 	return 0;
@@ -1156,6 +1163,8 @@ static inline int phy_read_status(struct phy_device *phydev)
 		return genphy_read_status(phydev);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void phy_driver_unregister(struct phy_driver *drv);
 void phy_drivers_unregister(struct phy_driver *drv, int n);
 int phy_driver_register(struct phy_driver *new_driver, struct module *owner);

@@ -571,7 +571,10 @@ void wil_fw_recovery(struct wil6210_priv *wil)
 	if (wil_wait_for_recovery(wil) != 0)
 		return;
 
+<<<<<<< HEAD
 	rtnl_lock();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_lock(&wil->mutex);
 	/* Needs adaptation for multiple VIFs
 	 * need to go over all VIFs and consider the appropriate

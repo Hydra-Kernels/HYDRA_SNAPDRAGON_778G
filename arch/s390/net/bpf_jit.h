@@ -33,6 +33,18 @@
  *	      |		      |     |
  *	      |   BPF stack   |     |
  *	      |		      |     |
+<<<<<<< HEAD
+=======
+ *	      +---------------+     |
+ *	      | 8 byte skbp   |     |
+ * R15+176 -> +---------------+     |
+ *	      | 8 byte hlen   |     |
+ * R15+168 -> +---------------+     |
+ *	      | 4 byte align  |     |
+ *	      +---------------+     |
+ *	      | 4 byte temp   |     |
+ *	      | for bpf_jit.S |     |
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * R15+160 -> +---------------+     |
  *	      | new backchain |     |
  * R15+152 -> +---------------+     |
@@ -47,7 +59,14 @@
  */
 #define STK_SPACE_ADD	(160)
 #define STK_160_UNUSED	(160 - 12 * 8)
+<<<<<<< HEAD
 #define STK_OFF		(STK_SPACE_ADD - STK_160_UNUSED)
+=======
+#define STK_OFF		(STK_SPACE - STK_160_UNUSED)
+#define STK_OFF_TMP	160	/* Offset of tmp buffer on stack */
+#define STK_OFF_HLEN	168	/* Offset of SKB header length on stack */
+#define STK_OFF_SKBP	176	/* Offset of SKB pointer on stack */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define STK_OFF_R6	(160 - 11 * 8)	/* Offset of r6 on stack */
 #define STK_OFF_TCCNT	(160 - 12 * 8)	/* Offset of tail_call_cnt on stack */

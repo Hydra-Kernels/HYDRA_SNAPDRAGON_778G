@@ -21,6 +21,7 @@
 #include <asm/diag.h>
 #include <asm/facility.h>
 #include <asm/elf.h>
+#include <asm/facility.h>
 #include <asm/lowcore.h>
 #include <asm/param.h>
 #include <asm/smp.h>

@@ -25,6 +25,7 @@ static inline struct backing_dev_info *bdi_get(struct backing_dev_info *bdi)
 	return bdi;
 }
 
+<<<<<<< HEAD
 struct backing_dev_info *bdi_get_by_id(u64 id);
 void bdi_put(struct backing_dev_info *bdi);
 
@@ -33,6 +34,12 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...);
 __printf(2, 0)
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt,
 		    va_list args);
+=======
+__printf(3, 4)
+int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+		const char *fmt, ...);
+int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int bdi_register_owner(struct backing_dev_info *bdi, struct device *owner);
 void bdi_unregister(struct backing_dev_info *bdi);
 
@@ -378,7 +385,11 @@ unlocked_inode_to_wb_begin(struct inode *inode, struct wb_lock_cookie *cookie)
 	cookie->locked = smp_load_acquire(&inode->i_state) & I_WB_SWITCH;
 
 	if (unlikely(cookie->locked))
+<<<<<<< HEAD
 		xa_lock_irqsave(&inode->i_mapping->i_pages, cookie->flags);
+=======
+		spin_lock_irqsave(&inode->i_mapping->tree_lock, cookie->flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Protected by either !I_WB_SWITCH + rcu_read_lock() or the i_pages
@@ -396,7 +407,12 @@ static inline void unlocked_inode_to_wb_end(struct inode *inode,
 					    struct wb_lock_cookie *cookie)
 {
 	if (unlikely(cookie->locked))
+<<<<<<< HEAD
 		xa_unlock_irqrestore(&inode->i_mapping->i_pages, cookie->flags);
+=======
+		spin_unlock_irqrestore(&inode->i_mapping->tree_lock,
+				       cookie->flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcu_read_unlock();
 }

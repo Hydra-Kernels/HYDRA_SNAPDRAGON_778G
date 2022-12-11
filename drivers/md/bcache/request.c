@@ -481,11 +481,19 @@ struct search {
 	struct bio		*cache_miss;
 	struct bcache_device	*d;
 
+<<<<<<< HEAD
 	unsigned int		insert_bio_sectors;
 	unsigned int		recoverable:1;
 	unsigned int		write:1;
 	unsigned int		read_dirty_data:1;
 	unsigned int		cache_missed:1;
+=======
+	unsigned		insert_bio_sectors;
+	unsigned		recoverable:1;
+	unsigned		write:1;
+	unsigned		read_dirty_data:1;
+	unsigned		cache_missed:1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	unsigned long		start_time;
 
@@ -713,8 +721,11 @@ static void do_bio_hook(struct search *s,
 static void search_free(struct closure *cl)
 {
 	struct search *s = container_of(cl, struct search, cl);
+<<<<<<< HEAD
 
 	atomic_dec(&s->iop.c->search_inflight);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (s->iop.bio)
 		bio_put(s->iop.bio);
@@ -875,7 +886,11 @@ static void cached_dev_read_done_bh(struct closure *cl)
 
 	bch_mark_cache_accounting(s->iop.c, s->d,
 				  !s->cache_missed, s->iop.bypass);
+<<<<<<< HEAD
 	trace_bcache_read(s->orig_bio, !s->cache_missed, s->iop.bypass);
+=======
+	trace_bcache_read(s->orig_bio, !s->cache_miss, s->iop.bypass);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (s->iop.status)
 		continue_at_nobarrier(cl, cached_dev_read_error, bcache_wq);

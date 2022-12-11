@@ -243,6 +243,11 @@ static void output_pgtable_bits_defines(void)
 #ifdef CONFIG_MIPS_HUGE_TLB_SUPPORT
 	pr_define("_PAGE_HUGE_SHIFT %d\n", _PAGE_HUGE_SHIFT);
 #endif
+<<<<<<< HEAD
+=======
+#if defined(CONFIG_CPU_MIPSR2) || defined(CONFIG_CPU_MIPSR6)
+	if (cpu_has_rixi) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef _PAGE_NO_EXEC_SHIFT
 	if (cpu_has_rixi)
 		pr_define("_PAGE_NO_EXEC_SHIFT %d\n", _PAGE_NO_EXEC_SHIFT);

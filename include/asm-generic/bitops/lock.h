@@ -54,6 +54,7 @@ static inline void clear_bit_unlock(unsigned int nr, volatile unsigned long *p)
  *
  * See for example x86's implementation.
  */
+<<<<<<< HEAD
 static inline void __clear_bit_unlock(unsigned int nr,
 				      volatile unsigned long *p)
 {
@@ -87,5 +88,12 @@ static inline bool clear_bit_unlock_is_negative_byte(unsigned int nr,
 }
 #define clear_bit_unlock_is_negative_byte clear_bit_unlock_is_negative_byte
 #endif
+=======
+#define __clear_bit_unlock(nr, addr)	\
+do {					\
+	smp_mb__before_atomic();	\
+	clear_bit(nr, addr);		\
+} while (0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* _ASM_GENERIC_BITOPS_LOCK_H_ */

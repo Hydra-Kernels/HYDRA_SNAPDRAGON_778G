@@ -56,7 +56,11 @@ static enum odd_mech_type zpodd_get_mech_type(struct ata_device *dev)
 	unsigned int ret;
 	struct rm_feature_desc *desc;
 	struct ata_taskfile tf;
+<<<<<<< HEAD
 	static const char cdb[ATAPI_CDB_LEN] = {  GPCMD_GET_CONFIGURATION,
+=======
+	static const char cdb[] = {  GPCMD_GET_CONFIGURATION,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			2,      /* only 1 feature descriptor requested */
 			0, 3,   /* 3, removable medium feature */
 			0, 0, 0,/* reserved */

@@ -1768,7 +1768,19 @@ static int modify_qp(struct uverbs_attr_bundle *attrs,
 	struct ib_qp *qp;
 	int ret;
 
+<<<<<<< HEAD
 	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
+=======
+	if ((cmd.attr_mask & IB_QP_PORT) &&
+	    (cmd.port_num < rdma_start_port(ib_dev) ||
+	     cmd.port_num > rdma_end_port(ib_dev)))
+		return -EINVAL;
+
+	INIT_UDATA(&udata, buf + sizeof cmd, NULL, in_len - sizeof cmd,
+		   out_len);
+
+	attr = kmalloc(sizeof *attr, GFP_KERNEL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!attr)
 		return -ENOMEM;
 
@@ -2411,10 +2423,20 @@ static int ib_uverbs_create_ah(struct uverbs_attr_bundle *attrs)
 	if (IS_ERR(uobj))
 		return PTR_ERR(uobj);
 
+<<<<<<< HEAD
 	if (!rdma_is_port_valid(ib_dev, cmd.attr.port_num)) {
 		ret = -EINVAL;
 		goto err;
 	}
+=======
+	if (cmd.attr.port_num < rdma_start_port(ib_dev) ||
+	    cmd.attr.port_num > rdma_end_port(ib_dev))
+		return -EINVAL;
+
+	uobj = kmalloc(sizeof *uobj, GFP_KERNEL);
+	if (!uobj)
+		return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pd = uobj_get_obj_read(pd, UVERBS_OBJECT_PD, cmd.pd_handle, attrs);
 	if (!pd) {

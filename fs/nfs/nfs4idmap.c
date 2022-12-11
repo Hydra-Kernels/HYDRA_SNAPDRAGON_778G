@@ -585,7 +585,11 @@ static int nfs_idmap_legacy_upcall(struct key *authkey, void *aux)
 	struct rpc_pipe_msg *msg;
 	struct idmap_msg *im;
 	struct idmap *idmap = (struct idmap *)aux;
+<<<<<<< HEAD
 	struct key *key = rka->target_key;
+=======
+	struct key *key = cons->key;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret = -ENOKEY;
 
 	if (!aux)

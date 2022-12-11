@@ -862,9 +862,12 @@ lpfc_cmpl_els_flogi_nport(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 	vport->fc_flag |= FC_PT2PT;
 	spin_unlock_irq(shost->host_lock);
 
+<<<<<<< HEAD
 	/* If we are pt2pt with another NPort, force NPIV off! */
 	phba->sli3_options &= ~LPFC_SLI3_NPIV_ENABLED;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* If physical FC port changed, unreg VFI and ALL VPIs / RPIs */
 	if ((phba->sli_rev == LPFC_SLI_REV4) && phba->fc_topology_changed) {
 		lpfc_unregister_fcf_prep(phba);
@@ -944,8 +947,26 @@ lpfc_cmpl_els_flogi_nport(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 		 */
 		lpfc_nlp_put(ndlp);
 
+<<<<<<< HEAD
 		/* Start discovery - this should just do CLEAR_LA */
 		lpfc_disc_start(vport);
+=======
+	/* If we are pt2pt with another NPort, force NPIV off! */
+	phba->sli3_options &= ~LPFC_SLI3_NPIV_ENABLED;
+
+	mbox = mempool_alloc(phba->mbox_mem_pool, GFP_KERNEL);
+	if (!mbox)
+		goto fail;
+
+	lpfc_config_link(phba, mbox);
+
+	mbox->mbox_cmpl = lpfc_mbx_cmpl_local_config_link;
+	mbox->vport = vport;
+	rc = lpfc_sli_issue_mbox(phba, mbox, MBX_NOWAIT);
+	if (rc == MBX_NOT_FINISHED) {
+		mempool_free(mbox, phba->mbox_mem_pool);
+		goto fail;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -2197,8 +2218,12 @@ lpfc_issue_els_plogi(struct lpfc_vport *vport, uint32_t did, uint8_t retry)
 		sp->cmn.fcphHigh = FC_PH3;
 
 	sp->cmn.valid_vendor_ver_level = 0;
+<<<<<<< HEAD
 	memset(sp->un.vendorVersion, 0, sizeof(sp->un.vendorVersion));
 	sp->cmn.bbRcvSizeMsb &= 0xF;
+=======
+	memset(sp->vendorVersion, 0, sizeof(sp->vendorVersion));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	lpfc_debugfs_disc_trc(vport, LPFC_DISC_TRC_ELS_CMD,
 		"Issue PLOGI:     did:x%x",
@@ -4585,6 +4610,7 @@ lpfc_els_rsp_acc(struct lpfc_vport *vport, uint32_t flag,
 			       sizeof(struct serv_parm));
 
 			sp->cmn.valid_vendor_ver_level = 0;
+<<<<<<< HEAD
 			memset(sp->un.vendorVersion, 0,
 			       sizeof(sp->un.vendorVersion));
 			sp->cmn.bbRcvSizeMsb &= 0xF;
@@ -4598,6 +4624,9 @@ lpfc_els_rsp_acc(struct lpfc_vport *vport, uint32_t flag,
 				sp->un.vv.flags =
 					cpu_to_be32(LPFC_VV_SUPPRESS_RSP);
 			}
+=======
+			memset(sp->vendorVersion, 0, sizeof(sp->vendorVersion));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		lpfc_debugfs_disc_trc(vport, LPFC_DISC_TRC_ELS_RSP,
@@ -5626,12 +5655,15 @@ lpfc_rdp_res_speed(struct fc_rdp_port_speed_desc *desc, struct lpfc_hba *phba)
 	case LPFC_LINK_SPEED_16GHZ:
 		rdp_speed = RDP_PS_16GB;
 		break;
+<<<<<<< HEAD
 	case LPFC_LINK_SPEED_32GHZ:
 		rdp_speed = RDP_PS_32GB;
 		break;
 	case LPFC_LINK_SPEED_64GHZ:
 		rdp_speed = RDP_PS_64GB;
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		rdp_speed = RDP_PS_UNKNOWN;
 		break;
@@ -6810,11 +6842,20 @@ lpfc_els_rcv_flogi(struct lpfc_vport *vport, struct lpfc_iocbq *cmdiocb,
 
 	(void) lpfc_check_sparm(vport, ndlp, sp, CLASS3, 1);
 
+<<<<<<< HEAD
 	/*
 	 * If our portname is greater than the remote portname,
 	 * then we initiate Nport login.
 	 */
 
+=======
+
+	/*
+	 * If our portname is greater than the remote portname,
+	 * then we initiate Nport login.
+	 */
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rc = memcmp(&vport->fc_portname, &sp->portName,
 		    sizeof(struct lpfc_name));
 
@@ -6869,11 +6910,14 @@ lpfc_els_rcv_flogi(struct lpfc_vport *vport, struct lpfc_iocbq *cmdiocb,
 	port_state = vport->port_state;
 	vport->fc_flag |= FC_PT2PT;
 	vport->fc_flag &= ~(FC_FABRIC | FC_PUBLIC_LOOP);
+<<<<<<< HEAD
 
 	/* Acking an unsol FLOGI.  Count 1 for link bounce
 	 * work-around.
 	 */
 	vport->rcv_flogi_cnt++;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock_irq(shost->host_lock);
 	lpfc_printf_vlog(vport, KERN_INFO, LOG_ELS,
 			 "3311 Rcv Flogi PS x%x new PS x%x "
@@ -6890,6 +6934,7 @@ lpfc_els_rcv_flogi(struct lpfc_vport *vport, struct lpfc_iocbq *cmdiocb,
 	vport->fc_myDID = Fabric_DID;
 
 	memcpy(&phba->fc_fabparam, sp, sizeof(struct serv_parm));
+<<<<<<< HEAD
 
 	/* Defer ACC response until AFTER we issue a FLOGI */
 	if (!(phba->hba_flag & HBA_FLOGI_ISSUED)) {
@@ -6909,6 +6954,8 @@ lpfc_els_rcv_flogi(struct lpfc_vport *vport, struct lpfc_iocbq *cmdiocb,
 
 		return 0;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Send back ACC */
 	lpfc_els_rsp_acc(vport, ELS_CMD_FLOGI, cmdiocb, ndlp, NULL);
@@ -8426,9 +8473,14 @@ lpfc_els_unsol_buffer(struct lpfc_hba *phba, struct lpfc_sli_ring *pring,
 
 	/* reject till our FLOGI completes or PLOGI assigned DID via PT2PT */
 	if ((vport->port_state < LPFC_FABRIC_CFG_LINK) &&
+<<<<<<< HEAD
 	    (cmd != ELS_CMD_FLOGI) &&
 	    !((cmd == ELS_CMD_PLOGI) && (vport->fc_flag & FC_PT2PT))) {
 		rjt_err = LSRJT_LOGICAL_BSY;
+=======
+	    (cmd != ELS_CMD_FLOGI)) {
+		rjt_err = LSRJT_UNABLE_TPC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rjt_exp = LSEXP_NOTHING_MORE;
 		goto lsrjt;
 	}

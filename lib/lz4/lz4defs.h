@@ -34,6 +34,7 @@
  *	Changed for kernel usage by:
  *	Sven Schmidt <4sschmid@informatik.uni-hamburg.de>
  */
+<<<<<<< HEAD
 
 #include <asm/unaligned.h>
 #include <linux/string.h>	 /* memset, memcpy */
@@ -55,16 +56,66 @@ typedef uintptr_t uptrval;
 /*-************************************
  *	Architecture specifics
  **************************************/
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if defined(CONFIG_64BIT)
 #define LZ4_ARCH64 1
 #else
 #define LZ4_ARCH64 0
 #endif
 
+<<<<<<< HEAD
 #if defined(__LITTLE_ENDIAN)
 #define LZ4_LITTLE_ENDIAN 1
 #else
 #define LZ4_LITTLE_ENDIAN 0
+=======
+/*
+ * Architecture-specific macros
+ */
+#define BYTE	u8
+typedef struct _U16_S { u16 v; } U16_S;
+typedef struct _U32_S { u32 v; } U32_S;
+typedef struct _U64_S { u64 v; } U64_S;
+#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)		\
+	|| defined(CONFIG_ARM) && __LINUX_ARM_ARCH__ >= 6	\
+	&& defined(ARM_EFFICIENT_UNALIGNED_ACCESS)
+
+#define A16(x) (((U16_S *)(x))->v)
+#define A32(x) (((U32_S *)(x))->v)
+#define A64(x) (((U64_S *)(x))->v)
+
+#define PUT4(s, d) (A32(d) = A32(s))
+#define PUT8(s, d) (A64(d) = A64(s))
+
+#define LZ4_READ_LITTLEENDIAN_16(d, s, p)	\
+	(d = s - A16(p))
+
+#define LZ4_WRITE_LITTLEENDIAN_16(p, v)	\
+	do {	\
+		A16(p) = v; \
+		p += 2; \
+	} while (0)
+#else /* CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
+
+#define A64(x) get_unaligned((u64 *)&(((U16_S *)(x))->v))
+#define A32(x) get_unaligned((u32 *)&(((U16_S *)(x))->v))
+#define A16(x) get_unaligned((u16 *)&(((U16_S *)(x))->v))
+
+#define PUT4(s, d) \
+	put_unaligned(get_unaligned((const u32 *) s), (u32 *) d)
+#define PUT8(s, d) \
+	put_unaligned(get_unaligned((const u64 *) s), (u64 *) d)
+
+#define LZ4_READ_LITTLEENDIAN_16(d, s, p)	\
+	(d = s - get_unaligned_le16(p))
+
+#define LZ4_WRITE_LITTLEENDIAN_16(p, v)			\
+	do {						\
+		put_unaligned_le16(v, (u16 *)(p));	\
+		p += 2;					\
+	} while (0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /*-************************************
@@ -234,3 +285,18 @@ typedef enum { decode_full_block = 0, partial_decode = 1 } earlyEnd_directive;
 #define LZ4_STATIC_ASSERT(c)	BUILD_BUG_ON(!(c))
 
 #endif
+<<<<<<< HEAD
+=======
+
+#define LZ4_WILDCOPY(s, d, e)		\
+	do {				\
+		LZ4_COPYPACKET(s, d);	\
+	} while (d < e)
+
+#define LZ4_BLINDCOPY(s, d, l)	\
+	do {	\
+		u8 *e = (d) + l;	\
+		LZ4_WILDCOPY(s, d, e);	\
+		d = e;	\
+	} while (0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

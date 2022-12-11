@@ -62,6 +62,28 @@ void core_tmr_release_req(struct se_tmr_req *tmr)
 	kfree(tmr);
 }
 
+<<<<<<< HEAD
+=======
+static int core_tmr_handle_tas_abort(struct se_cmd *cmd, int tas)
+{
+	unsigned long flags;
+	bool remove = true, send_tas;
+	/*
+	 * TASK ABORTED status (TAS) bit support
+	 */
+	spin_lock_irqsave(&cmd->t_state_lock, flags);
+	send_tas = (cmd->transport_state & CMD_T_TAS);
+	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
+
+	if (send_tas) {
+		remove = false;
+		transport_send_task_abort(cmd);
+	}
+
+	return transport_cmd_finish_abort(cmd, remove);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int target_check_cdb_and_preempt(struct list_head *list,
 		struct se_cmd *cmd)
 {
@@ -101,6 +123,24 @@ static bool __target_check_io_state(struct se_cmd *se_cmd,
 		spin_unlock(&se_cmd->t_state_lock);
 		return false;
 	}
+<<<<<<< HEAD
+=======
+	if (se_cmd->transport_state & CMD_T_PRE_EXECUTE) {
+		if (se_cmd->scsi_status) {
+			pr_debug("Attempted to abort io tag: %llu early failure"
+				 " status: 0x%02x\n", se_cmd->tag,
+				 se_cmd->scsi_status);
+			spin_unlock(&se_cmd->t_state_lock);
+			return false;
+		}
+	}
+	if (sess->sess_tearing_down || se_cmd->cmd_wait_set) {
+		pr_debug("Attempted to abort io tag: %llu already shutdown,"
+			" skipping\n", se_cmd->tag);
+		spin_unlock(&se_cmd->t_state_lock);
+		return false;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	se_cmd->transport_state |= CMD_T_ABORTED;
 
 	if ((tmr_sess != se_cmd->se_sess) && tas)
@@ -135,12 +175,22 @@ void core_tmr_abort_task(
 			continue;
 
 		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
+<<<<<<< HEAD
 			se_cmd->se_tfo->fabric_name, ref_tag);
 
 		if (!__target_check_io_state(se_cmd, se_sess,
 					     dev->dev_attrib.emulate_tas))
 			continue;
 
+=======
+			se_cmd->se_tfo->get_fabric_name(), ref_tag);
+
+		if (!__target_check_io_state(se_cmd, se_sess, 0)) {
+			spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+			goto out;
+		}
+		list_del_init(&se_cmd->se_cmd_list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
 
 		/*
@@ -151,7 +201,12 @@ void core_tmr_abort_task(
 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd,
 						se_cmd->orig_fe_lun) < 0);
 
+<<<<<<< HEAD
 		target_put_cmd_and_wait(se_cmd);
+=======
+		if (!transport_cmd_finish_abort(se_cmd, true))
+			target_put_sess_cmd(se_cmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
 				" ref_tag: %llu\n", ref_tag);
@@ -204,6 +259,7 @@ static void core_tmr_drain_tmr_list(
 			continue;
 
 		spin_lock(&sess->sess_cmd_lock);
+<<<<<<< HEAD
 		rc = __target_check_io_state(cmd, sess, 0);
 		spin_unlock(&sess->sess_cmd_lock);
 
@@ -211,6 +267,35 @@ static void core_tmr_drain_tmr_list(
 			printk("LUN_RESET TMR: non-zero kref_get_unless_zero\n");
 			continue;
 		}
+=======
+		spin_lock(&cmd->t_state_lock);
+		if (!(cmd->transport_state & CMD_T_ACTIVE) ||
+		     (cmd->transport_state & CMD_T_FABRIC_STOP)) {
+			spin_unlock(&cmd->t_state_lock);
+			spin_unlock(&sess->sess_cmd_lock);
+			continue;
+		}
+		if (cmd->t_state == TRANSPORT_ISTATE_PROCESSING) {
+			spin_unlock(&cmd->t_state_lock);
+			spin_unlock(&sess->sess_cmd_lock);
+			continue;
+		}
+		if (sess->sess_tearing_down || cmd->cmd_wait_set) {
+			spin_unlock(&cmd->t_state_lock);
+			spin_unlock(&sess->sess_cmd_lock);
+			continue;
+		}
+		cmd->transport_state |= CMD_T_ABORTED;
+		spin_unlock(&cmd->t_state_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+		rc = kref_get_unless_zero(&cmd->cmd_kref);
+		if (!rc) {
+			printk("LUN_RESET TMR: non-zero kref_get_unless_zero\n");
+			spin_unlock(&sess->sess_cmd_lock);
+			continue;
+		}
+		spin_unlock(&sess->sess_cmd_lock);
 
 		list_move_tail(&tmr_p->tmr_list, &drain_tmr_list);
 	}
@@ -225,7 +310,15 @@ static void core_tmr_drain_tmr_list(
 			(preempt_and_abort_list) ? "Preempt" : "", tmr_p,
 			tmr_p->function, tmr_p->response, cmd->t_state);
 
+<<<<<<< HEAD
 		target_put_cmd_and_wait(cmd);
+=======
+		cancel_work_sync(&cmd->work);
+		transport_wait_for_tasks(cmd);
+
+		if (!transport_cmd_finish_abort(cmd, 1))
+			target_put_sess_cmd(cmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -321,7 +414,22 @@ static void core_tmr_drain_state_list(
 			 cmd->tag, (preempt_and_abort_list) ? "preempt" : "",
 			 cmd->pr_res_key);
 
+<<<<<<< HEAD
 		target_put_cmd_and_wait(cmd);
+=======
+		/*
+		 * If the command may be queued onto a workqueue cancel it now.
+		 *
+		 * This is equivalent to removal from the execute queue in the
+		 * loop above, but we do it down here given that
+		 * cancel_work_sync may block.
+		 */
+		cancel_work_sync(&cmd->work);
+		transport_wait_for_tasks(cmd);
+
+		if (!core_tmr_handle_tas_abort(cmd, tas))
+			target_put_sess_cmd(cmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

@@ -35,10 +35,15 @@
 
 #include "hyperv_net.h"
 
+<<<<<<< HEAD
 #define RING_SIZE_MIN	64
 #define RETRY_US_LO	5000
 #define RETRY_US_HI	10000
 #define RETRY_MAX	2000	/* >10 sec */
+=======
+/* Restrict GSO size to account for NVGRE */
+#define NETVSC_GSO_MAX_SIZE	62768
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define LINKCHANGE_INT (2 * HZ)
 #define VF_TAKEOVER_INT (HZ / 10)
@@ -243,6 +248,7 @@ static inline void *init_ppi_data(struct rndis_message *msg,
 	return ppi + 1;
 }
 
+<<<<<<< HEAD
 /* Azure hosts don't support non-TCP port numbers in hashing for fragmented
  * packets. We can use ethtool to change UDP hash level when necessary.
  */
@@ -335,6 +341,23 @@ static u16 netvsc_pick_tx(struct net_device *ndev, struct sk_buff *skb)
 		else
 			q_idx = netvsc_get_tx_queue(ndev, skb, q_idx);
 	}
+=======
+static u16 netvsc_select_queue(struct net_device *ndev, struct sk_buff *skb,
+			void *accel_priv, select_queue_fallback_t fallback)
+{
+	struct net_device_context *net_device_ctx = netdev_priv(ndev);
+	struct hv_device *hdev =  net_device_ctx->device_ctx;
+	struct netvsc_device *nvsc_dev = hv_get_drvdata(hdev);
+	u32 hash;
+	u16 q_idx = 0;
+
+	if (nvsc_dev == NULL || ndev->real_num_tx_queues <= 1)
+		return 0;
+
+	hash = skb_get_hash(skb);
+	q_idx = nvsc_dev->send_table[hash % VRSS_SEND_TAB_SIZE] %
+		ndev->real_num_tx_queues;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return q_idx;
 }
@@ -2317,12 +2340,19 @@ static int netvsc_probe(struct hv_device *dev,
 		goto devinfo_failed;
 	}
 
+<<<<<<< HEAD
 	nvdev = rndis_filter_device_add(dev, device_info);
 	if (IS_ERR(nvdev)) {
 		ret = PTR_ERR(nvdev);
 		netdev_err(net, "unable to add netvsc device (ret %d)\n", ret);
 		goto rndis_failed;
 	}
+=======
+	nvdev = hv_get_drvdata(dev);
+	netif_set_real_num_tx_queues(net, nvdev->num_chn);
+	netif_set_real_num_rx_queues(net, nvdev->num_chn);
+	netif_set_gso_max_size(net, NETVSC_GSO_MAX_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memcpy(net->dev_addr, device_info->mac_adr, ETH_ALEN);
 

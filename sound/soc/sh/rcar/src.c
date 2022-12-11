@@ -455,8 +455,16 @@ static int rsnd_src_init(struct rsnd_mod *mod,
 {
 	struct rsnd_src *src = rsnd_mod_to_src(mod);
 
+<<<<<<< HEAD
 	/* reset sync convert_rate */
 	src->sync.val = 0;
+=======
+	/*
+	 * stop SRC output only
+	 * see rsnd_src_quit_gen2
+	 */
+	rsnd_mod_write(mod, SRC_CTRL, 0x01);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rsnd_mod_power_on(mod);
 
@@ -469,6 +477,7 @@ static int rsnd_src_init(struct rsnd_mod *mod,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int rsnd_src_quit(struct rsnd_mod *mod,
 			 struct rsnd_dai_stream *io,
 			 struct rsnd_priv *priv)
@@ -481,12 +490,25 @@ static int rsnd_src_quit(struct rsnd_mod *mod,
 
 	/* reset sync convert_rate */
 	src->sync.val = 0;
+=======
+static int rsnd_src_quit_gen2(struct rsnd_mod *mod,
+			      struct rsnd_dai_stream *io,
+			      struct rsnd_priv *priv)
+{
+	/* stop both out/in */
+	rsnd_mod_write(mod, SRC_CTRL, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
 
+<<<<<<< HEAD
 static void __rsnd_src_interrupt(struct rsnd_mod *mod,
 				 struct rsnd_dai_stream *io)
+=======
+static void __rsnd_src_interrupt_gen2(struct rsnd_mod *mod,
+				      struct rsnd_dai_stream *io)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct rsnd_priv *priv = rsnd_mod_to_priv(mod);
 	bool stop = false;
@@ -588,6 +610,7 @@ static int rsnd_src_pcm_new(struct rsnd_mod *mod,
 	return ret;
 }
 
+<<<<<<< HEAD
 static struct rsnd_mod_ops rsnd_src_ops = {
 	.name		= SRC_NAME,
 	.dma_req	= rsnd_src_dma_req,
@@ -599,6 +622,19 @@ static struct rsnd_mod_ops rsnd_src_ops = {
 	.irq		= rsnd_src_irq,
 	.pcm_new	= rsnd_src_pcm_new,
 	.get_status	= rsnd_mod_get_status,
+=======
+static struct rsnd_mod_ops rsnd_src_gen2_ops = {
+	.name	= SRC_NAME,
+	.dma_req = rsnd_src_dma_req,
+	.probe	= rsnd_src_probe_gen2,
+	.remove	= rsnd_src_remove_gen2,
+	.init	= rsnd_src_init_gen2,
+	.quit	= rsnd_src_quit_gen2,
+	.start	= rsnd_src_start_gen2,
+	.stop	= rsnd_src_stop_gen2,
+	.hw_params = rsnd_src_hw_params,
+	.pcm_new = rsnd_src_pcm_new_gen2,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct rsnd_mod *rsnd_src_mod_get(struct rsnd_priv *priv, int id)

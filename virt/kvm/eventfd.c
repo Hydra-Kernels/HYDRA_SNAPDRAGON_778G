@@ -424,6 +424,22 @@ kvm_irqfd_assign(struct kvm *kvm, struct kvm_irqfd *args)
 	 * we might race against the EPOLLHUP
 	 */
 	fdput(f);
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_HAVE_KVM_IRQ_BYPASS
+	irqfd->consumer.token = (void *)irqfd->eventfd;
+	irqfd->consumer.add_producer = kvm_arch_irq_bypass_add_producer;
+	irqfd->consumer.del_producer = kvm_arch_irq_bypass_del_producer;
+	irqfd->consumer.stop = kvm_arch_irq_bypass_stop;
+	irqfd->consumer.start = kvm_arch_irq_bypass_start;
+	ret = irq_bypass_register_consumer(&irqfd->consumer);
+	if (ret)
+		pr_info("irq bypass consumer (token %p) registration fails: %d\n",
+				irqfd->consumer.token, ret);
+#endif
+
+	srcu_read_unlock(&kvm->irq_srcu, idx);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 fail:
@@ -874,9 +890,14 @@ kvm_deassign_ioeventfd_idx(struct kvm *kvm, enum kvm_bus bus_idx,
 			continue;
 
 		kvm_io_bus_unregister_dev(kvm, bus_idx, &p->dev);
+<<<<<<< HEAD
 		bus = kvm_get_bus(kvm, bus_idx);
 		if (bus)
 			bus->ioeventfd_count--;
+=======
+		if (kvm->buses[bus_idx])
+			kvm->buses[bus_idx]->ioeventfd_count--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ioeventfd_release(p);
 		ret = 0;
 		break;

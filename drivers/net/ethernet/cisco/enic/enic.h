@@ -33,7 +33,11 @@
 
 #define DRV_NAME		"enic"
 #define DRV_DESCRIPTION		"Cisco VIC Ethernet NIC Driver"
+<<<<<<< HEAD
 #define DRV_VERSION		"2.3.0.53"
+=======
+#define DRV_VERSION		"2.3.0.20"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define DRV_COPYRIGHT		"Copyright 2008-2013 Cisco Systems, Inc"
 
 #define ENIC_BARS_MAX		6

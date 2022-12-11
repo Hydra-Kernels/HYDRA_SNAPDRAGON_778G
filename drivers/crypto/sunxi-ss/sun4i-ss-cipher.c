@@ -126,6 +126,7 @@ static int noinline_for_stack sun4i_ss_opti_poll(struct skcipher_request *areq)
 release_ss:
 	writel(0, ss->base + SS_CTL);
 	spin_unlock_irqrestore(&ss->slock, flags);
+<<<<<<< HEAD
 	return err;
 }
 
@@ -149,6 +150,8 @@ static int noinline_for_stack sun4i_ss_cipher_poll_fallback(struct skcipher_requ
 		err = crypto_skcipher_encrypt(subreq);
 	skcipher_request_zero(subreq);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -184,7 +187,10 @@ static int sun4i_ss_cipher_poll(struct skcipher_request *areq)
 	unsigned int obo = 0;	/* offset in bufo*/
 	unsigned int obl = 0;	/* length of data in bufo */
 	unsigned long flags;
+<<<<<<< HEAD
 	bool need_fallback = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!areq->cryptlen)
 		return 0;
@@ -216,8 +222,12 @@ static int sun4i_ss_cipher_poll(struct skcipher_request *areq)
 	if (no_chunk == 1 && !need_fallback)
 		return sun4i_ss_opti_poll(areq);
 
+<<<<<<< HEAD
 	if (need_fallback)
 		return sun4i_ss_cipher_poll_fallback(areq);
+=======
+	spin_lock_irqsave(&ss->slock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_irqsave(&ss->slock, flags);
 

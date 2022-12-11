@@ -581,7 +581,14 @@ int subsys_virtual_register(struct bus_type *subsys,
  * @devnode:	Callback to provide the devtmpfs.
  * @class_release: Called to release this class.
  * @dev_release: Called to release the device.
+<<<<<<< HEAD
  * @shutdown_pre: Called at shut-down time before driver shutdown.
+=======
+ * @suspend:	Used to put the device to sleep mode, usually to a low power
+ *		state.
+ * @resume:	Used to bring the device from the sleep mode.
+ * @shutdown:	Called at shut-down time to quiesce the device.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @ns_type:	Callbacks so sysfs can detemine namespaces.
  * @namespace:	Namespace of the device belongs to this class.
  * @get_ownership: Allows class to specify uid/gid of the sysfs directories
@@ -611,7 +618,13 @@ struct class {
 	void (*class_release)(struct class *class);
 	void (*dev_release)(struct device *dev);
 
+<<<<<<< HEAD
 	int (*shutdown_pre)(struct device *dev);
+=======
+	int (*suspend)(struct device *dev, pm_message_t state);
+	int (*resume)(struct device *dev);
+	int (*shutdown)(struct device *dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	const struct kobj_ns_type_operations *ns_type;
 	const void *(*namespace)(struct device *dev);
@@ -1935,7 +1948,11 @@ do {									\
 #define dev_dbg_ratelimited(dev, fmt, ...)				\
 do {									\
 	if (0)								\
+<<<<<<< HEAD
 		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
+=======
+		dev_printk(KERN_DEBUG, dev, fmt, ##__VA_ARGS__);	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } while (0)
 #endif
 

@@ -749,8 +749,12 @@ static const char *const rk3188_critical_clocks[] __initconst = {
 	"hclk_peri",
 	"pclk_cpu",
 	"pclk_peri",
+<<<<<<< HEAD
 	"hclk_cpubus",
 	"hclk_vio_bus",
+=======
+	"hclk_cpubus"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static struct rockchip_clk_provider *__init rk3188_common_clk_init(struct device_node *np)

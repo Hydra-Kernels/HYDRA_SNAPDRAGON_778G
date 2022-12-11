@@ -286,6 +286,7 @@ static int tipc_nl_compat_dumpit(struct tipc_nl_compat_cmd_dump *cmd,
 		return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	nlh = nlmsg_put(arg, 0, 0, tipc_genl_family.id, 0, NLM_F_MULTI);
 	if (!nlh) {
 		kfree_skb(arg);
@@ -299,6 +300,12 @@ static int tipc_nl_compat_dumpit(struct tipc_nl_compat_cmd_dump *cmd,
 	if (err) {
 		kfree_skb(msg->rep);
 		msg->rep = NULL;
+=======
+	err = __tipc_nl_compat_dumpit(cmd, msg, arg);
+	if (err) {
+		kfree_skb(msg->rep);
+		msg->rep = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	kfree_skb(arg);
 

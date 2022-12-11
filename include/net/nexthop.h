@@ -105,7 +105,13 @@ void nexthop_free_rcu(struct rcu_head *head);
 
 static inline bool nexthop_get(struct nexthop *nh)
 {
+<<<<<<< HEAD
 	return refcount_inc_not_zero(&nh->refcnt);
+=======
+	return remaining >= (int)sizeof(*rtnh) &&
+	       rtnh->rtnh_len >= sizeof(*rtnh) &&
+	       rtnh->rtnh_len <= remaining;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void nexthop_put(struct nexthop *nh)

@@ -163,7 +163,19 @@ static void cx_auto_reboot_notify(struct hda_codec *codec)
 {
 	struct conexant_spec *spec = codec->spec;
 
+<<<<<<< HEAD
 	/* Turn the problematic codec into D3 to avoid spurious noises
+=======
+	switch (codec->core.vendor_id) {
+	case 0x14f150f2: /* CX20722 */
+	case 0x14f150f4: /* CX20724 */
+		break;
+	default:
+		return;
+	}
+
+	/* Turn the CX20722 codec into D3 to avoid spurious noises
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	   from the internal speaker during (and after) reboot */
 	cx_auto_turn_eapd(codec, spec->num_eapds, spec->eapds, false);
 	snd_hda_gen_reboot_notify(codec);
@@ -212,9 +224,12 @@ enum {
 	CXT_FIXUP_HP_DOCK,
 	CXT_FIXUP_HP_SPECTRE,
 	CXT_FIXUP_HP_GATE_MIC,
+<<<<<<< HEAD
 	CXT_FIXUP_MUTE_LED_GPIO,
 	CXT_FIXUP_HEADSET_MIC,
 	CXT_FIXUP_HP_MIC_NO_PRESENCE,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* for hda_fixup_thinkpad_acpi() */
@@ -609,6 +624,7 @@ static void cxt_fixup_hp_gate_mic_jack(struct hda_codec *codec,
 		snd_hda_jack_set_gating_jack(codec, 0x19, 0x16);
 }
 
+<<<<<<< HEAD
 /* update LED status via GPIO */
 static void cxt_update_gpio_led(struct hda_codec *codec, unsigned int mask,
 				bool led_on)
@@ -674,6 +690,8 @@ static void cxt_fixup_mute_led_gpio(struct hda_codec *codec,
 }
 
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* ThinkPad X200 & co with cxt5051 */
 static const struct hda_pintbl cxt_pincfg_lenovo_x200[] = {
 	{ 0x16, 0x042140ff }, /* HP (seq# overridden) */
@@ -813,9 +831,13 @@ static const struct hda_fixup cxt_fixups[] = {
 			{ 0x16, 0x21011020 }, /* line-out */
 			{ 0x18, 0x2181103f }, /* line-in */
 			{ }
+<<<<<<< HEAD
 		},
 		.chained = true,
 		.chain_id = CXT_FIXUP_MUTE_LED_GPIO,
+=======
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	[CXT_FIXUP_HP_SPECTRE] = {
 		.type = HDA_FIXUP_PINS,
@@ -829,6 +851,7 @@ static const struct hda_fixup cxt_fixups[] = {
 		.type = HDA_FIXUP_FUNC,
 		.v.func = cxt_fixup_hp_gate_mic_jack,
 	},
+<<<<<<< HEAD
 	[CXT_FIXUP_MUTE_LED_GPIO] = {
 		.type = HDA_FIXUP_FUNC,
 		.v.func = cxt_fixup_mute_led_gpio,
@@ -846,6 +869,8 @@ static const struct hda_fixup cxt_fixups[] = {
 		.chained = true,
 		.chain_id = CXT_FIXUP_HEADSET_MIC,
 	},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static const struct snd_pci_quirk cxt5045_fixups[] = {
@@ -898,6 +923,7 @@ static const struct snd_pci_quirk cxt5066_fixups[] = {
 	SND_PCI_QUIRK(0x103c, 0x8079, "HP EliteBook 840 G3", CXT_FIXUP_HP_DOCK),
 	SND_PCI_QUIRK(0x103c, 0x807C, "HP EliteBook 820 G3", CXT_FIXUP_HP_DOCK),
 	SND_PCI_QUIRK(0x103c, 0x80FD, "HP ProBook 640 G2", CXT_FIXUP_HP_DOCK),
+<<<<<<< HEAD
 	SND_PCI_QUIRK(0x103c, 0x8115, "HP Z1 Gen3", CXT_FIXUP_HP_GATE_MIC),
 	SND_PCI_QUIRK(0x103c, 0x814f, "HP ZBook 15u G3", CXT_FIXUP_MUTE_LED_GPIO),
 	SND_PCI_QUIRK(0x103c, 0x8174, "HP Spectre x360", CXT_FIXUP_HP_SPECTRE),
@@ -915,6 +941,12 @@ static const struct snd_pci_quirk cxt5066_fixups[] = {
 	SND_PCI_QUIRK(0x103c, 0x8456, "HP Z2 G4 SFF", CXT_FIXUP_HP_MIC_NO_PRESENCE),
 	SND_PCI_QUIRK(0x103c, 0x8457, "HP Z2 G4 mini", CXT_FIXUP_HP_MIC_NO_PRESENCE),
 	SND_PCI_QUIRK(0x103c, 0x8458, "HP Z2 G4 mini premium", CXT_FIXUP_HP_MIC_NO_PRESENCE),
+=======
+	SND_PCI_QUIRK(0x103c, 0x83b3, "HP EliteBook 830 G5", CXT_FIXUP_HP_DOCK),
+	SND_PCI_QUIRK(0x103c, 0x83d3, "HP ProBook 640 G4", CXT_FIXUP_HP_DOCK),
+	SND_PCI_QUIRK(0x103c, 0x8174, "HP Spectre x360", CXT_FIXUP_HP_SPECTRE),
+	SND_PCI_QUIRK(0x103c, 0x8115, "HP Z1 Gen3", CXT_FIXUP_HP_GATE_MIC),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	SND_PCI_QUIRK(0x1043, 0x138d, "Asus", CXT_FIXUP_HEADPHONE_MIC_PIN),
 	SND_PCI_QUIRK(0x152d, 0x0833, "OLPC XO-1.5", CXT_FIXUP_OLPC_XO),
 	SND_PCI_QUIRK(0x17aa, 0x20f2, "Lenovo T400", CXT_PINCFG_LENOVO_TP410),
@@ -949,8 +981,11 @@ static const struct hda_model_fixup cxt5066_fixup_models[] = {
 	{ .id = CXT_FIXUP_OLPC_XO, .name = "olpc-xo" },
 	{ .id = CXT_FIXUP_MUTE_LED_EAPD, .name = "mute-led-eapd" },
 	{ .id = CXT_FIXUP_HP_DOCK, .name = "hp-dock" },
+<<<<<<< HEAD
 	{ .id = CXT_FIXUP_MUTE_LED_GPIO, .name = "mute-led-gpio" },
 	{ .id = CXT_FIXUP_HP_MIC_NO_PRESENCE, .name = "hp-mic-fix" },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 

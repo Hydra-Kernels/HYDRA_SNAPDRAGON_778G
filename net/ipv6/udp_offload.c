@@ -63,6 +63,7 @@ static struct sk_buff *udp6_ufo_fragment(struct sk_buff *skb,
 			uh->check = CSUM_MANGLED_0;
 
 		skb->ip_summed = CHECKSUM_UNNECESSARY;
+<<<<<<< HEAD
 
 		/* If there is no outer header we can fake a checksum offload
 		 * due to the fact that we have already done the checksum in
@@ -70,6 +71,8 @@ static struct sk_buff *udp6_ufo_fragment(struct sk_buff *skb,
 		 */
 		if (!skb->encap_hdr_csum)
 			features |= NETIF_F_HW_CSUM;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Check if there is enough headroom to insert fragment header. */
 		tnl_hlen = skb_tnl_header_len(skb);

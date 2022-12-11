@@ -821,8 +821,12 @@ static void lcd_clear_fast_s(struct charlcd *charlcd)
 		lcd_send_serial(0x5F);	/* R/W=W, RS=1 */
 		lcd_send_serial(' ' & 0x0F);
 		lcd_send_serial((' ' >> 4) & 0x0F);
+<<<<<<< HEAD:drivers/auxdisplay/panel.c
 		/* the shortest data takes at least 40 us */
 		udelay(40);
+=======
+		udelay(40);	/* the shortest data takes at least 40 us */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/staging/panel/panel.c
 	}
 	spin_unlock_irq(&pprt_lock);
 }
@@ -872,11 +876,464 @@ static void lcd_clear_fast_tilcd(struct charlcd *charlcd)
 	spin_unlock_irq(&pprt_lock);
 }
 
+<<<<<<< HEAD:drivers/auxdisplay/panel.c
 static const struct charlcd_ops charlcd_serial_ops = {
 	.write_cmd	= lcd_write_cmd_s,
 	.write_data	= lcd_write_data_s,
 	.clear_fast	= lcd_clear_fast_s,
 	.backlight	= lcd_backlight,
+=======
+/* clears the display and resets X/Y */
+static void lcd_clear_display(void)
+{
+	lcd_write_cmd(LCD_CMD_DISPLAY_CLEAR);
+	lcd.addr.x = 0;
+	lcd.addr.y = 0;
+	/* we must wait a few milliseconds (15) */
+	long_sleep(15);
+}
+
+static void lcd_init_display(void)
+{
+	lcd.flags = ((lcd.height > 1) ? LCD_FLAG_N : 0)
+	    | LCD_FLAG_D | LCD_FLAG_C | LCD_FLAG_B;
+
+	long_sleep(20);		/* wait 20 ms after power-up for the paranoid */
+
+	/* 8bits, 1 line, small fonts; let's do it 3 times */
+	lcd_write_cmd(LCD_CMD_FUNCTION_SET | LCD_CMD_DATA_LEN_8BITS);
+	long_sleep(10);
+	lcd_write_cmd(LCD_CMD_FUNCTION_SET | LCD_CMD_DATA_LEN_8BITS);
+	long_sleep(10);
+	lcd_write_cmd(LCD_CMD_FUNCTION_SET | LCD_CMD_DATA_LEN_8BITS);
+	long_sleep(10);
+
+	/* set font height and lines number */
+	lcd_write_cmd(LCD_CMD_FUNCTION_SET | LCD_CMD_DATA_LEN_8BITS
+		      | ((lcd.flags & LCD_FLAG_F) ? LCD_CMD_FONT_5X10_DOTS : 0)
+		      | ((lcd.flags & LCD_FLAG_N) ? LCD_CMD_TWO_LINES : 0)
+	    );
+	long_sleep(10);
+
+	/* display off, cursor off, blink off */
+	lcd_write_cmd(LCD_CMD_DISPLAY_CTRL);
+	long_sleep(10);
+
+	lcd_write_cmd(LCD_CMD_DISPLAY_CTRL	/* set display mode */
+		      | ((lcd.flags & LCD_FLAG_D) ? LCD_CMD_DISPLAY_ON : 0)
+		      | ((lcd.flags & LCD_FLAG_C) ? LCD_CMD_CURSOR_ON : 0)
+		      | ((lcd.flags & LCD_FLAG_B) ? LCD_CMD_BLINK_ON : 0)
+	    );
+
+	lcd_backlight((lcd.flags & LCD_FLAG_L) ? 1 : 0);
+
+	long_sleep(10);
+
+	/* entry mode set : increment, cursor shifting */
+	lcd_write_cmd(LCD_CMD_ENTRY_MODE | LCD_CMD_CURSOR_INC);
+
+	lcd_clear_display();
+}
+
+/*
+ * These are the file operation function for user access to /dev/lcd
+ * This function can also be called from inside the kernel, by
+ * setting file and ppos to NULL.
+ *
+ */
+
+static inline int handle_lcd_special_code(void)
+{
+	/* LCD special codes */
+
+	int processed = 0;
+
+	char *esc = lcd.esc_seq.buf + 2;
+	int oldflags = lcd.flags;
+
+	/* check for display mode flags */
+	switch (*esc) {
+	case 'D':	/* Display ON */
+		lcd.flags |= LCD_FLAG_D;
+		processed = 1;
+		break;
+	case 'd':	/* Display OFF */
+		lcd.flags &= ~LCD_FLAG_D;
+		processed = 1;
+		break;
+	case 'C':	/* Cursor ON */
+		lcd.flags |= LCD_FLAG_C;
+		processed = 1;
+		break;
+	case 'c':	/* Cursor OFF */
+		lcd.flags &= ~LCD_FLAG_C;
+		processed = 1;
+		break;
+	case 'B':	/* Blink ON */
+		lcd.flags |= LCD_FLAG_B;
+		processed = 1;
+		break;
+	case 'b':	/* Blink OFF */
+		lcd.flags &= ~LCD_FLAG_B;
+		processed = 1;
+		break;
+	case '+':	/* Back light ON */
+		lcd.flags |= LCD_FLAG_L;
+		processed = 1;
+		break;
+	case '-':	/* Back light OFF */
+		lcd.flags &= ~LCD_FLAG_L;
+		processed = 1;
+		break;
+	case '*':
+		/* flash back light using the keypad timer */
+		if (scan_timer.function) {
+			if (lcd.light_tempo == 0 &&
+			    ((lcd.flags & LCD_FLAG_L) == 0))
+				lcd_backlight(1);
+			lcd.light_tempo = FLASH_LIGHT_TEMPO;
+		}
+		processed = 1;
+		break;
+	case 'f':	/* Small Font */
+		lcd.flags &= ~LCD_FLAG_F;
+		processed = 1;
+		break;
+	case 'F':	/* Large Font */
+		lcd.flags |= LCD_FLAG_F;
+		processed = 1;
+		break;
+	case 'n':	/* One Line */
+		lcd.flags &= ~LCD_FLAG_N;
+		processed = 1;
+		break;
+	case 'N':	/* Two Lines */
+		lcd.flags |= LCD_FLAG_N;
+		break;
+	case 'l':	/* Shift Cursor Left */
+		if (lcd.addr.x > 0) {
+			/* back one char if not at end of line */
+			if (lcd.addr.x < lcd.bwidth)
+				lcd_write_cmd(LCD_CMD_SHIFT);
+			lcd.addr.x--;
+		}
+		processed = 1;
+		break;
+	case 'r':	/* shift cursor right */
+		if (lcd.addr.x < lcd.width) {
+			/* allow the cursor to pass the end of the line */
+			if (lcd.addr.x < (lcd.bwidth - 1))
+				lcd_write_cmd(LCD_CMD_SHIFT |
+						LCD_CMD_SHIFT_RIGHT);
+			lcd.addr.x++;
+		}
+		processed = 1;
+		break;
+	case 'L':	/* shift display left */
+		lcd_write_cmd(LCD_CMD_SHIFT | LCD_CMD_DISPLAY_SHIFT);
+		processed = 1;
+		break;
+	case 'R':	/* shift display right */
+		lcd_write_cmd(LCD_CMD_SHIFT | LCD_CMD_DISPLAY_SHIFT |
+				LCD_CMD_SHIFT_RIGHT);
+		processed = 1;
+		break;
+	case 'k': {	/* kill end of line */
+		int x;
+
+		for (x = lcd.addr.x; x < lcd.bwidth; x++)
+			lcd_write_data(' ');
+
+		/* restore cursor position */
+		lcd_gotoxy();
+		processed = 1;
+		break;
+	}
+	case 'I':	/* reinitialize display */
+		lcd_init_display();
+		processed = 1;
+		break;
+	case 'G': {
+		/* Generator : LGcxxxxx...xx; must have <c> between '0'
+		 * and '7', representing the numerical ASCII code of the
+		 * redefined character, and <xx...xx> a sequence of 16
+		 * hex digits representing 8 bytes for each character.
+		 * Most LCDs will only use 5 lower bits of the 7 first
+		 * bytes.
+		 */
+
+		unsigned char cgbytes[8];
+		unsigned char cgaddr;
+		int cgoffset;
+		int shift;
+		char value;
+		int addr;
+
+		if (!strchr(esc, ';'))
+			break;
+
+		esc++;
+
+		cgaddr = *(esc++) - '0';
+		if (cgaddr > 7) {
+			processed = 1;
+			break;
+		}
+
+		cgoffset = 0;
+		shift = 0;
+		value = 0;
+		while (*esc && cgoffset < 8) {
+			shift ^= 4;
+			if (*esc >= '0' && *esc <= '9') {
+				value |= (*esc - '0') << shift;
+			} else if (*esc >= 'A' && *esc <= 'Z') {
+				value |= (*esc - 'A' + 10) << shift;
+			} else if (*esc >= 'a' && *esc <= 'z') {
+				value |= (*esc - 'a' + 10) << shift;
+			} else {
+				esc++;
+				continue;
+			}
+
+			if (shift == 0) {
+				cgbytes[cgoffset++] = value;
+				value = 0;
+			}
+
+			esc++;
+		}
+
+		lcd_write_cmd(LCD_CMD_SET_CGRAM_ADDR | (cgaddr * 8));
+		for (addr = 0; addr < cgoffset; addr++)
+			lcd_write_data(cgbytes[addr]);
+
+		/* ensures that we stop writing to CGRAM */
+		lcd_gotoxy();
+		processed = 1;
+		break;
+	}
+	case 'x':	/* gotoxy : LxXXX[yYYY]; */
+	case 'y':	/* gotoxy : LyYYY[xXXX]; */
+		if (!strchr(esc, ';'))
+			break;
+
+		while (*esc) {
+			if (*esc == 'x') {
+				esc++;
+				if (kstrtoul(esc, 10, &lcd.addr.x) < 0)
+					break;
+			} else if (*esc == 'y') {
+				esc++;
+				if (kstrtoul(esc, 10, &lcd.addr.y) < 0)
+					break;
+			} else {
+				break;
+			}
+		}
+
+		lcd_gotoxy();
+		processed = 1;
+		break;
+	}
+
+	/* TODO: This indent party here got ugly, clean it! */
+	/* Check whether one flag was changed */
+	if (oldflags != lcd.flags) {
+		/* check whether one of B,C,D flags were changed */
+		if ((oldflags ^ lcd.flags) &
+		    (LCD_FLAG_B | LCD_FLAG_C | LCD_FLAG_D))
+			/* set display mode */
+			lcd_write_cmd(LCD_CMD_DISPLAY_CTRL
+				      | ((lcd.flags & LCD_FLAG_D)
+						      ? LCD_CMD_DISPLAY_ON : 0)
+				      | ((lcd.flags & LCD_FLAG_C)
+						      ? LCD_CMD_CURSOR_ON : 0)
+				      | ((lcd.flags & LCD_FLAG_B)
+						      ? LCD_CMD_BLINK_ON : 0));
+		/* check whether one of F,N flags was changed */
+		else if ((oldflags ^ lcd.flags) & (LCD_FLAG_F | LCD_FLAG_N))
+			lcd_write_cmd(LCD_CMD_FUNCTION_SET
+				      | LCD_CMD_DATA_LEN_8BITS
+				      | ((lcd.flags & LCD_FLAG_F)
+						      ? LCD_CMD_TWO_LINES : 0)
+				      | ((lcd.flags & LCD_FLAG_N)
+						      ? LCD_CMD_FONT_5X10_DOTS
+								      : 0));
+		/* check whether L flag was changed */
+		else if ((oldflags ^ lcd.flags) & (LCD_FLAG_L)) {
+			if (lcd.flags & (LCD_FLAG_L))
+				lcd_backlight(1);
+			else if (lcd.light_tempo == 0)
+				/*
+				 * switch off the light only when the tempo
+				 * lighting is gone
+				 */
+				lcd_backlight(0);
+		}
+	}
+
+	return processed;
+}
+
+static void lcd_write_char(char c)
+{
+	/* first, we'll test if we're in escape mode */
+	if ((c != '\n') && lcd.esc_seq.len >= 0) {
+		/* yes, let's add this char to the buffer */
+		lcd.esc_seq.buf[lcd.esc_seq.len++] = c;
+		lcd.esc_seq.buf[lcd.esc_seq.len] = 0;
+	} else {
+		/* aborts any previous escape sequence */
+		lcd.esc_seq.len = -1;
+
+		switch (c) {
+		case LCD_ESCAPE_CHAR:
+			/* start of an escape sequence */
+			lcd.esc_seq.len = 0;
+			lcd.esc_seq.buf[lcd.esc_seq.len] = 0;
+			break;
+		case '\b':
+			/* go back one char and clear it */
+			if (lcd.addr.x > 0) {
+				/*
+				 * check if we're not at the
+				 * end of the line
+				 */
+				if (lcd.addr.x < lcd.bwidth)
+					/* back one char */
+					lcd_write_cmd(LCD_CMD_SHIFT);
+				lcd.addr.x--;
+			}
+			/* replace with a space */
+			lcd_write_data(' ');
+			/* back one char again */
+			lcd_write_cmd(LCD_CMD_SHIFT);
+			break;
+		case '\014':
+			/* quickly clear the display */
+			lcd_clear_fast();
+			break;
+		case '\n':
+			/*
+			 * flush the remainder of the current line and
+			 * go to the beginning of the next line
+			 */
+			for (; lcd.addr.x < lcd.bwidth; lcd.addr.x++)
+				lcd_write_data(' ');
+			lcd.addr.x = 0;
+			lcd.addr.y = (lcd.addr.y + 1) % lcd.height;
+			lcd_gotoxy();
+			break;
+		case '\r':
+			/* go to the beginning of the same line */
+			lcd.addr.x = 0;
+			lcd_gotoxy();
+			break;
+		case '\t':
+			/* print a space instead of the tab */
+			lcd_print(' ');
+			break;
+		default:
+			/* simply print this char */
+			lcd_print(c);
+			break;
+		}
+	}
+
+	/*
+	 * now we'll see if we're in an escape mode and if the current
+	 * escape sequence can be understood.
+	 */
+	if (lcd.esc_seq.len >= 2) {
+		int processed = 0;
+
+		if (!strcmp(lcd.esc_seq.buf, "[2J")) {
+			/* clear the display */
+			lcd_clear_fast();
+			processed = 1;
+		} else if (!strcmp(lcd.esc_seq.buf, "[H")) {
+			/* cursor to home */
+			lcd.addr.x = 0;
+			lcd.addr.y = 0;
+			lcd_gotoxy();
+			processed = 1;
+		}
+		/* codes starting with ^[[L */
+		else if ((lcd.esc_seq.len >= 3) &&
+			 (lcd.esc_seq.buf[0] == '[') &&
+			 (lcd.esc_seq.buf[1] == 'L')) {
+			processed = handle_lcd_special_code();
+		}
+
+		/* LCD special escape codes */
+		/*
+		 * flush the escape sequence if it's been processed
+		 * or if it is getting too long.
+		 */
+		if (processed || (lcd.esc_seq.len >= LCD_ESCAPE_LEN))
+			lcd.esc_seq.len = -1;
+	} /* escape codes */
+}
+
+static ssize_t lcd_write(struct file *file,
+			 const char __user *buf, size_t count, loff_t *ppos)
+{
+	const char __user *tmp = buf;
+	char c;
+
+	for (; count-- > 0; (*ppos)++, tmp++) {
+		if (!in_interrupt() && (((count + 1) & 0x1f) == 0))
+			/*
+			 * let's be a little nice with other processes
+			 * that need some CPU
+			 */
+			schedule();
+
+		if (get_user(c, tmp))
+			return -EFAULT;
+
+		lcd_write_char(c);
+	}
+
+	return tmp - buf;
+}
+
+static int lcd_open(struct inode *inode, struct file *file)
+{
+	int ret;
+
+	ret = -EBUSY;
+	if (!atomic_dec_and_test(&lcd_available))
+		goto fail; /* open only once at a time */
+
+	ret = -EPERM;
+	if (file->f_mode & FMODE_READ)	/* device is write-only */
+		goto fail;
+
+	if (lcd.must_clear) {
+		lcd_clear_display();
+		lcd.must_clear = false;
+	}
+	return nonseekable_open(inode, file);
+
+ fail:
+	atomic_inc(&lcd_available);
+	return ret;
+}
+
+static int lcd_release(struct inode *inode, struct file *file)
+{
+	atomic_inc(&lcd_available);
+	return 0;
+}
+
+static const struct file_operations lcd_fops = {
+	.write   = lcd_write,
+	.open    = lcd_open,
+	.release = lcd_release,
+	.llseek  = no_llseek,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/staging/panel/panel.c
 };
 
 static const struct charlcd_ops charlcd_parallel_ops = {

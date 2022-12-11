@@ -658,6 +658,14 @@ static void mwifiex_usb_disconnect(struct usb_interface *intf)
 					 MWIFIEX_FUNC_SHUTDOWN);
 	}
 
+<<<<<<< HEAD:drivers/net/wireless/marvell/mwifiex/usb.c
+=======
+	if (adapter->workqueue)
+		flush_workqueue(adapter->workqueue);
+
+	mwifiex_usb_free(card);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/mwifiex/usb.c
 	mwifiex_dbg(adapter, FATAL,
 		    "%s: removing card\n", __func__);
 	mwifiex_remove_card(adapter);

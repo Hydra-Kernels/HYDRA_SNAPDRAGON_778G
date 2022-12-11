@@ -161,6 +161,7 @@ void pciehp_unconfigure_device(struct controller *ctrl, bool presence);
 void pciehp_queue_pushbutton_work(struct work_struct *work);
 struct controller *pcie_init(struct pcie_device *dev);
 int pcie_init_notification(struct controller *ctrl);
+<<<<<<< HEAD
 void pcie_shutdown_notification(struct controller *ctrl);
 void pcie_clear_hotplug_events(struct controller *ctrl);
 void pcie_enable_interrupt(struct controller *ctrl);
@@ -168,6 +169,15 @@ void pcie_disable_interrupt(struct controller *ctrl);
 int pciehp_power_on_slot(struct controller *ctrl);
 void pciehp_power_off_slot(struct controller *ctrl);
 void pciehp_get_power_status(struct controller *ctrl, u8 *status);
+=======
+int pciehp_enable_slot(struct slot *p_slot);
+int pciehp_disable_slot(struct slot *p_slot);
+void pcie_reenable_notification(struct controller *ctrl);
+int pciehp_power_on_slot(struct slot *slot);
+void pciehp_power_off_slot(struct slot *slot);
+void pciehp_get_power_status(struct slot *slot, u8 *status);
+void pciehp_get_attention_status(struct slot *slot, u8 *status);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define INDICATOR_NOOP -1	/* Leave indicator unchanged */
 void pciehp_set_indicators(struct controller *ctrl, int pwr, int attn);

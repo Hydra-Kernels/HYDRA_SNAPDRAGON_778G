@@ -840,6 +840,10 @@ static int omap_dm_timer_probe(struct platform_device *pdev)
 	timer->pdev = pdev;
 
 	pm_runtime_enable(dev);
+<<<<<<< HEAD:drivers/clocksource/timer-ti-dm.c
+=======
+	pm_runtime_irq_safe(dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/plat-omap/dmtimer.c
 
 	if (!timer->reserved) {
 		ret = pm_runtime_get_sync(dev);

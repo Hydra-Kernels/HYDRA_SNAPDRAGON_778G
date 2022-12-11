@@ -1946,7 +1946,10 @@ error_csi2:
 
 static void isp_detach_iommu(struct isp_device *isp)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_ARM_DMA_USE_IOMMU
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	arm_iommu_detach_device(isp->dev);
 	arm_iommu_release_mapping(isp->mapping);
 	isp->mapping = NULL;

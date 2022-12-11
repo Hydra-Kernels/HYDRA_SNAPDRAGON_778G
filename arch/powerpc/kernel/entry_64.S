@@ -32,17 +32,23 @@
 #include <asm/hw_irq.h>
 #include <asm/context_tracking.h>
 #include <asm/tm.h>
+<<<<<<< HEAD
 #include <asm/ppc-opcode.h>
 #include <asm/barrier.h>
 #include <asm/export.h>
 #include <asm/asm-compat.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_PPC_BOOK3S
 #include <asm/exception-64s.h>
 #else
 #include <asm/exception-64e.h>
 #endif
+<<<<<<< HEAD
 #include <asm/feature-fixups.h>
 #include <asm/kup.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * System calls.
@@ -295,12 +301,29 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
 	 */
 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
 	ld	r2,GPR2(r1)
+<<<<<<< HEAD
+=======
 	ld	r1,GPR1(r1)
 	mtlr	r4
 	mtcr	r5
 	mtspr	SPRN_SRR0,r7
 	mtspr	SPRN_SRR1,r8
 	RFI_TO_USER
+	b	.	/* prevent speculative execution */
+
+	/* exit to kernel */
+1:	ld	r2,GPR2(r1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+	ld	r1,GPR1(r1)
+	mtlr	r4
+	mtcr	r5
+	mtspr	SPRN_SRR0,r7
+	mtspr	SPRN_SRR1,r8
+<<<<<<< HEAD
+	RFI_TO_USER
+=======
+	RFI_TO_KERNEL
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	b	.	/* prevent speculative execution */
 
 1:	/* exit to kernel */
@@ -982,10 +1005,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
 	ACCOUNT_CPU_USER_EXIT(r13, r2, r4)
 	REST_GPR(13, r1)
 
+<<<<<<< HEAD
 	/*
 	 * We don't need to restore AMR on the way back to userspace for KUAP.
 	 * The value of AMR only matters while we're in the kernel.
 	 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mtspr	SPRN_SRR1,r3
 
 	ld	r2,_CCR(r1)
@@ -1008,6 +1034,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
 	ld	r2,_NIP(r1)
 	mtspr	SPRN_SRR0,r2
 
+<<<<<<< HEAD
 	/*
 	 * Leaving a stale exception_marker on the stack can confuse
 	 * the reliable stack unwinder later on. Clear it.
@@ -1021,6 +1048,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
 
 	kuap_restore_amr r4
 
+=======
+	ld	r0,GPR0(r1)
+	ld	r2,GPR2(r1)
+	ld	r3,GPR3(r1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ld	r4,GPR4(r1)
 	ld	r1,GPR1(r1)
 	RFI_TO_KERNEL

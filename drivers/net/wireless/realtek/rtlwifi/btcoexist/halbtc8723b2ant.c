@@ -1109,6 +1109,7 @@ static void btc8723b2ant_set_ant_path(struct btc_coexist *btcoexist,
 		btcoexist->btc_write_1byte(btcoexist, 0x930, 0x77);
 		btcoexist->btc_write_1byte_bitmask(btcoexist, 0x67, 0x20, 0x1);
 
+<<<<<<< HEAD
 		if (fw_ver >= 0x180000) {
 			/* Use H2C to set GNT_BT to High to avoid A2DP click */
 			h2c_parameter[0] = 1;
@@ -1123,10 +1124,21 @@ static void btc8723b2ant_set_ant_path(struct btc_coexist *btcoexist,
 		/* WiFi TRx Mask off */
 		btcoexist->btc_set_rf_reg(btcoexist, BTC_RF_A,
 					  0x1, 0xfffff, 0x0);
+=======
+		/* Force GNT_BT to low */
+		btcoexist->btc_write_1byte_bitmask(btcoexist, 0x765, 0x18, 0x0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (board_info->btdm_ant_pos == BTC_ANTENNA_AT_MAIN_PORT) {
 			/* tell firmware "no antenna inverse" */
 			h2c_parameter[0] = 0;
+<<<<<<< HEAD
+=======
+			h2c_parameter[1] = 1;  /* ext switch type */
+			btcoexist->btc_fill_h2c(btcoexist, 0x65, 2,
+						h2c_parameter);
+			btcoexist->btc_write_2byte(btcoexist, 0x948, 0x0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			/* tell firmware "antenna inverse" */
 			h2c_parameter[0] = 1;
@@ -1146,8 +1158,12 @@ static void btc8723b2ant_set_ant_path(struct btc_coexist *btcoexist,
 			h2c_parameter[0] = 0;
 			btcoexist->btc_fill_h2c(btcoexist, 0x6E, 1,
 						h2c_parameter);
+<<<<<<< HEAD
 		} else {
 			btcoexist->btc_write_1byte(btcoexist, 0x765, 0x0);
+=======
+			btcoexist->btc_write_2byte(btcoexist, 0x948, 0x280);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 

@@ -64,9 +64,12 @@ static inline void switch_mm(struct mm_struct *prev,
 {
 	unsigned long flags;
 
+<<<<<<< HEAD
 	if (prev == next)
 		return;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	local_irq_save(flags);
 	switch_mm_irqs_off(prev, next, tsk);
 	local_irq_restore(flags);

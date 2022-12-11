@@ -1019,6 +1019,7 @@ int pcibios_add_device(struct pci_dev *dev)
 	 * Copy dev_archdata from PF to VF
 	 */
 	if (dev->is_virtfn) {
+<<<<<<< HEAD
 		struct dev_archdata *psd;
 
 		pdev = dev->physfn;
@@ -1026,6 +1027,11 @@ int pcibios_add_device(struct pci_dev *dev)
 		pci_init_dev_archdata(&dev->dev.archdata, psd->iommu,
 				      psd->stc, psd->host_controller, NULL,
 				      psd->numa_node);
+=======
+		pdev = dev->physfn;
+		memcpy(&dev->dev.archdata, &pdev->dev.archdata,
+		       sizeof(struct dev_archdata));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }

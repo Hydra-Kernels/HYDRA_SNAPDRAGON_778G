@@ -1576,9 +1576,15 @@ next_slot:
 			/* If extent is RO, we must COW it */
 			if (btrfs_extent_readonly(fs_info, disk_bytenr))
 				goto out_check;
+<<<<<<< HEAD
 			ret = btrfs_cross_ref_exist(root, ino,
 						    found_key.offset -
 						    extent_offset, disk_bytenr, false);
+=======
+			ret = btrfs_cross_ref_exist(trans, root, ino,
+						  found_key.offset -
+						  extent_offset, disk_bytenr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (ret) {
 				/*
 				 * ret could be -EIO if the above fails to read
@@ -1590,7 +1596,11 @@ next_slot:
 					goto error;
 				}
 
+<<<<<<< HEAD
 				WARN_ON_ONCE(freespace_inode);
+=======
+				WARN_ON_ONCE(nolock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				goto out_check;
 			}
 			disk_bytenr += extent_offset;
@@ -1607,8 +1617,12 @@ next_slot:
 			 * this ensure that csum for a given extent are
 			 * either valid or do not exist.
 			 */
+<<<<<<< HEAD
 			ret = csum_exist_in_range(fs_info, disk_bytenr,
 						  num_bytes);
+=======
+			ret = csum_exist_in_range(root, disk_bytenr, num_bytes);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (ret) {
 				/*
 				 * ret could be -EIO if the above fails to read
@@ -1619,12 +1633,19 @@ next_slot:
 						cur_offset = cow_start;
 					goto error;
 				}
+<<<<<<< HEAD
 				WARN_ON_ONCE(freespace_inode);
 				goto out_check;
 			}
 			if (!btrfs_inc_nocow_writers(fs_info, disk_bytenr))
 				goto out_check;
 			nocow = true;
+=======
+				WARN_ON_ONCE(nolock);
+				goto out_check;
+			}
+			nocow = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else if (extent_type == BTRFS_FILE_EXTENT_INLINE) {
 			extent_end = found_key.offset + ram_bytes;
 			extent_end = ALIGN(extent_end, fs_info->sectorsize);
@@ -2372,9 +2393,25 @@ out_page:
 		 */
 		mapping_set_error(page->mapping, ret);
 		end_extent_writepage(page, ret, page_start, page_end);
+<<<<<<< HEAD
 		clear_page_dirty_for_io(page);
 		SetPageError(page);
 	}
+=======
+		ClearPageChecked(page);
+		goto out;
+	 }
+
+	ret = btrfs_set_extent_delalloc(inode, page_start, page_end,
+					&cached_state);
+	if (ret) {
+		mapping_set_error(page->mapping, ret);
+		end_extent_writepage(page, ret, page_start, page_end);
+		ClearPageChecked(page);
+		goto out;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ClearPageChecked(page);
 	unlock_page(page);
 	put_page(page);
@@ -3556,10 +3593,26 @@ static void run_delayed_iput_locked(struct btrfs_fs_info *fs_info,
 {
 	list_del_init(&inode->delayed_iput);
 	spin_unlock(&fs_info->delayed_iput_lock);
+<<<<<<< HEAD
 	iput(&inode->vfs_inode);
 	if (atomic_dec_and_test(&fs_info->nr_delayed_iputs))
 		wake_up(&fs_info->delayed_iputs_wait);
 	spin_lock(&fs_info->delayed_iput_lock);
+=======
+	if (empty)
+		return;
+
+	spin_lock(&fs_info->delayed_iput_lock);
+	list_splice_init(&fs_info->delayed_iputs, &list);
+	spin_unlock(&fs_info->delayed_iput_lock);
+
+	while (!list_empty(&list)) {
+		delayed = list_entry(list.next, struct delayed_iput, list);
+		list_del(&delayed->list);
+		iput(delayed->inode);
+		kfree(delayed);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void btrfs_run_delayed_iput(struct btrfs_fs_info *fs_info,
@@ -4942,8 +4995,19 @@ search_again:
 		if (found_type > min_type) {
 			del_item = 1;
 		} else {
-			if (item_end < new_size)
+			if (item_end < new_size) {
+				/*
+				 * With NO_HOLES mode, for the following mapping
+				 *
+				 * [0-4k][hole][8k-12k]
+				 *
+				 * if truncating isize down to 6k, it ends up
+				 * isize being 8k.
+				 */
+				if (btrfs_fs_incompat(root->fs_info, NO_HOLES))
+					last_size = new_size;
 				break;
+			}
 			if (found_key.offset >= new_size)
 				del_item = 1;
 			else
@@ -6232,10 +6296,19 @@ static int btrfs_real_readdir(struct file *file, struct dir_context *ctx)
 	int slot;
 	char *name_ptr;
 	int name_len;
+<<<<<<< HEAD
 	int entries = 0;
 	int total_len = 0;
 	bool put = false;
 	struct btrfs_key location;
+=======
+	int is_curr = 0;	/* ctx->pos points to the current index? */
+	bool emitted;
+
+	/* FIXME, use a real flag for deciding about the key type */
+	if (root->fs_info->tree_root == root)
+		key_type = BTRFS_DIR_ITEM_KEY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!dir_emit_dots(file, ctx))
 		return 0;
@@ -6260,6 +6333,7 @@ again:
 	if (ret < 0)
 		goto err;
 
+	emitted = false;
 	while (1) {
 		struct dir_entry *entry;
 
@@ -6292,10 +6366,18 @@ again:
 			ret = btrfs_filldir(private->filldir_buf, entries, ctx);
 			if (ret)
 				goto nopos;
+<<<<<<< HEAD
 			addr = private->filldir_buf;
 			entries = 0;
 			total_len = 0;
 			goto again;
+=======
+			emitted = true;
+			di_len = btrfs_dir_name_len(leaf, di) +
+				 btrfs_dir_data_len(leaf, di) + sizeof(*di);
+			di_cur += di_len;
+			di = (struct btrfs_dir_item *)((char *)di + di_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		entry = addr;
@@ -6316,6 +6398,7 @@ next:
 	}
 	btrfs_release_path(path);
 
+<<<<<<< HEAD
 	ret = btrfs_filldir(private->filldir_buf, entries, ctx);
 	if (ret)
 		goto nopos;
@@ -6323,6 +6406,27 @@ next:
 	ret = btrfs_readdir_delayed_dir_index(ctx, &ins_list);
 	if (ret)
 		goto nopos;
+=======
+	if (key_type == BTRFS_DIR_INDEX_KEY) {
+		if (is_curr)
+			ctx->pos++;
+		ret = btrfs_readdir_delayed_dir_index(ctx, &ins_list, &emitted);
+		if (ret)
+			goto nopos;
+	}
+
+	/*
+	 * If we haven't emitted any dir entry, we must not touch ctx->pos as
+	 * it was was set to the termination value in previous call. We assume
+	 * that "." and ".." were emitted if we reach this point and set the
+	 * termination value as well for an empty directory.
+	 */
+	if (ctx->pos > 2 && !emitted)
+		goto nopos;
+
+	/* Reached end of directory/root. Bump pos past the last item. */
+	ctx->pos++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Stop new entries from being returned after we return the last
@@ -6856,6 +6960,7 @@ static int btrfs_mknod(struct inode *dir, struct dentry *dentry,
 	if (err)
 		goto out_unlock;
 
+<<<<<<< HEAD
 	err = btrfs_add_nondir(trans, BTRFS_I(dir), dentry, BTRFS_I(inode),
 			0, index);
 	if (err)
@@ -6863,6 +6968,15 @@ static int btrfs_mknod(struct inode *dir, struct dentry *dentry,
 
 	btrfs_update_inode(trans, root, inode);
 	d_instantiate_new(dentry, inode);
+=======
+	err = btrfs_add_nondir(trans, dir, dentry, inode, 0, index);
+	if (err) {
+		goto out_unlock_inode;
+	} else {
+		btrfs_update_inode(trans, root, inode);
+		d_instantiate_new(dentry, inode);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_unlock:
 	btrfs_end_transaction(trans);
@@ -7009,9 +7123,16 @@ static int btrfs_link(struct dentry *old_dentry, struct inode *dir,
 		btrfs_log_new_name(trans, BTRFS_I(inode), NULL, parent);
 	}
 
+<<<<<<< HEAD
 fail:
 	if (trans)
 		btrfs_end_transaction(trans);
+=======
+	btrfs_balance_delayed_items(root);
+fail:
+	if (trans)
+		btrfs_end_transaction(trans, root);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (drop_inode) {
 		inode_dec_link_count(inode);
 		iput(inode);
@@ -7072,6 +7193,10 @@ static int btrfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 		goto out_fail;
 
 	d_instantiate_new(dentry, inode);
+<<<<<<< HEAD
+=======
+	drop_on_err = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out_fail:
 	btrfs_end_transaction(trans);
@@ -7710,6 +7835,79 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+bool btrfs_page_exists_in_range(struct inode *inode, loff_t start, loff_t end)
+{
+	struct radix_tree_root *root = &inode->i_mapping->page_tree;
+	int found = false;
+	void **pagep = NULL;
+	struct page *page = NULL;
+	unsigned long start_idx;
+	unsigned long end_idx;
+
+	start_idx = start >> PAGE_CACHE_SHIFT;
+
+	/*
+	 * end is the last byte in the last page.  end == start is legal
+	 */
+	end_idx = end >> PAGE_CACHE_SHIFT;
+
+	rcu_read_lock();
+
+	/* Most of the code in this while loop is lifted from
+	 * find_get_page.  It's been modified to begin searching from a
+	 * page and return just the first page found in that range.  If the
+	 * found idx is less than or equal to the end idx then we know that
+	 * a page exists.  If no pages are found or if those pages are
+	 * outside of the range then we're fine (yay!) */
+	while (page == NULL &&
+	       radix_tree_gang_lookup_slot(root, &pagep, NULL, start_idx, 1)) {
+		page = radix_tree_deref_slot(pagep);
+		if (unlikely(!page))
+			break;
+
+		if (radix_tree_exception(page)) {
+			if (radix_tree_deref_retry(page)) {
+				page = NULL;
+				continue;
+			}
+			/*
+			 * Otherwise, shmem/tmpfs must be storing a swap entry
+			 * here as an exceptional entry: so return it without
+			 * attempting to raise page count.
+			 */
+			page = NULL;
+			break; /* TODO: Is this relevant for this use case? */
+		}
+
+		if (!page_cache_get_speculative(page)) {
+			page = NULL;
+			continue;
+		}
+
+		/*
+		 * Has the page moved?
+		 * This is part of the lockless pagecache protocol. See
+		 * include/linux/pagemap.h for details.
+		 */
+		if (unlikely(page != *pagep)) {
+			page_cache_release(page);
+			page = NULL;
+		}
+	}
+
+	if (page) {
+		if (page->index <= end_idx)
+			found = true;
+		page_cache_release(page);
+	}
+
+	rcu_read_unlock();
+	return found;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int lock_extent_direct(struct inode *inode, u64 lockstart, u64 lockend,
 			      struct extent_state **cached_state, int writing)
 {
@@ -7890,6 +8088,7 @@ static int btrfs_get_blocks_direct_write(struct extent_map **map,
 	 * just use the extent.
 	 *
 	 */
+<<<<<<< HEAD
 	if (test_bit(EXTENT_FLAG_PREALLOC, &em->flags) ||
 	    ((BTRFS_I(inode)->flags & BTRFS_INODE_NODATACOW) &&
 	     em->block_start != EXTENT_MAP_HOLE)) {
@@ -7931,6 +8130,21 @@ static int btrfs_get_blocks_direct_write(struct extent_map **map,
 							       len);
 			goto skip_cow;
 		}
+=======
+	if (dio_data->outstanding_extents >= num_extents) {
+		dio_data->outstanding_extents -= num_extents;
+	} else {
+		/*
+		 * If dio write length has been split due to no large enough
+		 * contiguous space, we need to compensate our inode counter
+		 * appropriately.
+		 */
+		u64 num_needed = num_extents - dio_data->outstanding_extents;
+
+		spin_lock(&BTRFS_I(inode)->lock);
+		BTRFS_I(inode)->outstanding_extents += num_needed;
+		spin_unlock(&BTRFS_I(inode)->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* this will cow the extent */
@@ -8430,9 +8644,17 @@ static void btrfs_endio_direct_read(struct bio *bio)
 
 	kfree(dip);
 
+<<<<<<< HEAD
 	dio_bio->bi_status = err;
 	dio_end_io(dio_bio);
 	btrfs_io_bio_free_csum(io_bio);
+=======
+	dio_bio->bi_error = bio->bi_error;
+	dio_end_io(dio_bio, bio->bi_error);
+
+	if (io_bio->end_io)
+		io_bio->end_io(io_bio, err);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bio_put(bio);
 }
 
@@ -8489,8 +8711,13 @@ static void btrfs_endio_direct_write(struct bio *bio)
 
 	kfree(dip);
 
+<<<<<<< HEAD
 	dio_bio->bi_status = bio->bi_status;
 	dio_end_io(dio_bio);
+=======
+	dio_bio->bi_error = bio->bi_error;
+	dio_end_io(dio_bio, bio->bi_error);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bio_put(bio);
 }
 
@@ -8945,6 +9172,10 @@ int btrfs_readpage(struct file *file, struct page *page)
 
 static int btrfs_writepage(struct page *page, struct writeback_control *wbc)
 {
+<<<<<<< HEAD
+=======
+	struct extent_io_tree *tree;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct inode *inode = page->mapping->host;
 	int ret;
 
@@ -8963,7 +9194,12 @@ static int btrfs_writepage(struct page *page, struct writeback_control *wbc)
 		redirty_page_for_writepage(wbc, page);
 		return AOP_WRITEPAGE_ACTIVATE;
 	}
+<<<<<<< HEAD
 	ret = extent_write_full_page(page, wbc);
+=======
+	tree = &BTRFS_I(page->mapping->host)->io_tree;
+	ret = extent_write_full_page(tree, page, btrfs_get_extent, wbc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	btrfs_add_delayed_iput(inode);
 	return ret;
 }
@@ -9081,6 +9317,7 @@ again:
 	/*
 	 * Qgroup reserved space handler
 	 * Page here will be either
+<<<<<<< HEAD
 	 * 1) Already written to disk or ordered extent already submitted
 	 *    Then its QGROUP_RESERVED bit in io_tree is already cleaned.
 	 *    Qgroup will be handled by its qgroup_record then.
@@ -9092,6 +9329,22 @@ again:
 	 *    Since the IO will never happen for this page.
 	 */
 	btrfs_qgroup_free_data(inode, NULL, page_start, PAGE_SIZE);
+=======
+	 * 1) Already written to disk
+	 *    In this case, its reserved space is released from data rsv map
+	 *    and will be freed by delayed_ref handler finally.
+	 *    So even we call qgroup_free_data(), it won't decrease reserved
+	 *    space.
+	 * 2) Not written to disk
+	 *    This means the reserved space should be freed here. However,
+	 *    if a truncate invalidates the page (by clearing PageDirty)
+	 *    and the page is accounted for while allocating extent
+	 *    in btrfs_check_data_free_space() we let delayed_ref to
+	 *    free the entire extent.
+	 */
+	if (PageDirty(page))
+		btrfs_qgroup_free_data(inode, page_start, PAGE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!inode_evicting) {
 		clear_extent_bit(tree, page_start, page_end, EXTENT_LOCKED |
 				 EXTENT_DELALLOC | EXTENT_DELALLOC_NEW |

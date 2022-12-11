@@ -394,9 +394,13 @@ lpfc_rcv_plogi(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 	IOCB_t *icmd;
 	struct serv_parm *sp;
 	uint32_t ed_tov;
+<<<<<<< HEAD
 	LPFC_MBOXQ_t *link_mbox;
 	LPFC_MBOXQ_t *login_mbox;
 	struct lpfc_iocbq *save_iocb;
+=======
+	LPFC_MBOXQ_t *mbox;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ls_rjt stat;
 	uint32_t vid, flag;
 	u16 rpi;
@@ -533,6 +537,7 @@ lpfc_rcv_plogi(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 		if (phba->sli_rev == LPFC_SLI_REV4)
 			lpfc_issue_reg_vfi(vport);
 		else {
+<<<<<<< HEAD
 			defer_acc = 1;
 			link_mbox = mempool_alloc(phba->mbox_mem_pool,
 						  GFP_KERNEL);
@@ -549,11 +554,25 @@ lpfc_rcv_plogi(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 			/* Save info from cmd IOCB used in rsp */
 			memcpy((uint8_t *)save_iocb, (uint8_t *)cmdiocb,
 			       sizeof(struct lpfc_iocbq));
+=======
+			mbox = mempool_alloc(phba->mbox_mem_pool, GFP_KERNEL);
+			if (mbox == NULL)
+				goto out;
+			lpfc_config_link(phba, mbox);
+			mbox->mbox_cmpl = lpfc_sli_def_mbox_cmpl;
+			mbox->vport = vport;
+			rc = lpfc_sli_issue_mbox(phba, mbox, MBX_NOWAIT);
+			if (rc == MBX_NOT_FINISHED) {
+				mempool_free(mbox, phba->mbox_mem_pool);
+				goto out;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		lpfc_can_disctmo(vport);
 	}
 
+<<<<<<< HEAD
 	ndlp->nlp_flag &= ~NLP_SUPPRESS_RSP;
 	if ((phba->sli.sli_flag & LPFC_SLI_SUPPRESS_RSP) &&
 	    sp->cmn.valid_vendor_ver_level) {
@@ -565,6 +584,10 @@ lpfc_rcv_plogi(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
 
 	login_mbox = mempool_alloc(phba->mbox_mem_pool, GFP_KERNEL);
 	if (!login_mbox)
+=======
+	mbox = mempool_alloc(phba->mbox_mem_pool, GFP_KERNEL);
+	if (!mbox)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 
 	/* Registering an existing RPI behaves differently for SLI3 vs SLI4 */
@@ -1404,6 +1427,7 @@ lpfc_cmpl_plogi_plogi_issue(struct lpfc_vport *vport,
 			ed_tov = (phba->fc_edtov + 999999) / 1000000;
 		}
 
+<<<<<<< HEAD
 		ndlp->nlp_flag &= ~NLP_SUPPRESS_RSP;
 		if ((phba->sli.sli_flag & LPFC_SLI_SUPPRESS_RSP) &&
 		    sp->cmn.valid_vendor_ver_level) {
@@ -1414,6 +1438,8 @@ lpfc_cmpl_plogi_plogi_issue(struct lpfc_vport *vport,
 				ndlp->nlp_flag |= NLP_SUPPRESS_RSP;
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * Use the larger EDTOV
 		 * RATOV = 2 * EDTOV for pt-to-pt

@@ -1924,7 +1924,11 @@ static int __event_process_build_id(struct perf_record_header_build_id *bev,
 			struct kmod_path m = { .name = NULL, };
 
 			if (!kmod_path__parse_name(&m, filename) && m.kmod)
+<<<<<<< HEAD
 				dso__set_module_info(dso, &m, machine);
+=======
+				dso__set_short_name(dso, strdup(m.name), true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			else
 				dso->kernel = dso_type;
 

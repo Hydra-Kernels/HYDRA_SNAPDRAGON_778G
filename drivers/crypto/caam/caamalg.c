@@ -260,11 +260,80 @@ skip_enc:
 
 	/* aead_decrypt shared descriptor */
 	desc = ctx->sh_desc_dec;
+<<<<<<< HEAD
 	cnstr_shdsc_aead_decap(desc, &ctx->cdata, &ctx->adata, ivsize,
 			       ctx->authsize, alg->caam.geniv, is_rfc3686,
 			       nonce, ctx1_iv_off, false, ctrlpriv->era);
 	dma_sync_single_for_device(jrdev, ctx->sh_desc_dec_dma,
 				   desc_bytes(desc), ctx->dir);
+=======
+
+	/* Note: Context registers are saved. */
+	init_sh_desc_key_aead(desc, ctx, keys_fit_inline, is_rfc3686);
+
+	/* Class 2 operation */
+	append_operation(desc, ctx->class2_alg_type |
+			 OP_ALG_AS_INITFINAL | OP_ALG_DECRYPT | OP_ALG_ICV_ON);
+
+	/* Read and write assoclen bytes */
+	append_math_add(desc, VARSEQINLEN, ZERO, REG3, CAAM_CMD_SZ);
+	if (alg->caam.geniv)
+		append_math_add_imm_u32(desc, VARSEQOUTLEN, REG3, IMM, ivsize);
+	else
+		append_math_add(desc, VARSEQOUTLEN, ZERO, REG3, CAAM_CMD_SZ);
+
+	/* Skip assoc data */
+	append_seq_fifo_store(desc, 0, FIFOST_TYPE_SKIP | FIFOLDST_VLF);
+
+	/* read assoc before reading payload */
+	append_seq_fifo_load(desc, 0, FIFOLD_CLASS_CLASS2 | FIFOLD_TYPE_MSG |
+			     KEY_VLF);
+
+	if (alg->caam.geniv) {
+		append_seq_load(desc, ivsize, LDST_CLASS_1_CCB |
+				LDST_SRCDST_BYTE_CONTEXT |
+				(ctx1_iv_off << LDST_OFFSET_SHIFT));
+		append_move(desc, MOVE_SRC_CLASS1CTX | MOVE_DEST_CLASS2INFIFO |
+			    (ctx1_iv_off << MOVE_OFFSET_SHIFT) | ivsize);
+	}
+
+	/* Load Counter into CONTEXT1 reg */
+	if (is_rfc3686)
+		append_load_imm_u32(desc, be32_to_cpu(1), LDST_IMM |
+				    LDST_CLASS_1_CCB |
+				    LDST_SRCDST_BYTE_CONTEXT |
+				    ((ctx1_iv_off + CTR_RFC3686_IV_SIZE) <<
+				     LDST_OFFSET_SHIFT));
+
+	/* Choose operation */
+	if (ctr_mode)
+		append_operation(desc, ctx->class1_alg_type |
+				 OP_ALG_AS_INITFINAL | OP_ALG_DECRYPT);
+	else
+		append_dec_op1(desc, ctx->class1_alg_type);
+
+	/* Read and write cryptlen bytes */
+	append_math_add(desc, VARSEQINLEN, SEQOUTLEN, REG0, CAAM_CMD_SZ);
+	append_math_add(desc, VARSEQOUTLEN, SEQOUTLEN, REG0, CAAM_CMD_SZ);
+	aead_append_src_dst(desc, FIFOLD_TYPE_MSG);
+
+	/* Load ICV */
+	append_seq_fifo_load(desc, ctx->authsize, FIFOLD_CLASS_CLASS2 |
+			     FIFOLD_TYPE_LAST2 | FIFOLD_TYPE_ICV);
+
+	ctx->sh_desc_dec_dma = dma_map_single(jrdev, desc,
+					      desc_bytes(desc),
+					      DMA_TO_DEVICE);
+	if (dma_mapping_error(jrdev, ctx->sh_desc_dec_dma)) {
+		dev_err(jrdev, "unable to map shared descriptor\n");
+		return -ENOMEM;
+	}
+#ifdef DEBUG
+	print_hex_dump(KERN_ERR, "aead dec shdesc@"__stringify(__LINE__)": ",
+		       DUMP_PREFIX_ADDRESS, 16, 4, desc,
+		       desc_bytes(desc), 1);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!alg->caam.geniv)
 		goto skip_givenc;
@@ -284,11 +353,107 @@ skip_enc:
 
 	/* aead_givencrypt shared descriptor */
 	desc = ctx->sh_desc_enc;
+<<<<<<< HEAD
 	cnstr_shdsc_aead_givencap(desc, &ctx->cdata, &ctx->adata, ivsize,
 				  ctx->authsize, is_rfc3686, nonce,
 				  ctx1_iv_off, false, ctrlpriv->era);
 	dma_sync_single_for_device(jrdev, ctx->sh_desc_enc_dma,
 				   desc_bytes(desc), ctx->dir);
+=======
+
+	/* Note: Context registers are saved. */
+	init_sh_desc_key_aead(desc, ctx, keys_fit_inline, is_rfc3686);
+
+	if (is_rfc3686)
+		goto copy_iv;
+
+	/* Generate IV */
+	geniv = NFIFOENTRY_STYPE_PAD | NFIFOENTRY_DEST_DECO |
+		NFIFOENTRY_DTYPE_MSG | NFIFOENTRY_LC1 |
+		NFIFOENTRY_PTYPE_RND | (ivsize << NFIFOENTRY_DLEN_SHIFT);
+	append_load_imm_u32(desc, geniv, LDST_CLASS_IND_CCB |
+			    LDST_SRCDST_WORD_INFO_FIFO | LDST_IMM);
+	append_cmd(desc, CMD_LOAD | DISABLE_AUTO_INFO_FIFO);
+	append_move(desc, MOVE_WAITCOMP |
+		    MOVE_SRC_INFIFO | MOVE_DEST_CLASS1CTX |
+		    (ctx1_iv_off << MOVE_OFFSET_SHIFT) |
+		    (ivsize << MOVE_LEN_SHIFT));
+	append_cmd(desc, CMD_LOAD | ENABLE_AUTO_INFO_FIFO);
+
+copy_iv:
+	/* Copy IV to class 1 context */
+	append_move(desc, MOVE_SRC_CLASS1CTX | MOVE_DEST_OUTFIFO |
+		    (ctx1_iv_off << MOVE_OFFSET_SHIFT) |
+		    (ivsize << MOVE_LEN_SHIFT));
+
+	/* Return to encryption */
+	append_operation(desc, ctx->class2_alg_type |
+			 OP_ALG_AS_INITFINAL | OP_ALG_ENCRYPT);
+
+	/* Read and write assoclen bytes */
+	append_math_add(desc, VARSEQINLEN, ZERO, REG3, CAAM_CMD_SZ);
+	append_math_add(desc, VARSEQOUTLEN, ZERO, REG3, CAAM_CMD_SZ);
+
+	/* ivsize + cryptlen = seqoutlen - authsize */
+	append_math_sub_imm_u32(desc, REG3, SEQOUTLEN, IMM, ctx->authsize);
+
+	/* Skip assoc data */
+	append_seq_fifo_store(desc, 0, FIFOST_TYPE_SKIP | FIFOLDST_VLF);
+
+	/* read assoc before reading payload */
+	append_seq_fifo_load(desc, 0, FIFOLD_CLASS_CLASS2 | FIFOLD_TYPE_MSG |
+			     KEY_VLF);
+
+	/* Copy iv from outfifo to class 2 fifo */
+	moveiv = NFIFOENTRY_STYPE_OFIFO | NFIFOENTRY_DEST_CLASS2 |
+		 NFIFOENTRY_DTYPE_MSG | (ivsize << NFIFOENTRY_DLEN_SHIFT);
+	append_load_imm_u32(desc, moveiv, LDST_CLASS_IND_CCB |
+			    LDST_SRCDST_WORD_INFO_FIFO | LDST_IMM);
+	append_load_imm_u32(desc, ivsize, LDST_CLASS_2_CCB |
+			    LDST_SRCDST_WORD_DATASZ_REG | LDST_IMM);
+
+	/* Load Counter into CONTEXT1 reg */
+	if (is_rfc3686)
+		append_load_imm_u32(desc, be32_to_cpu(1), LDST_IMM |
+				    LDST_CLASS_1_CCB |
+				    LDST_SRCDST_BYTE_CONTEXT |
+				    ((ctx1_iv_off + CTR_RFC3686_IV_SIZE) <<
+				     LDST_OFFSET_SHIFT));
+
+	/* Class 1 operation */
+	append_operation(desc, ctx->class1_alg_type |
+			 OP_ALG_AS_INITFINAL | OP_ALG_ENCRYPT);
+
+	/* Will write ivsize + cryptlen */
+	append_math_add(desc, VARSEQOUTLEN, SEQINLEN, REG0, CAAM_CMD_SZ);
+
+	/* Not need to reload iv */
+	append_seq_fifo_load(desc, ivsize,
+			     FIFOLD_CLASS_SKIP);
+
+	/* Will read cryptlen */
+	append_math_add(desc, VARSEQINLEN, SEQINLEN, REG0, CAAM_CMD_SZ);
+	append_seq_fifo_load(desc, 0, FIFOLD_CLASS_BOTH | KEY_VLF |
+			     FIFOLD_TYPE_MSG1OUT2 | FIFOLD_TYPE_LASTBOTH);
+	append_seq_fifo_store(desc, 0, FIFOST_TYPE_MESSAGE_DATA | KEY_VLF);
+
+	/* Write ICV */
+	append_seq_store(desc, ctx->authsize, LDST_CLASS_2_CCB |
+			 LDST_SRCDST_BYTE_CONTEXT);
+
+	ctx->sh_desc_enc_dma = dma_map_single(jrdev, desc,
+					      desc_bytes(desc),
+					      DMA_TO_DEVICE);
+	if (dma_mapping_error(jrdev, ctx->sh_desc_enc_dma)) {
+		dev_err(jrdev, "unable to map shared descriptor\n");
+		return -ENOMEM;
+	}
+#ifdef DEBUG
+	print_hex_dump(KERN_ERR, "aead givenc shdesc@"__stringify(__LINE__)": ",
+		       DUMP_PREFIX_ADDRESS, 16, 4, desc,
+		       desc_bytes(desc), 1);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 skip_givenc:
 	return 0;
@@ -1237,6 +1402,7 @@ static void init_authenc_job(struct aead_request *req,
 
 	init_aead_job(req, edesc, all_contig, encrypt);
 
+<<<<<<< HEAD
 	/*
 	 * {REG3, DPOVRD} = assoclen, depending on whether MATH command supports
 	 * having DPOVRD as destination.
@@ -1246,6 +1412,8 @@ static void init_authenc_job(struct aead_request *req,
 	else
 		append_math_add_imm_u32(desc, DPOVRD, ZERO, IMM, req->assoclen);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ivsize && ((is_rfc3686 && encrypt) || !alg->caam.geniv))
 		append_load_as_imm(desc, req->iv, ivsize,
 				   LDST_CLASS_1_CCB |
@@ -3577,9 +3745,21 @@ int caam_algapi_init(struct device *ctrldev)
 		 * Check support for AES modes not available
 		 * on LP devices.
 		 */
+<<<<<<< HEAD
 		if (aes_vid == CHA_VER_VID_AES_LP &&
 		    (t_alg->caam.class1_alg_type & OP_ALG_AAI_MASK) ==
 		    OP_ALG_AAI_XTS)
+=======
+		if ((cha_vid & CHA_ID_LS_AES_MASK) == CHA_ID_LS_AES_LP)
+			if ((alg->class1_alg_type & OP_ALG_AAI_MASK) ==
+			     OP_ALG_AAI_XTS)
+				continue;
+
+		t_alg = caam_alg_alloc(alg);
+		if (IS_ERR(t_alg)) {
+			err = PTR_ERR(t_alg);
+			pr_warn("%s alg allocation failed\n", alg->driver_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 
 		caam_skcipher_alg_init(t_alg);

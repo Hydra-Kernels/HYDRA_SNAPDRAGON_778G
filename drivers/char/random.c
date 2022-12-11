@@ -1812,6 +1812,7 @@ urandom_read_nowarn(struct file *file, char __user *buf, size_t nbytes,
 static ssize_t
 urandom_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
+<<<<<<< HEAD
 	unsigned long flags;
 	static int maxwarn = 10;
 
@@ -1823,6 +1824,17 @@ urandom_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 		spin_lock_irqsave(&primary_crng.lock, flags);
 		crng_init_cnt = 0;
 		spin_unlock_irqrestore(&primary_crng.lock, flags);
+=======
+	static int maxwarn = 10;
+	int ret;
+
+	if (unlikely(nonblocking_pool.initialized == 0) &&
+	    maxwarn > 0) {
+		maxwarn--;
+		printk(KERN_NOTICE "random: %s: uninitialized urandom read "
+		       "(%zd bytes read, %d bits of entropy available)\n",
+		       current->comm, nbytes, nonblocking_pool.entropy_total);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return urandom_read_nowarn(file, buf, nbytes, ppos);
@@ -2145,6 +2157,9 @@ struct batched_entropy {
 	spinlock_t batch_lock;
 };
 
+static DEFINE_PER_CPU(__u32 [MD5_DIGEST_WORDS], get_random_int_hash)
+		__aligned(sizeof(unsigned long));
+
 /*
  * Get a random word for internal kernel use only. The quality of the random
  * number is good as /dev/urandom, but there is no backtrack protection, with
@@ -2153,11 +2168,15 @@ struct batched_entropy {
  * wait_for_random_bytes() should be called and return 0 at least once at any
  * point prior.
  */
+<<<<<<< HEAD
 static DEFINE_PER_CPU(struct batched_entropy, batched_entropy_u64) = {
 	.batch_lock	= __SPIN_LOCK_UNLOCKED(batched_entropy_u64.lock),
 };
 
 u64 get_random_u64(void)
+=======
+unsigned int get_random_int(void)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	u64 ret;
 	unsigned long flags;
@@ -2178,6 +2197,7 @@ u64 get_random_u64(void)
 }
 EXPORT_SYMBOL(get_random_u64);
 
+<<<<<<< HEAD
 static DEFINE_PER_CPU(struct batched_entropy, batched_entropy_u32) = {
 	.batch_lock	= __SPIN_LOCK_UNLOCKED(batched_entropy_u32.lock),
 };
@@ -2231,6 +2251,32 @@ static void invalidate_batched_entropy(void)
  * @start:	The smallest acceptable address the caller will take.
  * @range:	The size of the area, starting at @start, within which the
  *		random address must fall.
+=======
+/*
+ * Same as get_random_int(), but returns unsigned long.
+ */
+unsigned long get_random_long(void)
+{
+	__u32 *hash;
+	unsigned long ret;
+
+	if (arch_get_random_long(&ret))
+		return ret;
+
+	hash = get_cpu_var(get_random_int_hash);
+
+	hash[0] += current->pid + jiffies + random_get_entropy();
+	md5_transform(hash, random_int_secret);
+	ret = *(unsigned long *)hash;
+	put_cpu_var(get_random_int_hash);
+
+	return ret;
+}
+EXPORT_SYMBOL(get_random_long);
+
+/*
+ * randomize_range() returns a start address such that
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * If @start + @range would overflow, @range is capped.
  *
@@ -2268,6 +2314,7 @@ void add_hwgenerator_randomness(const char *buffer, size_t count,
 {
 	struct entropy_store *poolp = &input_pool;
 
+<<<<<<< HEAD
 	if (unlikely(crng_init == 0)) {
 		crng_fast_load(buffer, count);
 		return;
@@ -2278,7 +2325,20 @@ void add_hwgenerator_randomness(const char *buffer, size_t count,
 	 * or when the calling thread is about to terminate.
 	 */
 	wait_event_interruptible(random_write_wait, kthread_should_stop() ||
+=======
+	if (unlikely(nonblocking_pool.initialized == 0))
+		poolp = &nonblocking_pool;
+	else {
+		/* Suspend writing if we're above the trickle
+		 * threshold.  We'll be woken up again once below
+		 * random_write_wakeup_thresh, or when the calling
+		 * thread is about to terminate.
+		 */
+		wait_event_interruptible(random_write_wait,
+					 kthread_should_stop() ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			ENTROPY_BITS(&input_pool) <= random_write_wakeup_bits);
+	}
 	mix_pool_bytes(poolp, buffer, count);
 	credit_entropy_bits(poolp, entropy);
 }

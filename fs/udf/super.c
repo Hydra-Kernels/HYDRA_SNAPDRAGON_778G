@@ -712,8 +712,12 @@ static int udf_check_vsd(struct super_block *sb)
 	else
 		sectorsize = sb->s_blocksize;
 
+<<<<<<< HEAD
 	session_offset = (loff_t)sbi->s_session << sb->s_blocksize_bits;
 	sector += session_offset;
+=======
+	sector += (((loff_t)sbi->s_session) << sb->s_blocksize_bits);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	udf_debug("Starting at sector %u (%lu byte sectors)\n",
 		  (unsigned int)(sector >> sb->s_blocksize_bits),

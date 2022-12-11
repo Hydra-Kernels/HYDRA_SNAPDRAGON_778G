@@ -333,6 +333,7 @@ struct mlx5_frag_buf {
 	u8			page_shift;
 };
 
+<<<<<<< HEAD
 struct mlx5_frag_buf_ctrl {
 	struct mlx5_buf_list   *frags;
 	u32			sz_m1;
@@ -341,6 +342,21 @@ struct mlx5_frag_buf_ctrl {
 	u8			log_sz;
 	u8			log_stride;
 	u8			log_frag_strides;
+=======
+struct mlx5_eq {
+	struct mlx5_core_dev   *dev;
+	__be32 __iomem	       *doorbell;
+	u32			cons_index;
+	struct mlx5_buf		buf;
+	int			size;
+	unsigned int		irqn;
+	u8			eqn;
+	int			nent;
+	u64			mask;
+	struct list_head	list;
+	int			index;
+	struct mlx5_rsc_debug	*dbg;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct mlx5_core_psv {
@@ -978,9 +994,29 @@ int mlx5_satisfy_startup_pages(struct mlx5_core_dev *dev, int boot);
 int mlx5_reclaim_startup_pages(struct mlx5_core_dev *dev);
 void mlx5_register_debugfs(void);
 void mlx5_unregister_debugfs(void);
+<<<<<<< HEAD
 
 void mlx5_fill_page_array(struct mlx5_frag_buf *buf, __be64 *pas);
 void mlx5_fill_page_frag_array(struct mlx5_frag_buf *frag_buf, __be64 *pas);
+=======
+int mlx5_eq_init(struct mlx5_core_dev *dev);
+void mlx5_eq_cleanup(struct mlx5_core_dev *dev);
+void mlx5_fill_page_array(struct mlx5_buf *buf, __be64 *pas);
+void mlx5_cq_completion(struct mlx5_core_dev *dev, u32 cqn);
+void mlx5_rsc_event(struct mlx5_core_dev *dev, u32 rsn, int event_type);
+#ifdef CONFIG_INFINIBAND_ON_DEMAND_PAGING
+void mlx5_eq_pagefault(struct mlx5_core_dev *dev, struct mlx5_eqe *eqe);
+#endif
+void mlx5_srq_event(struct mlx5_core_dev *dev, u32 srqn, int event_type);
+struct mlx5_core_srq *mlx5_core_get_srq(struct mlx5_core_dev *dev, u32 srqn);
+void mlx5_cmd_comp_handler(struct mlx5_core_dev *dev, u64 vec);
+void mlx5_cq_event(struct mlx5_core_dev *dev, u32 cqn, int event_type);
+int mlx5_create_map_eq(struct mlx5_core_dev *dev, struct mlx5_eq *eq, u8 vecidx,
+		       int nent, u64 mask, const char *name, struct mlx5_uar *uar);
+int mlx5_destroy_unmap_eq(struct mlx5_core_dev *dev, struct mlx5_eq *eq);
+int mlx5_start_eqs(struct mlx5_core_dev *dev);
+int mlx5_stop_eqs(struct mlx5_core_dev *dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int mlx5_vector2eqn(struct mlx5_core_dev *dev, int vector, int *eqn,
 		    unsigned int *irqn);
 int mlx5_core_attach_mcg(struct mlx5_core_dev *dev, union ib_gid *mgid, u32 qpn);
@@ -992,6 +1028,48 @@ int mlx5_core_access_reg(struct mlx5_core_dev *dev, void *data_in,
 			 int size_in, void *data_out, int size_out,
 			 u16 reg_num, int arg, int write);
 
+<<<<<<< HEAD
+=======
+int mlx5_set_port_caps(struct mlx5_core_dev *dev, u8 port_num, u32 caps);
+int mlx5_query_port_ptys(struct mlx5_core_dev *dev, u32 *ptys,
+			 int ptys_size, int proto_mask, u8 local_port);
+int mlx5_query_port_proto_cap(struct mlx5_core_dev *dev,
+			      u32 *proto_cap, int proto_mask);
+int mlx5_query_port_proto_admin(struct mlx5_core_dev *dev,
+				u32 *proto_admin, int proto_mask);
+int mlx5_query_port_link_width_oper(struct mlx5_core_dev *dev,
+				    u8 *link_width_oper, u8 local_port);
+int mlx5_query_port_proto_oper(struct mlx5_core_dev *dev,
+			       u8 *proto_oper, int proto_mask,
+			       u8 local_port);
+int mlx5_set_port_proto(struct mlx5_core_dev *dev, u32 proto_admin,
+			int proto_mask);
+int mlx5_set_port_admin_status(struct mlx5_core_dev *dev,
+			       enum mlx5_port_status status);
+int mlx5_query_port_admin_status(struct mlx5_core_dev *dev,
+				 enum mlx5_port_status *status);
+
+int mlx5_set_port_mtu(struct mlx5_core_dev *dev, u16 mtu, u8 port);
+void mlx5_query_port_max_mtu(struct mlx5_core_dev *dev, u16 *max_mtu, u8 port);
+void mlx5_query_port_oper_mtu(struct mlx5_core_dev *dev, u16 *oper_mtu,
+			      u8 port);
+
+int mlx5_query_port_vl_hw_cap(struct mlx5_core_dev *dev,
+			      u8 *vl_hw_cap, u8 local_port);
+
+int mlx5_set_port_pause(struct mlx5_core_dev *dev, u32 rx_pause, u32 tx_pause);
+int mlx5_query_port_pause(struct mlx5_core_dev *dev,
+			  u32 *rx_pause, u32 *tx_pause);
+
+int mlx5_debug_eq_add(struct mlx5_core_dev *dev, struct mlx5_eq *eq);
+void mlx5_debug_eq_remove(struct mlx5_core_dev *dev, struct mlx5_eq *eq);
+int mlx5_core_eq_query(struct mlx5_core_dev *dev, struct mlx5_eq *eq,
+		       struct mlx5_query_eq_mbox_out *out, int outlen);
+int mlx5_eq_debugfs_init(struct mlx5_core_dev *dev);
+void mlx5_eq_debugfs_cleanup(struct mlx5_core_dev *dev);
+int mlx5_cq_debugfs_init(struct mlx5_core_dev *dev);
+void mlx5_cq_debugfs_cleanup(struct mlx5_core_dev *dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int mlx5_db_alloc(struct mlx5_core_dev *dev, struct mlx5_db *db);
 int mlx5_db_alloc_node(struct mlx5_core_dev *dev, struct mlx5_db *db,
 		       int node);

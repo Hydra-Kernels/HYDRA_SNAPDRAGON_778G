@@ -55,6 +55,10 @@
 #include <asm/msr.h>
 
 #define INTEL_IDLE_VERSION "0.4.1"
+<<<<<<< HEAD
+=======
+#define PREFIX "intel_idle: "
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static struct cpuidle_driver intel_idle_driver = {
 	.name = "intel_idle",
@@ -885,6 +889,26 @@ static struct cpuidle_state dnv_cstates[] = {
 	{
 		.enter = NULL }
 };
+static struct cpuidle_state knl_cstates[] = {
+	{
+		.name = "C1-KNL",
+		.desc = "MWAIT 0x00",
+		.flags = MWAIT2flg(0x00),
+		.exit_latency = 1,
+		.target_residency = 2,
+		.enter = &intel_idle,
+		.enter_freeze = intel_idle_freeze },
+	{
+		.name = "C6-KNL",
+		.desc = "MWAIT 0x10",
+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
+		.exit_latency = 120,
+		.target_residency = 500,
+		.enter = &intel_idle,
+		.enter_freeze = intel_idle_freeze },
+	{
+		.enter = NULL }
+};
 
 /**
  * intel_idle
@@ -1046,6 +1070,7 @@ static const struct idle_cpu idle_cpu_knl = {
 	.state_table = knl_cstates,
 };
 
+<<<<<<< HEAD
 static const struct idle_cpu idle_cpu_bxt = {
 	.state_table = bxt_cstates,
 	.disable_promotion_to_c1e = true,
@@ -1094,6 +1119,40 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
 	INTEL_CPU_FAM6(ATOM_GOLDMONT_PLUS,	idle_cpu_bxt),
 	INTEL_CPU_FAM6(ATOM_GOLDMONT_D,		idle_cpu_dnv),
 	INTEL_CPU_FAM6(ATOM_TREMONT_D,		idle_cpu_dnv),
+=======
+#define ICPU(model, cpu) \
+	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
+
+static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+	ICPU(0x1a, idle_cpu_nehalem),
+	ICPU(0x1e, idle_cpu_nehalem),
+	ICPU(0x1f, idle_cpu_nehalem),
+	ICPU(0x25, idle_cpu_nehalem),
+	ICPU(0x2c, idle_cpu_nehalem),
+	ICPU(0x2e, idle_cpu_nehalem),
+	ICPU(0x1c, idle_cpu_atom),
+	ICPU(0x26, idle_cpu_lincroft),
+	ICPU(0x2f, idle_cpu_nehalem),
+	ICPU(0x2a, idle_cpu_snb),
+	ICPU(0x2d, idle_cpu_snb),
+	ICPU(0x36, idle_cpu_atom),
+	ICPU(0x37, idle_cpu_byt),
+	ICPU(0x4c, idle_cpu_cht),
+	ICPU(0x3a, idle_cpu_ivb),
+	ICPU(0x3e, idle_cpu_ivt),
+	ICPU(0x3c, idle_cpu_hsw),
+	ICPU(0x3f, idle_cpu_hsw),
+	ICPU(0x45, idle_cpu_hsw),
+	ICPU(0x46, idle_cpu_hsw),
+	ICPU(0x4d, idle_cpu_avn),
+	ICPU(0x3d, idle_cpu_bdw),
+	ICPU(0x47, idle_cpu_bdw),
+	ICPU(0x4f, idle_cpu_bdw),
+	ICPU(0x56, idle_cpu_bdw),
+	ICPU(0x4e, idle_cpu_skl),
+	ICPU(0x5e, idle_cpu_skl),
+	ICPU(0x57, idle_cpu_knl),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 
@@ -1188,6 +1247,7 @@ static void ivt_idle_state_table_update(void)
 
 	/* else, 1 and 2 socket systems use default ivt_cstates */
 }
+<<<<<<< HEAD
 
 /*
  * Translate IRTL (Interrupt Response Time Limit) MSR to usec
@@ -1254,6 +1314,8 @@ static void bxt_idle_state_table_update(void)
 	}
 
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * sklh_idle_state_table_update(void)
  *
@@ -1274,7 +1336,11 @@ static void sklh_idle_state_table_update(void)
 	if ((mwait_substates & (0xF << 28)) == 0)
 		return;
 
+<<<<<<< HEAD
 	rdmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr);
+=======
+	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* PC10 is not enabled in PKG C-state limit */
 	if ((msr & 0xF) != 8)
@@ -1306,6 +1372,7 @@ static void intel_idle_state_table_update(void)
 {
 	switch (boot_cpu_data.x86_model) {
 
+<<<<<<< HEAD
 	case INTEL_FAM6_IVYBRIDGE_X:
 		ivt_idle_state_table_update();
 		break;
@@ -1314,6 +1381,12 @@ static void intel_idle_state_table_update(void)
 		bxt_idle_state_table_update();
 		break;
 	case INTEL_FAM6_SKYLAKE:
+=======
+	case 0x3e: /* IVT */
+		ivt_idle_state_table_update();
+		break;
+	case 0x5e: /* SKL-H */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sklh_idle_state_table_update();
 		break;
 	}
@@ -1358,8 +1431,13 @@ static void __init intel_idle_cpuidle_driver_init(void)
 
 		/* if state marked as disabled, skip it */
 		if (cpuidle_state_table[cstate].disabled != 0) {
+<<<<<<< HEAD
 			pr_debug("state %s is disabled\n",
 				 cpuidle_state_table[cstate].name);
+=======
+			pr_debug(PREFIX "state %s is disabled",
+				cpuidle_state_table[cstate].name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 		}
 

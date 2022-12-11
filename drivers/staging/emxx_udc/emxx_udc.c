@@ -3039,8 +3039,14 @@ static void nbu2ss_drv_ep_init(struct nbu2ss_udc *udc)
 
 /*-------------------------------------------------------------------------*/
 /* platform_driver */
+<<<<<<< HEAD
 static int nbu2ss_drv_contest_init(struct platform_device *pdev,
 				   struct nbu2ss_udc *udc)
+=======
+static int nbu2ss_drv_contest_init(
+	struct platform_device *pdev,
+	struct nbu2ss_udc *udc)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	spin_lock_init(&udc->lock);
 	udc->dev = &pdev->dev;

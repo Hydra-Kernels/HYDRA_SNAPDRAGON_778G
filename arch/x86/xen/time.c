@@ -266,8 +266,12 @@ static int xen_vcpuop_set_next_event(unsigned long delta,
 	/* Get an event anyway, even if the timeout is already expired */
 	single.flags = 0;
 
+<<<<<<< HEAD
 	ret = HYPERVISOR_vcpu_op(VCPUOP_set_singleshot_timer, xen_vcpu_nr(cpu),
 				 &single);
+=======
+	ret = HYPERVISOR_vcpu_op(VCPUOP_set_singleshot_timer, cpu, &single);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BUG_ON(ret != 0);
 
 	return ret;

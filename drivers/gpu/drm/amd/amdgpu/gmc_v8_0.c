@@ -56,12 +56,15 @@ static void gmc_v8_0_set_irq_funcs(struct amdgpu_device *adev);
 static int gmc_v8_0_wait_for_idle(void *handle);
 
 MODULE_FIRMWARE("amdgpu/tonga_mc.bin");
+<<<<<<< HEAD
 MODULE_FIRMWARE("amdgpu/polaris11_mc.bin");
 MODULE_FIRMWARE("amdgpu/polaris10_mc.bin");
 MODULE_FIRMWARE("amdgpu/polaris12_mc.bin");
 MODULE_FIRMWARE("amdgpu/polaris11_k_mc.bin");
 MODULE_FIRMWARE("amdgpu/polaris10_k_mc.bin");
 MODULE_FIRMWARE("amdgpu/polaris12_k_mc.bin");
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static const u32 golden_settings_tonga_a11[] =
 {
@@ -92,6 +95,7 @@ static const u32 fiji_mgcg_cgcg_init[] =
 	mmMC_MEM_POWER_LS, 0xffffffff, 0x00000104
 };
 
+<<<<<<< HEAD
 static const u32 golden_settings_polaris11_a11[] =
 {
 	mmVM_PRT_APERTURE0_LOW_ADDR, 0x0fffffff, 0x0fffffff,
@@ -109,6 +113,8 @@ static const u32 golden_settings_polaris10_a11[] =
 	mmVM_PRT_APERTURE3_LOW_ADDR, 0x0fffffff, 0x0fffffff
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const u32 cz_mgcg_cgcg_init[] =
 {
 	mmMC_MEM_POWER_LS, 0xffffffff, 0x00000104
@@ -229,6 +235,7 @@ static int gmc_v8_0_init_microcode(struct amdgpu_device *adev)
 	case CHIP_TONGA:
 		chip_name = "tonga";
 		break;
+<<<<<<< HEAD
 	case CHIP_POLARIS11:
 		if (((adev->pdev->device == 0x67ef) &&
 		     ((adev->pdev->revision == 0xe0) ||
@@ -264,6 +271,8 @@ static int gmc_v8_0_init_microcode(struct amdgpu_device *adev)
 		else
 			chip_name = "polaris12";
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case CHIP_FIJI:
 	case CHIP_CARRIZO:
 	case CHIP_STONEY:
@@ -1032,6 +1041,7 @@ static int gmc_v8_0_early_init(void *handle)
 	gmc_v8_0_set_gmc_funcs(adev);
 	gmc_v8_0_set_irq_funcs(adev);
 
+<<<<<<< HEAD
 	adev->gmc.shared_aperture_start = 0x2000000000000000ULL;
 	adev->gmc.shared_aperture_end =
 		adev->gmc.shared_aperture_start + (4ULL << 30) - 1;
@@ -1040,6 +1050,8 @@ static int gmc_v8_0_early_init(void *handle)
 	adev->gmc.private_aperture_end =
 		adev->gmc.private_aperture_start + (4ULL << 30) - 1;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -1055,6 +1067,7 @@ static int gmc_v8_0_late_init(void *handle)
 		return 0;
 }
 
+<<<<<<< HEAD
 static unsigned gmc_v8_0_get_vbios_fb_size(struct amdgpu_device *adev)
 {
 	u32 d1vga_control = RREG32(mmD1VGA_CONTROL);
@@ -1074,6 +1087,8 @@ static unsigned gmc_v8_0_get_vbios_fb_size(struct amdgpu_device *adev)
 	return size;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define mmMC_SEQ_MISC0_FIJI 0xA71
 
 static int gmc_v8_0_sw_init(void *handle)
@@ -1101,7 +1116,28 @@ static int gmc_v8_0_sw_init(void *handle)
 	if (r)
 		return r;
 
+<<<<<<< HEAD
 	r = amdgpu_irq_add_id(adev, AMDGPU_IRQ_CLIENTID_LEGACY, VISLANDS30_IV_SRCID_GFX_MEM_PROT_FAULT, &adev->gmc.vm_fault);
+=======
+	if (adev->flags & AMD_IS_APU) {
+		adev->mc.vram_type = AMDGPU_VRAM_TYPE_UNKNOWN;
+	} else {
+		u32 tmp;
+
+		if (adev->asic_type == CHIP_FIJI)
+			tmp = RREG32(mmMC_SEQ_MISC0_FIJI);
+		else
+			tmp = RREG32(mmMC_SEQ_MISC0);
+		tmp &= MC_SEQ_MISC0__MT__MASK;
+		adev->mc.vram_type = gmc_v8_0_convert_vram_type(tmp);
+	}
+
+	r = amdgpu_irq_add_id(adev, 146, &adev->mc.vm_fault);
+	if (r)
+		return r;
+
+	r = amdgpu_irq_add_id(adev, 147, &adev->mc.vm_fault);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (r)
 		return r;
 
@@ -1199,6 +1235,7 @@ static int gmc_v8_0_hw_init(void *handle)
 	gmc_v8_0_mc_program(adev);
 
 	if (adev->asic_type == CHIP_TONGA) {
+<<<<<<< HEAD
 		r = gmc_v8_0_tonga_mc_load_microcode(adev);
 		if (r) {
 			DRM_ERROR("Failed to load MC firmware!\n");
@@ -1208,6 +1245,9 @@ static int gmc_v8_0_hw_init(void *handle)
 			adev->asic_type == CHIP_POLARIS10 ||
 			adev->asic_type == CHIP_POLARIS12) {
 		r = gmc_v8_0_polaris_mc_load_microcode(adev);
+=======
+		r = gmc_v8_0_mc_load_microcode(adev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (r) {
 			DRM_ERROR("Failed to load MC firmware!\n");
 			return r;

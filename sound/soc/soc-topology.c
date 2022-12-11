@@ -1396,6 +1396,9 @@ static struct snd_kcontrol_new *soc_tplg_dapm_widget_dmixer_create(
 				mc->hdr.name);
 			goto err_sm;
 		}
+
+		/* create any TLV data */
+		soc_tplg_create_tlv(tplg, &kc[i], &mc->hdr);
 	}
 	return kc;
 
@@ -1716,6 +1719,20 @@ widget:
 		widget = snd_soc_dapm_new_control_unlocked(dapm, &template);
 	if (IS_ERR(widget)) {
 		ret = PTR_ERR(widget);
+<<<<<<< HEAD
+=======
+		/* Do not nag about probe deferrals */
+		if (ret != -EPROBE_DEFER)
+			dev_err(tplg->dev,
+				"ASoC: failed to create widget %s controls (%d)\n",
+				w->name, ret);
+		goto hdr_err;
+	}
+	if (widget == NULL) {
+		dev_err(tplg->dev, "ASoC: failed to create widget %s controls\n",
+			w->name);
+		ret = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto hdr_err;
 	}
 

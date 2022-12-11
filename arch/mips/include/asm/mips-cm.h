@@ -134,10 +134,73 @@ GCR_ACCESSOR_RO(64, 0x000, config)
 #define CM_GCR_CONFIG_NUMIOCU			GENMASK(15, 8)
 #define CM_GCR_CONFIG_PCORES			GENMASK(7, 0)
 
+<<<<<<< HEAD
 /* GCR_BASE - Base address of the Global Configuration Registers (GCRs) */
 GCR_ACCESSOR_RW(64, 0x008, base)
 #define CM_GCR_BASE_GCRBASE			GENMASK_ULL(47, 15)
 #define CM_GCR_BASE_CMDEFTGT			GENMASK(1, 0)
+=======
+#define BUILD_CM_Cx_RW(name, off)				\
+	BUILD_CM_Cx_R_(name, off)				\
+	BUILD_CM_Cx__W(name, off)
+
+/* GCB register accessor functions */
+BUILD_CM_R_(config,		MIPS_CM_GCB_OFS + 0x00)
+BUILD_CM_RW(base,		MIPS_CM_GCB_OFS + 0x08)
+BUILD_CM_RW(access,		MIPS_CM_GCB_OFS + 0x20)
+BUILD_CM_R_(rev,		MIPS_CM_GCB_OFS + 0x30)
+BUILD_CM_RW(error_mask,		MIPS_CM_GCB_OFS + 0x40)
+BUILD_CM_RW(error_cause,	MIPS_CM_GCB_OFS + 0x48)
+BUILD_CM_RW(error_addr,		MIPS_CM_GCB_OFS + 0x50)
+BUILD_CM_RW(error_mult,		MIPS_CM_GCB_OFS + 0x58)
+BUILD_CM_RW(l2_only_sync_base,	MIPS_CM_GCB_OFS + 0x70)
+BUILD_CM_RW(gic_base,		MIPS_CM_GCB_OFS + 0x80)
+BUILD_CM_RW(cpc_base,		MIPS_CM_GCB_OFS + 0x88)
+BUILD_CM_RW(reg0_base,		MIPS_CM_GCB_OFS + 0x90)
+BUILD_CM_RW(reg0_mask,		MIPS_CM_GCB_OFS + 0x98)
+BUILD_CM_RW(reg1_base,		MIPS_CM_GCB_OFS + 0xa0)
+BUILD_CM_RW(reg1_mask,		MIPS_CM_GCB_OFS + 0xa8)
+BUILD_CM_RW(reg2_base,		MIPS_CM_GCB_OFS + 0xb0)
+BUILD_CM_RW(reg2_mask,		MIPS_CM_GCB_OFS + 0xb8)
+BUILD_CM_RW(reg3_base,		MIPS_CM_GCB_OFS + 0xc0)
+BUILD_CM_RW(reg3_mask,		MIPS_CM_GCB_OFS + 0xc8)
+BUILD_CM_R_(gic_status,		MIPS_CM_GCB_OFS + 0xd0)
+BUILD_CM_R_(cpc_status,		MIPS_CM_GCB_OFS + 0xf0)
+BUILD_CM_RW(l2_config,		MIPS_CM_GCB_OFS + 0x130)
+BUILD_CM_RW(sys_config2,	MIPS_CM_GCB_OFS + 0x150)
+BUILD_CM_RW(l2_pft_control,	MIPS_CM_GCB_OFS + 0x300)
+BUILD_CM_RW(l2_pft_control_b,	MIPS_CM_GCB_OFS + 0x308)
+
+/* Core Local & Core Other register accessor functions */
+BUILD_CM_Cx_RW(reset_release,	0x00)
+BUILD_CM_Cx_RW(coherence,	0x08)
+BUILD_CM_Cx_R_(config,		0x10)
+BUILD_CM_Cx_RW(other,		0x18)
+BUILD_CM_Cx_RW(reset_base,	0x20)
+BUILD_CM_Cx_R_(id,		0x28)
+BUILD_CM_Cx_RW(reset_ext_base,	0x30)
+BUILD_CM_Cx_R_(tcid_0_priority,	0x40)
+BUILD_CM_Cx_R_(tcid_1_priority,	0x48)
+BUILD_CM_Cx_R_(tcid_2_priority,	0x50)
+BUILD_CM_Cx_R_(tcid_3_priority,	0x58)
+BUILD_CM_Cx_R_(tcid_4_priority,	0x60)
+BUILD_CM_Cx_R_(tcid_5_priority,	0x68)
+BUILD_CM_Cx_R_(tcid_6_priority,	0x70)
+BUILD_CM_Cx_R_(tcid_7_priority,	0x78)
+BUILD_CM_Cx_R_(tcid_8_priority,	0x80)
+
+/* GCR_CONFIG register fields */
+#define CM_GCR_CONFIG_NUMIOCU_SHF		8
+#define CM_GCR_CONFIG_NUMIOCU_MSK		(_ULCAST_(0xf) << 8)
+#define CM_GCR_CONFIG_PCORES_SHF		0
+#define CM_GCR_CONFIG_PCORES_MSK		(_ULCAST_(0xff) << 0)
+
+/* GCR_BASE register fields */
+#define CM_GCR_BASE_GCRBASE_SHF			15
+#define CM_GCR_BASE_GCRBASE_MSK			(_ULCAST_(0x1ffff) << 15)
+#define CM_GCR_BASE_CMDEFTGT_SHF		0
+#define CM_GCR_BASE_CMDEFTGT_MSK		(_ULCAST_(0x3) << 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define  CM_GCR_BASE_CMDEFTGT_MEM		0
 #define  CM_GCR_BASE_CMDEFTGT_RESERVED		1
 #define  CM_GCR_BASE_CMDEFTGT_IOCU0		2

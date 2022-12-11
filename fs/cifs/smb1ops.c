@@ -1021,6 +1021,7 @@ cifs_can_echo(struct TCP_Server_Info *server)
 	return false;
 }
 
+<<<<<<< HEAD
 static int
 cifs_make_node(unsigned int xid, struct inode *inode,
 	       struct dentry *dentry, struct cifs_tcon *tcon,
@@ -1146,6 +1147,8 @@ out:
 
 
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct smb_version_operations smb1_operations = {
 	.send_cancel = send_nt_cancel,
 	.compare_fids = cifs_compare_fids,

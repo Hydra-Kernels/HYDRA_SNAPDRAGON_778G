@@ -544,6 +544,7 @@ static void ramoops_free_przs(struct ramoops_context *cxt)
 {
 	int i;
 
+<<<<<<< HEAD
 	/* Free dump PRZs */
 	if (cxt->dprzs) {
 		for (i = 0; i < cxt->max_dump_cnt; i++)
@@ -560,6 +561,16 @@ static void ramoops_free_przs(struct ramoops_context *cxt)
 		kfree(cxt->fprzs);
 		cxt->max_ftrace_cnt = 0;
 	}
+=======
+	if (!cxt->przs)
+		return;
+
+	for (i = 0; i < cxt->max_dump_cnt; i++)
+		persistent_ram_free(cxt->przs[i]);
+
+	kfree(cxt->przs);
+	cxt->max_dump_cnt = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int ramoops_init_przs(const char *name,
@@ -580,6 +591,7 @@ static int ramoops_init_przs(const char *name,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * If we have a negative record size, calculate it based on
 	 * mem_sz / *cnt. If we have a positive record size, calculate
@@ -600,6 +612,33 @@ static int ramoops_init_przs(const char *name,
 			dev_err(dev, "%s record count == 0 (%zu / %zu)\n",
 				name, mem_sz, record_size);
 			goto fail;
+=======
+	cxt->max_dump_cnt = dump_mem_sz / cxt->record_size;
+	if (!cxt->max_dump_cnt)
+		return -ENOMEM;
+
+	cxt->przs = kzalloc(sizeof(*cxt->przs) * cxt->max_dump_cnt,
+			     GFP_KERNEL);
+	if (!cxt->przs) {
+		dev_err(dev, "failed to initialize a prz array for dumps\n");
+		goto fail_mem;
+	}
+
+	for (i = 0; i < cxt->max_dump_cnt; i++) {
+		cxt->przs[i] = persistent_ram_new(*paddr, cxt->record_size, 0,
+						  &cxt->ecc_info,
+						  cxt->memtype, 0);
+		if (IS_ERR(cxt->przs[i])) {
+			err = PTR_ERR(cxt->przs[i]);
+			dev_err(dev, "failed to request mem region (0x%zx@0x%llx): %d\n",
+				cxt->record_size, (unsigned long long)*paddr, err);
+
+			while (i > 0) {
+				i--;
+				persistent_ram_free(cxt->przs[i]);
+			}
+			goto fail_prz;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -652,9 +691,16 @@ static int ramoops_init_przs(const char *name,
 
 	*przs = prz_ar;
 	return 0;
+<<<<<<< HEAD
 
 fail:
 	*cnt = 0;
+=======
+fail_prz:
+	kfree(cxt->przs);
+fail_mem:
+	cxt->max_dump_cnt = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -675,10 +721,15 @@ static int ramoops_init_prz(const char *name,
 		return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	label = kasprintf(GFP_KERNEL, "ramoops:%s", name);
 	*prz = persistent_ram_new(*paddr, sz, sig, &cxt->ecc_info,
 				  cxt->memtype, PRZ_FLAG_ZAP_OLD, label);
 	kfree(label);
+=======
+	*prz = persistent_ram_new(*paddr, sz, sig, &cxt->ecc_info,
+				  cxt->memtype, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(*prz)) {
 		int err = PTR_ERR(*prz);
 

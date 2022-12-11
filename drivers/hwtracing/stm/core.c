@@ -890,7 +890,11 @@ int stm_register_device(struct device *parent, struct stm_data *stm_data,
 	if (!stm_data->packet || !stm_data->sw_nchannels)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	nmasters = stm_data->sw_end - stm_data->sw_start + 1;
+=======
+	nmasters = stm_data->sw_end - stm_data->sw_start;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	stm = vzalloc(sizeof(*stm) + nmasters * sizeof(void *));
 	if (!stm)
 		return -ENOMEM;

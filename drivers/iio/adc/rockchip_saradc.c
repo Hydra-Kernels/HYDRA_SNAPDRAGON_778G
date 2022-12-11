@@ -230,8 +230,12 @@ static int rockchip_saradc_probe(struct platform_device *pdev)
 	 * The reset should be an optional property, as it should work
 	 * with old devicetrees as well
 	 */
+<<<<<<< HEAD
 	info->reset = devm_reset_control_get_exclusive(&pdev->dev,
 						       "saradc-apb");
+=======
+	info->reset = devm_reset_control_get(&pdev->dev, "saradc-apb");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(info->reset)) {
 		ret = PTR_ERR(info->reset);
 		if (ret != -ENOENT)

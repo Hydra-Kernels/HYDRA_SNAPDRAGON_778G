@@ -431,7 +431,10 @@ static int autofs_d_manage(const struct path *path, bool rcu_walk)
 		 * a mount-trap.
 		 */
 		struct inode *inode;
+<<<<<<< HEAD:fs/autofs/root.c
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/autofs4/root.c
 		if (ino->flags & AUTOFS_INF_WANT_EXPIRE)
 			return 0;
 		if (path_is_mountpoint(path))
@@ -751,7 +754,11 @@ static int autofs_dir_mkdir(struct inode *dir,
 
 	autofs_del_active(dentry);
 
+<<<<<<< HEAD:fs/autofs/root.c
 	inode = autofs_get_inode(dir->i_sb, S_IFDIR | mode);
+=======
+	inode = autofs4_get_inode(dir->i_sb, S_IFDIR | mode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/autofs4/root.c
 	if (!inode)
 		return -ENOMEM;
 	d_add(dentry, inode);

@@ -86,6 +86,16 @@ static inline void cond_local_irq_disable(struct pt_regs *regs)
 		local_irq_disable();
 }
 
+<<<<<<< HEAD
+=======
+static inline void preempt_conditional_cli(struct pt_regs *regs)
+{
+	if (regs->flags & X86_EFLAGS_IF)
+		local_irq_disable();
+	preempt_count_dec();
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * In IST context, we explicitly disable preemption.  This serves two
  * purposes: it makes it much less likely that we would accidentally
@@ -143,7 +153,12 @@ void ist_begin_non_atomic(struct pt_regs *regs)
 	 * will catch asm bugs and any attempt to use ist_preempt_enable
 	 * from double_fault.
 	 */
+<<<<<<< HEAD
 	BUG_ON(!on_thread_stack());
+=======
+	BUG_ON((unsigned long)(current_top_of_stack() -
+			       current_stack_pointer) >= THREAD_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	preempt_enable_no_resched();
 }
@@ -156,6 +171,7 @@ void ist_begin_non_atomic(struct pt_regs *regs)
 void ist_end_non_atomic(void)
 {
 	preempt_disable();
+<<<<<<< HEAD
 }
 
 int is_valid_bugaddr(unsigned long addr)
@@ -187,6 +203,8 @@ int fixup_bug(struct pt_regs *regs, int trapnr)
 	}
 
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static nokprobe_inline int
@@ -588,6 +606,7 @@ dotraplinkage void notrace do_int3(struct pt_regs *regs, long error_code)
 	 * This means that we can't schedule.  That's okay.
 	 */
 	ist_enter(regs);
+
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
 #ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
 	if (kgdb_ll_trap(DIE_INT3, "int3", regs, error_code, X86_TRAP_BP,
@@ -604,10 +623,16 @@ dotraplinkage void notrace do_int3(struct pt_regs *regs, long error_code)
 			SIGTRAP) == NOTIFY_STOP)
 		goto exit;
 
+<<<<<<< HEAD
 	cond_local_irq_enable(regs);
 	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, error_code, 0, NULL);
 	cond_local_irq_disable(regs);
 
+=======
+	preempt_conditional_sti(regs);
+	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, error_code, NULL);
+	preempt_conditional_cli(regs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 exit:
 	ist_exit(regs);
 }
@@ -943,9 +968,25 @@ void __init trap_init(void)
 	 */
 	cpu_init();
 
+<<<<<<< HEAD
 	idt_setup_ist_traps();
 
 	x86_init.irqs.trap_init();
 
 	idt_setup_debugidt_traps();
+=======
+	/*
+	 * X86_TRAP_DB was installed in early_trap_init(). However,
+	 * IST works only after cpu_init() loads TSS. See comments
+	 * in early_trap_init().
+	 */
+	set_intr_gate_ist(X86_TRAP_DB, &debug, DEBUG_STACK);
+
+	x86_init.irqs.trap_init();
+
+#ifdef CONFIG_X86_64
+	memcpy(&debug_idt_table, &idt_table, IDT_ENTRIES * 16);
+	set_nmi_gate(X86_TRAP_DB, &debug);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

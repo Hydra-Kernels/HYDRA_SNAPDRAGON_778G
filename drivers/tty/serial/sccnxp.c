@@ -924,6 +924,7 @@ static int sccnxp_probe(struct platform_device *pdev)
 			goto err_out;
 		uartclk = 0;
 	} else {
+<<<<<<< HEAD
 		ret = clk_prepare_enable(clk);
 		if (ret)
 			goto err_out;
@@ -934,6 +935,9 @@ static int sccnxp_probe(struct platform_device *pdev)
 		if (ret)
 			goto err_out;
 
+=======
+		clk_prepare_enable(clk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		uartclk = clk_get_rate(clk);
 	}
 

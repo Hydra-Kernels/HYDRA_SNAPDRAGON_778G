@@ -28,6 +28,7 @@
 #include <linux/console.h>
 #include <linux/dma-mapping.h>
 #include <linux/module.h>
+#include <linux/console.h>
 
 #include <drm/drm_drv.h>
 #include <drm/drm_ioctl.h>
@@ -1434,10 +1435,19 @@ static int __init vmwgfx_init(void)
 {
 	int ret;
 
+<<<<<<< HEAD
 	if (vgacon_text_force())
 		return -EINVAL;
 
 	ret = pci_register_driver(&vmw_pci_driver);
+=======
+#ifdef CONFIG_VGA_CONSOLE
+	if (vgacon_text_force())
+		return -EINVAL;
+#endif
+
+	ret = drm_pci_init(&driver, &vmw_pci_driver);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		DRM_ERROR("Failed initializing DRM.\n");
 	return ret;

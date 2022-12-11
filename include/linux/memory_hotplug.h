@@ -97,8 +97,12 @@ extern int add_one_highpage(struct page *page, int pfn, int bad_ppro);
 extern int online_pages(unsigned long, unsigned long, int);
 extern int test_pages_in_a_zone(unsigned long start_pfn, unsigned long end_pfn,
 	unsigned long *valid_start, unsigned long *valid_end);
+<<<<<<< HEAD
 extern unsigned long __offline_isolated_pages(unsigned long start_pfn,
 						unsigned long end_pfn);
+=======
+extern void __offline_isolated_pages(unsigned long, unsigned long);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 typedef void (*online_page_callback_t)(struct page *page, unsigned int order);
 

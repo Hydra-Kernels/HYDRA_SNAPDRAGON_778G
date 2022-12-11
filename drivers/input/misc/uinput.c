@@ -1042,6 +1042,7 @@ static long uinput_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 #ifdef CONFIG_COMPAT
 
+<<<<<<< HEAD
 /*
  * These IOCTLs change their size and thus their numbers between
  * 32 and 64 bits.
@@ -1052,10 +1053,14 @@ static long uinput_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	_IOWR(UINPUT_IOCTL_BASE, 200, struct uinput_ff_upload_compat)
 #define UI_END_FF_UPLOAD_COMPAT		\
 	_IOW(UINPUT_IOCTL_BASE, 201, struct uinput_ff_upload_compat)
+=======
+#define UI_SET_PHYS_COMPAT	_IOW(UINPUT_IOCTL_BASE, 108, compat_uptr_t)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static long uinput_compat_ioctl(struct file *file,
 				unsigned int cmd, unsigned long arg)
 {
+<<<<<<< HEAD
 	switch (cmd) {
 	case UI_SET_PHYS_COMPAT:
 		cmd = UI_SET_PHYS;
@@ -1067,6 +1072,10 @@ static long uinput_compat_ioctl(struct file *file,
 		cmd = UI_END_FF_UPLOAD;
 		break;
 	}
+=======
+	if (cmd == UI_SET_PHYS_COMPAT)
+		cmd = UI_SET_PHYS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return uinput_ioctl_handler(file, cmd, arg, compat_ptr(arg));
 }

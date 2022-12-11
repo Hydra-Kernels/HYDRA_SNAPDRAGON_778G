@@ -600,9 +600,19 @@ getxattr(struct dentry *d, const char __user *name, void __user *value,
 	if (size) {
 		if (size > XATTR_SIZE_MAX)
 			size = XATTR_SIZE_MAX;
+<<<<<<< HEAD
 		kvalue = kvzalloc(size, GFP_KERNEL);
 		if (!kvalue)
 			return -ENOMEM;
+=======
+		kvalue = kzalloc(size, GFP_KERNEL | __GFP_NOWARN);
+		if (!kvalue) {
+			vvalue = vzalloc(size);
+			if (!vvalue)
+				return -ENOMEM;
+			kvalue = vvalue;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	error = vfs_getxattr(d, kname, kvalue, size);

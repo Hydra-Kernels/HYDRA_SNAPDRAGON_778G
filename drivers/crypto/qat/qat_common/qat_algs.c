@@ -1382,8 +1382,13 @@ static struct crypto_alg qat_algs[] = { {
 	.cra_u = {
 		.ablkcipher = {
 			.setkey = qat_alg_ablkcipher_xts_setkey,
+<<<<<<< HEAD
 			.decrypt = qat_alg_ablkcipher_blk_decrypt,
 			.encrypt = qat_alg_ablkcipher_blk_encrypt,
+=======
+			.decrypt = qat_alg_ablkcipher_decrypt,
+			.encrypt = qat_alg_ablkcipher_encrypt,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			.min_keysize = 2 * AES_MIN_KEY_SIZE,
 			.max_keysize = 2 * AES_MAX_KEY_SIZE,
 			.ivsize = AES_BLOCK_SIZE,

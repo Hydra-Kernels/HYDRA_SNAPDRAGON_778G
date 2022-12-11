@@ -6597,6 +6597,16 @@ static int ath10k_sta_state(struct ieee80211_hw *hw,
 					    WMI_TDLS_PEER_STATE_TEARDOWN, ret);
 		}
 
+		if (sta->tdls) {
+			ret = ath10k_mac_tdls_peer_update(ar, arvif->vdev_id,
+							  sta,
+							  WMI_TDLS_PEER_STATE_TEARDOWN);
+			if (ret)
+				ath10k_warn(ar, "failed to update tdls peer state for %pM state %d: %i\n",
+					    sta->addr,
+					    WMI_TDLS_PEER_STATE_TEARDOWN, ret);
+		}
+
 		ret = ath10k_peer_delete(ar, arvif->vdev_id, sta->addr);
 		if (ret)
 			ath10k_warn(ar, "failed to delete peer %pM for vdev %d: %i\n",
@@ -7690,7 +7700,11 @@ static int ath10k_ampdu_action(struct ieee80211_hw *hw,
 			       struct ieee80211_ampdu_params *params)
 {
 	struct ath10k *ar = hw->priv;
+<<<<<<< HEAD
 	struct ath10k_vif *arvif = (void *)vif->drv_priv;
+=======
+	struct ath10k_vif *arvif = ath10k_vif_to_arvif(vif);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;
@@ -8055,6 +8069,7 @@ ath10k_mac_op_assign_vif_chanctx(struct ieee80211_hw *hw,
 				    arvif->vdev_id, ret);
 	}
 
+<<<<<<< HEAD
 	if (ath10k_peer_stats_enabled(ar) &&
 	    ar->hw_params.tx_stats_over_pktlog) {
 		ar->pktlog_filter |= ATH10K_PKTLOG_PEER_STATS;
@@ -8066,6 +8081,8 @@ ath10k_mac_op_assign_vif_chanctx(struct ieee80211_hw *hw,
 		}
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&ar->conf_mutex);
 	return 0;
 

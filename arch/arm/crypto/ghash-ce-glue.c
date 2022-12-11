@@ -279,6 +279,10 @@ static int ghash_async_import(struct ahash_request *req, const void *in)
 	struct shash_desc *desc = cryptd_shash_desc(cryptd_req);
 
 	desc->tfm = cryptd_ahash_child(ctx->cryptd_tfm);
+<<<<<<< HEAD
+=======
+	desc->flags = req->base.flags;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return crypto_shash_import(desc, in);
 }

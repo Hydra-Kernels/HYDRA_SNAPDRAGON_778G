@@ -2321,7 +2321,11 @@ static void __vunmap(const void *addr, int deallocate_pages)
 			addr))
 		return;
 
+<<<<<<< HEAD
 	area = find_vm_area(addr);
+=======
+	area = find_vmap_area((unsigned long)addr)->vm;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (unlikely(!area)) {
 		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
 				addr);
@@ -2333,6 +2337,7 @@ static void __vunmap(const void *addr, int deallocate_pages)
 
 	vm_remove_mappings(area, deallocate_pages);
 
+	remove_vm_area(addr);
 	if (deallocate_pages) {
 		int i;
 

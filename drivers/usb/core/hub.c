@@ -118,8 +118,11 @@ EXPORT_SYMBOL_GPL(ehci_cf_port_reset_rwsem);
 static void hub_release(struct kref *kref);
 static int usb_reset_and_verify_device(struct usb_device *udev);
 static int hub_port_disable(struct usb_hub *hub, int port1, int set_state);
+<<<<<<< HEAD
 static bool hub_port_warm_reset_required(struct usb_hub *hub, int port1,
 		u16 portstatus);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline char *portspeed(struct usb_hub *hub, int portstatus)
 {
@@ -1208,7 +1211,10 @@ static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
 			 * PORT_OVER_CURRENT is not. So check for any of them.
 			 */
 			if (udev || (portstatus & USB_PORT_STAT_CONNECTION) ||
+<<<<<<< HEAD
 			    (portchange & USB_PORT_STAT_C_CONNECTION) ||
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			    (portstatus & USB_PORT_STAT_OVERCURRENT) ||
 			    (portchange & USB_PORT_STAT_C_OVERCURRENT))
 				set_bit(port1, hub->change_bits);
@@ -2736,9 +2742,12 @@ static unsigned hub_is_wusb(struct usb_hub *hub)
 static bool use_new_scheme(struct usb_device *udev, int retry,
 			   struct usb_port *port_dev)
 {
+<<<<<<< HEAD
 	int old_scheme_first_port =
 		port_dev->quirks & USB_PORT_QUIRK_OLD_SCHEME;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (udev->speed >= USB_SPEED_SUPER)
 		return false;
 
@@ -4137,6 +4146,7 @@ static void usb_enable_link_state(struct usb_hcd *hcd, struct usb_device *udev,
 		 * host know that this link state won't be enabled.
 		 */
 		hcd->driver->disable_usb3_lpm_timeout(hcd, udev, state);
+<<<<<<< HEAD
 		return;
 	}
 
@@ -4160,6 +4170,26 @@ static void usb_enable_link_state(struct usb_hcd *hcd, struct usb_device *udev,
 		udev->usb3_lpm_u1_enabled = 1;
 	else if (state == USB3_LPM_U2)
 		udev->usb3_lpm_u2_enabled = 1;
+=======
+	} else {
+		/* Only a configured device will accept the Set Feature
+		 * U1/U2_ENABLE
+		 */
+		if (udev->actconfig)
+			usb_set_device_initiated_lpm(udev, state, true);
+
+		/* As soon as usb_set_lpm_timeout(timeout) returns 0, the
+		 * hub-initiated LPM is enabled. Thus, LPM is enabled no
+		 * matter the result of usb_set_device_initiated_lpm().
+		 * The only difference is whether device is able to initiate
+		 * LPM.
+		 */
+		if (state == USB3_LPM_U1)
+			udev->usb3_lpm_u1_enabled = 1;
+		else if (state == USB3_LPM_U2)
+			udev->usb3_lpm_u2_enabled = 1;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 /*
  * Disable the hub-initiated U1/U2 idle timeouts, and disable device-initiated
@@ -4301,6 +4331,7 @@ void usb_enable_lpm(struct usb_device *udev)
 	if (udev->lpm_disable_count > 0)
 		return;
 
+<<<<<<< HEAD
 	hub = usb_hub_to_struct_hub(udev->parent);
 	if (!hub)
 		return;
@@ -4312,6 +4343,10 @@ void usb_enable_lpm(struct usb_device *udev)
 
 	if (port_dev->usb3_lpm_u2_permit)
 		usb_enable_link_state(hcd, udev, USB3_LPM_U2);
+=======
+	usb_enable_link_state(hcd, udev, USB3_LPM_U1);
+	usb_enable_link_state(hcd, udev, USB3_LPM_U2);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(usb_enable_lpm);
 
@@ -4422,6 +4457,7 @@ static int hub_port_disable(struct usb_hub *hub, int port1, int set_state)
 	return ret;
 }
 
+<<<<<<< HEAD
 /*
  * usb_port_disable - disable a usb device's upstream port
  * @udev: device to disable
@@ -4435,6 +4471,8 @@ int usb_port_disable(struct usb_device *udev)
 
 	return hub_port_disable(hub, udev->portnum, 0);
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* USB 2.0 spec, 7.1.7.3 / fig 7-29:
  *
@@ -4592,7 +4630,10 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
 {
 	struct usb_device	*hdev = hub->hdev;
 	struct usb_hcd		*hcd = bus_to_hcd(hdev->bus);
+<<<<<<< HEAD
 	struct usb_port		*port_dev = hub->ports[port1 - 1];
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int			retries, operations, retval, i;
 	unsigned		delay = HUB_SHORT_RESET_TIME;
 	enum usb_device_speed	oldspeed = udev->speed;
@@ -4666,6 +4707,7 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
 	else
 		speed = usb_speed_string(udev->speed);
 
+<<<<<<< HEAD
 	/*
 	 * The controller driver may be NULL if the controller device
 	 * is the middle device between platform device and roothub.
@@ -4678,6 +4720,8 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
 	else
 		driver_name = udev->bus->sysdev->driver->name;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (udev->speed < USB_SPEED_SUPER)
 		dev_info(&udev->dev,
 				"%s %s USB device number %d using %s\n",
@@ -4813,6 +4857,7 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
 			if (udev->speed >= USB_SPEED_SUPER) {
 				devnum = udev->devnum;
 				dev_info(&udev->dev,
+<<<<<<< HEAD
 						"%s SuperSpeed%s%s USB device number %d using %s\n",
 						(udev->config) ? "reset" : "new",
 					 (udev->speed == USB_SPEED_SUPER_PLUS) ?
@@ -4820,6 +4865,12 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
 					 (udev->rx_lanes == 2 && udev->tx_lanes == 2) ?
 							"x2" : "",
 					 devnum, driver_name);
+=======
+						"%s SuperSpeed%s USB device number %d using %s\n",
+						(udev->config) ? "reset" : "new",
+					 (udev->speed == USB_SPEED_SUPER_PLUS) ? "Plus" : "",
+						devnum, udev->bus->controller->driver->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 
 			/* cope with hardware quirkiness:

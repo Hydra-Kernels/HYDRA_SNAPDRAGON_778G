@@ -278,8 +278,14 @@ void atombios_crtc_dpms(struct drm_crtc *crtc, int mode)
 		if (ASIC_IS_DCE3(rdev) && !ASIC_IS_DCE6(rdev))
 			atombios_enable_crtc_memreq(crtc, ATOM_ENABLE);
 		atombios_blank_crtc(crtc, ATOM_DISABLE);
+<<<<<<< HEAD
 		if (dev->num_crtcs > radeon_crtc->crtc_id)
 			drm_crtc_vblank_on(crtc);
+=======
+		drm_vblank_post_modeset(dev, radeon_crtc->crtc_id);
+		/* Make sure vblank interrupt is still enabled if needed */
+		radeon_irq_set(rdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		radeon_crtc_load_lut(crtc);
 		break;
 	case DRM_MODE_DPMS_STANDBY:

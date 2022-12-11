@@ -263,7 +263,10 @@ static int i2c_nuvoton_recv_data(struct i2c_client *client,
 /* Read TPM command results */
 static int i2c_nuvoton_recv(struct tpm_chip *chip, u8 *buf, size_t count)
 {
+<<<<<<< HEAD
 	struct priv_data *priv = dev_get_drvdata(&chip->dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct device *dev = chip->dev.parent;
 	struct i2c_client *client = to_i2c_client(dev);
 	s32 rc;
@@ -351,7 +354,10 @@ static int i2c_nuvoton_recv(struct tpm_chip *chip, u8 *buf, size_t count)
  */
 static int i2c_nuvoton_send(struct tpm_chip *chip, u8 *buf, size_t len)
 {
+<<<<<<< HEAD
 	struct priv_data *priv = dev_get_drvdata(&chip->dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct device *dev = chip->dev.parent;
 	struct i2c_client *client = to_i2c_client(dev);
 	u32 ordinal;

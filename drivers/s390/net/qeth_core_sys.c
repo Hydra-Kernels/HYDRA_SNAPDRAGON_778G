@@ -409,12 +409,17 @@ static ssize_t qeth_dev_layer2_store(struct device *dev,
 
 	if (card->options.layer == newdis)
 		goto out;
+<<<<<<< HEAD
 	if (card->info.layer_enforced) {
+=======
+	if (card->info.type == QETH_CARD_TYPE_OSM) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* fixed layer, can't switch */
 		rc = -EOPNOTSUPP;
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (card->discipline) {
 		/* start with a new, pristine netdevice: */
 		ndev = qeth_clone_netdev(card->dev);
@@ -427,6 +432,12 @@ static ssize_t qeth_dev_layer2_store(struct device *dev,
 		qeth_core_free_discipline(card);
 		free_netdev(card->dev);
 		card->dev = ndev;
+=======
+	card->info.mac_bits = 0;
+	if (card->discipline) {
+		card->discipline->remove(card->gdev);
+		qeth_core_free_discipline(card);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	rc = qeth_core_load_discipline(card, newdis);

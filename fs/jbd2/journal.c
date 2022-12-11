@@ -1750,15 +1750,23 @@ int jbd2_journal_destroy(journal_t *journal)
 
 	if (journal->j_sb_buffer) {
 		if (!is_journal_aborted(journal)) {
+<<<<<<< HEAD
 			mutex_lock_io(&journal->j_checkpoint_mutex);
+=======
+			mutex_lock(&journal->j_checkpoint_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			write_lock(&journal->j_state_lock);
 			journal->j_tail_sequence =
 				++journal->j_transaction_sequence;
 			write_unlock(&journal->j_state_lock);
 
+<<<<<<< HEAD
 			jbd2_mark_journal_empty(journal,
 					REQ_SYNC | REQ_PREFLUSH | REQ_FUA);
+=======
+			jbd2_mark_journal_empty(journal, WRITE_FLUSH_FUA);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			mutex_unlock(&journal->j_checkpoint_mutex);
 		} else
 			err = -EIO;
@@ -2017,7 +2025,11 @@ int jbd2_journal_flush(journal_t *journal)
 	 * the magic code for a fully-recovered superblock.  Any future
 	 * commits of data to the journal will restore the current
 	 * s_start value. */
+<<<<<<< HEAD
 	jbd2_mark_journal_empty(journal, REQ_SYNC | REQ_FUA);
+=======
+	jbd2_mark_journal_empty(journal, WRITE_FUA);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&journal->j_checkpoint_mutex);
 	write_lock(&journal->j_state_lock);
 	J_ASSERT(!journal->j_running_transaction);
@@ -2062,8 +2074,13 @@ int jbd2_journal_wipe(journal_t *journal, int write)
 	err = jbd2_journal_skip_recovery(journal);
 	if (write) {
 		/* Lock to make assertions happy... */
+<<<<<<< HEAD
 		mutex_lock_io(&journal->j_checkpoint_mutex);
 		jbd2_mark_journal_empty(journal, REQ_SYNC | REQ_FUA);
+=======
+		mutex_lock(&journal->j_checkpoint_mutex);
+		jbd2_mark_journal_empty(journal, WRITE_FUA);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		mutex_unlock(&journal->j_checkpoint_mutex);
 	}
 

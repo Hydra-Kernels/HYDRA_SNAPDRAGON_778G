@@ -495,7 +495,14 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
 	 * can result in fault, which will cause a deadlock when called with
 	 * mmap_sem held
 	 */
+<<<<<<< HEAD
 	if (is_user)
+=======
+	if (!is_exec && user_mode(regs))
+		store_update_sp = store_updates_sp(regs);
+
+	if (user_mode(regs))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		flags |= FAULT_FLAG_USER;
 	if (is_write)
 		flags |= FAULT_FLAG_WRITE;

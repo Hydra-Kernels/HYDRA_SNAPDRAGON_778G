@@ -159,8 +159,15 @@ static int snvs_rtc_read_time(struct device *dev, struct rtc_time *tm)
 static int snvs_rtc_set_time(struct device *dev, struct rtc_time *tm)
 {
 	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+<<<<<<< HEAD
 	unsigned long time = rtc_tm_to_time64(tm);
 	int ret;
+=======
+	unsigned long time;
+	int ret;
+
+	rtc_tm_to_time(tm, &time);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Disable RTC first */
 	ret = snvs_rtc_enable(data, false);

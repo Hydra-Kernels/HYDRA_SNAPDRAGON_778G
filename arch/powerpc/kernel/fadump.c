@@ -1178,6 +1178,7 @@ void fadump_cleanup(void)
 
 	/* Invalidate the registration only if dump is active. */
 	if (fw_dump.dump_active) {
+<<<<<<< HEAD
 		pr_debug("Invalidating firmware-assisted dump registration\n");
 		fw_dump.ops->fadump_invalidate(&fw_dump);
 	} else if (fw_dump.dump_registered) {
@@ -1206,6 +1207,14 @@ static void fadump_free_reserved_memory(unsigned long start_pfn,
 			cond_resched();
 			time_limit = jiffies + HZ;
 		}
+=======
+		init_fadump_mem_struct(&fdm,
+			be64_to_cpu(fdm_active->cpu_state_data.destination_address));
+		fadump_invalidate_dump(&fdm);
+	} else if (fw_dump.dump_registered) {
+		/* Un-register Firmware-assisted dump if it was registered. */
+		fadump_unregister_dump(&fdm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 

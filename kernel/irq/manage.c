@@ -995,12 +995,18 @@ irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
 	 * This code is triggered unconditionally. Check the affinity
 	 * mask pointer. For CPU_MASK_OFFSTACK=n this is optimized out.
 	 */
+<<<<<<< HEAD
 	if (cpumask_available(desc->irq_common_data.affinity)) {
 		const struct cpumask *m;
 
 		m = irq_data_get_effective_affinity_mask(&desc->irq_data);
 		cpumask_copy(mask, m);
 	} else {
+=======
+	if (cpumask_available(desc->irq_common_data.affinity))
+		cpumask_copy(mask, desc->irq_common_data.affinity);
+	else
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		valid = false;
 	}
 	raw_spin_unlock_irq(&desc->lock);
@@ -1548,8 +1554,15 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 			ret = __irq_set_trigger(desc,
 						new->flags & IRQF_TRIGGER_MASK);
 
+<<<<<<< HEAD
 			if (ret)
 				goto out_unlock;
+=======
+			if (ret) {
+				irq_release_resources(desc);
+				goto out_mask;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/*

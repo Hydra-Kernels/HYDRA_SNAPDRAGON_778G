@@ -1792,6 +1792,11 @@ static inline void _free_event(struct pl330_thread *thrd, int ev)
 
 static void pl330_release_channel(struct pl330_thread *thrd)
 {
+<<<<<<< HEAD
+=======
+	struct pl330_dmac *pl330;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!thrd || thrd->free)
 		return;
 
@@ -1800,6 +1805,11 @@ static void pl330_release_channel(struct pl330_thread *thrd)
 	dma_pl330_rqcb(thrd->req[1 - thrd->lstenq].desc, PL330_ERR_ABORT);
 	dma_pl330_rqcb(thrd->req[thrd->lstenq].desc, PL330_ERR_ABORT);
 
+<<<<<<< HEAD
+=======
+	pl330 = thrd->dmac;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	_free_event(thrd, thrd->ev);
 	thrd->free = true;
 }
@@ -2273,6 +2283,10 @@ static int pl330_terminate_all(struct dma_chan *chan)
 	struct dma_pl330_desc *desc;
 	unsigned long flags;
 	struct pl330_dmac *pl330 = pch->dmac;
+<<<<<<< HEAD
+=======
+	LIST_HEAD(list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool power_down = false;
 
 	pm_runtime_get_sync(pl330->ddma.dev);
@@ -2283,8 +2297,11 @@ static int pl330_terminate_all(struct dma_chan *chan)
 	pch->thread->req[0].desc = NULL;
 	pch->thread->req[1].desc = NULL;
 	pch->thread->req_running = -1;
+<<<<<<< HEAD
 	spin_unlock(&pl330->lock);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	power_down = pch->active;
 	pch->active = false;
 

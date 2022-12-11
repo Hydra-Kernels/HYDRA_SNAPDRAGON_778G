@@ -355,8 +355,11 @@ xfs_attr3_leaf_read_verify(
 
 const struct xfs_buf_ops xfs_attr3_leaf_buf_ops = {
 	.name = "xfs_attr3_leaf",
+<<<<<<< HEAD
 	.magic16 = { cpu_to_be16(XFS_ATTR_LEAF_MAGIC),
 		     cpu_to_be16(XFS_ATTR3_LEAF_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_attr3_leaf_read_verify,
 	.verify_write = xfs_attr3_leaf_write_verify,
 	.verify_struct = xfs_attr3_leaf_verify,

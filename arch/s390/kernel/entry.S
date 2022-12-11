@@ -27,7 +27,10 @@
 #include <asm/vx-insn.h>
 #include <asm/setup.h>
 #include <asm/nmi.h>
+<<<<<<< HEAD
 #include <asm/export.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/nospec-insn.h>
 
 __PT_R0      =	__PT_GPRS
@@ -133,11 +136,20 @@ _LPP_OFFSET	= __LC_LPP
 	jnz	3f
 	CHECK_STACK \savearea
 	aghi	%r15,-(STACK_FRAME_OVERHEAD + __PT_SIZE)
+<<<<<<< HEAD
 	j	4f
 2:	UPDATE_VTIME %r14,%r15,\timer
 	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
 3:	lg	%r15,__LC_ASYNC_STACK	# load async stack
 4:	la	%r11,STACK_FRAME_OVERHEAD(%r15)
+=======
+	j	3f
+1:	LAST_BREAK %r14
+	UPDATE_VTIME %r14,%r15,\timer
+	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
+2:	lg	%r15,__LC_ASYNC_STACK	# load async stack
+3:	la	%r11,STACK_FRAME_OVERHEAD(%r15)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.endm
 
 	.macro UPDATE_VTIME w1,w2,enter_timer
@@ -189,6 +201,7 @@ _LPP_OFFSET	= __LC_LPP
 	.endm
 
 	.macro BPOFF
+<<<<<<< HEAD
 	ALTERNATIVE "", ".long 0xb2e8c000", 82
 	.endm
 
@@ -199,12 +212,72 @@ _LPP_OFFSET	= __LC_LPP
 	.macro BPENTER tif_ptr,tif_mask
 	ALTERNATIVE "TSTMSK \tif_ptr,\tif_mask; jz .+8; .long 0xb2e8d000", \
 		    "", 82
+=======
+	.pushsection .altinstr_replacement, "ax"
+660:	.long	0xb2e8c000
+	.popsection
+661:	.long	0x47000000
+	.pushsection .altinstructions, "a"
+	.long 661b - .
+	.long 660b - .
+	.word 82
+	.byte 4
+	.byte 4
+	.popsection
+	.endm
+
+	.macro BPON
+	.pushsection .altinstr_replacement, "ax"
+662:	.long	0xb2e8d000
+	.popsection
+663:	.long	0x47000000
+	.pushsection .altinstructions, "a"
+	.long 663b - .
+	.long 662b - .
+	.word 82
+	.byte 4
+	.byte 4
+	.popsection
+	.endm
+
+	.macro BPENTER tif_ptr,tif_mask
+	.pushsection .altinstr_replacement, "ax"
+662:	.word	0xc004, 0x0000, 0x0000	# 6 byte nop
+	.word	0xc004, 0x0000, 0x0000	# 6 byte nop
+	.popsection
+664:	TSTMSK	\tif_ptr,\tif_mask
+	jz	. + 8
+	.long	0xb2e8d000
+	.pushsection .altinstructions, "a"
+	.long 664b - .
+	.long 662b - .
+	.word 82
+	.byte 12
+	.byte 12
+	.popsection
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.endm
 
 	.macro BPEXIT tif_ptr,tif_mask
 	TSTMSK	\tif_ptr,\tif_mask
+<<<<<<< HEAD
 	ALTERNATIVE "jz .+8;  .long 0xb2e8c000", \
 		    "jnz .+8; .long 0xb2e8d000", 82
+=======
+	.pushsection .altinstr_replacement, "ax"
+662:	jnz	. + 8
+	.long	0xb2e8d000
+	.popsection
+664:	jz	. + 8
+	.long	0xb2e8c000
+	.pushsection .altinstructions, "a"
+	.long 664b - .
+	.long 662b - .
+	.word 82
+	.byte 8
+	.byte 8
+	.popsection
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.endm
 
 	GEN_BR_THUNK %r9
@@ -229,6 +302,11 @@ ENTRY(__bpon)
 	BR_EX	%r14
 ENDPROC(__bpon)
 
+ENTRY(__bpon)
+	.globl __bpon
+	BPON
+	BR_EX	%r14
+
 /*
  * Scheduler resume function, called by switch_to
  *  gpr2 = (task_struct *) prev
@@ -250,9 +328,16 @@ ENTRY(__switch_to)
 	aghi	%r3,__TASK_pid
 	mvc	__LC_CURRENT_PID(4,%r0),0(%r3)	# store pid of next
 	lmg	%r6,%r15,__SF_GPRS(%r15)	# load gprs of next task
+<<<<<<< HEAD
 	ALTERNATIVE "", ".insn s,0xb2800000,_LPP_OFFSET", 40
 	BR_EX	%r14
 ENDPROC(__switch_to)
+=======
+	TSTMSK	__LC_MACHINE_FLAGS,MACHINE_FLAG_LPP
+	jz	0f
+	.insn	s,0xb2800000,__LC_LPP		# set program parameter
+0:	BR_EX	%r14
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 .L__critical_start:
 
@@ -265,10 +350,17 @@ ENDPROC(__switch_to)
 ENTRY(sie64a)
 	stmg	%r6,%r14,__SF_GPRS(%r15)	# save kernel registers
 	lg	%r12,__LC_CURRENT
+<<<<<<< HEAD
 	stg	%r2,__SF_SIE_CONTROL(%r15)	# save control block pointer
 	stg	%r3,__SF_SIE_SAVEAREA(%r15)	# save guest register save area
 	xc	__SF_SIE_REASON(8,%r15),__SF_SIE_REASON(%r15) # reason code = 0
 	mvc	__SF_SIE_FLAGS(8,%r15),__TI_flags(%r12) # copy thread flags
+=======
+	stg	%r2,__SF_EMPTY(%r15)		# save control block pointer
+	stg	%r3,__SF_EMPTY+8(%r15)		# save guest register save area
+	xc	__SF_EMPTY+16(8,%r15),__SF_EMPTY+16(%r15) # reason code = 0
+	mvc	__SF_EMPTY+24(8,%r15),__TI_flags(%r12) # copy thread flags
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	TSTMSK	__LC_CPU_FLAGS,_CIF_FPU		# load guest fp/vx registers ?
 	jno	.Lsie_load_guest_gprs
 	brasl	%r14,load_fpu_regs		# load guest fp/vx regs
@@ -285,12 +377,20 @@ ENTRY(sie64a)
 	jnz	.Lsie_skip
 	TSTMSK	__LC_CPU_FLAGS,_CIF_FPU
 	jo	.Lsie_skip			# exit if fp/vx regs changed
+<<<<<<< HEAD
 	BPEXIT	__SF_SIE_FLAGS(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
 .Lsie_entry:
 	sie	0(%r14)
 .Lsie_exit:
 	BPOFF
 	BPENTER	__SF_SIE_FLAGS(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
+=======
+	BPEXIT	__SF_EMPTY+24(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
+	sie	0(%r14)
+.Lsie_exit:
+	BPOFF
+	BPENTER	__SF_EMPTY+24(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 .Lsie_skip:
 	ni	__SIE_PROG0C+3(%r14),0xfe	# no longer in SIE
 	lctlg	%c1,%c1,__LC_USER_ASCE		# load primary asce
@@ -318,7 +418,11 @@ sie_exit:
 	xgr	%r4,%r4
 	xgr	%r5,%r5
 	lmg	%r6,%r14,__SF_GPRS(%r15)	# restore kernel registers
+<<<<<<< HEAD
 	lg	%r2,__SF_SIE_REASON(%r15)	# return exit reason code
+=======
+	lg	%r2,__SF_EMPTY+16(%r15)		# return exit reason code
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BR_EX	%r14
 .Lsie_fault:
 	lghi	%r14,-EFAULT
@@ -344,14 +448,23 @@ ENTRY(system_call)
 .Lsysc_stmg:
 	stmg	%r8,%r15,__LC_SAVE_AREA_SYNC
 	BPOFF
+<<<<<<< HEAD
 	lg	%r12,__LC_CURRENT
 	lghi	%r13,__TASK_thread
+=======
+	lg	%r10,__LC_LAST_BREAK
+	lg	%r12,__LC_THREAD_INFO
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lghi	%r14,_PIF_SYSCALL
 .Lsysc_per:
 	lg	%r15,__LC_KERNEL_STACK
 	la	%r11,STACK_FRAME_OVERHEAD(%r15)	# pointer to pt_regs
 .Lsysc_vtime:
+<<<<<<< HEAD
 	UPDATE_VTIME %r8,%r9,__LC_SYNC_ENTER_TIMER
+=======
+	UPDATE_VTIME %r10,%r13,__LC_SYNC_ENTER_TIMER
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
 	stmg	%r0,%r7,__PT_R0(%r11)
 	mvc	__PT_R8(64,%r11),__LC_SAVE_AREA_SYNC
@@ -361,8 +474,12 @@ ENTRY(system_call)
 .Lsysc_do_svc:
 	# clear user controlled register to prevent speculative use
 	xgr	%r0,%r0
+<<<<<<< HEAD
 	# load address of system call table
 	lg	%r10,__THREAD_sysc_table(%r13,%r12)
+=======
+	lg	%r10,__TI_sysc_table(%r12)	# address of system call table
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	llgh	%r8,__PT_INT_CODE+2(%r11)
 	slag	%r8,%r8,3			# shift and test for svc 0
 	jnz	.Lsysc_nr_ok
@@ -642,9 +759,15 @@ ENTRY(pgm_check_handler)
 	jnz	.Lpgm_svcper		# -> single stepped svc
 2:	CHECK_STACK __LC_SAVE_AREA_SYNC
 	aghi	%r15,-(STACK_FRAME_OVERHEAD + __PT_SIZE)
+<<<<<<< HEAD
 	# CHECK_VMAP_STACK branches to stack_overflow or 5f
 	CHECK_VMAP_STACK __LC_SAVE_AREA_SYNC,5f
 3:	UPDATE_VTIME %r14,%r15,__LC_SYNC_ENTER_TIMER
+=======
+	j	3f
+2:	LAST_BREAK %r14
+	UPDATE_VTIME %r14,%r15,__LC_SYNC_ENTER_TIMER
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
 	lg	%r15,__LC_KERNEL_STACK
 	lgr	%r14,%r12
@@ -687,7 +810,11 @@ ENTRY(pgm_check_handler)
 	nill	%r10,0x007f
 	sll	%r10,3
 	je	.Lpgm_return
+<<<<<<< HEAD
 	lg	%r9,0(%r10,%r1)		# load address of handler routine
+=======
+	lgf	%r9,0(%r10,%r1)		# load address of handler routine
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lgr	%r2,%r11		# pass pointer to pt_regs
 	BASR_EX	%r14,%r9		# branch to interrupt-handler
 .Lpgm_return:
@@ -1003,7 +1130,11 @@ ENTRY(psw_idle)
 	jz	.Lpsw_idle_stcctm
 	.insn	rsy,0xeb0000000017,%r1,5,__SF_EMPTY+16(%r15)
 .Lpsw_idle_stcctm:
+<<<<<<< HEAD
 	oi	__LC_CPU_FLAGS+7,_CIF_ENABLED_WAIT
+=======
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BPON
 	STCK	__CLOCK_IDLE_ENTER(%r2)
 	stpt	__TIMER_IDLE_ENTER(%r2)
@@ -1111,12 +1242,20 @@ ENDPROC(load_fpu_regs)
 ENTRY(mcck_int_handler)
 	STCK	__LC_MCCK_CLOCK
 	BPOFF
+<<<<<<< HEAD
 	la	%r1,4095		# validate r1
 	spt	__LC_CPU_TIMER_SAVE_AREA-4095(%r1)	# validate cpu timer
 	sckc	__LC_CLOCK_COMPARATOR			# validate comparator
 	lam	%a0,%a15,__LC_AREGS_SAVE_AREA-4095(%r1) # validate acrs
 	lmg	%r0,%r15,__LC_GPREGS_SAVE_AREA-4095(%r1)# validate gprs
 	lg	%r12,__LC_CURRENT
+=======
+	la	%r1,4095		# revalidate r1
+	spt	__LC_CPU_TIMER_SAVE_AREA-4095(%r1)	# revalidate cpu timer
+	lmg	%r0,%r15,__LC_GPREGS_SAVE_AREA-4095(%r1)# revalidate gprs
+	lg	%r10,__LC_LAST_BREAK
+	lg	%r12,__LC_THREAD_INFO
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	larl	%r13,cleanup_critical
 	lmg	%r8,%r9,__LC_MCK_OLD_PSW
 	TSTMSK	__LC_MCCK_CODE,MCCK_CODE_SYSTEM_DAMAGE
@@ -1319,7 +1458,10 @@ ENTRY(cleanup_critical)
 	clg	%r9,BASED(.Lcleanup_table+104)	# .Lload_fpu_regs_end
 	jl	.Lcleanup_load_fpu_regs
 0:	BR_EX	%r14,%r11
+<<<<<<< HEAD
 ENDPROC(cleanup_critical)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	.align	8
 .Lcleanup_table:
@@ -1344,6 +1486,7 @@ ENDPROC(cleanup_critical)
 	.quad	.Lsie_done
 
 .Lcleanup_sie:
+<<<<<<< HEAD
 	cghi    %r11,__LC_SAVE_AREA_ASYNC 	#Is this in normal interrupt?
 	je      1f
 	slg     %r9,BASED(.Lsie_crit_mcck_start)
@@ -1352,6 +1495,10 @@ ENDPROC(cleanup_critical)
 	oi      __LC_CPU_FLAGS+7, _CIF_MCCK_GUEST
 1:	BPENTER __SF_SIE_FLAGS(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
 	lg	%r9,__SF_SIE_CONTROL(%r15)	# get control block pointer
+=======
+	BPENTER __SF_EMPTY+24(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)
+	lg	%r9,__SF_EMPTY(%r15)		# get control block pointer
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ni	__SIE_PROG0C+3(%r9),0xfe	# no longer in SIE
 	lctlg	%c1,%c1,__LC_USER_ASCE		# load primary asce
 	larl	%r9,sie_exit			# skip forward to sie_exit
@@ -1393,7 +1540,16 @@ ENDPROC(cleanup_critical)
 	stg	%r15,__LC_SYSTEM_TIMER
 0:	# update accounting time stamp
 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+<<<<<<< HEAD
 	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
+=======
+	# do LAST_BREAK
+	lg	%r9,16(%r11)
+	srag	%r9,%r9,23
+	jz	0f
+	mvc	__TI_last_break(8,%r12),16(%r11)
+0:	BPENTER __TI_flags(%r12),_TIF_ISOLATE_BP
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	# set up saved register r11
 	lg	%r15,__LC_KERNEL_STACK
 	la	%r9,STACK_FRAME_OVERHEAD(%r15)
@@ -1437,7 +1593,10 @@ ENDPROC(cleanup_critical)
 	mvc	__LC_RETURN_PSW(16),__PT_PSW(%r9)
 	mvc	0(64,%r11),__PT_R8(%r9)
 	lmg	%r0,%r7,__PT_R0(%r9)
+<<<<<<< HEAD
 .Lcleanup_lpswe:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 1:	lmg	%r8,%r9,__LC_RETURN_PSW
 	BR_EX	%r14,%r11
 .Lcleanup_sysc_restore_insn:

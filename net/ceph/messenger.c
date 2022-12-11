@@ -8,7 +8,11 @@
 #include <linux/kthread.h>
 #include <linux/net.h>
 #include <linux/nsproxy.h>
+<<<<<<< HEAD
 #include <linux/sched/mm.h>
+=======
+#include <linux/sched.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/slab.h>
 #include <linux/socket.h>
 #include <linux/string.h>
@@ -461,7 +465,11 @@ static int ceph_tcp_connect(struct ceph_connection *con)
 
 	/* sock_create_kern() allocates with GFP_KERNEL */
 	noio_flag = memalloc_noio_save();
+<<<<<<< HEAD
 	ret = sock_create_kern(read_pnet(&con->msgr->net), ss.ss_family,
+=======
+	ret = sock_create_kern(read_pnet(&con->msgr->net), paddr->ss_family,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			       SOCK_STREAM, IPPROTO_TCP, &sock);
 	memalloc_noio_restore(noio_flag);
 	if (ret)
@@ -1224,6 +1232,13 @@ static size_t sizeof_footer(struct ceph_connection *con)
 	    sizeof(struct ceph_msg_footer_old);
 }
 
+static size_t sizeof_footer(struct ceph_connection *con)
+{
+	return (con->peer_features & CEPH_FEATURE_MSG_AUTH) ?
+	    sizeof(struct ceph_msg_footer) :
+	    sizeof(struct ceph_msg_footer_old);
+}
+
 static void prepare_message_data(struct ceph_msg *msg, u32 data_len)
 {
 	/* Initialize data cursor */
@@ -1242,7 +1257,11 @@ static void prepare_write_message_footer(struct ceph_connection *con)
 	m->footer.flags |= CEPH_MSG_FOOTER_COMPLETE;
 
 	dout("prepare_write_message_footer %p\n", con);
+<<<<<<< HEAD
 	con_out_kvec_add(con, sizeof_footer(con), &m->footer);
+=======
+	con->out_kvec[v].iov_base = &m->footer;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (con->peer_features & CEPH_FEATURE_MSG_AUTH) {
 		if (con->ops->sign_message)
 			con->ops->sign_message(m);
@@ -2061,6 +2080,7 @@ static int process_connect(struct ceph_connection *con)
 
 	dout("process_connect on %p tag %d\n", con, (int)con->in_tag);
 
+<<<<<<< HEAD
 	if (con->auth) {
 		int len = le32_to_cpu(con->in_reply.authorizer_len);
 
@@ -2089,6 +2109,18 @@ static int process_connect(struct ceph_connection *con)
 				con->error_msg = "bad authorize reply";
 				return ret;
 			}
+=======
+	if (con->auth_reply_buf) {
+		/*
+		 * Any connection that defines ->get_authorizer()
+		 * should also define ->verify_authorizer_reply().
+		 * See get_connect_authorizer().
+		 */
+		ret = con->ops->verify_authorizer_reply(con, 0);
+		if (ret < 0) {
+			con->error_msg = "bad authorize reply";
+			return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -2576,6 +2608,12 @@ static int try_write(struct ceph_connection *con)
 	    con->state != CON_STATE_NEGOTIATING &&
 	    con->state != CON_STATE_OPEN)
 		return 0;
+<<<<<<< HEAD
+=======
+
+more:
+	dout("try_write out_kvec_bytes %d\n", con->out_kvec_bytes);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* open the socket first? */
 	if (con->state == CON_STATE_PREOPEN) {
@@ -2597,8 +2635,12 @@ static int try_write(struct ceph_connection *con)
 		}
 	}
 
+<<<<<<< HEAD
 more:
 	dout("try_write out_kvec_bytes %d\n", con->out_kvec_bytes);
+=======
+more_kvec:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	BUG_ON(!con->sock);
 
 	/* kvec data queued? */
@@ -3160,7 +3202,14 @@ void ceph_msg_revoke(struct ceph_msg *msg)
 			con->out_skip += con_out_kvec_skip(con);
 		} else {
 			BUG_ON(!msg->data_length);
+<<<<<<< HEAD
 			con->out_skip += sizeof_footer(con);
+=======
+			if (con->peer_features & CEPH_FEATURE_MSG_AUTH)
+				con->out_skip += sizeof(msg->footer);
+			else
+				con->out_skip += sizeof(msg->old_footer);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		/* data, middle, front */
 		if (msg->data_length)

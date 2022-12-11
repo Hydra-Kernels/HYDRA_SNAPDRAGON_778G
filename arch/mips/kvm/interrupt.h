@@ -28,6 +28,13 @@
 #define MIPS_EXC_MAX                12
 /* XXXSL More to follow */
 
+<<<<<<< HEAD
+=======
+extern char __kvm_mips_vcpu_run_end[];
+extern char mips32_exception[], mips32_exceptionEnd[];
+extern char mips32_GuestException[], mips32_GuestExceptionEnd[];
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define C_TI        (_ULCAST_(1) << 30)
 
 #ifdef CONFIG_KVM_MIPS_VZ

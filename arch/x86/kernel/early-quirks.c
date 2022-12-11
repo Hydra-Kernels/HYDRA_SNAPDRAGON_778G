@@ -13,10 +13,17 @@
 #include <linux/pci.h>
 #include <linux/acpi.h>
 #include <linux/delay.h>
+<<<<<<< HEAD
 #include <linux/pci_ids.h>
 #include <linux/bcma/bcma.h>
 #include <linux/bcma/bcma_regs.h>
 #include <linux/platform_data/x86/apple.h>
+=======
+#include <linux/dmi.h>
+#include <linux/pci_ids.h>
+#include <linux/bcma/bcma.h>
+#include <linux/bcma/bcma_regs.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <drm/i915_drm.h>
 #include <asm/pci-direct.h>
 #include <asm/dma.h>
@@ -27,6 +34,11 @@
 #include <asm/gart.h>
 #include <asm/irq_remapping.h>
 #include <asm/early_ioremap.h>
+<<<<<<< HEAD
+=======
+
+#define dev_err(msg)  pr_err("pci 0000:%02x:%02x.%d: %s", bus, slot, func, msg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static void __init fix_hypertransport_config(int num, int slot, int func)
 {
@@ -320,6 +332,7 @@ static resource_size_t __init i865_stolen_base(int num, int slot, int func,
 
 	toud = read_pci_config_16(0, 0, 0, I865_TOUD);
 
+<<<<<<< HEAD
 	return toud * KB(64) + i845_tseg_size();
 }
 
@@ -336,6 +349,9 @@ static resource_size_t __init gen3_stolen_base(int num, int slot, int func,
 	bsm = read_pci_config(num, slot, func, INTEL_BSM);
 
 	return bsm & INTEL_BSM_MASK;
+=======
+	return (phys_addr_t)(toud << 16) + i845_tseg_size();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static resource_size_t __init gen11_stolen_base(int num, int slot, int func,
@@ -623,7 +639,11 @@ static void __init apple_airport_reset(int bus, int slot, int func)
 	u64 addr;
 	int i;
 
+<<<<<<< HEAD
 	if (!x86_apple_machine)
+=======
+	if (!dmi_match(DMI_SYS_VENDOR, "Apple Inc."))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 
 	/* Card may have been put into PCI_D3hot by grub quirk */
@@ -636,8 +656,12 @@ static void __init apple_airport_reset(int bus, int slot, int func)
 
 		pmcsr = read_pci_config_16(bus, slot, func, BCM4331_PM_CAP + PCI_PM_CTRL);
 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) != PCI_D0) {
+<<<<<<< HEAD
 			pr_err("pci 0000:%02x:%02x.%d: Cannot power up Apple AirPort card\n",
 			       bus, slot, func);
+=======
+			dev_err("Cannot power up Apple AirPort card\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return;
 		}
 	}
@@ -648,8 +672,12 @@ static void __init apple_airport_reset(int bus, int slot, int func)
 
 	mmio = early_ioremap(addr, BCM4331_MMIO_SIZE);
 	if (!mmio) {
+<<<<<<< HEAD
 		pr_err("pci 0000:%02x:%02x.%d: Cannot iomap Apple AirPort card\n",
 		       bus, slot, func);
+=======
+		dev_err("Cannot iomap Apple AirPort card\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	}
 
@@ -710,12 +738,15 @@ static struct chipset early_qrk[] __initdata = {
 	 */
 	{ PCI_VENDOR_ID_INTEL, 0x0f00,
 		PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, force_disable_hpet},
+<<<<<<< HEAD
 	{ PCI_VENDOR_ID_INTEL, 0x3e20,
 		PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, force_disable_hpet},
 	{ PCI_VENDOR_ID_INTEL, 0x3ec4,
 		PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, force_disable_hpet},
 	{ PCI_VENDOR_ID_INTEL, 0x8a12,
 		PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, force_disable_hpet},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ PCI_VENDOR_ID_BROADCOM, 0x4331,
 	  PCI_CLASS_NETWORK_OTHER, PCI_ANY_ID, 0, apple_airport_reset},
 	{}

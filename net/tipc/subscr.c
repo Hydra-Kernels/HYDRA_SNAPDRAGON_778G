@@ -151,11 +151,73 @@ struct tipc_subscription *tipc_sub_subscribe(struct net *net,
 	sub->conid = conid;
 	sub->inactive = false;
 	memcpy(&sub->evt.s, s, sizeof(*s));
+<<<<<<< HEAD
 	spin_lock_init(&sub->lock);
 	kref_init(&sub->kref);
 	if (!tipc_nametbl_subscribe(sub)) {
 		kfree(sub);
 		return NULL;
+=======
+	atomic_inc(&tn->subscription_count);
+	setup_timer(&sub->timer, tipc_subscrp_timeout, (unsigned long)sub);
+	if (sub->timeout != TIPC_WAIT_FOREVER)
+		sub->timeout += jiffies;
+	if (!mod_timer(&sub->timer, sub->timeout))
+		tipc_subscrb_get(subscriber);
+	*sub_p = sub;
+	return 0;
+}
+
+/* Handle one termination request for the subscriber */
+static void tipc_subscrb_shutdown_cb(int conid, void *usr_data)
+{
+	tipc_subscrb_delete((struct tipc_subscriber *)usr_data);
+}
+
+/* Handle one request to create a new subscription for the subscriber */
+static void tipc_subscrb_rcv_cb(struct net *net, int conid,
+				struct sockaddr_tipc *addr, void *usr_data,
+				void *buf, size_t len)
+{
+	struct tipc_subscriber *subscrb = usr_data;
+	struct tipc_subscription *sub = NULL;
+	struct tipc_net *tn = net_generic(net, tipc_net_id);
+
+	if (tipc_subscrp_create(net, (struct tipc_subscr *)buf, subscrb, &sub))
+		return tipc_conn_terminate(tn->topsrv, subscrb->conid);
+
+	if (sub)
+		tipc_nametbl_subscribe(sub);
+}
+
+/* Handle one request to establish a new subscriber */
+static void *tipc_subscrb_connect_cb(int conid)
+{
+	return (void *)tipc_subscrb_create(conid);
+}
+
+int tipc_topsrv_start(struct net *net)
+{
+	struct tipc_net *tn = net_generic(net, tipc_net_id);
+	const char name[] = "topology_server";
+	struct tipc_server *topsrv;
+	struct sockaddr_tipc *saddr;
+
+	saddr = kzalloc(sizeof(*saddr), GFP_ATOMIC);
+	if (!saddr)
+		return -ENOMEM;
+	saddr->family			= AF_TIPC;
+	saddr->addrtype			= TIPC_ADDR_NAMESEQ;
+	saddr->addr.nameseq.type	= TIPC_TOP_SRV;
+	saddr->addr.nameseq.lower	= TIPC_TOP_SRV;
+	saddr->addr.nameseq.upper	= TIPC_TOP_SRV;
+	saddr->scope			= TIPC_NODE_SCOPE;
+
+	topsrv = kzalloc(sizeof(*topsrv), GFP_ATOMIC);
+	if (!topsrv) {
+		kfree(saddr);
+		return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	timer_setup(&sub->timer, tipc_sub_timeout, 0);
 	timeout = tipc_sub_read(&sub->evt.s, timeout);

@@ -130,6 +130,7 @@ int __ipoib_vlan_add(struct ipoib_dev_priv *ppriv, struct ipoib_dev_priv *priv,
 	if (result) {
 		ipoib_warn(priv, "failed to initialize; error %i", result);
 
+<<<<<<< HEAD
 		/*
 		 * register_netdevice sometimes calls priv_destructor,
 		 * sometimes not. Make sure it was done.
@@ -137,6 +138,8 @@ int __ipoib_vlan_add(struct ipoib_dev_priv *ppriv, struct ipoib_dev_priv *priv,
 		goto out_early;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* RTNL childs don't need proprietary sysfs entries */
 	if (type == IPOIB_LEGACY_CHILD) {
 		if (ipoib_cm_add_mode_attr(ndev))
@@ -153,6 +156,10 @@ int __ipoib_vlan_add(struct ipoib_dev_priv *ppriv, struct ipoib_dev_priv *priv,
 	return 0;
 
 sysfs_failed:
+<<<<<<< HEAD
+=======
+	result = -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unregister_netdevice(priv->dev);
 	return -ENOMEM;
 
@@ -200,8 +207,18 @@ int ipoib_vlan_add(struct net_device *pdev, unsigned short pkey)
 		free_netdev(ndev);
 
 out:
+<<<<<<< HEAD
 	rtnl_unlock();
 
+=======
+	up_write(&ppriv->vlan_rwsem);
+
+	rtnl_unlock();
+
+	if (result)
+		free_netdev(priv->dev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return result;
 }
 
@@ -264,6 +281,7 @@ int ipoib_vlan_delete(struct net_device *pdev, unsigned short pkey)
 	list_for_each_entry_safe(priv, tpriv, &ppriv->child_intfs, list) {
 		if (priv->pkey == pkey &&
 		    priv->child_type == IPOIB_LEGACY_CHILD) {
+<<<<<<< HEAD
 			struct ipoib_vlan_delete_work *work;
 
 			work = kmalloc(sizeof(*work), GFP_KERNEL);
@@ -280,11 +298,23 @@ int ipoib_vlan_delete(struct net_device *pdev, unsigned short pkey)
 			queue_work(ipoib_workqueue, &work->work);
 
 			rc = 0;
+=======
+			list_del(&priv->list);
+			dev = priv->dev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 	}
 
+<<<<<<< HEAD
 out:
+=======
+	if (dev) {
+		ipoib_dbg(ppriv, "delete child vlan %s\n", dev->name);
+		unregister_netdevice(dev);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rtnl_unlock();
 
 	return rc;

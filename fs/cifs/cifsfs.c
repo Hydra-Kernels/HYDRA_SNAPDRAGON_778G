@@ -70,7 +70,10 @@ bool traceSMB;
 bool enable_oplocks = true;
 bool linuxExtEnabled = true;
 bool lookupCacheEnabled = true;
+<<<<<<< HEAD
 bool disable_legacy_dialects; /* false by default */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 unsigned int global_secflags = CIFSSEC_DEF;
 /* unsigned int ntlmv2_support = 0; */
 unsigned int sign_CIFS_PDUs = 1;
@@ -341,9 +344,15 @@ cifs_alloc_inode(struct super_block *sb)
 	cifs_inode->uniqueid = 0;
 	cifs_inode->createtime = 0;
 	cifs_inode->epoch = 0;
+<<<<<<< HEAD
 	spin_lock_init(&cifs_inode->open_file_lock);
 	generate_random_uuid(cifs_inode->lease_key);
 
+=======
+#ifdef CONFIG_CIFS_SMB2
+	generate_random_uuid(cifs_inode->lease_key);
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Can not set i_flags here - they get immediately overwritten to zero
 	 * by the VFS.
@@ -804,11 +813,23 @@ cifs_smb3_do_mount(struct file_system_type *fs_type,
 		goto out_free;
 	}
 
+<<<<<<< HEAD
 	rc = cifs_setup_cifs_sb(volume_info, cifs_sb);
 	if (rc) {
 		root = ERR_PTR(rc);
 		goto out_free;
 	}
+=======
+	if (volume_info->prepath) {
+		cifs_sb->prepath = kstrdup(volume_info->prepath, GFP_KERNEL);
+		if (cifs_sb->prepath == NULL) {
+			root = ERR_PTR(-ENOMEM);
+			goto out_cifs_sb;
+		}
+	}
+
+	cifs_setup_cifs_sb(volume_info, cifs_sb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rc = cifs_mount(cifs_sb, volume_info);
 	if (rc) {
@@ -846,7 +867,11 @@ cifs_smb3_do_mount(struct file_system_type *fs_type,
 		sb->s_flags |= SB_ACTIVE;
 	}
 
-	root = cifs_get_root(volume_info, sb);
+	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_USE_PREFIX_PATH)
+		root = dget(sb->s_root);
+	else
+		root = cifs_get_root(volume_info, sb);
+
 	if (IS_ERR(root))
 		goto out_super;
 

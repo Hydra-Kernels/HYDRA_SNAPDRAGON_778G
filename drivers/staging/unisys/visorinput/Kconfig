@@ -5,6 +5,7 @@
 
 config UNISYS_VISORINPUT
 	tristate "Unisys visorinput driver"
+<<<<<<< HEAD
 	depends on UNISYSSPAR && UNISYS_VISORBUS && INPUT
 	help
 		The Unisys s-Par visorinput driver provides a virtualized system
@@ -13,4 +14,9 @@ config UNISYS_VISORINPUT
 		GOP protocol, so If this driver is not present, the Linux guest should
 		still boot with visible output in the partition desktop, but keyboard
 		and mouse interaction will not be available.
+=======
+	depends on UNISYSSPAR && UNISYS_VISORBUS && FB && INPUT
+	---help---
+	If you say Y here, you will enable the Unisys visorinput driver.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 

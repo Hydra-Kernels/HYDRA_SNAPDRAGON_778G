@@ -278,8 +278,24 @@ static int dvb_frontend_test_event(struct dvb_frontend_private *fepriv,
 	return ret;
 }
 
+static int dvb_frontend_test_event(struct dvb_frontend_private *fepriv,
+				   struct dvb_fe_events *events)
+{
+	int ret;
+
+	up(&fepriv->sem);
+	ret = events->eventw != events->eventr;
+	down(&fepriv->sem);
+
+	return ret;
+}
+
 static int dvb_frontend_get_event(struct dvb_frontend *fe,
+<<<<<<< HEAD
 				  struct dvb_frontend_event *event, int flags)
+=======
+			          struct dvb_frontend_event *event, int flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
 	struct dvb_fe_events *events = &fepriv->events;

@@ -21,8 +21,21 @@
 #define XSAVE_YMM_SIZE	    256
 #define XSAVE_YMM_OFFSET    (XSAVE_HDR_SIZE + XSAVE_HDR_OFFSET)
 
+<<<<<<< HEAD
 /* Supervisor features */
 #define XFEATURE_MASK_SUPERVISOR (XFEATURE_MASK_PT)
+=======
+/* Supported features which support lazy state saving */
+#define XFEATURE_MASK_LAZY	(XFEATURE_MASK_FP | \
+				 XFEATURE_MASK_SSE | \
+				 XFEATURE_MASK_YMM | \
+				 XFEATURE_MASK_OPMASK | \
+				 XFEATURE_MASK_ZMM_Hi256 | \
+				 XFEATURE_MASK_Hi16_ZMM)
+
+/* Supported features which require eager state saving */
+#define XFEATURE_MASK_EAGER	(XFEATURE_MASK_BNDREGS | XFEATURE_MASK_BNDCSR)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* All currently supported features */
 #define XCNTXT_MASK		(XFEATURE_MASK_FP | \

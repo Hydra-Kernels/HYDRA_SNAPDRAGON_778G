@@ -29,7 +29,10 @@
 #include <asm/timer.h>
 #include <asm/reboot.h>
 #include <asm/nmi.h>
+<<<<<<< HEAD
 #include <clocksource/hyperv_timer.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct ms_hyperv_info ms_hyperv;
 EXPORT_SYMBOL_GPL(ms_hyperv);
@@ -209,6 +212,31 @@ static void __init hv_smp_prepare_boot_cpu(void)
 }
 #endif
 
+static unsigned char hv_get_nmi_reason(void)
+{
+	return 0;
+}
+
+#ifdef CONFIG_X86_LOCAL_APIC
+/*
+ * Prior to WS2016 Debug-VM sends NMIs to all CPUs which makes
+ * it dificult to process CHANNELMSG_UNLOAD in case of crash. Handle
+ * unknown NMI on the first CPU which gets it.
+ */
+static int hv_nmi_unknown(unsigned int val, struct pt_regs *regs)
+{
+	static atomic_t nmi_cpu = ATOMIC_INIT(-1);
+
+	if (!unknown_nmi_panic)
+		return NMI_DONE;
+
+	if (atomic_cmpxchg(&nmi_cpu, -1, raw_smp_processor_id()) != -1)
+		return NMI_HANDLED;
+
+	return NMI_DONE;
+}
+#endif
+
 static void __init ms_hyperv_init_platform(void)
 {
 	int hv_host_info_eax;
@@ -287,6 +315,13 @@ static void __init ms_hyperv_init_platform(void)
 		pr_info("Hyper-V: LAPIC Timer Frequency: %#x\n",
 			lapic_timer_period);
 	}
+<<<<<<< HEAD
+=======
+
+	register_nmi_handler(NMI_UNKNOWN, hv_nmi_unknown, NMI_FLAG_FIRST,
+			     "hv_nmi_unknown");
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	register_nmi_handler(NMI_UNKNOWN, hv_nmi_unknown, NMI_FLAG_FIRST,
 			     "hv_nmi_unknown");
@@ -308,6 +343,7 @@ static void __init ms_hyperv_init_platform(void)
 	 */
 	if (efi_enabled(EFI_BOOT))
 		x86_platform.get_nmi_reason = hv_get_nmi_reason;
+<<<<<<< HEAD
 
 	/*
 	 * Hyper-V VMs have a PIT emulation quirk such that zeroing the
@@ -356,6 +392,8 @@ static void __init ms_hyperv_init_platform(void)
 	/* Register Hyper-V specific clocksource */
 	hv_init_clocksource();
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void hv_setup_sched_clock(void *sched_clock)

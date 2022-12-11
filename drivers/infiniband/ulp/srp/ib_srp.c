@@ -752,13 +752,24 @@ static void srp_path_rec_completion(int status,
 static int srp_ib_lookup_path(struct srp_rdma_ch *ch)
 {
 	struct srp_target_port *target = ch->target;
-	int ret;
+	int ret = -ENODEV;
 
 	ch->ib_cm.path.numb_path = 1;
 
 	init_completion(&ch->done);
 
+<<<<<<< HEAD
 	ch->ib_cm.path_query_id = ib_sa_path_rec_get(&srp_sa_client,
+=======
+	/*
+	 * Avoid that the SCSI host can be removed by srp_remove_target()
+	 * before srp_path_rec_completion() is called.
+	 */
+	if (!scsi_host_get(target->scsi_host))
+		goto out;
+
+	ch->path_query_id = ib_sa_path_rec_get(&srp_sa_client,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					       target->srp_host->srp_dev->dev,
 					       target->srp_host->port,
 					       &ch->ib_cm.path,
@@ -770,22 +781,34 @@ static int srp_ib_lookup_path(struct srp_rdma_ch *ch)
 					       SRP_PATH_REC_TIMEOUT_MS,
 					       GFP_KERNEL,
 					       srp_path_rec_completion,
+<<<<<<< HEAD
 					       ch, &ch->ib_cm.path_query);
 	if (ch->ib_cm.path_query_id < 0)
 		return ch->ib_cm.path_query_id;
+=======
+					       ch, &ch->path_query);
+	ret = ch->path_query_id;
+	if (ret < 0)
+		goto put;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = wait_for_completion_interruptible(&ch->done);
 	if (ret < 0)
-		return ret;
+		goto put;
 
-	if (ch->status < 0)
+	ret = ch->status;
+	if (ret < 0)
 		shost_printk(KERN_WARNING, target->scsi_host,
 			     PFX "Path record query failed: sgid %pI6, dgid %pI6, pkey %#04x, service_id %#16llx\n",
 			     ch->ib_cm.path.sgid.raw, ch->ib_cm.path.dgid.raw,
 			     be16_to_cpu(target->ib_cm.pkey),
 			     be64_to_cpu(target->ib_cm.service_id));
 
-	return ch->status;
+put:
+	scsi_host_put(target->scsi_host);
+
+out:
+	return ret;
 }
 
 static int srp_rdma_lookup_path(struct srp_rdma_ch *ch)
@@ -3014,6 +3037,10 @@ static int srp_reset_device(struct scsi_cmnd *scmnd)
 {
 	struct srp_target_port *target = host_to_target(scmnd->device->host);
 	struct srp_rdma_ch *ch;
+<<<<<<< HEAD
+=======
+	int i;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u8 status;
 
 	shost_printk(KERN_ERR, target->scsi_host, "SRP reset_device called\n");

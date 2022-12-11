@@ -106,6 +106,7 @@
  * 64-bit, this is above 4GB to leave the entire 32-bit address
  * space open for things that want to use the area for 32-bit pointers.
  */
+<<<<<<< HEAD
 #ifdef CONFIG_ARM64_FORCE_52BIT
 #define ELF_ET_DYN_BASE		(2 * TASK_SIZE_64 / 3)
 #else
@@ -125,6 +126,9 @@ typedef unsigned long elf_greg_t;
 
 typedef elf_greg_t elf_gregset_t[ELF_NGREG];
 typedef struct user_fpsimd_state elf_fpregset_t;
+=======
+#define ELF_ET_DYN_BASE		(2 * TASK_SIZE_64 / 3)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * When the program starts, a1 contains a pointer to a function to be

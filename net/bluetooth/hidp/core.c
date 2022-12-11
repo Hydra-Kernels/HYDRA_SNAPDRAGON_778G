@@ -1079,10 +1079,13 @@ static int hidp_session_start_sync(struct hidp_session *session)
 static void hidp_session_terminate(struct hidp_session *session)
 {
 	atomic_inc(&session->terminate);
+<<<<<<< HEAD
 	/*
 	 * See the comment preceding the call to wait_woken()
 	 * in hidp_session_run().
 	 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	wake_up_interruptible(&hidp_session_wq);
 }
 
@@ -1202,6 +1205,8 @@ static void hidp_session_run(struct hidp_session *session)
 		 *    thread is woken up by ->sk_state_changed().
 		 */
 
+		/* Ensure session->terminate is updated */
+		smp_mb__before_atomic();
 		if (atomic_read(&session->terminate))
 			break;
 
@@ -1235,18 +1240,30 @@ static void hidp_session_run(struct hidp_session *session)
 		hidp_process_transmit(session, &session->ctrl_transmit,
 				      session->ctrl_sock);
 
+<<<<<<< HEAD
 		/*
 		 * wait_woken() performs the necessary memory barriers
 		 * for us; see the header comment for this primitive.
 		 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		wait_woken(&wait, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 	}
 	remove_wait_queue(&hidp_session_wq, &wait);
 
 	atomic_inc(&session->terminate);
+<<<<<<< HEAD
 }
 
 static int hidp_session_wake_function(wait_queue_entry_t *wait,
+=======
+
+	/* Ensure session->terminate is updated */
+	smp_mb__after_atomic();
+}
+
+static int hidp_session_wake_function(wait_queue_t *wait,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				      unsigned int mode,
 				      int sync, void *key)
 {

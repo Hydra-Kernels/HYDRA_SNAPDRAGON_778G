@@ -592,6 +592,7 @@ SMB3_request_interfaces(const unsigned int xid, struct cifs_tcon *tcon)
 		cifs_tcon_dbg(VFS, "error %d on ioctl to get interface list\n", rc);
 		goto out;
 	}
+<<<<<<< HEAD
 
 	rc = parse_server_interfaces(out_buf, ret_data_len,
 				     &iface_list, &iface_count);
@@ -808,6 +809,9 @@ oshr_free:
 	SMB2_query_info_free(&rqst[1]);
 	free_rsp_buf(resp_buftype[0], rsp_iov[0].iov_base);
 	free_rsp_buf(resp_buftype[1], rsp_iov[1].iov_base);
+=======
+	kfree(out_buf);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rc;
 }
 
@@ -1754,10 +1758,14 @@ smb2_copychunk_range(const unsigned int xid,
 cchunk_out:
 	kfree(pcchunk);
 	kfree(retbuf);
+<<<<<<< HEAD
 	if (rc)
 		return rc;
 	else
 		return total_bytes_written;
+=======
+	return rc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int
@@ -1913,7 +1921,11 @@ smb2_duplicate_extents(const unsigned int xid,
 			true /* is_fsctl */,
 			(char *)&dup_ext_buf,
 			sizeof(struct duplicate_extents_to_file),
+<<<<<<< HEAD
 			CIFSMaxBufSize, NULL,
+=======
+			NULL,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			&ret_data_len);
 
 	if (ret_data_len > 0)
@@ -1948,7 +1960,11 @@ smb3_set_integrity(const unsigned int xid, struct cifs_tcon *tcon,
 			true /* is_fsctl */,
 			(char *)&integr_info,
 			sizeof(struct fsctl_set_integrity_information_req),
+<<<<<<< HEAD
 			CIFSMaxBufSize, NULL,
+=======
+			NULL,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			&ret_data_len);
 
 }
@@ -2130,6 +2146,7 @@ smb2_is_status_pending(char *buf, struct TCP_Server_Info *server)
 static bool
 smb2_is_session_expired(char *buf)
 {
+<<<<<<< HEAD
 	struct smb2_sync_hdr *shdr = (struct smb2_sync_hdr *)buf;
 
 	if (shdr->Status != STATUS_NETWORK_SESSION_EXPIRED &&
@@ -2141,6 +2158,14 @@ smb2_is_session_expired(char *buf)
 			       le64_to_cpu(shdr->MessageId));
 	cifs_dbg(FYI, "Session expired or deleted\n");
 
+=======
+	struct smb2_hdr *hdr = (struct smb2_hdr *)buf;
+
+	if (hdr->Status != STATUS_NETWORK_SESSION_EXPIRED)
+		return false;
+
+	cifs_dbg(FYI, "Session expired\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 
@@ -2428,6 +2453,9 @@ smb2_new_lease_key(struct cifs_fid *fid)
 	generate_random_uuid(fid->lease_key);
 }
 
+#define SMB2_SYMLINK_STRUCT_SIZE \
+	(sizeof(struct smb2_err_rsp) - 1 + sizeof(struct smb2_symlink_err_rsp))
+
 static int
 smb2_get_dfs_refer(const unsigned int xid, struct cifs_ses *ses,
 		   const char *search_name,
@@ -2636,6 +2664,7 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 	unsigned int sub_offset;
 	unsigned int print_len;
 	unsigned int print_offset;
+<<<<<<< HEAD
 	int flags = 0;
 	struct smb_rqst rqst[3];
 	int resp_buftype[3];
@@ -2647,6 +2676,8 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 	struct smb2_ioctl_rsp *ioctl_rsp;
 	struct reparse_data_buffer *reparse_buf;
 	u32 plen;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	cifs_dbg(FYI, "%s: path: %s\n", __func__, full_path);
 
@@ -2750,6 +2781,7 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 		goto querty_exit;
 	}
 
+<<<<<<< HEAD
 	if (!rc || !err_iov.iov_base) {
 		rc = -ENOENT;
 		goto querty_exit;
@@ -2767,6 +2799,12 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 	    le32_to_cpu(symlink->ReparseTag) != IO_REPARSE_TAG_SYMLINK) {
 		rc = -EINVAL;
 		goto querty_exit;
+=======
+	if (le32_to_cpu(err_buf->ByteCount) < sizeof(struct smb2_symlink_err_rsp) ||
+	    get_rfc1002_length(err_buf) + 4 < SMB2_SYMLINK_STRUCT_SIZE) {
+		kfree(utf16_path);
+		return -ENOENT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* open must fail on symlink - reset rc */
@@ -2776,6 +2814,7 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 	print_len = le16_to_cpu(symlink->PrintNameLength);
 	print_offset = le16_to_cpu(symlink->PrintNameOffset);
 
+<<<<<<< HEAD
 	if (err_iov.iov_len < SMB2_SYMLINK_STRUCT_SIZE + sub_offset + sub_len) {
 		rc = -EINVAL;
 		goto querty_exit;
@@ -2785,6 +2824,18 @@ smb2_query_symlink(const unsigned int xid, struct cifs_tcon *tcon,
 	    SMB2_SYMLINK_STRUCT_SIZE + print_offset + print_len) {
 		rc = -EINVAL;
 		goto querty_exit;
+=======
+	if (get_rfc1002_length(err_buf) + 4 <
+			SMB2_SYMLINK_STRUCT_SIZE + sub_offset + sub_len) {
+		kfree(utf16_path);
+		return -ENOENT;
+	}
+
+	if (get_rfc1002_length(err_buf) + 4 <
+			SMB2_SYMLINK_STRUCT_SIZE + print_offset + print_len) {
+		kfree(utf16_path);
+		return -ENOENT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	*target_path = cifs_strndup_from_utf16(
@@ -4786,7 +4837,11 @@ struct smb_version_operations smb30_operations = {
 	.dump_share_caps = smb2_dump_share_caps,
 	.is_oplock_break = smb2_is_valid_oplock_break,
 	.handle_cancelled_mid = smb2_handle_cancelled_mid,
+<<<<<<< HEAD
 	.downgrade_oplock = smb3_downgrade_oplock,
+=======
+	.downgrade_oplock = smb2_downgrade_oplock,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.need_neg = smb2_need_neg,
 	.negotiate = smb2_negotiate,
 	.negotiate_wsize = smb3_negotiate_wsize,
@@ -4894,7 +4949,11 @@ struct smb_version_operations smb311_operations = {
 	.dump_share_caps = smb2_dump_share_caps,
 	.is_oplock_break = smb2_is_valid_oplock_break,
 	.handle_cancelled_mid = smb2_handle_cancelled_mid,
+<<<<<<< HEAD
 	.downgrade_oplock = smb3_downgrade_oplock,
+=======
+	.downgrade_oplock = smb2_downgrade_oplock,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.need_neg = smb2_need_neg,
 	.negotiate = smb2_negotiate,
 	.negotiate_wsize = smb3_negotiate_wsize,

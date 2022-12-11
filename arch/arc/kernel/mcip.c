@@ -9,10 +9,22 @@
 #include <linux/irq.h>
 #include <linux/irqchip/chained_irq.h>
 #include <linux/spinlock.h>
+<<<<<<< HEAD
 #include <soc/arc/mcip.h>
 #include <asm/irqflags-arcv2.h>
 #include <asm/setup.h>
 
+=======
+#include <asm/irqflags-arcv2.h>
+#include <asm/mcip.h>
+#include <asm/setup.h>
+
+#define SOFTIRQ_IRQ	21
+
+static char smp_cpuinfo_buf[128];
+static int idu_detected;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static DEFINE_RAW_SPINLOCK(mcip_lock);
 
 #ifdef CONFIG_SMP
@@ -84,6 +96,7 @@ static void mcip_setup_per_cpu(int cpu)
 
 	smp_ipi_irq_setup(cpu, IPI_IRQ);
 	smp_ipi_irq_setup(cpu, SOFTIRQ_IRQ);
+<<<<<<< HEAD
 
 	/* Update GFRC halt mask as new CPU came online */
 	if (mp.gfrc)
@@ -92,6 +105,8 @@ static void mcip_setup_per_cpu(int cpu)
 	/* Update MCIP debug mask as new CPU came online */
 	if (mp.dbg)
 		mcip_update_debug_halt_mask(cpu);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void mcip_ipi_send(int cpu)
@@ -105,8 +120,11 @@ static void mcip_ipi_send(int cpu)
 		return;
 	}
 
+<<<<<<< HEAD
 	raw_spin_lock_irqsave(&mcip_lock, flags);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * If receiver already has a pending interrupt, elide sending this one.
 	 * Linux cross core calling works well with concurrent IPIs
@@ -125,6 +143,11 @@ static void mcip_ipi_clear(int irq)
 {
 	unsigned int cpu, c;
 	unsigned long flags;
+
+	if (unlikely(irq == SOFTIRQ_IRQ)) {
+		arc_softirq_clear(irq);
+		return;
+	}
 
 	if (unlikely(irq == SOFTIRQ_IRQ)) {
 		arc_softirq_clear(irq);

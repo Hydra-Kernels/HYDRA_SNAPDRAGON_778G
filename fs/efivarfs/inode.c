@@ -22,7 +22,11 @@ struct inode *efivarfs_get_inode(struct super_block *sb,
 	if (inode) {
 		inode->i_ino = get_next_ino();
 		inode->i_mode = mode;
+<<<<<<< HEAD
 		inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
+=======
+		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		inode->i_flags = is_removable ? 0 : S_IMMUTABLE;
 		switch (mode & S_IFMT) {
 		case S_IFREG:
@@ -87,6 +91,16 @@ static int efivarfs_create(struct inode *dir, struct dentry *dentry,
 	err = guid_parse(dentry->d_name.name + namelen + 1, &var->var.VendorGuid);
 	if (err)
 		goto out;
+
+	if (efivar_variable_is_removable(var->var.VendorGuid,
+					 dentry->d_name.name, namelen))
+		is_removable = true;
+
+	inode = efivarfs_get_inode(dir->i_sb, dir, mode, 0, is_removable);
+	if (!inode) {
+		err = -ENOMEM;
+		goto out;
+	}
 
 	if (efivar_variable_is_removable(var->var.VendorGuid,
 					 dentry->d_name.name, namelen))

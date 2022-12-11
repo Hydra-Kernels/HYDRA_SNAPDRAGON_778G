@@ -137,6 +137,11 @@ struct ib_uverbs_completion_event_file {
 
 struct ib_uverbs_file {
 	struct kref				ref;
+<<<<<<< HEAD
+=======
+	struct mutex				mutex;
+	struct mutex                            cleanup_mutex; /* protect cleanup */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct ib_uverbs_device		       *device;
 	struct mutex				ucontext_lock;
 	/*

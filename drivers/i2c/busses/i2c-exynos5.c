@@ -721,9 +721,40 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
 			break;
 	}
 
+<<<<<<< HEAD
 	clk_disable(i2c->clk);
 
 	return ret ?: num;
+=======
+	ret = clk_enable(i2c->clk);
+	if (ret)
+		return ret;
+
+	for (i = 0; i < num; i++, msgs++) {
+		stop = (i == num - 1);
+
+		ret = exynos5_i2c_xfer_msg(i2c, msgs, stop);
+
+		if (ret < 0)
+			goto out;
+	}
+
+	if (i == num) {
+		ret = num;
+	} else {
+		/* Only one message, cannot access the device */
+		if (i == 1)
+			ret = -EREMOTEIO;
+		else
+			ret = i;
+
+		dev_warn(i2c->dev, "xfer message failed\n");
+	}
+
+ out:
+	clk_disable(i2c->clk);
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static u32 exynos5_i2c_func(struct i2c_adapter *adap)
@@ -839,6 +870,8 @@ static int exynos5_i2c_suspend_noirq(struct device *dev)
 	i2c_mark_adapter_suspended(&i2c->adap);
 	clk_unprepare(i2c->clk);
 
+	clk_unprepare(i2c->clk);
+
 	return 0;
 }
 
@@ -859,7 +892,11 @@ static int exynos5_i2c_resume_noirq(struct device *dev)
 
 	exynos5_i2c_init(i2c);
 	clk_disable(i2c->clk);
+<<<<<<< HEAD
 	i2c_mark_adapter_resumed(&i2c->adap);
+=======
+	i2c->suspended = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

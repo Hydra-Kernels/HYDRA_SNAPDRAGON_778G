@@ -156,6 +156,7 @@ static int mips_sc_probe_cm3(void)
 	if (cfg & CM_GCR_L2_CONFIG_BYPASS)
 		return 0;
 
+<<<<<<< HEAD
 	sets = cfg & CM_GCR_L2_CONFIG_SET_SIZE;
 	sets >>= __ffs(CM_GCR_L2_CONFIG_SET_SIZE);
 	if (sets)
@@ -163,6 +164,15 @@ static int mips_sc_probe_cm3(void)
 
 	line_sz = cfg & CM_GCR_L2_CONFIG_LINE_SIZE;
 	line_sz >>= __ffs(CM_GCR_L2_CONFIG_LINE_SIZE);
+=======
+	sets = cfg & CM_GCR_L2_CONFIG_SET_SIZE_MSK;
+	sets >>= CM_GCR_L2_CONFIG_SET_SIZE_SHF;
+	if (sets)
+		c->scache.sets = 64 << sets;
+
+	line_sz = cfg & CM_GCR_L2_CONFIG_LINE_SIZE_MSK;
+	line_sz >>= CM_GCR_L2_CONFIG_LINE_SIZE_SHF;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (line_sz)
 		c->scache.linesz = 2 << line_sz;
 
@@ -174,7 +184,10 @@ static int mips_sc_probe_cm3(void)
 
 	if (c->scache.linesz) {
 		c->scache.flags &= ~MIPS_CACHE_NOT_PRESENT;
+<<<<<<< HEAD
 		c->options |= MIPS_CPU_INCLUSIVE_CACHES;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 1;
 	}
 

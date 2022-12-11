@@ -61,11 +61,22 @@ static int __init hash_setup(char *str)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	i = match_string(hash_algo_name, HASH_ALGO__LAST, str);
 	if (i < 0)
 		return 1;
 
 	ima_hash_algo = i;
+=======
+	for (i = 0; i < HASH_ALGO__LAST; i++) {
+		if (strcmp(str, hash_algo_name[i]) == 0) {
+			ima_hash_algo = i;
+			break;
+		}
+	}
+	if (i == HASH_ALGO__LAST)
+		return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	hash_setup_done = 1;
 	return 1;
@@ -710,6 +721,14 @@ static int __init init_ima(void)
 		hash_setup_done = 0;
 		hash_setup(CONFIG_IMA_DEFAULT_HASH);
 		error = ima_init();
+<<<<<<< HEAD
+=======
+	}
+
+	if (!error) {
+		ima_initialized = 1;
+		ima_update_policy_flag();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (error)

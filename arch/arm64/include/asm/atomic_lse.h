@@ -82,9 +82,16 @@ static inline void __lse_atomic_and(int i, atomic_t *v)
 	asm volatile(
 	__LSE_PREAMBLE
 	"	mvn	%w[i], %w[i]\n"
+<<<<<<< HEAD
 	"	stclr	%w[i], %[v]"
 	: [i] "+&r" (i), [v] "+Q" (v->counter)
 	: "r" (v));
+=======
+	"	stclr	%w[i], %[v]")
+	: [i] "+&r" (w0), [v] "+Q" (v->counter)
+	: "r" (x1)
+	: "x30");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define ATOMIC_FETCH_OP_AND(name, mb, cl...)				\
@@ -113,9 +120,16 @@ static inline void __lse_atomic_sub(int i, atomic_t *v)
 	asm volatile(
 	__LSE_PREAMBLE
 	"	neg	%w[i], %w[i]\n"
+<<<<<<< HEAD
 	"	stadd	%w[i], %[v]"
 	: [i] "+&r" (i), [v] "+Q" (v->counter)
 	: "r" (v));
+=======
+	"	stadd	%w[i], %[v]")
+	: [i] "+&r" (w0), [v] "+Q" (v->counter)
+	: "r" (x1)
+	: "x30");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define ATOMIC_OP_SUB_RETURN(name, mb, cl...)				\
@@ -126,11 +140,19 @@ static inline int __lse_atomic_sub_return##name(int i, atomic_t *v)	\
 	asm volatile(							\
 	__LSE_PREAMBLE							\
 	"	neg	%w[i], %w[i]\n"					\
+<<<<<<< HEAD
 	"	ldadd" #mb "	%w[i], %w[tmp], %[v]\n"			\
 	"	add	%w[i], %w[i], %w[tmp]"				\
 	: [i] "+&r" (i), [v] "+Q" (v->counter), [tmp] "=&r" (tmp)	\
 	: "r" (v)							\
 	: cl);							\
+=======
+	"	ldadd" #mb "	%w[i], w30, %[v]\n"			\
+	"	add	%w[i], %w[i], w30")				\
+	: [i] "+&r" (w0), [v] "+Q" (v->counter)				\
+	: "r" (x1)							\
+	: "x30" , ##cl);						\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 									\
 	return i;							\
 }
@@ -235,9 +257,16 @@ static inline void __lse_atomic64_and(s64 i, atomic64_t *v)
 	asm volatile(
 	__LSE_PREAMBLE
 	"	mvn	%[i], %[i]\n"
+<<<<<<< HEAD
 	"	stclr	%[i], %[v]"
 	: [i] "+&r" (i), [v] "+Q" (v->counter)
 	: "r" (v));
+=======
+	"	stclr	%[i], %[v]")
+	: [i] "+&r" (x0), [v] "+Q" (v->counter)
+	: "r" (x1)
+	: "x30");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define ATOMIC64_FETCH_OP_AND(name, mb, cl...)				\
@@ -266,9 +295,16 @@ static inline void __lse_atomic64_sub(s64 i, atomic64_t *v)
 	asm volatile(
 	__LSE_PREAMBLE
 	"	neg	%[i], %[i]\n"
+<<<<<<< HEAD
 	"	stadd	%[i], %[v]"
 	: [i] "+&r" (i), [v] "+Q" (v->counter)
 	: "r" (v));
+=======
+	"	stadd	%[i], %[v]")
+	: [i] "+&r" (x0), [v] "+Q" (v->counter)
+	: "r" (x1)
+	: "x30");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define ATOMIC64_OP_SUB_RETURN(name, mb, cl...)				\
@@ -279,11 +315,19 @@ static inline long __lse_atomic64_sub_return##name(s64 i, atomic64_t *v)	\
 	asm volatile(							\
 	__LSE_PREAMBLE							\
 	"	neg	%[i], %[i]\n"					\
+<<<<<<< HEAD
 	"	ldadd" #mb "	%[i], %x[tmp], %[v]\n"			\
 	"	add	%[i], %[i], %x[tmp]"				\
 	: [i] "+&r" (i), [v] "+Q" (v->counter), [tmp] "=&r" (tmp)	\
 	: "r" (v)							\
 	: cl);								\
+=======
+	"	ldadd" #mb "	%[i], x30, %[v]\n"			\
+	"	add	%[i], %[i], x30")				\
+	: [i] "+&r" (x0), [v] "+Q" (v->counter)				\
+	: "r" (x1)							\
+	: "x30" , ##cl);						\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 									\
 	return i;							\
 }
@@ -401,7 +445,11 @@ __lse__cmpxchg_double##name(unsigned long old1,				\
 	"	casp" #mb "\t%[old1], %[old2], %[new1], %[new2], %[v]\n"\
 	"	eor	%[old1], %[old1], %[oldval1]\n"			\
 	"	eor	%[old2], %[old2], %[oldval2]\n"			\
+<<<<<<< HEAD
 	"	orr	%[old1], %[old1], %[old2]"			\
+=======
+	"	orr	%[old1], %[old1], %[old2]")			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	: [old1] "+&r" (x0), [old2] "+&r" (x1),				\
 	  [v] "+Q" (*(unsigned long *)ptr)				\
 	: [new1] "r" (x2), [new2] "r" (x3), [ptr] "r" (x4),		\

@@ -869,7 +869,12 @@ static int check_async_write(struct btrfs_fs_info *fs_info,
 {
 	if (atomic_read(&bi->sync_writers))
 		return 0;
+<<<<<<< HEAD
 	if (test_bit(BTRFS_FS_CSUM_IMPL_FAST, &fs_info->flags))
+=======
+#ifdef CONFIG_X86
+	if (static_cpu_has(X86_FEATURE_XMM4_2))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	return 1;
 }
@@ -1475,6 +1480,7 @@ int btrfs_init_fs_root(struct btrfs_root *root)
 	spin_lock_init(&root->ino_cache_lock);
 	init_waitqueue_head(&root->ino_cache_wait);
 
+<<<<<<< HEAD
 	/*
 	 * Don't assign anonymous block device to roots that are not exposed to
 	 * userspace, the id pool is limited to 1M
@@ -1499,6 +1505,30 @@ int btrfs_init_fs_root(struct btrfs_root *root)
 	mutex_unlock(&root->objectid_mutex);
 
 	return 0;
+=======
+	ret = get_anon_bdev(&root->anon_dev);
+	if (ret)
+		goto free_writers;
+
+	mutex_lock(&root->objectid_mutex);
+	ret = btrfs_find_highest_objectid(root,
+					&root->highest_objectid);
+	if (ret) {
+		mutex_unlock(&root->objectid_mutex);
+		goto free_root_dev;
+	}
+
+	ASSERT(root->highest_objectid <= BTRFS_LAST_FREE_OBJECTID);
+
+	mutex_unlock(&root->objectid_mutex);
+
+	return 0;
+
+free_root_dev:
+	free_anon_bdev(root->anon_dev);
+free_writers:
+	btrfs_free_subvolume_writers(root->subv_writers);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 fail:
 	/* The caller is responsible to call btrfs_free_fs_root */
 	return ret;
@@ -1662,7 +1692,11 @@ static int cleaner_kthread(void *arg)
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	int again;
 
+<<<<<<< HEAD
 	while (1) {
+=======
+	do {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		again = 0;
 
 		set_bit(BTRFS_FS_CLEANER_RUNNING, &fs_info->flags);
@@ -1690,7 +1724,13 @@ static int cleaner_kthread(void *arg)
 			goto sleep;
 		}
 
+<<<<<<< HEAD
 		btrfs_run_delayed_iputs(fs_info);
+=======
+		mutex_lock(&root->fs_info->cleaner_delayed_iput_mutex);
+		btrfs_run_delayed_iputs(root);
+		mutex_unlock(&root->fs_info->cleaner_delayed_iput_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		again = btrfs_clean_one_deleted_snapshot(root);
 		mutex_unlock(&fs_info->cleaner_mutex);
@@ -2684,6 +2724,7 @@ int open_ctree(struct super_block *sb,
 	mutex_init(&fs_info->delete_unused_bgs_mutex);
 	mutex_init(&fs_info->reloc_mutex);
 	mutex_init(&fs_info->delalloc_root_mutex);
+	mutex_init(&fs_info->cleaner_delayed_iput_mutex);
 	seqlock_init(&fs_info->profiles_lock);
 
 	INIT_LIST_HEAD(&fs_info->dirty_cowonly_roots);
@@ -2842,7 +2883,11 @@ int open_ctree(struct super_block *sb,
 		btrfs_err(fs_info, "superblock checksum mismatch");
 		err = -EINVAL;
 		brelse(bh);
+<<<<<<< HEAD
 		goto fail_csum;
+=======
+		goto fail_alloc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/*
@@ -3066,7 +3111,11 @@ retry_root_backup:
 
 	mutex_unlock(&tree_root->objectid_mutex);
 
+<<<<<<< HEAD
 	ret = btrfs_read_roots(fs_info);
+=======
+	ret = btrfs_read_roots(fs_info, tree_root);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		goto recovery_tree_root;
 

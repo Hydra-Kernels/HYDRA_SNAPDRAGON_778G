@@ -1277,6 +1277,7 @@ static int seq_rawdata_hash_show(struct seq_file *seq, void *v)
 			seq_printf(seq, "%.2x", data->hash[i]);
 		seq_putc(seq, '\n');
 	}
+	aa_put_profile(profile);
 
 	return 0;
 }

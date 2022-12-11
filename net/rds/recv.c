@@ -94,10 +94,13 @@ static void rds_recv_rcvbuf_delta(struct rds_sock *rs, struct sock *sk,
 		return;
 
 	rs->rs_rcv_bytes += delta;
+<<<<<<< HEAD
 	if (delta > 0)
 		rds_stats_add(s_recv_bytes_added_to_socket, delta);
 	else
 		rds_stats_add(s_recv_bytes_removed_from_socket, -delta);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* loop transport doesn't send/recv congestion updates */
 	if (rs->rs_transport->t_type == RDS_TRANS_LOOP)

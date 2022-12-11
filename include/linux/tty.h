@@ -372,7 +372,10 @@ struct tty_file_private {
 #define TTY_NO_WRITE_SPLIT 	17	/* Preserve write boundaries to driver */
 #define TTY_HUPPED 		18	/* Post driver->hangup() */
 #define TTY_HUPPING		19	/* Hangup in progress */
+<<<<<<< HEAD
 #define TTY_LDISC_CHANGING	20	/* Change pending - non-block IO */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define TTY_LDISC_HALTED	22	/* Line discipline is halted */
 
 /* Values for tty->flow_change */
@@ -417,11 +420,14 @@ extern struct tty_struct *get_current_tty(void);
 /* tty_io.c */
 extern int __init tty_init(void);
 extern const char *tty_name(const struct tty_struct *tty);
+<<<<<<< HEAD
 extern struct tty_struct *tty_kopen(dev_t device);
 extern void tty_kclose(struct tty_struct *tty);
 extern int tty_dev_name_to_number(const char *name, dev_t *number);
 extern int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 extern void tty_ldisc_unlock(struct tty_struct *tty);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 static inline void tty_kref_put(struct tty_struct *tty)
 { }
@@ -442,12 +448,15 @@ static inline int __init tty_init(void)
 { return 0; }
 static inline const char *tty_name(const struct tty_struct *tty)
 { return "(none)"; }
+<<<<<<< HEAD
 static inline struct tty_struct *tty_kopen(dev_t device)
 { return ERR_PTR(-ENODEV); }
 static inline void tty_kclose(struct tty_struct *tty)
 { }
 static inline int tty_dev_name_to_number(const char *name, dev_t *number)
 { return -ENOTSUPP; }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 extern struct ktermios tty_std_termios;
@@ -472,7 +481,12 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 	return tty;
 }
 
+<<<<<<< HEAD
 extern const char *tty_driver_name(const struct tty_struct *tty);
+=======
+extern int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
+			      const char *routine);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void tty_wait_until_sent(struct tty_struct *tty, long timeout);
 extern int __tty_check_change(struct tty_struct *tty, int sig);
 extern int tty_check_change(struct tty_struct *tty);
@@ -718,8 +732,26 @@ extern int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
 extern void tty_ldisc_release(struct tty_struct *tty);
 extern int __must_check tty_ldisc_init(struct tty_struct *tty);
 extern void tty_ldisc_deinit(struct tty_struct *tty);
+<<<<<<< HEAD
 extern int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 				 char *f, int count);
+=======
+extern void tty_ldisc_begin(void);
+
+static inline int tty_ldisc_receive_buf(struct tty_ldisc *ld, unsigned char *p,
+					char *f, int count)
+{
+	if (ld->ops->receive_buf2)
+		count = ld->ops->receive_buf2(ld->tty, p, f, count);
+	else {
+		count = min_t(int, count, ld->tty->receive_room);
+		if (count && ld->ops->receive_buf)
+			ld->ops->receive_buf(ld->tty, p, f, count);
+	}
+	return count;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* n_tty.c */
 extern void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
@@ -771,11 +803,19 @@ extern long vt_compat_ioctl(struct tty_struct *tty,
 
 /* tty_mutex.c */
 /* functions for preparation of BKL removal */
+<<<<<<< HEAD
 extern void tty_lock(struct tty_struct *tty);
 extern int  tty_lock_interruptible(struct tty_struct *tty);
 extern void tty_unlock(struct tty_struct *tty);
 extern void tty_lock_slave(struct tty_struct *tty);
 extern void tty_unlock_slave(struct tty_struct *tty);
+=======
+extern void __lockfunc tty_lock(struct tty_struct *tty);
+extern int  tty_lock_interruptible(struct tty_struct *tty);
+extern void __lockfunc tty_unlock(struct tty_struct *tty);
+extern void __lockfunc tty_lock_slave(struct tty_struct *tty);
+extern void __lockfunc tty_unlock_slave(struct tty_struct *tty);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void tty_set_lock_subclass(struct tty_struct *tty);
 
 #ifdef CONFIG_PROC_FS

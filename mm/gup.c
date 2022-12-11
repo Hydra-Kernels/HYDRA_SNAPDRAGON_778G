@@ -167,6 +167,7 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
 	return pte_write(pte) ||
+<<<<<<< HEAD
 	    ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
 }
 
@@ -178,6 +179,9 @@ static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 static inline bool should_force_cow_break(struct vm_area_struct *vma, unsigned int flags)
 {
 	return is_cow_mapping(vma->vm_flags) && (flags & FOLL_GET);
+=======
+		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
@@ -679,7 +683,11 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 	 * reCOWed by userspace write).
 	 */
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
+<<<<<<< HEAD
 		*flags |= FOLL_COW;
+=======
+	        *flags |= FOLL_COW;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

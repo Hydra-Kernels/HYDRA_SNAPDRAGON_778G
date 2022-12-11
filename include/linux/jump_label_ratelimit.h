@@ -12,6 +12,7 @@ struct static_key_deferred {
 	struct delayed_work work;
 };
 
+<<<<<<< HEAD
 struct static_key_true_deferred {
 	struct static_key_true key;
 	unsigned long timeout;
@@ -37,6 +38,11 @@ __static_key_slow_dec_deferred(struct static_key *key,
 			       struct delayed_work *work,
 			       unsigned long timeout);
 extern void __static_key_deferred_flush(void *key, struct delayed_work *work);
+=======
+#ifdef HAVE_JUMP_LABEL
+extern void static_key_slow_dec_deferred(struct static_key_deferred *key);
+extern void static_key_deferred_flush(struct static_key_deferred *key);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void
 jump_label_rate_limit(struct static_key_deferred *key, unsigned long rl);
 
@@ -82,9 +88,15 @@ static inline void static_key_slow_dec_deferred(struct static_key_deferred *key)
 	STATIC_KEY_CHECK_USE(key);
 	static_key_slow_dec(&key->key);
 }
+<<<<<<< HEAD
 static inline void static_key_deferred_flush(void *key)
 {
 	STATIC_KEY_CHECK_USE(key);
+=======
+static inline void static_key_deferred_flush(struct static_key_deferred *key)
+{
+	STATIC_KEY_CHECK_USE();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 static inline void
 jump_label_rate_limit(struct static_key_deferred *key,

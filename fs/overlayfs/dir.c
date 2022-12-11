@@ -9,11 +9,15 @@
 #include <linux/xattr.h>
 #include <linux/security.h>
 #include <linux/cred.h>
+<<<<<<< HEAD
 #include <linux/module.h>
 #include <linux/posix_acl.h>
 #include <linux/posix_acl_xattr.h>
 #include <linux/atomic.h>
 #include <linux/ratelimit.h>
+=======
+#include <linux/atomic.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include "overlayfs.h"
 
 static unsigned short ovl_redirect_max = 256;
@@ -720,6 +724,7 @@ static int ovl_remove_and_whiteout(struct dentry *dentry,
 	struct dentry *upper;
 	struct dentry *opaquedir = NULL;
 	int err;
+	int flags = 0;
 
 	if (WARN_ON(!workdir))
 		return -EROFS;
@@ -740,6 +745,7 @@ static int ovl_remove_and_whiteout(struct dentry *dentry,
 	err = PTR_ERR(upper);
 	if (IS_ERR(upper))
 		goto out_unlock;
+<<<<<<< HEAD
 
 	err = -ESTALE;
 	if ((opaquedir && upper != opaquedir) ||
@@ -755,6 +761,34 @@ static int ovl_remove_and_whiteout(struct dentry *dentry,
 	ovl_dir_modified(dentry->d_parent, true);
 out_d_drop:
 	d_drop(dentry);
+=======
+
+	err = -ESTALE;
+	if ((opaquedir && upper != opaquedir) ||
+	    (!opaquedir && ovl_dentry_upper(dentry) &&
+	     upper != ovl_dentry_upper(dentry))) {
+		goto out_dput_upper;
+	}
+
+	whiteout = ovl_whiteout(workdir, dentry);
+	err = PTR_ERR(whiteout);
+	if (IS_ERR(whiteout))
+		goto out_dput_upper;
+
+	if (d_is_dir(upper))
+		flags = RENAME_EXCHANGE;
+
+	err = ovl_do_rename(wdir, whiteout, udir, upper, flags);
+	if (err)
+		goto kill_whiteout;
+	if (flags)
+		ovl_cleanup(wdir, upper);
+
+	ovl_dentry_version_inc(dentry->d_parent);
+out_d_drop:
+	d_drop(dentry);
+	dput(whiteout);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_dput_upper:
 	dput(upper);
 out_unlock:
@@ -771,6 +805,7 @@ static int ovl_remove_upper(struct dentry *dentry, bool is_dir,
 	struct dentry *upperdir = ovl_dentry_upper(dentry->d_parent);
 	struct inode *dir = upperdir->d_inode;
 	struct dentry *upper;
+<<<<<<< HEAD
 	struct dentry *opaquedir = NULL;
 	int err;
 
@@ -779,7 +814,26 @@ static int ovl_remove_upper(struct dentry *dentry, bool is_dir,
 		err = PTR_ERR(opaquedir);
 		if (IS_ERR(opaquedir))
 			goto out;
+=======
+	int err;
+
+	mutex_lock_nested(&dir->i_mutex, I_MUTEX_PARENT);
+	upper = lookup_one_len(dentry->d_name.name, upperdir,
+			       dentry->d_name.len);
+	err = PTR_ERR(upper);
+	if (IS_ERR(upper))
+		goto out_unlock;
+
+	err = -ESTALE;
+	if (upper == ovl_dentry_upper(dentry)) {
+		if (is_dir)
+			err = vfs_rmdir(dir, upper);
+		else
+			err = vfs_unlink(dir, upper, NULL);
+		ovl_dentry_version_inc(dentry->d_parent);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
+	dput(upper);
 
 	inode_lock_nested(dir, I_MUTEX_PARENT);
 	upper = lookup_one_len(dentry->d_name.name, upperdir,
@@ -807,12 +861,18 @@ static int ovl_remove_upper(struct dentry *dentry, bool is_dir,
 	 */
 	if (!err)
 		d_drop(dentry);
+<<<<<<< HEAD
 out_dput_upper:
 	dput(upper);
 out_unlock:
 	inode_unlock(dir);
 	dput(opaquedir);
 out:
+=======
+out_unlock:
+	mutex_unlock(&dir->i_mutex);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -1113,6 +1173,7 @@ static int ovl_rename(struct inode *olddir, struct dentry *old,
 	old_upperdir = ovl_dentry_upper(old->d_parent);
 	new_upperdir = ovl_dentry_upper(new->d_parent);
 
+<<<<<<< HEAD
 	if (!samedir) {
 		/*
 		 * When moving a merge dir or non-dir with copy up origin into
@@ -1168,6 +1229,43 @@ static int ovl_rename(struct inode *olddir, struct dentry *old,
 			goto out_dput;
 	}
 
+=======
+	trap = lock_rename(new_upperdir, old_upperdir);
+
+
+	olddentry = lookup_one_len(old->d_name.name, old_upperdir,
+				   old->d_name.len);
+	err = PTR_ERR(olddentry);
+	if (IS_ERR(olddentry))
+		goto out_unlock;
+
+	err = -ESTALE;
+	if (olddentry != ovl_dentry_upper(old))
+		goto out_dput_old;
+
+	newdentry = lookup_one_len(new->d_name.name, new_upperdir,
+				   new->d_name.len);
+	err = PTR_ERR(newdentry);
+	if (IS_ERR(newdentry))
+		goto out_dput_old;
+
+	err = -ESTALE;
+	if (ovl_dentry_upper(new)) {
+		if (opaquedir) {
+			if (newdentry != opaquedir)
+				goto out_dput;
+		} else {
+			if (newdentry != ovl_dentry_upper(new))
+				goto out_dput;
+		}
+	} else {
+		new_create = true;
+		if (!d_is_negative(newdentry) &&
+		    (!new_opaque || !ovl_is_whiteout(newdentry)))
+			goto out_dput;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (olddentry == trap)
 		goto out_dput;
 	if (newdentry == trap)
@@ -1184,6 +1282,7 @@ static int ovl_rename(struct inode *olddir, struct dentry *old,
 	if (err)
 		goto out_dput;
 
+<<<<<<< HEAD
 	if (!overwrite && ovl_type_merge_or_lower(new))
 		err = ovl_set_redirect(new, samedir);
 	else if (!overwrite && new_is_dir && !new_opaque &&
@@ -1196,6 +1295,20 @@ static int ovl_rename(struct inode *olddir, struct dentry *old,
 			    new_upperdir->d_inode, newdentry, flags);
 	if (err)
 		goto out_dput;
+=======
+	/*
+	 * Old dentry now lives in different location. Dentries in
+	 * lowerstack are stale. We cannot drop them here because
+	 * access to them is lockless. This could be only pure upper
+	 * or opaque directory - numlower is zero. Or upper non-dir
+	 * entry - its pureness is tracked by flag opaque.
+	 */
+	if (old_opaque != new_opaque) {
+		ovl_dentry_set_opaque(old, new_opaque);
+		if (!overwrite)
+			ovl_dentry_set_opaque(new, old_opaque);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (cleanup_whiteout)
 		ovl_cleanup(old_upperdir->d_inode, newdentry);

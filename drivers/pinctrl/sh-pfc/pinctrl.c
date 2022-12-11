@@ -574,7 +574,12 @@ static bool sh_pfc_pinconf_validate(struct sh_pfc *pfc, unsigned int _pin,
 
 	switch (param) {
 	case PIN_CONFIG_BIAS_DISABLE:
+<<<<<<< HEAD
 		return pin->configs & SH_PFC_PIN_CFG_PULL_UP_DOWN;
+=======
+		return pin->configs &
+			(SH_PFC_PIN_CFG_PULL_UP | SH_PFC_PIN_CFG_PULL_DOWN);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	case PIN_CONFIG_BIAS_PULL_UP:
 		return pin->configs & SH_PFC_PIN_CFG_PULL_UP;

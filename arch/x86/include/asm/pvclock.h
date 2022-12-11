@@ -5,6 +5,15 @@
 #include <asm/clocksource.h>
 #include <asm/pvclock-abi.h>
 
+#ifdef CONFIG_KVM_GUEST
+extern struct pvclock_vsyscall_time_info *pvclock_pvti_cpu0_va(void);
+#else
+static inline struct pvclock_vsyscall_time_info *pvclock_pvti_cpu0_va(void)
+{
+	return NULL;
+}
+#endif
+
 /* some helper functions for xen and kvm pv clock sources */
 u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
 u8 pvclock_read_flags(struct pvclock_vcpu_time_info *src);
@@ -81,10 +90,37 @@ static inline u64 pvclock_scale_delta(u64 delta, u32 mul_frac, int shift)
 static __always_inline
 u64 __pvclock_read_cycles(const struct pvclock_vcpu_time_info *src, u64 tsc)
 {
+<<<<<<< HEAD
 	u64 delta = tsc - src->tsc_timestamp;
 	u64 offset = pvclock_scale_delta(delta, src->tsc_to_system_mul,
 					     src->tsc_shift);
 	return src->system_time + offset;
+=======
+	u64 delta = rdtsc_ordered() - src->tsc_timestamp;
+	return pvclock_scale_delta(delta, src->tsc_to_system_mul,
+				   src->tsc_shift);
+}
+
+static __always_inline
+unsigned __pvclock_read_cycles(const struct pvclock_vcpu_time_info *src,
+			       cycle_t *cycles, u8 *flags)
+{
+	unsigned version;
+	cycle_t ret, offset;
+	u8 ret_flags;
+
+	version = src->version;
+	/* Make the latest version visible */
+	smp_rmb();
+
+	offset = pvclock_get_nsec_offset(src);
+	ret = src->system_time + offset;
+	ret_flags = src->flags;
+
+	*cycles = ret;
+	*flags = ret_flags;
+	return version;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct pvclock_vsyscall_time_info {

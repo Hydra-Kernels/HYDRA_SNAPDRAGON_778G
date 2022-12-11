@@ -52,6 +52,7 @@ static int handle_hvc(struct kvm_vcpu *vcpu, struct kvm_run *run)
 
 static int handle_smc(struct kvm_vcpu *vcpu, struct kvm_run *run)
 {
+<<<<<<< HEAD
 	/*
 	 * "If an SMC instruction executed at Non-secure EL1 is
 	 * trapped to EL2 because HCR_EL2.TSC is 1, the exception is a
@@ -72,6 +73,9 @@ static int handle_smc(struct kvm_vcpu *vcpu, struct kvm_run *run)
 static int handle_no_fpsimd(struct kvm_vcpu *vcpu, struct kvm_run *run)
 {
 	kvm_inject_undefined(vcpu);
+=======
+	vcpu_set_reg(vcpu, 0, ~0UL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 1;
 }
 
@@ -155,6 +159,7 @@ static int kvm_handle_unknown_ec(struct kvm_vcpu *vcpu, struct kvm_run *run)
 	return 1;
 }
 
+<<<<<<< HEAD
 static int handle_sve(struct kvm_vcpu *vcpu, struct kvm_run *run)
 {
 	/* Until SVE is supported for guests: */
@@ -184,6 +189,8 @@ static int kvm_handle_ptrauth(struct kvm_vcpu *vcpu, struct kvm_run *run)
 	return 1;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static exit_handle_fn arm_exit_handlers[] = {
 	[0 ... ESR_ELx_EC_MAX]	= kvm_handle_unknown_ec,
 	[ESR_ELx_EC_WFx]	= kvm_handle_wfx,
@@ -212,7 +219,11 @@ static exit_handle_fn arm_exit_handlers[] = {
 static exit_handle_fn kvm_get_exit_handler(struct kvm_vcpu *vcpu)
 {
 	u32 hsr = kvm_vcpu_get_hsr(vcpu);
+<<<<<<< HEAD
 	u8 hsr_ec = ESR_ELx_EC(hsr);
+=======
+	u8 hsr_ec = hsr >> ESR_ELx_EC_SHIFT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return arm_exit_handlers[hsr_ec];
 }

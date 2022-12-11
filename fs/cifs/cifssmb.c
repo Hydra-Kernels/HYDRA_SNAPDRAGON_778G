@@ -109,12 +109,15 @@ cifs_mark_open_files_invalid(struct cifs_tcon *tcon)
 		open_file->oplock_break_cancelled = true;
 	}
 	spin_unlock(&tcon->open_file_lock);
+<<<<<<< HEAD
 
 	mutex_lock(&tcon->crfid.fid_mutex);
 	tcon->crfid.is_valid = false;
 	memset(tcon->crfid.fid, 0, sizeof(struct cifs_fid));
 	mutex_unlock(&tcon->crfid.fid_mutex);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * BB Add call to invalidate_inodes(sb) for all superblocks mounted
 	 * to this tcon.
@@ -1514,12 +1517,20 @@ openRetry:
  * Discard any remaining data in the current SMB. To do this, we borrow the
  * current bigbuf.
  */
+<<<<<<< HEAD
 int
 cifs_discard_remaining_data(struct TCP_Server_Info *server)
 {
 	unsigned int rfclen = server->pdu_size;
 	int remaining = rfclen + server->vals->header_preamble_size -
 		server->total_read;
+=======
+static int
+discard_remaining_data(struct TCP_Server_Info *server)
+{
+	unsigned int rfclen = get_rfc1002_length(server->smallbuf);
+	int remaining = rfclen + 4 - server->total_read;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (remaining > 0) {
 		int length;
@@ -1537,6 +1548,7 @@ cifs_discard_remaining_data(struct TCP_Server_Info *server)
 }
 
 static int
+<<<<<<< HEAD
 __cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid,
 		     bool malformed)
 {
@@ -1544,11 +1556,21 @@ __cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid,
 
 	length = cifs_discard_remaining_data(server);
 	dequeue_mid(mid, malformed);
+=======
+cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
+{
+	int length;
+	struct cifs_readdata *rdata = mid->callback_data;
+
+	length = discard_remaining_data(server);
+	dequeue_mid(mid, rdata->result);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mid->resp_buf = server->smallbuf;
 	server->smallbuf = NULL;
 	return length;
 }
 
+<<<<<<< HEAD
 static int
 cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 {
@@ -1557,6 +1579,8 @@ cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 	return  __cifs_readv_discard(server, mid, rdata->result);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int
 cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 {
@@ -1593,6 +1617,7 @@ cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 	}
 
 	if (server->ops->is_status_pending &&
+<<<<<<< HEAD
 	    server->ops->is_status_pending(buf, server)) {
 		cifs_discard_remaining_data(server);
 		return -1;
@@ -1609,6 +1634,13 @@ cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 	cifs_dbg(FYI, "1: iov_base=%p iov_len=%zu\n",
 		 rdata->iov[1].iov_base, rdata->iov[1].iov_len);
 
+=======
+	    server->ops->is_status_pending(buf, server, 0)) {
+		discard_remaining_data(server);
+		return -1;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Was the SMB read successful? */
 	rdata->result = server->ops->map_error(buf, false);
 	if (rdata->result != 0) {

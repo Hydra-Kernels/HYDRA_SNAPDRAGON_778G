@@ -198,8 +198,12 @@ config PREFETCH
 
 config MLONGCALLS
 	bool "Enable the -mlong-calls compiler option for big kernels"
+<<<<<<< HEAD
 	default y if !MODULES || UBSAN || FTRACE
 	default n
+=======
+	default y
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	depends on PA8X00
 	help
 	  If you configure the kernel to include many drivers built-in instead

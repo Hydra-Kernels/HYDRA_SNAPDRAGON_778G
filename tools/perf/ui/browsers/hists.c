@@ -3163,12 +3163,20 @@ skip_annotation:
 			 *
 			 * See hist_browser__show_entry.
 			 */
+<<<<<<< HEAD
 			if (hists__has(hists, sym) && browser->selection->sym) {
 				nr_options += add_script_opt(browser,
 							     &actions[nr_options],
 							     &options[nr_options],
 							     NULL, browser->selection->sym,
 							     evsel);
+=======
+			if (sort__has_sym && browser->selection->sym) {
+				nr_options += add_script_opt(browser,
+							     &actions[nr_options],
+							     &options[nr_options],
+							     NULL, browser->selection->sym);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 		nr_options += add_script_opt(browser, &actions[nr_options],

@@ -60,9 +60,14 @@ amdgpu-$(CONFIG_PERF_EVENTS) += amdgpu_pmu.o
 
 # add asic specific block
 amdgpu-$(CONFIG_DRM_AMDGPU_CIK)+= cik.o cik_ih.o kv_smc.o kv_dpm.o \
+<<<<<<< HEAD
 	dce_v8_0.o gfx_v7_0.o cik_sdma.o uvd_v4_2.o vce_v2_0.o
 
 amdgpu-$(CONFIG_DRM_AMDGPU_SI)+= si.o gmc_v6_0.o gfx_v6_0.o si_ih.o si_dma.o dce_v6_0.o si_dpm.o si_smc.o
+=======
+	ci_smc.o ci_dpm.o dce_v8_0.o gfx_v7_0.o cik_sdma.o uvd_v4_2.o vce_v2_0.o \
+	amdgpu_amdkfd_gfx_v7.o
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 amdgpu-y += \
 	vi.o mxgpu_vi.o nbio_v6_1.o soc15.o emu_soc.o mxgpu_ai.o nbio_v7_0.o vega10_reg_init.o \
@@ -77,6 +82,7 @@ amdgpu-y += \
 # add GMC block
 amdgpu-y += \
 	gmc_v7_0.o \
+<<<<<<< HEAD
 	gmc_v8_0.o \
 	gfxhub_v1_0.o mmhub_v1_0.o gmc_v9_0.o gfxhub_v1_1.o mmhub_v9_4.o \
 	gfxhub_v2_0.o mmhub_v2_0.o gmc_v10_0.o
@@ -84,6 +90,9 @@ amdgpu-y += \
 # add UMC block
 amdgpu-y += \
 	umc_v6_1.o
+=======
+	gmc_v8_0.o
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 # add IH block
 amdgpu-y += \

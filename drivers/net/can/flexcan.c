@@ -656,9 +656,19 @@ static netdev_tx_t flexcan_start_xmit(struct sk_buff *skb, struct net_device *de
 	if (cf->can_id & CAN_RTR_FLAG)
 		ctrl |= FLEXCAN_MB_CNT_RTR;
 
+<<<<<<< HEAD
 	for (i = 0; i < cf->can_dlc; i += sizeof(u32)) {
 		data = be32_to_cpup((__be32 *)&cf->data[i]);
 		priv->write(data, &priv->tx_mb->data[i / sizeof(u32)]);
+=======
+	if (cf->can_dlc > 0) {
+		data = be32_to_cpup((__be32 *)&cf->data[0]);
+		flexcan_write(data, &regs->mb[FLEXCAN_TX_BUF_ID].data[0]);
+	}
+	if (cf->can_dlc > 4) {
+		data = be32_to_cpup((__be32 *)&cf->data[4]);
+		flexcan_write(data, &regs->mb[FLEXCAN_TX_BUF_ID].data[1]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	can_put_echo_skb(skb, dev, 0);
@@ -1705,6 +1715,7 @@ static int __maybe_unused flexcan_suspend(struct device *device)
 {
 	struct net_device *dev = dev_get_drvdata(device);
 	struct flexcan_priv *priv = netdev_priv(dev);
+<<<<<<< HEAD
 	int err = 0;
 
 	if (netif_running(dev)) {
@@ -1721,6 +1732,14 @@ static int __maybe_unused flexcan_suspend(struct device *device)
 			if (err)
 				return err;
 		}
+=======
+	int err;
+
+	if (netif_running(dev)) {
+		err = flexcan_chip_disable(priv);
+		if (err)
+			return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		netif_stop_queue(dev);
 		netif_device_detach(dev);
 	}
@@ -1733,12 +1752,17 @@ static int __maybe_unused flexcan_resume(struct device *device)
 {
 	struct net_device *dev = dev_get_drvdata(device);
 	struct flexcan_priv *priv = netdev_priv(dev);
+<<<<<<< HEAD
 	int err = 0;
+=======
+	int err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	priv->can.state = CAN_STATE_ERROR_ACTIVE;
 	if (netif_running(dev)) {
 		netif_device_attach(dev);
 		netif_start_queue(dev);
+<<<<<<< HEAD
 		if (device_may_wakeup(device)) {
 			disable_irq_wake(dev->irq);
 			err = flexcan_exit_stop_mode(priv);
@@ -1750,6 +1774,13 @@ static int __maybe_unused flexcan_resume(struct device *device)
 	}
 
 	return err;
+=======
+		err = flexcan_chip_enable(priv);
+		if (err)
+			return err;
+	}
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int __maybe_unused flexcan_runtime_suspend(struct device *device)

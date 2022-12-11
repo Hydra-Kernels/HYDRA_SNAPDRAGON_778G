@@ -155,7 +155,11 @@ static void snd_msnd_eval_dsp_msg(struct snd_msnd *chip, u16 wMessage)
 static irqreturn_t snd_msnd_interrupt(int irq, void *dev_id)
 {
 	struct snd_msnd *chip = dev_id;
+<<<<<<< HEAD
 	void __iomem *pwDSPQData = chip->mappedbase + DSPQ_DATA_BUFF;
+=======
+	void *pwDSPQData = chip->mappedbase + DSPQ_DATA_BUFF;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u16 head, tail, size;
 
 	/* Send ack to DSP */

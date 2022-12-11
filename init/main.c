@@ -90,10 +90,14 @@
 #include <linux/integrity.h>
 #include <linux/proc_ns.h>
 #include <linux/io.h>
+<<<<<<< HEAD
 #include <linux/cache.h>
 #include <linux/rodata_test.h>
 #include <linux/jump_label.h>
 #include <linux/mem_encrypt.h>
+=======
+#include <linux/kaiser.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -571,6 +575,7 @@ static void __init mm_init(void)
 	debug_objects_mem_init();
 	vmalloc_init();
 	ioremap_huge_init();
+<<<<<<< HEAD
 	/* Should be run before the first non-init thread is created */
 	init_espfix_bsp();
 	/* Should be run after espfix64 is set up. */
@@ -580,6 +585,9 @@ static void __init mm_init(void)
 void __init __weak arch_call_rest_init(void)
 {
 	rest_init();
+=======
+	kaiser_init();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 asmlinkage __visible void __init start_kernel(void)

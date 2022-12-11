@@ -628,14 +628,22 @@ int r8712_wlanhdr_to_ethhdr(union recv_frame *precvframe)
 		ptr = recvframe_pull(precvframe, (rmv_len -
 		      sizeof(struct ethhdr) + 2) - 24);
 		if (!ptr)
+<<<<<<< HEAD
 			return -ENOMEM;
+=======
+			return _FAIL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		memcpy(ptr, get_rxmem(precvframe), 24);
 		ptr += 24;
 	} else {
 		ptr = recvframe_pull(precvframe, (rmv_len -
 		      sizeof(struct ethhdr) + (bsnaphdr ? 2 : 0)));
 		if (!ptr)
+<<<<<<< HEAD
 			return -ENOMEM;
+=======
+			return _FAIL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	memcpy(ptr, pattrib->dst, ETH_ALEN);

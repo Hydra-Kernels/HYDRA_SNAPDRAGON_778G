@@ -576,6 +576,14 @@ static struct omap_hwmod_class_sysconfig omap3xxx_dsi_sysc = {
 			   SYSC_HAS_SOFTRESET | SYSS_HAS_RESET_STATUS),
 	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
 	.sysc_fields	= &omap_hwmod_sysc_type1,
+<<<<<<< HEAD
+=======
+};
+
+static struct omap_hwmod_class omap3xxx_dsi_hwmod_class = {
+	.name = "dsi",
+	.sysc	= &omap3xxx_dsi_sysc,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static struct omap_hwmod_class omap3xxx_dsi_hwmod_class = {
@@ -2897,14 +2905,28 @@ int __init omap3xxx_hwmod_init(void)
 
 	if (h_sham && omap3xxx_hwmod_is_hs_ip_block_usable(bus, "sham")) {
 		r = omap_hwmod_register_links(h_sham);
+<<<<<<< HEAD
 		if (r < 0)
 			goto put_node;
+=======
+		if (r < 0) {
+			of_node_put(bus);
+			return r;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (h_aes && omap3xxx_hwmod_is_hs_ip_block_usable(bus, "aes")) {
 		r = omap_hwmod_register_links(h_aes);
+<<<<<<< HEAD
 		if (r < 0)
 			goto put_node;
+=======
+		if (r < 0) {
+			of_node_put(bus);
+			return r;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	of_node_put(bus);
 

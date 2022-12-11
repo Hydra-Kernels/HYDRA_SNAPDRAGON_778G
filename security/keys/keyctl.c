@@ -838,7 +838,11 @@ long keyctl_read_key(key_serial_t keyid, char __user *buffer, size_t buflen)
 
 	ret = key_read_state(key);
 	if (ret < 0)
+<<<<<<< HEAD
 		goto key_put_out; /* Negatively instantiated */
+=======
+		goto error2; /* Negatively instantiated */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* see if we can read it directly */
 	ret = key_permission(key_ref, KEY_NEED_READ);

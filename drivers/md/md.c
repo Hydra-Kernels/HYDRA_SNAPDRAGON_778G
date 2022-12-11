@@ -401,7 +401,12 @@ static blk_qc_t md_make_request(struct request_queue *q, struct bio *bio)
 	 */
 	sectors = bio_sectors(bio);
 	/* bio could be mergeable after passing to underlayer */
+<<<<<<< HEAD
 	bio->bi_opf &= ~REQ_NOMERGE;
+=======
+	bio->bi_rw &= ~REQ_NOMERGE;
+	mddev->pers->make_request(mddev, bio);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	md_handle_request(mddev, bio);
 
@@ -1220,7 +1225,12 @@ static int super_90_load(struct md_rdev *rdev, struct md_rdev *refdev, int minor
 	 * (not needed for Linear and RAID0 as metadata doesn't
 	 * record this size)
 	 */
+<<<<<<< HEAD
 	if ((u64)rdev->sectors >= (2ULL << 32) && sb->level >= 1)
+=======
+	if (IS_ENABLED(CONFIG_LBDAF) && (u64)rdev->sectors >= (2ULL << 32) &&
+	    sb->level >= 1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rdev->sectors = (sector_t)(2ULL << 32) - 2;
 
 	if (rdev->sectors < ((sector_t)sb->size) * 2 && sb->level >= 1)
@@ -1520,10 +1530,17 @@ super_90_rdev_size_change(struct md_rdev *rdev, sector_t num_sectors)
 	/* Limit to 4TB as metadata cannot record more than that.
 	 * 4TB == 2^32 KB, or 2*2^32 sectors.
 	 */
+<<<<<<< HEAD
 	if ((u64)num_sectors >= (2ULL << 32) && rdev->mddev->level >= 1)
 		num_sectors = (sector_t)(2ULL << 32) - 2;
 	do {
 		md_super_write(rdev->mddev, rdev, rdev->sb_start, rdev->sb_size,
+=======
+	if (IS_ENABLED(CONFIG_LBDAF) && (u64)num_sectors >= (2ULL << 32) &&
+	    rdev->mddev->level >= 1)
+		num_sectors = (sector_t)(2ULL << 32) - 2;
+	md_super_write(rdev->mddev, rdev, rdev->sb_start, rdev->sb_size,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		       rdev->sb_page);
 	} while (md_super_wait(rdev->mddev) < 0);
 	return num_sectors;
@@ -2292,8 +2309,13 @@ int md_integrity_add_rdev(struct md_rdev *rdev, struct mddev *mddev)
 		return 0;
 
 	if (blk_integrity_compare(mddev->gendisk, rdev->bdev->bd_disk) != 0) {
+<<<<<<< HEAD
 		pr_err("%s: incompatible integrity profile for %s\n",
 		       mdname(mddev), bdevname(rdev->bdev, name));
+=======
+		printk(KERN_NOTICE "%s: incompatible integrity profile for %s\n",
+				mdname(mddev), bdevname(rdev->bdev, name));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENXIO;
 	}
 
@@ -2999,10 +3021,15 @@ state_store(struct md_rdev *rdev, const char *buf, size_t len)
 			err = 0;
 		}
 	} else if (cmd_match(buf, "re-add")) {
+<<<<<<< HEAD
 		if (!rdev->mddev->pers)
 			err = -EINVAL;
 		else if (test_bit(Faulty, &rdev->flags) && (rdev->raid_disk == -1) &&
 				rdev->saved_raid_disk >= 0) {
+=======
+		if (test_bit(Faulty, &rdev->flags) && (rdev->raid_disk == -1) &&
+			rdev->saved_raid_disk >= 0) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* clear_bit is performed _after_ all the devices
 			 * have their local Faulty bit cleared. If any writes
 			 * happen in the meantime in the local node, they
@@ -6729,6 +6756,9 @@ static int hot_remove_disk(struct mddev *mddev, dev_t dev)
 	if (!mddev->pers)
 		return -ENODEV;
 
+	if (!mddev->pers)
+		return -ENODEV;
+
 	rdev = find_rdev(mddev, dev);
 	if (!rdev)
 		return -ENXIO;
@@ -8230,7 +8260,11 @@ int md_setup_cluster(struct mddev *mddev, int nodes)
 	spin_lock(&pers_lock);
 	/* ensure module won't be unloaded */
 	if (!md_cluster_ops || !try_module_get(md_cluster_mod)) {
+<<<<<<< HEAD
 		pr_warn("can't find md-cluster module or get it's reference.\n");
+=======
+		pr_err("can't find md-cluster module or get it's reference.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock(&pers_lock);
 		return -ENOENT;
 	}

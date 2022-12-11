@@ -339,7 +339,11 @@ int pwmchip_remove(struct pwm_chip *chip)
 	unsigned int i;
 	int ret = 0;
 
+<<<<<<< HEAD
 	pwmchip_sysfs_unexport(chip);
+=======
+	pwmchip_sysfs_unexport_children(chip);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_lock(&pwm_lock);
 
@@ -1138,6 +1142,21 @@ void devm_pwm_put(struct device *dev, struct pwm_device *pwm)
 }
 EXPORT_SYMBOL_GPL(devm_pwm_put);
 
+<<<<<<< HEAD
+=======
+/**
+  * pwm_can_sleep() - report whether PWM access will sleep
+  * @pwm: PWM device
+  *
+  * Returns: True if accessing the PWM can sleep, false otherwise.
+  */
+bool pwm_can_sleep(struct pwm_device *pwm)
+{
+	return true;
+}
+EXPORT_SYMBOL_GPL(pwm_can_sleep);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_DEBUG_FS
 static void pwm_dbg_show(struct pwm_chip *chip, struct seq_file *s)
 {

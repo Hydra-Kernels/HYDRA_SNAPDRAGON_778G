@@ -189,16 +189,26 @@ static int sysvipc_sem_proc_show(struct seq_file *s, void *it);
  * a) global sem_lock() for read/write
  *	sem_undo.id_next,
  *	sem_array.complex_count,
+<<<<<<< HEAD
+=======
+ *	sem_array.complex_mode
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *	sem_array.pending{_alter,_const},
  *	sem_array.sem_undo
  *
  * b) global or semaphore sem_lock() for read/write:
+<<<<<<< HEAD
  *	sem_array.sems[i].pending_{const,alter}:
+=======
+ *	sem_array.sem_base[i].pending_{const,alter}:
+ *	sem_array.complex_mode (for read)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * c) special:
  *	sem_undo_list.list_proc:
  *	* undo_list->lock for write
  *	* rcu for read
+<<<<<<< HEAD
  *	use_global_lock:
  *	* global sem_lock() for write
  *	* either local or global sem_lock() for read.
@@ -214,6 +224,8 @@ static int sysvipc_sem_proc_show(struct seq_file *s, void *it);
  * this smp_load_acquire(), this is guaranteed because the smp_load_acquire()
  * is inside a spin_lock() and after a write from 0 to non-zero a
  * spin_lock()+spin_unlock() is done.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #define sc_semmsl	sem_ctls[0]
@@ -305,6 +317,19 @@ static void sem_rcu_free(struct rcu_head *head)
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * spin_unlock_wait() and !spin_is_locked() are not memory barriers, they
+ * are only control barriers.
+ * The code must pair with spin_unlock(&sem->lock) or
+ * spin_unlock(&sem_perm.lock), thus just the control barrier is insufficient.
+ *
+ * smp_rmb() is sufficient, as writes cannot pass the control barrier.
+ */
+#define ipc_smp_acquire__after_spin_is_unlocked()	smp_rmb()
+
+/*
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Enter the mode suitable for non-simple operations:
  * Caller must own sem_perm.lock.
  */
@@ -313,6 +338,7 @@ static void complexmode_enter(struct sem_array *sma)
 	int i;
 	struct sem *sem;
 
+<<<<<<< HEAD
 	if (sma->use_global_lock > 0)  {
 		/*
 		 * We are already in global lock mode.
@@ -353,7 +379,45 @@ static void complexmode_tryleave(struct sem_array *sma)
 		smp_store_release(&sma->use_global_lock, 0);
 	} else {
 		sma->use_global_lock--;
+=======
+	if (sma->complex_mode)  {
+		/* We are already in complex_mode. Nothing to do */
+		return;
 	}
+
+	/* We need a full barrier after seting complex_mode:
+	 * The write to complex_mode must be visible
+	 * before we read the first sem->lock spinlock state.
+	 */
+	smp_store_mb(sma->complex_mode, true);
+
+	for (i = 0; i < sma->sem_nsems; i++) {
+		sem = sma->sem_base + i;
+		spin_unlock_wait(&sem->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+	}
+}
+
+#define SEM_GLOBAL_LOCK	(-1)
+/*
+ * Try to leave the mode that disallows simple operations:
+ * Caller must own sem_perm.lock.
+ */
+static void complexmode_tryleave(struct sem_array *sma)
+{
+	if (sma->complex_count)  {
+		/* Complex ops are sleeping.
+		 * We must stay in complex mode
+		 */
+		return;
+	}
+	/*
+	 * Immediately after setting complex_mode to false,
+	 * a simple op can start. Thus: all memory writes
+	 * performed by the current operation must be visible
+	 * before we set complex_mode to false.
+	 */
+	smp_store_release(&sma->complex_mode, false);
 }
 
 #define SEM_GLOBAL_LOCK	(-1)
@@ -384,24 +448,47 @@ static inline int sem_lock(struct sem_array *sma, struct sembuf *sops,
 	 * Optimized locking is possible if no complex operation
 	 * is either enqueued or processed right now.
 	 *
+<<<<<<< HEAD
 	 * Both facts are tracked by use_global_mode.
+=======
+	 * Both facts are tracked by complex_mode.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 	idx = array_index_nospec(sops->sem_num, sma->sem_nsems);
 	sem = &sma->sems[idx];
 
 	/*
+<<<<<<< HEAD
 	 * Initial check for use_global_lock. Just an optimization,
 	 * no locking, no memory barrier.
 	 */
 	if (!sma->use_global_lock) {
+=======
+	 * Initial check for complex_mode. Just an optimization,
+	 * no locking, no memory barrier.
+	 */
+	if (!sma->complex_mode) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * It appears that no complex operation is around.
 		 * Acquire the per-semaphore lock.
 		 */
 		spin_lock(&sem->lock);
 
+<<<<<<< HEAD
 		/* pairs with smp_store_release() */
 		if (!smp_load_acquire(&sma->use_global_lock)) {
+=======
+		/*
+		 * See 51d7d5205d33
+		 * ("powerpc: Add smp_mb() to arch_spin_is_locked()"):
+		 * A full barrier is required: the write of sem->lock
+		 * must be visible before the read is executed
+		 */
+		smp_mb();
+
+		if (!smp_load_acquire(&sma->complex_mode)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* fast path successful! */
 			return sops->sem_num;
 		}
@@ -431,6 +518,10 @@ static inline int sem_lock(struct sem_array *sma, struct sembuf *sops,
 		 * mode. No need for complexmode_enter(), this was done by
 		 * the caller that has set use_global_mode to non-zero.
 		 */
+<<<<<<< HEAD
+=======
+		complexmode_enter(sma);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return SEM_GLOBAL_LOCK;
 	}
 }
@@ -477,7 +568,11 @@ static inline struct sem_array *sem_obtain_object_check(struct ipc_namespace *ns
 static inline void sem_lock_and_putref(struct sem_array *sma)
 {
 	sem_lock(sma, NULL, -1);
+<<<<<<< HEAD
 	ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+	ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline void sem_rmid(struct ipc_namespace *ns, struct sem_array *s)
@@ -541,7 +636,11 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
 	}
 
 	sma->complex_count = 0;
+<<<<<<< HEAD
 	sma->use_global_lock = USE_GLOBAL_LOCK_HYSTERESIS;
+=======
+	sma->complex_mode = true; /* dropped by sem_unlock below */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	INIT_LIST_HEAD(&sma->pending_alter);
 	INIT_LIST_HEAD(&sma->pending_const);
 	INIT_LIST_HEAD(&sma->list_id);
@@ -1432,7 +1531,11 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
 			sem_io = kvmalloc_array(nsems, sizeof(ushort),
 						GFP_KERNEL);
 			if (sem_io == NULL) {
+<<<<<<< HEAD
 				ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+				ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return -ENOMEM;
 			}
 
@@ -1467,20 +1570,32 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
 			sem_io = kvmalloc_array(nsems, sizeof(ushort),
 						GFP_KERNEL);
 			if (sem_io == NULL) {
+<<<<<<< HEAD
 				ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+				ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return -ENOMEM;
 			}
 		}
 
 		if (copy_from_user(sem_io, p, nsems*sizeof(ushort))) {
+<<<<<<< HEAD
 			ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+			ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			err = -EFAULT;
 			goto out_free;
 		}
 
 		for (i = 0; i < nsems; i++) {
 			if (sem_io[i] > SEMVMX) {
+<<<<<<< HEAD
 				ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+				ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				err = -ERANGE;
 				goto out_free;
 			}
@@ -1922,7 +2037,11 @@ static struct sem_undo *find_alloc_undo(struct ipc_namespace *ns, int semid)
 	/* step 2: allocate new undo structure */
 	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL);
 	if (!new) {
+<<<<<<< HEAD
 		ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+=======
+		ipc_rcu_putref(sma, sem_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return ERR_PTR(-ENOMEM);
 	}
 

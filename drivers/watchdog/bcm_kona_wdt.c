@@ -277,7 +277,12 @@ static int bcm_kona_wdt_probe(struct platform_device *pdev)
 
 	spin_lock_init(&wdt->lock);
 
+<<<<<<< HEAD
 	wdt->base = devm_platform_ioremap_resource(pdev, 0);
+=======
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	wdt->base = devm_ioremap_resource(dev, res);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(wdt->base))
 		return -ENODEV;
 

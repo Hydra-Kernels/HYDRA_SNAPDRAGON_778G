@@ -1378,11 +1378,17 @@ static int xgbe_start(struct xgbe_prv_data *pdata)
 		return ret;
 	}
 
+<<<<<<< HEAD
 	ret = netif_set_real_num_rx_queues(netdev, pdata->rx_ring_count);
 	if (ret) {
 		netdev_err(netdev, "error setting real rx queue count\n");
 		return ret;
 	}
+=======
+	ret = hw_if->init(pdata);
+	if (ret)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Set RSS lookup table data for programming */
 	for (i = 0; i < XGBE_RSS_MAX_TABLE_SIZE; i++)

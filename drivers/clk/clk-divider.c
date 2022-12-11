@@ -387,6 +387,7 @@ static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
 
 	/* if read only, just return current value */
 	if (divider->flags & CLK_DIVIDER_READ_ONLY) {
+<<<<<<< HEAD
 		u32 val;
 
 		val = clk_div_readl(divider) >> divider->shift;
@@ -395,6 +396,13 @@ static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
 		return divider_ro_round_rate(hw, rate, prate, divider->table,
 					     divider->width, divider->flags,
 					     val);
+=======
+		bestdiv = clk_readl(divider->reg) >> divider->shift;
+		bestdiv &= div_mask(divider->width);
+		bestdiv = _get_div(divider->table, bestdiv, divider->flags,
+			divider->width);
+		return DIV_ROUND_UP_ULL((u64)*prate, bestdiv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return divider_round_rate(hw, rate, prate, divider->table,
@@ -466,7 +474,11 @@ const struct clk_ops clk_divider_ro_ops = {
 };
 EXPORT_SYMBOL_GPL(clk_divider_ro_ops);
 
+<<<<<<< HEAD
 static struct clk_hw *_register_divider(struct device *dev, const char *name,
+=======
+static struct clk *_register_divider(struct device *dev, const char *name,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		const char *parent_name, unsigned long flags,
 		void __iomem *reg, u8 shift, u8 width,
 		u8 clk_divider_flags, const struct clk_div_table *table,
@@ -494,7 +506,11 @@ static struct clk_hw *_register_divider(struct device *dev, const char *name,
 		init.ops = &clk_divider_ro_ops;
 	else
 		init.ops = &clk_divider_ops;
+<<<<<<< HEAD
 	init.flags = flags;
+=======
+	init.flags = flags | CLK_IS_BASIC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	init.parent_names = (parent_name ? &parent_name: NULL);
 	init.num_parents = (parent_name ? 1 : 0);
 

@@ -1307,8 +1307,12 @@ static int br_changelink(struct net_device *brdev, struct nlattr *tb[],
 }
 
 static int br_dev_newlink(struct net *src_net, struct net_device *dev,
+<<<<<<< HEAD
 			  struct nlattr *tb[], struct nlattr *data[],
 			  struct netlink_ext_ack *extack)
+=======
+			  struct nlattr *tb[], struct nlattr *data[])
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct net_bridge *br = netdev_priv(dev);
 	int err;
@@ -1323,7 +1327,11 @@ static int br_dev_newlink(struct net *src_net, struct net_device *dev,
 		spin_unlock_bh(&br->lock);
 	}
 
+<<<<<<< HEAD
 	err = br_changelink(dev, tb, data, extack);
+=======
+	err = br_changelink(dev, tb, data);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err)
 		br_dev_delete(dev, NULL);
 

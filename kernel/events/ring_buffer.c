@@ -476,6 +476,7 @@ void perf_aux_output_end(struct perf_output_handle *handle, unsigned long size)
 {
 	bool wakeup = !!(handle->aux_flags & PERF_AUX_FLAG_TRUNCATED);
 	struct ring_buffer *rb = handle->rb;
+	bool wakeup = truncated;
 	unsigned long aux_head;
 
 	/* in overwrite mode, driver provides aux_head via handle */
@@ -511,12 +512,28 @@ void perf_aux_output_end(struct perf_output_handle *handle, unsigned long size)
 	if (rb_need_aux_wakeup(rb))
 		wakeup = true;
 
+<<<<<<< HEAD
 	if (wakeup) {
 		if (handle->aux_flags & PERF_AUX_FLAG_TRUNCATED)
 			handle->event->pending_disable = smp_processor_id();
 		perf_output_wakeup(handle);
 	}
 
+=======
+	aux_head = rb->user_page->aux_head = local_read(&rb->aux_head);
+
+	if (aux_head - local_read(&rb->aux_wakeup) >= rb->aux_watermark) {
+		wakeup = true;
+		local_add(rb->aux_watermark, &rb->aux_wakeup);
+	}
+
+	if (wakeup) {
+		if (truncated)
+			handle->event->pending_disable = 1;
+		perf_output_wakeup(handle);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	handle->event = NULL;
 
 	WRITE_ONCE(rb->aux_nest, 0);

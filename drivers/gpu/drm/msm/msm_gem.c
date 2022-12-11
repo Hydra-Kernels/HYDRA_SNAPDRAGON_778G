@@ -130,7 +130,11 @@ static struct page **get_pages(struct drm_gem_object *obj)
 		if (IS_ERR(msm_obj->sgt)) {
 			void *ptr = ERR_CAST(msm_obj->sgt);
 
+<<<<<<< HEAD
 			DRM_DEV_ERROR(dev->dev, "failed to allocate sgt\n");
+=======
+			dev_err(dev->dev, "failed to allocate sgt\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			msm_obj->sgt = NULL;
 			return ptr;
 		}
@@ -162,6 +166,7 @@ static void put_pages(struct drm_gem_object *obj)
 	struct msm_gem_object *msm_obj = to_msm_bo(obj);
 
 	if (msm_obj->pages) {
+<<<<<<< HEAD
 		if (msm_obj->sgt) {
 			/* For non-cached buffers, ensure the new
 			 * pages are clean because display controller,
@@ -173,6 +178,19 @@ static void put_pages(struct drm_gem_object *obj)
 			sg_free_table(msm_obj->sgt);
 			kfree(msm_obj->sgt);
 		}
+=======
+		/* For non-cached buffers, ensure the new pages are clean
+		 * because display controller, GPU, etc. are not coherent:
+		 */
+		if (msm_obj->flags & (MSM_BO_WC|MSM_BO_UNCACHED))
+			dma_unmap_sg(obj->dev->dev, msm_obj->sgt->sgl,
+					msm_obj->sgt->nents, DMA_BIDIRECTIONAL);
+
+		if (msm_obj->sgt)
+			sg_free_table(msm_obj->sgt);
+
+		kfree(msm_obj->sgt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (use_pages(obj))
 			drm_gem_put_pages(obj, msm_obj->pages, true, false);

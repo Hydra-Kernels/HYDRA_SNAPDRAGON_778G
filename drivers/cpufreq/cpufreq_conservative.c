@@ -186,7 +186,11 @@ static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
 
 	/* cannot be lower than 1 otherwise freq will not fall */
 	if (ret != 1 || input < 1 || input > 100 ||
+<<<<<<< HEAD
 			input >= dbs_data->up_threshold)
+=======
+			input >= cs_tuners->up_threshold)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	cs_tuners->down_threshold = input;

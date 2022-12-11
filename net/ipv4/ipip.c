@@ -123,9 +123,16 @@ static struct rtnl_link_ops ipip_link_ops __read_mostly;
 
 static int ipip_err(struct sk_buff *skb, u32 info)
 {
+<<<<<<< HEAD
 	/* All the routers (except for Linux) return only
 	 * 8 bytes of packet payload. It means, that precise relaying of
 	 * ICMP in the real Internet is absolutely infeasible.
+=======
+
+	/* All the routers (except for Linux) return only
+	   8 bytes of packet payload. It means, that precise relaying of
+	   ICMP in the real Internet is absolutely infeasible.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 */
 	struct net *net = dev_net(skb->dev);
 	struct ip_tunnel_net *itn = net_generic(net, ipip_net_id);
@@ -134,6 +141,36 @@ static int ipip_err(struct sk_buff *skb, u32 info)
 	const int code = icmp_hdr(skb)->code;
 	struct ip_tunnel *t;
 	int err = 0;
+<<<<<<< HEAD
+=======
+
+	switch (type) {
+	case ICMP_DEST_UNREACH:
+		switch (code) {
+		case ICMP_SR_FAILED:
+			/* Impossible event. */
+			goto out;
+		default:
+			/* All others are translated to HOST_UNREACH.
+			 * rfc2003 contains "deep thoughts" about NET_UNREACH,
+			 * I believe they are just ether pollution. --ANK
+			 */
+			break;
+		}
+		break;
+
+	case ICMP_TIME_EXCEEDED:
+		if (code != ICMP_EXC_TTL)
+			goto out;
+		break;
+
+	case ICMP_REDIRECT:
+		break;
+
+	default:
+		goto out;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	t = ip_tunnel_lookup(itn, skb->dev->ifindex, TUNNEL_NO_KEY,
 			     iph->daddr, iph->saddr, 0);
@@ -141,6 +178,7 @@ static int ipip_err(struct sk_buff *skb, u32 info)
 		err = -ENOENT;
 		goto out;
 	}
+<<<<<<< HEAD
 
 	switch (type) {
 	case ICMP_DEST_UNREACH:
@@ -171,11 +209,21 @@ static int ipip_err(struct sk_buff *skb, u32 info)
 
 	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) {
 		ipv4_update_pmtu(skb, net, info, t->parms.link, iph->protocol);
+=======
+
+	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) {
+		ipv4_update_pmtu(skb, net, info, t->parms.link, 0,
+				 iph->protocol, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 
 	if (type == ICMP_REDIRECT) {
+<<<<<<< HEAD
 		ipv4_redirect(skb, net, t->parms.link, iph->protocol);
+=======
+		ipv4_redirect(skb, net, t->parms.link, 0, iph->protocol, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 

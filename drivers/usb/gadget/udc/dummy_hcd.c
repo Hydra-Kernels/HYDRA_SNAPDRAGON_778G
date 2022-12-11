@@ -1016,6 +1016,17 @@ static int dummy_udc_stop(struct usb_gadget *g)
 	spin_lock_irq(&dum->lock);
 	dum->ints_enabled = 0;
 	stop_activity(dum);
+<<<<<<< HEAD
+=======
+
+	/* emulate synchronize_irq(): wait for callbacks to finish */
+	while (dum->callback_usage > 0) {
+		spin_unlock_irq(&dum->lock);
+		usleep_range(1000, 2000);
+		spin_lock_irq(&dum->lock);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dum->driver = NULL;
 	spin_unlock_irq(&dum->lock);
 

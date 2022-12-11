@@ -13,7 +13,10 @@
  */
 
 #include <linux/smp.h>
+<<<<<<< HEAD
 #include <linux/srcu.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/errno.h>
 #include <linux/types.h>
 #include <linux/cpumask.h>

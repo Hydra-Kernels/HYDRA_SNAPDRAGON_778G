@@ -722,9 +722,27 @@ static struct bcm_op *bcm_find_op(struct list_head *ops,
 
 static void bcm_remove_op(struct bcm_op *op)
 {
-	hrtimer_cancel(&op->timer);
-	hrtimer_cancel(&op->thrtimer);
+	if (op->tsklet.func) {
+		while (test_bit(TASKLET_STATE_SCHED, &op->tsklet.state) ||
+		       test_bit(TASKLET_STATE_RUN, &op->tsklet.state) ||
+		       hrtimer_active(&op->timer)) {
+			hrtimer_cancel(&op->timer);
+			tasklet_kill(&op->tsklet);
+		}
+	}
 
+<<<<<<< HEAD
+=======
+	if (op->thrtsklet.func) {
+		while (test_bit(TASKLET_STATE_SCHED, &op->thrtsklet.state) ||
+		       test_bit(TASKLET_STATE_RUN, &op->thrtsklet.state) ||
+		       hrtimer_active(&op->thrtimer)) {
+			hrtimer_cancel(&op->thrtimer);
+			tasklet_kill(&op->thrtsklet);
+		}
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if ((op->frames) && (op->frames != &op->sframe))
 		kfree(op->frames);
 
@@ -1570,7 +1588,10 @@ static int bcm_connect(struct socket *sock, struct sockaddr *uaddr, int len,
 	struct sockaddr_can *addr = (struct sockaddr_can *)uaddr;
 	struct sock *sk = sock->sk;
 	struct bcm_sock *bo = bcm_sk(sk);
+<<<<<<< HEAD
 	struct net *net = sock_net(sk);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret = 0;
 
 	if (len < BCM_MIN_NAMELEN)
@@ -1587,7 +1608,11 @@ static int bcm_connect(struct socket *sock, struct sockaddr *uaddr, int len,
 	if (addr->can_ifindex) {
 		struct net_device *dev;
 
+<<<<<<< HEAD
 		dev = dev_get_by_index(net, addr->can_ifindex);
+=======
+		dev = dev_get_by_index(&init_net, addr->can_ifindex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!dev) {
 			ret = -ENODEV;
 			goto fail;
@@ -1606,6 +1631,7 @@ static int bcm_connect(struct socket *sock, struct sockaddr *uaddr, int len,
 		bo->ifindex = 0;
 	}
 
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_PROC_FS)
 	if (net->can.bcmproc_dir) {
 		/* unique socket address as filename */
@@ -1613,6 +1639,14 @@ static int bcm_connect(struct socket *sock, struct sockaddr *uaddr, int len,
 		bo->bcm_proc_read = proc_create_net_single(bo->procname, 0644,
 						     net->can.bcmproc_dir,
 						     bcm_proc_show, sk);
+=======
+	if (proc_dir) {
+		/* unique socket address as filename */
+		sprintf(bo->procname, "%lu", sock_i_ino(sk));
+		bo->bcm_proc_read = proc_create_data(bo->procname, 0644,
+						     proc_dir,
+						     &bcm_proc_fops, sk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!bo->bcm_proc_read) {
 			ret = -ENOMEM;
 			goto fail;

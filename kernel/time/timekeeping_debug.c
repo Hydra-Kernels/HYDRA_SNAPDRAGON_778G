@@ -16,6 +16,11 @@
 #include "timekeeping_internal.h"
 
 #define NUM_BINS 32
+<<<<<<< HEAD
+=======
+
+static unsigned int sleep_time_bin[NUM_BINS] = {0};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static unsigned int sleep_time_bin[NUM_BINS] = {0};
 
@@ -49,7 +54,10 @@ void tk_debug_account_sleep_time(const struct timespec64 *t)
 	int bin = min(fls(t->tv_sec), NUM_BINS-1);
 
 	sleep_time_bin[bin]++;
+<<<<<<< HEAD
 	pm_deferred_pr_dbg("Timekeeping suspended for %lld.%03lu seconds\n",
 			   (s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 

@@ -8,7 +8,10 @@
 #include <linux/if_arp.h>
 #include <linux/ipv6.h>
 #include <linux/mpls.h>
+<<<<<<< HEAD
 #include <linux/netconf.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/nospec.h>
 #include <linux/vmalloc.h>
 #include <linux/percpu.h>
@@ -934,12 +937,17 @@ errout:
 	return err;
 }
 
+<<<<<<< HEAD
 static bool mpls_label_ok(struct net *net, unsigned int *index,
 			  struct netlink_ext_ack *extack)
+=======
+static bool mpls_label_ok(struct net *net, unsigned int *index)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	bool is_ok = true;
 
 	/* Reserved labels may not be set */
+<<<<<<< HEAD
 	if (*index < MPLS_LABEL_FIRST_UNRESERVED) {
 		NL_SET_ERR_MSG(extack,
 			       "Invalid label - must be MPLS_LABEL_FIRST_UNRESERVED or higher");
@@ -952,13 +960,25 @@ static bool mpls_label_ok(struct net *net, unsigned int *index,
 			       "Label >= configured maximum in platform_labels");
 		is_ok = false;
 	}
+=======
+	if (*index < MPLS_LABEL_FIRST_UNRESERVED)
+		is_ok = false;
+
+	/* The full 20 bit range may not be supported. */
+	if (is_ok && *index >= net->mpls.platform_labels)
+		is_ok = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	*index = array_index_nospec(*index, net->mpls.platform_labels);
 	return is_ok;
 }
 
+<<<<<<< HEAD
 static int mpls_route_add(struct mpls_route_config *cfg,
 			  struct netlink_ext_ack *extack)
+=======
+static int mpls_route_add(struct mpls_route_config *cfg)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct mpls_route __rcu **platform_label;
 	struct net *net = cfg->rc_nlinfo.nl_net;
@@ -977,7 +997,11 @@ static int mpls_route_add(struct mpls_route_config *cfg,
 		index = find_free_label(net);
 	}
 
+<<<<<<< HEAD
 	if (!mpls_label_ok(net, &index, extack))
+=======
+	if (!mpls_label_ok(net, &index))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto errout;
 
 	/* Append makes no sense with mpls */
@@ -1054,7 +1078,11 @@ static int mpls_route_del(struct mpls_route_config *cfg,
 
 	index = cfg->rc_label;
 
+<<<<<<< HEAD
 	if (!mpls_label_ok(net, &index, extack))
+=======
+	if (!mpls_label_ok(net, &index))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto errout;
 
 	mpls_route_update(net, index, NULL, &cfg->rc_nlinfo);
@@ -1870,7 +1898,11 @@ static int rtm_to_route_config(struct sk_buff *skb,
 				goto errout;
 
 			if (!mpls_label_ok(cfg->rc_nlinfo.nl_net,
+<<<<<<< HEAD
 					   &cfg->rc_label, extack))
+=======
+					   &cfg->rc_label))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				goto errout;
 			break;
 		}

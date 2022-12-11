@@ -320,8 +320,13 @@ void br_fdb_change_mac_address(struct net_bridge *br, const u8 *newaddr)
 	list_for_each_entry(v, &vg->vlan_list, vlist) {
 		if (!br_vlan_should_use(v))
 			continue;
+<<<<<<< HEAD
 		f = br_fdb_find(br, br->dev->dev_addr, v->vid);
 		if (f && f->is_local && !f->dst && !f->added_by_user)
+=======
+		f = __br_fdb_get(br, br->dev->dev_addr, v->vid);
+		if (f && f->is_local && !f->dst)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			fdb_delete_local(br, NULL, f);
 		fdb_insert(br, NULL, newaddr, v->vid);
 	}

@@ -431,7 +431,13 @@ static int si2168_init(struct dvb_frontend *fe)
 			goto err;
 
 		udelay(100);
+<<<<<<< HEAD
 		cmd_init(&cmd, "\x85", 1, 1);
+=======
+		memcpy(cmd.args, "\x85", 1);
+		cmd.wlen = 1;
+		cmd.rlen = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = si2168_cmd_execute(client, &cmd);
 		if (ret)
 			goto err;

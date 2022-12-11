@@ -1707,10 +1707,19 @@ int mlx5e_open_cq(struct mlx5e_channel *c, struct dim_cq_moder moder,
 
 	err = mlx5e_create_cq(cq, param);
 	if (err)
+<<<<<<< HEAD
 		goto err_free_cq;
 
 	if (MLX5_CAP_GEN(mdev, cq_moderation))
 		mlx5_core_modify_cq_moderation(mdev, &cq->mcq, moder.usec, moder.pkts);
+=======
+		goto err_destroy_cq;
+
+	if (MLX5_CAP_GEN(mdev, cq_moderation))
+		mlx5_core_modify_cq_moderation(mdev, &cq->mcq,
+					       moderation_usecs,
+					       moderation_frames);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 
 err_free_cq:
@@ -2864,7 +2873,13 @@ free_in:
 static int mlx5e_set_mtu(struct mlx5_core_dev *mdev,
 			 struct mlx5e_params *params, u16 mtu)
 {
+<<<<<<< HEAD
 	u16 hw_mtu = MLX5E_SW2HW_MTU(params, mtu);
+=======
+	struct mlx5e_priv *priv = netdev_priv(netdev);
+	struct mlx5_core_dev *mdev = priv->mdev;
+	u16 hw_mtu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err;
 
 	err = mlx5_set_port_mtu(mdev, hw_mtu, 1);
@@ -3218,9 +3233,15 @@ int mlx5e_open_drop_rq(struct mlx5e_priv *priv,
 		       struct mlx5e_rq *drop_rq)
 {
 	struct mlx5_core_dev *mdev = priv->mdev;
+<<<<<<< HEAD
 	struct mlx5e_cq_param cq_param = {};
 	struct mlx5e_rq_param rq_param = {};
 	struct mlx5e_cq *cq = &drop_rq->cq;
+=======
+	struct mlx5_core_cq *mcq = &cq->mcq;
+	int eqn_not_used;
+	unsigned int irqn;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int err;
 
 	mlx5e_build_drop_rq_param(priv, &rq_param);
@@ -3722,6 +3743,7 @@ static int mlx5e_set_mac(struct net_device *netdev, void *addr)
 
 typedef int (*mlx5e_feature_handler)(struct net_device *netdev, bool enable);
 
+<<<<<<< HEAD
 static int set_feature_lro(struct net_device *netdev, bool enable)
 {
 	struct mlx5e_priv *priv = netdev_priv(netdev);
@@ -3730,6 +3752,57 @@ static int set_feature_lro(struct net_device *netdev, bool enable)
 	struct mlx5e_params *old_params;
 	int err = 0;
 	bool reset;
+=======
+	if (changes & NETIF_F_LRO) {
+		bool was_opened = test_bit(MLX5E_STATE_OPENED, &priv->state);
+
+		if (was_opened)
+			mlx5e_close_locked(priv->netdev);
+
+		priv->params.lro_en = !!(features & NETIF_F_LRO);
+		mlx5e_modify_tir_lro(priv, MLX5E_TT_IPV4_TCP);
+		mlx5e_modify_tir_lro(priv, MLX5E_TT_IPV6_TCP);
+
+		if (was_opened)
+			err = mlx5e_open_locked(priv->netdev);
+	}
+
+	mutex_unlock(&priv->state_lock);
+
+	if (changes & NETIF_F_HW_VLAN_CTAG_FILTER) {
+		if (features & NETIF_F_HW_VLAN_CTAG_FILTER)
+			mlx5e_enable_vlan_filter(priv);
+		else
+			mlx5e_disable_vlan_filter(priv);
+	}
+
+	return err;
+}
+
+#define MXL5_HW_MIN_MTU 64
+#define MXL5E_MIN_MTU (MXL5_HW_MIN_MTU + ETH_FCS_LEN)
+
+static int mlx5e_change_mtu(struct net_device *netdev, int new_mtu)
+{
+	struct mlx5e_priv *priv = netdev_priv(netdev);
+	struct mlx5_core_dev *mdev = priv->mdev;
+	bool was_opened;
+	u16 max_mtu;
+	u16 min_mtu;
+	int err = 0;
+
+	mlx5_query_port_max_mtu(mdev, &max_mtu, 1);
+
+	max_mtu = MLX5E_HW2SW_MTU(max_mtu);
+	min_mtu = MLX5E_HW2SW_MTU(MXL5E_MIN_MTU);
+
+	if (new_mtu > max_mtu || new_mtu < min_mtu) {
+		netdev_err(netdev,
+			   "%s: Bad MTU (%d), valid range is: [%d..%d]\n",
+			   __func__, new_mtu, min_mtu, max_mtu);
+		return -EINVAL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_lock(&priv->state_lock);
 
@@ -4736,7 +4809,11 @@ static int mlx5e_check_required_hca_cap(struct mlx5_core_dev *mdev)
 	if (!MLX5_CAP_ETH(mdev, self_lb_en_modifiable))
 		mlx5_core_warn(mdev, "Self loop back prevention is not supported\n");
 	if (!MLX5_CAP_GEN(mdev, cq_moderation))
+<<<<<<< HEAD
 		mlx5_core_warn(mdev, "CQ moderation is not supported\n");
+=======
+		mlx5_core_warn(mdev, "CQ modiration is not supported\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

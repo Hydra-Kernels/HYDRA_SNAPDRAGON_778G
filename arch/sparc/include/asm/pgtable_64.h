@@ -377,10 +377,14 @@ static inline pgprot_t pgprot_noncached(pgprot_t prot)
 #define pgprot_noncached pgprot_noncached
 
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
+<<<<<<< HEAD
 extern pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
 				struct page *page, int writable);
 #define arch_make_huge_pte arch_make_huge_pte
 static inline unsigned long __pte_default_huge_mask(void)
+=======
+static inline unsigned long __pte_huge_mask(void)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned long mask;
 
@@ -400,6 +404,7 @@ static inline unsigned long __pte_default_huge_mask(void)
 
 static inline pte_t pte_mkhuge(pte_t pte)
 {
+<<<<<<< HEAD
 	return __pte(pte_val(pte) | __pte_default_huge_mask());
 }
 
@@ -418,6 +423,14 @@ static inline bool is_hugetlb_pmd(pmd_t pmd)
 static inline bool is_hugetlb_pud(pud_t pud)
 {
 	return !!(pud_val(pud) & _PAGE_PUD_HUGE);
+=======
+	return __pte(pte_val(pte) | __pte_huge_mask());
+}
+
+static inline bool is_hugetlb_pte(pte_t pte)
+{
+	return !!(pte_val(pte) & __pte_huge_mask());
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -697,7 +710,11 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 	return pte_pfn(pte);
 }
 
+<<<<<<< HEAD
 #define pmd_write pmd_write
+=======
+#define __HAVE_ARCH_PMD_WRITE
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline unsigned long pmd_write(pmd_t pmd)
 {
 	pte_t pte = __pte(pmd_val(pmd));
@@ -705,8 +722,11 @@ static inline unsigned long pmd_write(pmd_t pmd)
 	return pte_write(pte);
 }
 
+<<<<<<< HEAD
 #define pud_write(pud)	pte_write(__pte(pud_val(pud)))
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 static inline unsigned long pmd_dirty(pmd_t pmd)
 {
@@ -934,6 +954,19 @@ static void maybe_tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
 		tlb_batch_add(mm, vaddr, ptep, orig, fullmm, hugepage_shift);
 }
 
+static void maybe_tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
+				pte_t *ptep, pte_t orig, int fullmm)
+{
+	/* It is more efficient to let flush_tlb_kernel_range()
+	 * handle init_mm tlb flushes.
+	 *
+	 * SUN4V NOTE: _PAGE_VALID is the same value in both the SUN4U
+	 *             and SUN4V pte layout, so this inline test is fine.
+	 */
+	if (likely(mm != &init_mm) && pte_accessible(mm, orig))
+		tlb_batch_add(mm, vaddr, ptep, orig, fullmm);
+}
+
 #define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
 static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
 					    unsigned long addr,
@@ -950,7 +983,11 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
 	pte_t orig = *ptep;
 
 	*ptep = pte;
+<<<<<<< HEAD
 	maybe_tlb_batch_add(mm, addr, ptep, orig, fullmm, PAGE_SHIFT);
+=======
+	maybe_tlb_batch_add(mm, addr, ptep, orig, fullmm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define set_pte_at(mm,addr,ptep,pte)	\

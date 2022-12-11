@@ -189,6 +189,7 @@ label##3:					       	\
 	FTR_ENTRY_OFFSET label##1b-label##3b;		\
 	.popsection;
 
+<<<<<<< HEAD
 #define STF_ENTRY_BARRIER_FIXUP_SECTION			\
 953:							\
 	.pushsection __stf_entry_barrier_fixup,"a";	\
@@ -221,6 +222,8 @@ label##3:					       	\
 	FTR_ENTRY_OFFSET 957b-958b;			\
 	.popsection;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define RFI_FLUSH_FIXUP_SECTION				\
 951:							\
 	.pushsection __rfi_flush_fixup,"a";		\
@@ -229,6 +232,7 @@ label##3:					       	\
 	FTR_ENTRY_OFFSET 951b-952b;			\
 	.popsection;
 
+<<<<<<< HEAD
 #define NOSPEC_BARRIER_FIXUP_SECTION			\
 953:							\
 	.pushsection __barrier_nospec_fixup,"a";	\
@@ -264,6 +268,13 @@ extern long __start__btb_flush_fixup, __stop__btb_flush_fixup;
 
 void apply_feature_fixups(void);
 void setup_feature_keys(void);
+=======
+
+#ifndef __ASSEMBLY__
+
+extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #endif /* __ASM_POWERPC_FEATURE_FIXUPS_H */

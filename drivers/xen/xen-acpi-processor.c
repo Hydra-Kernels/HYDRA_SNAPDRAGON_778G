@@ -583,10 +583,16 @@ static void __exit xen_acpi_processor_exit(void)
 	int i;
 
 	unregister_syscore_ops(&xap_syscore_ops);
+<<<<<<< HEAD
 	bitmap_free(acpi_ids_done);
 	bitmap_free(acpi_id_present);
 	bitmap_free(acpi_id_cst_present);
 	kfree(acpi_psd);
+=======
+	kfree(acpi_ids_done);
+	kfree(acpi_id_present);
+	kfree(acpi_id_cst_present);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for_each_possible_cpu(i)
 		acpi_processor_unregister_performance(i);
 

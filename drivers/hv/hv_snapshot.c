@@ -68,12 +68,20 @@ static int dm_reg_value;
 static const char vss_devname[] = "vmbus/hv_vss";
 static __u8 *recv_buffer;
 static struct hvutil_transport *hvt;
+static struct completion release_event;
 
 static void vss_timeout_func(struct work_struct *dummy);
 static void vss_handle_request(struct work_struct *dummy);
 
 static DECLARE_DELAYED_WORK(vss_timeout_work, vss_timeout_func);
 static DECLARE_WORK(vss_handle_request_work, vss_handle_request);
+
+static void vss_poll_wrapper(void *channel)
+{
+	/* Transaction is finished, reset the state here to avoid races. */
+	vss_transaction.state = HVUTIL_READY;
+	hv_vss_onchannelcallback(channel);
+}
 
 static void vss_poll_wrapper(void *channel)
 {
@@ -95,12 +103,15 @@ static void vss_timeout_func(struct work_struct *dummy)
 	vss_respond_to_host(HV_E_FAIL);
 
 	hv_poll_channel(vss_transaction.recv_channel, vss_poll_wrapper);
+<<<<<<< HEAD
 }
 
 static void vss_register_done(void)
 {
 	hv_poll_channel(vss_transaction.recv_channel, vss_poll_wrapper);
 	pr_debug("VSS: userspace daemon registered\n");
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int vss_handle_handshake(struct hv_vss_msg *vss_msg)
@@ -347,11 +358,16 @@ static void vss_on_reset(void)
 	if (cancel_delayed_work_sync(&vss_timeout_work))
 		vss_respond_to_host(HV_E_FAIL);
 	vss_transaction.state = HVUTIL_DEVICE_INIT;
+	complete(&release_event);
 }
 
 int
 hv_vss_init(struct hv_util_service *srv)
 {
+<<<<<<< HEAD
+=======
+	init_completion(&release_event);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (vmbus_proto_version < VERSION_WIN8_1) {
 		pr_warn("Integration service 'Backup (volume snapshot)'"
 			" not supported on this host version.\n");
@@ -384,4 +400,5 @@ void hv_vss_deinit(void)
 	cancel_delayed_work_sync(&vss_timeout_work);
 	cancel_work_sync(&vss_handle_request_work);
 	hvutil_transport_destroy(hvt);
+	wait_for_completion(&release_event);
 }

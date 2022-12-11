@@ -4252,7 +4252,10 @@ static int ocfs2_reflink(struct dentry *old_dentry, struct inode *dir,
 	struct inode *inode = d_inode(old_dentry);
 	struct buffer_head *old_bh = NULL;
 	struct inode *new_orphan_inode = NULL;
+<<<<<<< HEAD
 	struct ocfs2_lock_holder oh;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!ocfs2_refcount_tree(OCFS2_SB(inode->i_sb)))
 		return -EOPNOTSUPP;
@@ -4309,6 +4312,10 @@ static int ocfs2_reflink(struct dentry *old_dentry, struct inode *dir,
 		if (error)
 			mlog_errno(error);
 	}
+<<<<<<< HEAD
+=======
+out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!error) {
 		error = ocfs2_mv_orphaned_inode_to_new(dir, new_orphan_inode,
 						       new_dentry);

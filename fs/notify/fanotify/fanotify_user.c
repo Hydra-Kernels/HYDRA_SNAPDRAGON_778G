@@ -440,15 +440,36 @@ static ssize_t fanotify_write(struct file *file, const char __user *buf, size_t 
 static int fanotify_release(struct inode *ignored, struct file *file)
 {
 	struct fsnotify_group *group = file->private_data;
+<<<<<<< HEAD
 	struct fanotify_perm_event *event;
+=======
+
+#ifdef CONFIG_FANOTIFY_ACCESS_PERMISSIONS
+	struct fanotify_perm_event_info *event, *next;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct fsnotify_event *fsn_event;
 
 	/*
 	 * Stop new events from arriving in the notification queue. since
 	 * userspace cannot use fanotify fd anymore, no event can enter or
 	 * leave access_list by now either.
+<<<<<<< HEAD
 	 */
 	fsnotify_group_stop_queueing(group);
+=======
+	 */
+	fsnotify_group_stop_queueing(group);
+
+	/*
+	 * Process all permission events on access_list and notification queue
+	 * and simulate reply from userspace.
+	 */
+	spin_lock(&group->fanotify_data.access_lock);
+	list_for_each_entry_safe(event, next, &group->fanotify_data.access_list,
+				 fae.fse.list) {
+		pr_debug("%s: found group=%p event=%p\n", __func__, group,
+			 event);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Process all permission events on access_list and notification queue
@@ -468,6 +489,7 @@ static int fanotify_release(struct inode *ignored, struct file *file)
 	 * dequeue them and set the response. They will be freed once the
 	 * response is consumed and fanotify_get_response() returns.
 	 */
+<<<<<<< HEAD
 	while (!fsnotify_notify_queue_is_empty(group)) {
 		fsn_event = fsnotify_remove_first_event(group);
 		if (!(FANOTIFY_E(fsn_event)->mask & FANOTIFY_PERM_EVENTS)) {
@@ -480,6 +502,17 @@ static int fanotify_release(struct inode *ignored, struct file *file)
 		spin_lock(&group->notification_lock);
 	}
 	spin_unlock(&group->notification_lock);
+=======
+	mutex_lock(&group->notification_mutex);
+	while (!fsnotify_notify_queue_is_empty(group)) {
+		fsn_event = fsnotify_remove_first_event(group);
+		if (!(fsn_event->mask & FAN_ALL_PERM_EVENTS))
+			fsnotify_destroy_event(group, fsn_event);
+		else
+			FANOTIFY_PE(fsn_event)->response = FAN_ALLOW;
+	}
+	mutex_unlock(&group->notification_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Response for all permission events it set, wakeup waiters */
 	wake_up(&group->fanotify_data.access_waitq);
@@ -836,7 +869,12 @@ SYSCALL_DEFINE2(fanotify_init, unsigned int, flags, unsigned int, event_f_flags)
 	group->fanotify_data.f_flags = event_f_flags;
 	init_waitqueue_head(&group->fanotify_data.access_waitq);
 	INIT_LIST_HEAD(&group->fanotify_data.access_list);
+<<<<<<< HEAD
 	switch (flags & FANOTIFY_CLASS_BITS) {
+=======
+#endif
+	switch (flags & FAN_ALL_CLASS_BITS) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case FAN_CLASS_NOTIF:
 		group->priority = FS_PRIO_0;
 		break;

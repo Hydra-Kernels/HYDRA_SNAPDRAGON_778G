@@ -237,7 +237,11 @@ static int p80211_convert_to_ether(struct wlandevice *wlandev,
 {
 	struct p80211_hdr_a3 *hdr;
 
+<<<<<<< HEAD
 	hdr = (struct p80211_hdr_a3 *)skb->data;
+=======
+	hdr = (struct p80211_hdr_a3 *) skb->data;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (p80211_rx_typedrop(wlandev, le16_to_cpu(hdr->fc)))
 		return CONV_TO_ETHER_SKIPPED;
 

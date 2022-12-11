@@ -40,6 +40,7 @@ reiserfs_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 	reiserfs_write_unlock(inode->i_sb);
 	if (error == 0) {
 		if (type == ACL_TYPE_ACCESS && acl) {
+<<<<<<< HEAD
 			error = posix_acl_update_mode(inode, &mode, &acl);
 			if (error)
 				goto unlock;
@@ -48,6 +49,14 @@ reiserfs_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 		error = __reiserfs_set_acl(&th, inode, type, acl);
 		if (!error && update_mode)
 			inode->i_mode = mode;
+=======
+			error = posix_acl_update_mode(inode, &inode->i_mode,
+						      &acl);
+			if (error)
+				goto unlock;
+		}
+		error = __reiserfs_set_acl(&th, inode, type, acl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 unlock:
 		reiserfs_write_lock(inode->i_sb);
 		error2 = journal_end(&th);
@@ -251,7 +260,11 @@ __reiserfs_set_acl(struct reiserfs_transaction_handle *th, struct inode *inode,
 
 	switch (type) {
 	case ACL_TYPE_ACCESS:
+<<<<<<< HEAD
 		name = XATTR_NAME_POSIX_ACL_ACCESS;
+=======
+		name = POSIX_ACL_XATTR_ACCESS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case ACL_TYPE_DEFAULT:
 		name = XATTR_NAME_POSIX_ACL_DEFAULT;

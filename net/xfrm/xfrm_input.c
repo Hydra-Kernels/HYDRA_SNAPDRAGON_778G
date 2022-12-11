@@ -630,6 +630,10 @@ lock:
 		XFRM_SKB_CB(skb)->seq.input.low = seq;
 		XFRM_SKB_CB(skb)->seq.input.hi = seq_hi;
 
+<<<<<<< HEAD
+=======
+		skb_dst_force(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_hold(skb->dev);
 
 		if (crypto_done)

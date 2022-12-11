@@ -442,9 +442,9 @@ static int __net_init lowpan_frags_init_net(struct net *net)
 {
 	struct netns_ieee802154_lowpan *ieee802154_lowpan =
 		net_ieee802154_lowpan(net);
-	int res;
 
 
+<<<<<<< HEAD
 	res = fqdir_init(&ieee802154_lowpan->fqdir, &lowpan_frags, net);
 	if (res < 0)
 		return res;
@@ -457,6 +457,11 @@ static int __net_init lowpan_frags_init_net(struct net *net)
 	if (res < 0)
 		fqdir_exit(ieee802154_lowpan->fqdir);
 	return res;
+=======
+	inet_frags_init_net(&ieee802154_lowpan->frags);
+
+	return lowpan_frags_ns_sysctl_register(net);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __net_exit lowpan_frags_pre_exit_net(struct net *net)

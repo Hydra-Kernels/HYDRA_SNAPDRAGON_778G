@@ -26,6 +26,7 @@
 #include "regs-i2s-v2.h"
 #include "s3c2412-i2s.h"
 
+<<<<<<< HEAD
 #include <linux/platform_data/asoc-s3c.h>
 
 static struct snd_dmaengine_dai_dma_data s3c2412_i2s_pcm_stereo_out = {
@@ -36,6 +37,18 @@ static struct snd_dmaengine_dai_dma_data s3c2412_i2s_pcm_stereo_out = {
 static struct snd_dmaengine_dai_dma_data s3c2412_i2s_pcm_stereo_in = {
 	.chan_name	= "rx",
 	.addr_width	= 4,
+=======
+static struct s3c_dma_params s3c2412_i2s_pcm_stereo_out = {
+	.slave		= (void *)(uintptr_t)DMACH_I2S_OUT,
+	.ch_name	= "tx",
+	.dma_size	= 4,
+};
+
+static struct s3c_dma_params s3c2412_i2s_pcm_stereo_in = {
+	.slave		= (void *)(uintptr_t)DMACH_I2S_IN,
+	.ch_name	= "rx",
+	.dma_size	= 4,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static struct s3c_i2sv2_info s3c2412_i2s;

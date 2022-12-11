@@ -406,6 +406,7 @@ int tipc_enable_l2_media(struct net *net, struct tipc_bearer *b,
 		dev_put(dev);
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 	if (dev == net->loopback_dev) {
 		dev_put(dev);
 		pr_info("Enabling <%s> not permitted\n", b->name);
@@ -422,6 +423,8 @@ int tipc_enable_l2_media(struct net *net, struct tipc_bearer *b,
 		pr_warn("Failed to obtain node identity\n");
 		return -EINVAL;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Associate TIPC bearer with L2 bearer */
 	rcu_assign_pointer(b->media_ptr, dev);
@@ -630,7 +633,10 @@ static int tipc_l2_device_event(struct notifier_block *nb, unsigned long evt,
 	if (!b)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
 	trace_tipc_l2_device_event(dev, b, evt);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	switch (evt) {
 	case NETDEV_CHANGE:
 		if (netif_carrier_ok(dev) && netif_oper_up(dev)) {
@@ -639,6 +645,7 @@ static int tipc_l2_device_event(struct notifier_block *nb, unsigned long evt,
 		}
 		/* fall through */
 	case NETDEV_GOING_DOWN:
+<<<<<<< HEAD
 		clear_bit_unlock(0, &b->up);
 		tipc_reset_bearer(net, b);
 		break;
@@ -652,6 +659,17 @@ static int tipc_l2_device_event(struct notifier_block *nb, unsigned long evt,
 		}
 		b->mtu = dev->mtu;
 		tipc_reset_bearer(net, b);
+=======
+		tipc_reset_bearer(net, b_ptr);
+		break;
+	case NETDEV_CHANGEMTU:
+		if (tipc_mtu_bad(dev, 0)) {
+			bearer_disable(net, b_ptr);
+			break;
+		}
+		b_ptr->mtu = dev->mtu;
+		tipc_reset_bearer(net, b_ptr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case NETDEV_CHANGEADDR:
 		b->media->raw2addr(b, &b->addr,

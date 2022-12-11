@@ -245,6 +245,7 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
 /*
  * Calculate optimal mtt size based on contiguous pages.
  * Function will return also the number of pages that are not aligned to the
@@ -369,6 +370,11 @@ end:
 
 static struct ib_umem *mlx4_get_umem_mr(struct ib_udata *udata, u64 start,
 					u64 length, int access_flags)
+=======
+static struct ib_umem *mlx4_get_umem_mr(struct ib_ucontext *context, u64 start,
+					u64 length, u64 virt_addr,
+					int access_flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	/*
 	 * Force registering the memory as writable if the underlying pages
@@ -377,7 +383,10 @@ static struct ib_umem *mlx4_get_umem_mr(struct ib_udata *udata, u64 start,
 	 * again
 	 */
 	if (!ib_access_writable(access_flags)) {
+<<<<<<< HEAD
 		unsigned long untagged_start = untagged_addr(start);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct vm_area_struct *vma;
 
 		down_read(&current->mm->mmap_sem);
@@ -386,9 +395,15 @@ static struct ib_umem *mlx4_get_umem_mr(struct ib_udata *udata, u64 start,
 		 * cover the memory, but for now it requires a single vma to
 		 * entirely cover the MR to support RO mappings.
 		 */
+<<<<<<< HEAD
 		vma = find_vma(current->mm, untagged_start);
 		if (vma && vma->vm_end >= untagged_start + length &&
 		    vma->vm_start <= untagged_start) {
+=======
+		vma = find_vma(current->mm, start);
+		if (vma && vma->vm_end >= start + length &&
+		    vma->vm_start <= start) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (vma->vm_flags & VM_WRITE)
 				access_flags |= IB_ACCESS_LOCAL_WRITE;
 		} else {
@@ -398,7 +413,11 @@ static struct ib_umem *mlx4_get_umem_mr(struct ib_udata *udata, u64 start,
 		up_read(&current->mm->mmap_sem);
 	}
 
+<<<<<<< HEAD
 	return ib_umem_get(udata, start, length, access_flags, 0);
+=======
+	return ib_umem_get(context, start, length, access_flags, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct ib_mr *mlx4_ib_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
@@ -415,7 +434,12 @@ struct ib_mr *mlx4_ib_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
 	if (!mr)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	mr->umem = mlx4_get_umem_mr(udata, start, length, access_flags);
+=======
+	mr->umem = mlx4_get_umem_mr(pd->uobject->context, start, length,
+				    virt_addr, access_flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(mr->umem)) {
 		err = PTR_ERR(mr->umem);
 		goto err_free;
@@ -484,11 +508,16 @@ int mlx4_ib_rereg_user_mr(struct ib_mr *mr, int flags,
 	}
 
 	if (flags & IB_MR_REREG_ACCESS) {
+<<<<<<< HEAD
 		if (ib_access_writable(mr_access_flags) &&
 		    !mmr->umem->writable) {
 			err = -EPERM;
 			goto release_mpt_entry;
 		}
+=======
+		if (ib_access_writable(mr_access_flags) && !mmr->umem->writable)
+			return -EPERM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		err = mlx4_mr_hw_change_access(dev->dev, *pmpt_entry,
 					       convert_access(mr_access_flags));
@@ -503,8 +532,14 @@ int mlx4_ib_rereg_user_mr(struct ib_mr *mr, int flags,
 
 		mlx4_mr_rereg_mem_cleanup(dev->dev, &mmr->mmr);
 		ib_umem_release(mmr->umem);
+<<<<<<< HEAD
 		mmr->umem = mlx4_get_umem_mr(udata, start, length,
 					     mr_access_flags);
+=======
+		mmr->umem =
+			mlx4_get_umem_mr(mr->uobject->context, start, length,
+					 virt_addr, mr_access_flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (IS_ERR(mmr->umem)) {
 			err = PTR_ERR(mmr->umem);
 			/* Prevent mlx4_ib_dereg_mr from free'ing invalid pointer */

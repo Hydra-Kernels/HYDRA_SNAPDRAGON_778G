@@ -777,7 +777,10 @@ static struct sk_buff *vxlan_gro_receive(struct sock *sk,
 	}
 
 	pp = call_gro_receive(eth_gro_receive, head, skb);
+<<<<<<< HEAD
 	flush = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out:
 	skb_gro_flush_final_remcsum(skb, pp, flush, &grc);
@@ -1417,7 +1420,13 @@ static bool __vxlan_sock_release_prep(struct vxlan_sock *vs)
 
 static void vxlan_sock_release(struct vxlan_dev *vxlan)
 {
+<<<<<<< HEAD
 	struct vxlan_sock *sock4 = rtnl_dereference(vxlan->vn4_sock);
+=======
+	vxlan_vs_del_dev(vxlan);
+
+	__vxlan_sock_release(vxlan->vn4_sock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if IS_ENABLED(CONFIG_IPV6)
 	struct vxlan_sock *sock6 = rtnl_dereference(vxlan->vn6_sock);
 
@@ -1792,8 +1801,14 @@ static int vxlan_err_lookup(struct sock *sk, struct sk_buff *skb)
 	struct vxlanhdr *hdr;
 	__be32 vni;
 
+<<<<<<< HEAD
 	if (!pskb_may_pull(skb, skb_transport_offset(skb) + VXLAN_HLEN))
 		return -EINVAL;
+=======
+	/* Need Vxlan and inner Ethernet header to be present */
+	if (!pskb_may_pull(skb, VXLAN_HLEN))
+		goto drop;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	hdr = vxlan_hdr(skb);
 
@@ -1809,7 +1824,74 @@ static int vxlan_err_lookup(struct sock *sk, struct sk_buff *skb)
 	if (!vxlan)
 		return -ENOENT;
 
+<<<<<<< HEAD
 	return 0;
+=======
+		flags &= ~VXLAN_HF_RCO;
+		vni &= VXLAN_VNI_MASK;
+	}
+
+	if (vxlan_collect_metadata(vs)) {
+		tun_dst = udp_tun_rx_dst(skb, vxlan_get_sk_family(vs), TUNNEL_KEY,
+					 cpu_to_be64(vni >> 8), sizeof(*md));
+
+		if (!tun_dst)
+			goto drop;
+
+		md = ip_tunnel_info_opts(&tun_dst->u.tun_info);
+	} else {
+		memset(md, 0, sizeof(*md));
+	}
+
+	/* For backwards compatibility, only allow reserved fields to be
+	 * used by VXLAN extensions if explicitly requested.
+	 */
+	if ((flags & VXLAN_HF_GBP) && (vs->flags & VXLAN_F_GBP)) {
+		struct vxlanhdr_gbp *gbp;
+
+		gbp = (struct vxlanhdr_gbp *)vxh;
+		md->gbp = ntohs(gbp->policy_id);
+
+		if (tun_dst) {
+			tun_dst->u.tun_info.key.tun_flags |= TUNNEL_VXLAN_OPT;
+			tun_dst->u.tun_info.options_len = sizeof(*md);
+		}
+
+		if (gbp->dont_learn)
+			md->gbp |= VXLAN_GBP_DONT_LEARN;
+
+		if (gbp->policy_applied)
+			md->gbp |= VXLAN_GBP_POLICY_APPLIED;
+
+		flags &= ~VXLAN_GBP_USED_BITS;
+	}
+
+	if (flags || vni & ~VXLAN_VNI_MASK) {
+		/* If there are any unprocessed flags remaining treat
+		 * this as a malformed packet. This behavior diverges from
+		 * VXLAN RFC (RFC7348) which stipulates that bits in reserved
+		 * in reserved fields are to be ignored. The approach here
+		 * maintains compatibility with previous stack code, and also
+		 * is more robust and provides a little more security in
+		 * adding extensions to VXLAN.
+		 */
+
+		goto bad_flags;
+	}
+
+	vxlan_rcv(vs, skb, md, vni >> 8, tun_dst);
+	return 0;
+
+drop:
+	/* Consume bad packet */
+	kfree_skb(skb);
+	return 0;
+
+bad_flags:
+	netdev_dbg(skb->dev, "invalid vxlan flags=%#x vni=%#x\n",
+		   ntohl(vxh->vx_flags), ntohl(vxh->vx_vni));
+	goto drop;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int arp_reduce(struct net_device *dev, struct sk_buff *skb, __be32 vni)
@@ -2508,14 +2590,39 @@ static void vxlan_xmit_one(struct sk_buff *skb, struct net_device *dev,
 	src_port = udp_flow_src_port(dev_net(dev), skb, vxlan->cfg.port_min,
 				     vxlan->cfg.port_max, true);
 
+<<<<<<< HEAD
 	rcu_read_lock();
+=======
+	if (info) {
+		ttl = info->key.ttl;
+		tos = info->key.tos;
+
+		if (info->options_len)
+			md = ip_tunnel_info_opts(info);
+	} else {
+		md->gbp = skb->mark;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (dst->sa.sa_family == AF_INET) {
 		struct vxlan_sock *sock4 = rcu_dereference(vxlan->vn4_sock);
 		struct rtable *rt;
 		__be16 df = 0;
 
+<<<<<<< HEAD
 		if (!ifindex)
 			ifindex = sock4->sock->sk->sk_bound_dev_if;
+=======
+		if (info) {
+			if (info->key.tun_flags & TUNNEL_DONT_FRAGMENT)
+				df = htons(IP_DF);
+
+			if (info->key.tun_flags & TUNNEL_CSUM)
+				flags |= VXLAN_F_UDP_CSUM;
+			else
+				flags &= ~VXLAN_F_UDP_CSUM;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		rt = vxlan_get_route(vxlan, dev, sock4, skb, ifindex, tos,
 				     dst->sin.sin_addr.s_addr,
@@ -2592,7 +2699,17 @@ static void vxlan_xmit_one(struct sk_buff *skb, struct net_device *dev,
 
 		skb_tunnel_check_pmtu(skb, ndst, VXLAN6_HEADROOM);
 
+<<<<<<< HEAD
 		tos = ip_tunnel_ecn_encap(tos, old_iph, skb);
+=======
+		if (info) {
+			if (info->key.tun_flags & TUNNEL_CSUM)
+				flags &= ~VXLAN_F_UDP_ZERO_CSUM6_TX;
+			else
+				flags |= VXLAN_F_UDP_ZERO_CSUM6_TX;
+		}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ttl = ttl ? : ip6_dst_hoplimit(ndst);
 		skb_scrub_packet(skb, xnet);
 		err = vxlan_build_skb(skb, ndst, sizeof(struct ipv6hdr),
@@ -2741,9 +2858,12 @@ static void vxlan_cleanup(struct timer_list *t)
 			unsigned long timeout;
 
 			if (f->state & (NUD_PERMANENT | NUD_NOARP))
+<<<<<<< HEAD
 				continue;
 
 			if (f->flags & NTF_EXT_LEARNED)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				continue;
 
 			timeout = f->used + vxlan->cfg.age_interval * HZ;
@@ -2763,6 +2883,18 @@ static void vxlan_cleanup(struct timer_list *t)
 }
 
 static void vxlan_vs_del_dev(struct vxlan_dev *vxlan)
+<<<<<<< HEAD
+=======
+{
+	struct vxlan_net *vn = net_generic(vxlan->net, vxlan_net_id);
+
+	spin_lock(&vn->sock_lock);
+	hlist_del_init_rcu(&vxlan->hlist);
+	spin_unlock(&vn->sock_lock);
+}
+
+static void vxlan_vs_add_dev(struct vxlan_sock *vs, struct vxlan_dev *vxlan)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct vxlan_net *vn = net_generic(vxlan->net, vxlan_net_id);
 
@@ -2902,12 +3034,41 @@ static void vxlan_set_multicast_list(struct net_device *dev)
 {
 }
 
+static int __vxlan_change_mtu(struct net_device *dev,
+			      struct net_device *lowerdev,
+			      struct vxlan_rdst *dst, int new_mtu, bool strict)
+{
+	int max_mtu = IP_MAX_MTU;
+
+	if (lowerdev)
+		max_mtu = lowerdev->mtu;
+
+	if (dst->remote_ip.sa.sa_family == AF_INET6)
+		max_mtu -= VXLAN6_HEADROOM;
+	else
+		max_mtu -= VXLAN_HEADROOM;
+
+	if (new_mtu < 68)
+		return -EINVAL;
+
+	if (new_mtu > max_mtu) {
+		if (strict)
+			return -EINVAL;
+
+		new_mtu = max_mtu;
+	}
+
+	dev->mtu = new_mtu;
+	return 0;
+}
+
 static int vxlan_change_mtu(struct net_device *dev, int new_mtu)
 {
 	struct vxlan_dev *vxlan = netdev_priv(dev);
 	struct vxlan_rdst *dst = &vxlan->default_dst;
 	struct net_device *lowerdev = __dev_get_by_index(vxlan->net,
 							 dst->remote_ifindex);
+<<<<<<< HEAD
 	bool use_ipv6 = !!(vxlan->cfg.flags & VXLAN_F_IPV6);
 
 	/* This check is different than dev->max_mtu, because it looks at
@@ -2922,6 +3083,9 @@ static int vxlan_change_mtu(struct net_device *dev, int new_mtu)
 
 	dev->mtu = new_mtu;
 	return 0;
+=======
+	return __vxlan_change_mtu(dev, lowerdev, dst, new_mtu, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int vxlan_fill_metadata_dst(struct net_device *dev, struct sk_buff *skb)
@@ -3153,11 +3317,16 @@ static int vxlan_validate(struct nlattr *tb[], struct nlattr *data[],
 	}
 
 	if (data[IFLA_VXLAN_ID]) {
+<<<<<<< HEAD
 		u32 id = nla_get_u32(data[IFLA_VXLAN_ID]);
 
 		if (id >= VXLAN_N_VID) {
 			NL_SET_ERR_MSG_ATTR(extack, data[IFLA_VXLAN_ID],
 					    "VXLAN ID must be lower than 16777216");
+=======
+		__u32 id = nla_get_u32(data[IFLA_VXLAN_ID]);
+		if (id >= VXLAN_N_VID)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -ERANGE;
 		}
 	}
@@ -3349,8 +3518,18 @@ static int vxlan_config_validate(struct net *src_net, struct vxlan_config *conf,
 				 struct netlink_ext_ack *extack)
 {
 	struct vxlan_net *vn = net_generic(src_net, vxlan_net_id);
+<<<<<<< HEAD
 	struct vxlan_dev *tmp;
 	bool use_ipv6 = false;
+=======
+	struct vxlan_dev *vxlan = netdev_priv(dev), *tmp;
+	struct vxlan_rdst *dst = &vxlan->default_dst;
+	unsigned short needed_headroom = ETH_HLEN;
+	int err;
+	bool use_ipv6 = false;
+	__be16 default_port = vxlan->cfg.dst_port;
+	struct net_device *lowerdev = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (conf->flags & VXLAN_F_GPE) {
 		/* For now, allow GPE only together with
@@ -3431,7 +3610,12 @@ static int vxlan_config_validate(struct net *src_net, struct vxlan_config *conf,
 	}
 
 	if (conf->remote_ifindex) {
+<<<<<<< HEAD
 		struct net_device *lowerdev;
+=======
+		lowerdev = __dev_get_by_index(src_net, conf->remote_ifindex);
+		dst->remote_ifindex = conf->remote_ifindex;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		lowerdev = __dev_get_by_index(src_net, conf->remote_ifindex);
 		if (!lowerdev) {
@@ -3553,8 +3737,21 @@ static void vxlan_config_apply(struct net_device *dev,
 			dev->mtu = max_mtu;
 	}
 
+<<<<<<< HEAD
 	if (dev->mtu > max_mtu)
 		dev->mtu = max_mtu;
+=======
+	if (lowerdev) {
+		dev->gso_max_size = lowerdev->gso_max_size;
+		dev->gso_max_segs = lowerdev->gso_max_segs;
+	}
+
+	if (conf->mtu) {
+		err = __vxlan_change_mtu(dev, lowerdev, dst, conf->mtu, false);
+		if (err)
+			return err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (use_ipv6 || conf->flags & VXLAN_F_COLLECT_METADATA)
 		needed_headroom += VXLAN6_HEADROOM;
@@ -3573,6 +3770,7 @@ static int vxlan_dev_configure(struct net *src_net, struct net_device *dev,
 	struct net_device *lowerdev;
 	int ret;
 
+<<<<<<< HEAD
 	ret = vxlan_config_validate(src_net, conf, &lowerdev, vxlan, extack);
 	if (ret)
 		return ret;
@@ -3598,6 +3796,17 @@ static int __vxlan_dev_create(struct net *net, struct net_device *dev,
 	err = vxlan_dev_configure(net, dev, conf, false, extack);
 	if (err)
 		return err;
+=======
+	list_for_each_entry(tmp, &vn->vxlan_list, next) {
+		if (tmp->cfg.vni == conf->vni &&
+		    (tmp->default_dst.remote_ip.sa.sa_family == AF_INET6 ||
+		     tmp->cfg.saddr.sa.sa_family == AF_INET6) == use_ipv6 &&
+		    tmp->cfg.dst_port == vxlan->cfg.dst_port &&
+		    (tmp->flags & VXLAN_F_RCV_FLAGS) ==
+		    (vxlan->flags & VXLAN_F_RCV_FLAGS))
+		return -EEXIST;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	dev->ethtool_ops = &vxlan_ethtool_ops;
 
@@ -4037,15 +4246,110 @@ static int vxlan_changelink(struct net_device *dev, struct nlattr *tb[],
 		dst->remote_dev = lowerdev;
 		netdev_update_lockdep_key(lowerdev);
 	}
+<<<<<<< HEAD
 	vxlan_config_apply(dev, &conf, lowerdev, vxlan->net, true);
 	return 0;
+=======
+
+	if (data[IFLA_VXLAN_LINK])
+		conf.remote_ifindex = nla_get_u32(data[IFLA_VXLAN_LINK]);
+
+	if (data[IFLA_VXLAN_TOS])
+		conf.tos  = nla_get_u8(data[IFLA_VXLAN_TOS]);
+
+	if (data[IFLA_VXLAN_TTL])
+		conf.ttl = nla_get_u8(data[IFLA_VXLAN_TTL]);
+
+	if (!data[IFLA_VXLAN_LEARNING] || nla_get_u8(data[IFLA_VXLAN_LEARNING]))
+		conf.flags |= VXLAN_F_LEARN;
+
+	if (data[IFLA_VXLAN_AGEING])
+		conf.age_interval = nla_get_u32(data[IFLA_VXLAN_AGEING]);
+
+	if (data[IFLA_VXLAN_PROXY] && nla_get_u8(data[IFLA_VXLAN_PROXY]))
+		conf.flags |= VXLAN_F_PROXY;
+
+	if (data[IFLA_VXLAN_RSC] && nla_get_u8(data[IFLA_VXLAN_RSC]))
+		conf.flags |= VXLAN_F_RSC;
+
+	if (data[IFLA_VXLAN_L2MISS] && nla_get_u8(data[IFLA_VXLAN_L2MISS]))
+		conf.flags |= VXLAN_F_L2MISS;
+
+	if (data[IFLA_VXLAN_L3MISS] && nla_get_u8(data[IFLA_VXLAN_L3MISS]))
+		conf.flags |= VXLAN_F_L3MISS;
+
+	if (data[IFLA_VXLAN_LIMIT])
+		conf.addrmax = nla_get_u32(data[IFLA_VXLAN_LIMIT]);
+
+	if (data[IFLA_VXLAN_COLLECT_METADATA] &&
+	    nla_get_u8(data[IFLA_VXLAN_COLLECT_METADATA]))
+		conf.flags |= VXLAN_F_COLLECT_METADATA;
+
+	if (data[IFLA_VXLAN_PORT_RANGE]) {
+		const struct ifla_vxlan_port_range *p
+			= nla_data(data[IFLA_VXLAN_PORT_RANGE]);
+		conf.port_min = ntohs(p->low);
+		conf.port_max = ntohs(p->high);
+	}
+
+	if (data[IFLA_VXLAN_PORT])
+		conf.dst_port = nla_get_be16(data[IFLA_VXLAN_PORT]);
+
+	if (data[IFLA_VXLAN_UDP_CSUM] && nla_get_u8(data[IFLA_VXLAN_UDP_CSUM]))
+		conf.flags |= VXLAN_F_UDP_CSUM;
+
+	if (data[IFLA_VXLAN_UDP_ZERO_CSUM6_TX] &&
+	    nla_get_u8(data[IFLA_VXLAN_UDP_ZERO_CSUM6_TX]))
+		conf.flags |= VXLAN_F_UDP_ZERO_CSUM6_TX;
+
+	if (data[IFLA_VXLAN_UDP_ZERO_CSUM6_RX] &&
+	    nla_get_u8(data[IFLA_VXLAN_UDP_ZERO_CSUM6_RX]))
+		conf.flags |= VXLAN_F_UDP_ZERO_CSUM6_RX;
+
+	if (data[IFLA_VXLAN_REMCSUM_TX] &&
+	    nla_get_u8(data[IFLA_VXLAN_REMCSUM_TX]))
+		conf.flags |= VXLAN_F_REMCSUM_TX;
+
+	if (data[IFLA_VXLAN_REMCSUM_RX] &&
+	    nla_get_u8(data[IFLA_VXLAN_REMCSUM_RX]))
+		conf.flags |= VXLAN_F_REMCSUM_RX;
+
+	if (data[IFLA_VXLAN_GBP])
+		conf.flags |= VXLAN_F_GBP;
+
+	if (data[IFLA_VXLAN_REMCSUM_NOPARTIAL])
+		conf.flags |= VXLAN_F_REMCSUM_NOPARTIAL;
+
+	if (tb[IFLA_MTU])
+		conf.mtu = nla_get_u32(tb[IFLA_MTU]);
+
+	err = vxlan_dev_configure(src_net, dev, &conf);
+	switch (err) {
+	case -ENODEV:
+		pr_info("ifindex %d does not exist\n", conf.remote_ifindex);
+		break;
+
+	case -EPERM:
+		pr_info("IPv6 is disabled via sysctl\n");
+		break;
+
+	case -EEXIST:
+		pr_info("duplicate VNI %u\n", conf.vni);
+		break;
+	}
+
+	return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void vxlan_dellink(struct net_device *dev, struct list_head *head)
 {
 	struct vxlan_dev *vxlan = netdev_priv(dev);
+<<<<<<< HEAD
 
 	vxlan_flush(vxlan, true);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	list_del(&vxlan->next);
 	unregister_netdevice_queue(dev, head);

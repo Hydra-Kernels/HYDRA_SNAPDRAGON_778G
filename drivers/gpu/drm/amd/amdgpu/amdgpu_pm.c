@@ -2643,6 +2643,7 @@ static void amdgpu_dpm_change_power_state_locked(struct amdgpu_device *adev)
 	if (ret)
 		return;
 
+<<<<<<< HEAD
 	if (adev->powerplay.pp_funcs->check_state_equal) {
 		if (0 != amdgpu_dpm_check_state_equal(adev, adev->pm.dpm.current_ps, adev->pm.dpm.requested_ps, &equal))
 			equal = false;
@@ -2658,6 +2659,33 @@ static void amdgpu_dpm_change_power_state_locked(struct amdgpu_device *adev)
 	adev->pm.dpm.current_active_crtc_count = adev->pm.dpm.new_active_crtc_count;
 
 	if (adev->powerplay.pp_funcs->force_performance_level) {
+=======
+	/* update display watermarks based on new power state */
+	amdgpu_display_bandwidth_update(adev);
+
+	/* wait for the rings to drain */
+	for (i = 0; i < AMDGPU_MAX_RINGS; i++) {
+		struct amdgpu_ring *ring = adev->rings[i];
+		if (ring && ring->ready)
+			amdgpu_fence_wait_empty(ring);
+	}
+
+	/* program the new power state */
+	amdgpu_dpm_set_power_state(adev);
+
+	/* update current power state */
+	adev->pm.dpm.current_ps = adev->pm.dpm.requested_ps;
+
+	amdgpu_dpm_post_set_power_state(adev);
+
+	/* update displays */
+	amdgpu_dpm_display_configuration_changed(adev);
+
+	adev->pm.dpm.current_active_crtcs = adev->pm.dpm.new_active_crtcs;
+	adev->pm.dpm.current_active_crtc_count = adev->pm.dpm.new_active_crtc_count;
+
+	if (adev->pm.funcs->force_performance_level) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (adev->pm.dpm.thermal_active) {
 			enum amd_dpm_forced_level level = adev->pm.dpm.forced_level;
 			/* force low perf level for thermal */

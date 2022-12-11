@@ -10,7 +10,10 @@
 
 void unix_inflight(struct user_struct *user, struct file *fp);
 void unix_notinflight(struct user_struct *user, struct file *fp);
+<<<<<<< HEAD
 void unix_destruct_scm(struct sk_buff *skb);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void unix_gc(void);
 void wait_for_unix_gc(void);
 struct sock *unix_get_socket(struct file *filp);

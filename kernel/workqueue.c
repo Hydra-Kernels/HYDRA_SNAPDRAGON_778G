@@ -173,6 +173,10 @@ struct worker_pool {
 	DECLARE_HASHTABLE(busy_hash, BUSY_WORKER_HASH_ORDER);
 						/* L: hash of busy workers */
 
+<<<<<<< HEAD
+=======
+	/* see manage_workers() for details on the two manager mutexes */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct worker		*manager;	/* L: purely informational */
 	struct list_head	workers;	/* A: attached workers */
 	struct completion	*detach_completion; /* all workers detached */
@@ -657,7 +661,11 @@ static void set_work_pool_and_clear_pending(struct work_struct *work,
 	 * The following mb guarantees that previous clear of a PENDING bit
 	 * will not be reordered with any speculative LOADS or STORES from
 	 * work->current_func, which is executed afterwards.  This possible
+<<<<<<< HEAD
 	 * reordering can lead to a missed execution on attempt to queue
+=======
+	 * reordering can lead to a missed execution on attempt to qeueue
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * the same @work.  E.g. consider this case:
 	 *
 	 *   CPU#0                         CPU#1
@@ -1642,9 +1650,14 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 	struct work_struct *work = &dwork->work;
 
 	WARN_ON_ONCE(!wq);
+<<<<<<< HEAD
 #ifndef CONFIG_CFI_CLANG
 	WARN_ON_ONCE(timer->function != delayed_work_timer_fn);
 #endif
+=======
+	WARN_ON_ONCE(timer->function != delayed_work_timer_fn ||
+		     timer->data != (unsigned long)dwork);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	WARN_ON_ONCE(timer_pending(timer));
 	WARN_ON_ONCE(!list_empty(&work->entry));
 
@@ -3446,6 +3459,10 @@ static int init_worker_pool(struct worker_pool *pool)
 
 	timer_setup(&pool->mayday_timer, pool_mayday_timeout, 0);
 
+<<<<<<< HEAD
+=======
+	mutex_init(&pool->attach_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	INIT_LIST_HEAD(&pool->workers);
 
 	ida_init(&pool->worker_ida);
@@ -4037,6 +4054,12 @@ static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 	if (!list_empty(&wq->pwqs)) {
 		if (WARN_ON(wq->flags & __WQ_ORDERED_EXPLICIT))
 			return -EINVAL;
+<<<<<<< HEAD
+=======
+
+		wq->flags &= ~__WQ_ORDERED;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		wq->flags &= ~__WQ_ORDERED;
 	}
@@ -4965,6 +4988,19 @@ static void rebind_workers(struct worker_pool *pool)
 
 	spin_lock_irq(&pool->lock);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * XXX: CPU hotplug notifiers are weird and can call DOWN_FAILED
+	 * w/o preceding DOWN_PREPARE.  Work around it.  CPU hotplug is
+	 * being reworked and this can go away in time.
+	 */
+	if (!(pool->flags & POOL_DISASSOCIATED)) {
+		spin_unlock_irq(&pool->lock);
+		return;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pool->flags &= ~POOL_DISASSOCIATED;
 
 	for_each_pool_worker(worker, pool) {

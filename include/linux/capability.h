@@ -210,7 +210,10 @@ extern bool has_ns_capability_noaudit(struct task_struct *t,
 extern bool capable(int cap);
 extern bool ns_capable(struct user_namespace *ns, int cap);
 extern bool ns_capable_noaudit(struct user_namespace *ns, int cap);
+<<<<<<< HEAD
 extern bool ns_capable_setid(struct user_namespace *ns, int cap);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 static inline bool has_capability(struct task_struct *t, int cap)
 {
@@ -242,10 +245,13 @@ static inline bool ns_capable_noaudit(struct user_namespace *ns, int cap)
 {
 	return true;
 }
+<<<<<<< HEAD
 static inline bool ns_capable_setid(struct user_namespace *ns, int cap)
 {
 	return true;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_MULTIUSER */
 extern bool privileged_wrt_inode_uidgid(struct user_namespace *ns, const struct inode *inode);
 extern bool capable_wrt_inode_uidgid(const struct inode *inode, int cap);

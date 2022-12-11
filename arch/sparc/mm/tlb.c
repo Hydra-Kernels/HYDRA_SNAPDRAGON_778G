@@ -68,7 +68,11 @@ void arch_leave_lazy_mmu_mode(void)
 }
 
 static void tlb_batch_add_one(struct mm_struct *mm, unsigned long vaddr,
+<<<<<<< HEAD
 			      bool exec, unsigned int hugepage_shift)
+=======
+			      bool exec, bool huge)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct tlb_batch *tb = &get_cpu_var(tlb_batch);
 	unsigned long nr;
@@ -85,19 +89,32 @@ static void tlb_batch_add_one(struct mm_struct *mm, unsigned long vaddr,
 	}
 
 	if (!tb->active) {
+<<<<<<< HEAD
 		flush_tsb_user_page(mm, vaddr, hugepage_shift);
+=======
+		flush_tsb_user_page(mm, vaddr, huge);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		global_flush_tlb_page(mm, vaddr);
 		goto out;
 	}
 
 	if (nr == 0) {
 		tb->mm = mm;
+<<<<<<< HEAD
 		tb->hugepage_shift = hugepage_shift;
 	}
 
 	if (tb->hugepage_shift != hugepage_shift) {
 		flush_tlb_pending();
 		tb->hugepage_shift = hugepage_shift;
+=======
+		tb->huge = huge;
+	}
+
+	if (tb->huge != huge) {
+		flush_tlb_pending();
+		tb->huge = huge;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		nr = 0;
 	}
 
@@ -114,6 +131,8 @@ void tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
 		   pte_t *ptep, pte_t orig, int fullmm,
 		   unsigned int hugepage_shift)
 {
+	bool huge = is_hugetlb_pte(orig);
+
 	if (tlb_type != hypervisor &&
 	    pte_dirty(orig)) {
 		unsigned long paddr, pfn = pte_pfn(orig);
@@ -139,7 +158,11 @@ void tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
 
 no_cache_flush:
 	if (!fullmm)
+<<<<<<< HEAD
 		tlb_batch_add_one(mm, vaddr, pte_exec(orig), hugepage_shift);
+=======
+		tlb_batch_add_one(mm, vaddr, pte_exec(orig), huge);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -155,7 +178,11 @@ static void tlb_batch_pmd_scan(struct mm_struct *mm, unsigned long vaddr,
 		if (pte_val(*pte) & _PAGE_VALID) {
 			bool exec = pte_exec(*pte);
 
+<<<<<<< HEAD
 			tlb_batch_add_one(mm, vaddr, exec, PAGE_SHIFT);
+=======
+			tlb_batch_add_one(mm, vaddr, exec, false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		pte++;
 		vaddr += PAGE_SIZE;
@@ -171,6 +198,7 @@ static void __set_pmd_acct(struct mm_struct *mm, unsigned long addr,
 		return;
 
 	if ((pmd_val(pmd) ^ pmd_val(orig)) & _PAGE_PMD_HUGE) {
+<<<<<<< HEAD
 		/*
 		 * Note that this routine only sets pmds for THP pages.
 		 * Hugetlb pages are handled elsewhere.  We need to check
@@ -190,6 +218,12 @@ static void __set_pmd_acct(struct mm_struct *mm, unsigned long addr,
 			else
 				mm->context.thp_pte_count--;
 		}
+=======
+		if (pmd_val(pmd) & _PAGE_PMD_HUGE)
+			mm->context.thp_pte_count++;
+		else
+			mm->context.thp_pte_count--;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Do not try to allocate the TSB hash table if we
 		 * don't have one already.  We have various locks held
@@ -207,9 +241,15 @@ static void __set_pmd_acct(struct mm_struct *mm, unsigned long addr,
 			pte_t orig_pte = __pte(pmd_val(orig));
 			bool exec = pte_exec(orig_pte);
 
+<<<<<<< HEAD
 			tlb_batch_add_one(mm, addr, exec, REAL_HPAGE_SHIFT);
 			tlb_batch_add_one(mm, addr + REAL_HPAGE_SIZE, exec,
 					  REAL_HPAGE_SHIFT);
+=======
+			tlb_batch_add_one(mm, addr, exec, true);
+			tlb_batch_add_one(mm, addr + REAL_HPAGE_SIZE, exec,
+					true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			tlb_batch_pmd_scan(mm, addr, orig);
 		}

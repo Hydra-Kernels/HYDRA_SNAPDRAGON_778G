@@ -2998,6 +2998,7 @@ static int nfit_test_probe(struct platform_device *pdev)
 	if (nfit_test->setup != nfit_test0_setup)
 		return 0;
 
+	flush_work(&acpi_desc->work);
 	nfit_test->setup_hotplug = 1;
 	nfit_test->setup(nfit_test);
 

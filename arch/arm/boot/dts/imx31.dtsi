@@ -239,6 +239,7 @@
 				#clock-cells = <1>;
 			};
 
+<<<<<<< HEAD
 			spi3: spi@53f84000 {
 				compatible = "fsl,imx31-cspi";
 				reg = <0x53f84000 0x4000>;
@@ -252,6 +253,8 @@
 				status = "disabled";
 			};
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			gpt: timer@53f90000 {
 				compatible = "fsl,imx31-gpt";
 				reg = <0x53f90000 0x4000>;

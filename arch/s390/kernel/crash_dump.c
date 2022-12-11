@@ -25,6 +25,8 @@
 #define PTR_SUB(x, y) (((char *) (x)) - ((unsigned long) (y)))
 #define PTR_DIFF(x, y) ((unsigned long)(((char *) (x)) - ((unsigned long) (y))))
 
+#define LINUX_NOTE_NAME "LINUX"
+
 static struct memblock_region oldmem_region;
 
 static struct memblock_type oldmem_type = {
@@ -349,7 +351,84 @@ static size_t nt_size_name(int d_len, const char *name)
 
 static inline size_t nt_size(Elf64_Word type, int d_len)
 {
+<<<<<<< HEAD
 	return nt_size_name(d_len, nt_name(type));
+=======
+	return nt_init(ptr, NT_S390_TIMER, &sa->timer, sizeof(sa->timer),
+			 LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize TOD clock comparator note
+ */
+static void *nt_s390_tod_cmp(void *ptr, struct save_area *sa)
+{
+	return nt_init(ptr, NT_S390_TODCMP, &sa->clk_cmp,
+		       sizeof(sa->clk_cmp), LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize TOD programmable register note
+ */
+static void *nt_s390_tod_preg(void *ptr, struct save_area *sa)
+{
+	return nt_init(ptr, NT_S390_TODPREG, &sa->tod_reg,
+		       sizeof(sa->tod_reg), LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize control register note
+ */
+static void *nt_s390_ctrs(void *ptr, struct save_area *sa)
+{
+	return nt_init(ptr, NT_S390_CTRS, &sa->ctrl_regs,
+		       sizeof(sa->ctrl_regs), LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize prefix register note
+ */
+static void *nt_s390_prefix(void *ptr, struct save_area *sa)
+{
+	return nt_init(ptr, NT_S390_PREFIX, &sa->pref_reg,
+			 sizeof(sa->pref_reg), LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize vxrs high note (full 128 bit VX registers 16-31)
+ */
+static void *nt_s390_vx_high(void *ptr, __vector128 *vx_regs)
+{
+	return nt_init(ptr, NT_S390_VXRS_HIGH, &vx_regs[16],
+		       16 * sizeof(__vector128), LINUX_NOTE_NAME);
+}
+
+/*
+ * Initialize vxrs low note (lower halves of VX registers 0-15)
+ */
+static void *nt_s390_vx_low(void *ptr, __vector128 *vx_regs)
+{
+	Elf64_Nhdr *note;
+	u64 len;
+	int i;
+
+	note = (Elf64_Nhdr *)ptr;
+	note->n_namesz = strlen(LINUX_NOTE_NAME) + 1;
+	note->n_descsz = 16 * 8;
+	note->n_type = NT_S390_VXRS_LOW;
+	len = sizeof(Elf64_Nhdr);
+
+	memcpy(ptr + len, LINUX_NOTE_NAME, note->n_namesz);
+	len = roundup(len + note->n_namesz, 4);
+
+	ptr += len;
+	/* Copy lower halves of SIMD registers 0-15 */
+	for (i = 0; i < 16; i++) {
+		memcpy(ptr, &vx_regs[i].u[2], 8);
+		ptr += 8;
+	}
+	return ptr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -490,6 +569,20 @@ static size_t nt_vmcoreinfo_size(void)
 
 	kfree(vmcoreinfo);
 	return nt_size_name(size, name);
+}
+
+/*
+ * Initialize final note (needed for /proc/vmcore code)
+ */
+static void *nt_final(void *ptr)
+{
+	Elf64_Nhdr *note;
+
+	note = (Elf64_Nhdr *) ptr;
+	note->n_namesz = 0;
+	note->n_descsz = 0;
+	note->n_type = 0;
+	return PTR_ADD(ptr, sizeof(Elf64_Nhdr));
 }
 
 /*

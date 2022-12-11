@@ -44,6 +44,7 @@
  * VA_BITS - the maximum number of bits for virtual addresses.
  */
 #define VA_BITS			(CONFIG_ARM64_VA_BITS)
+<<<<<<< HEAD
 #define _PAGE_OFFSET(va)	(-(UL(1) << (va)))
 #define PAGE_OFFSET		(_PAGE_OFFSET(VA_BITS))
 #define KIMAGE_VADDR		(MODULES_END)
@@ -55,6 +56,15 @@
 #define MODULES_VSIZE		(SZ_128M)
 #define VMEMMAP_START		(-VMEMMAP_SIZE - SZ_2M)
 #define PCI_IO_END		(VMEMMAP_START - SZ_2M)
+=======
+#define VA_START		(UL(0xffffffffffffffff) - \
+	(UL(1) << VA_BITS) + 1)
+#define PAGE_OFFSET		(UL(0xffffffffffffffff) - \
+	(UL(1) << (VA_BITS - 1)) + 1)
+#define MODULES_END		(PAGE_OFFSET)
+#define MODULES_VADDR		(MODULES_END - SZ_64M)
+#define PCI_IO_END		(MODULES_VADDR - SZ_2M)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define PCI_IO_START		(PCI_IO_END - PCI_IO_SIZE)
 #define FIXADDR_TOP		(PCI_IO_START - SZ_2M)
 

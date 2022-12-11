@@ -351,9 +351,13 @@ static void __disable_trace_kprobe(struct trace_probe *tp)
 static int enable_trace_kprobe(struct trace_event_call *call,
 				struct trace_event_file *file)
 {
+<<<<<<< HEAD
 	struct trace_probe *pos, *tp;
 	struct trace_kprobe *tk;
 	bool enabled;
+=======
+	struct event_file_link *link = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret = 0;
 
 	tp = trace_probe_primary_from_call(call);
@@ -363,9 +367,22 @@ static int enable_trace_kprobe(struct trace_event_call *call,
 
 	/* This also changes "enabled" state */
 	if (file) {
+<<<<<<< HEAD
 		ret = trace_probe_add_file(tp, file);
 		if (ret)
 			return ret;
+=======
+		link = kmalloc(sizeof(*link), GFP_KERNEL);
+		if (!link) {
+			ret = -ENOMEM;
+			goto out;
+		}
+
+		link->file = file;
+		list_add_tail_rcu(&link->list, &tk->tp.files);
+
+		tk->tp.flags |= TP_FLAG_TRACE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else
 		trace_probe_set_flag(tp, TP_FLAG_PROFILE);
 
@@ -383,6 +400,7 @@ static int enable_trace_kprobe(struct trace_event_call *call,
 	}
 
 	if (ret) {
+<<<<<<< HEAD
 		/* Failed to enable one of them. Roll back all */
 		if (enabled)
 			__disable_trace_kprobe(tp);
@@ -392,6 +410,19 @@ static int enable_trace_kprobe(struct trace_event_call *call,
 			trace_probe_clear_flag(tp, TP_FLAG_PROFILE);
 	}
 
+=======
+		if (file) {
+			/* Notice the if is true on not WARN() */
+			if (!WARN_ON_ONCE(!link))
+				list_del_rcu(&link->list);
+			kfree(link);
+			tk->tp.flags &= ~TP_FLAG_TRACE;
+		} else {
+			tk->tp.flags &= ~TP_FLAG_PROFILE;
+		}
+	}
+ out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 
@@ -733,12 +764,20 @@ static int trace_kprobe_create(int argc, const char *argv[])
 	 * Type of args:
 	 *  FETCHARG:TYPE : use TYPE instead of unsigned long.
 	 */
+<<<<<<< HEAD
 	struct trace_kprobe *tk = NULL;
 	int i, len, ret = 0;
 	bool is_return = false;
 	char *symbol = NULL, *tmp = NULL;
 	const char *event = NULL, *group = KPROBE_EVENT_SYSTEM;
 	int maxactive = 0;
+=======
+	struct trace_kprobe *tk;
+	int i, ret = 0;
+	bool is_return = false, is_delete = false;
+	char *symbol = NULL, *event = NULL, *group = NULL;
+	char *arg;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	long offset = 0;
 	void *addr = NULL;
 	char buf[MAX_EVENT_NAME_LEN];
@@ -801,6 +840,45 @@ static int trace_kprobe_create(int argc, const char *argv[])
 			ret = -ECANCELED;
 			goto error;
 		}
+<<<<<<< HEAD
+=======
+		if (strlen(event) == 0) {
+			pr_info("Event name is not specified\n");
+			return -EINVAL;
+		}
+	}
+	if (!group)
+		group = KPROBE_EVENT_SYSTEM;
+
+	if (is_delete) {
+		if (!event) {
+			pr_info("Delete command needs an event name.\n");
+			return -EINVAL;
+		}
+		mutex_lock(&probe_lock);
+		tk = find_trace_kprobe(event, group);
+		if (!tk) {
+			mutex_unlock(&probe_lock);
+			pr_info("Event %s/%s doesn't exist.\n", group, event);
+			return -ENOENT;
+		}
+		/* delete an event */
+		ret = unregister_trace_kprobe(tk);
+		if (ret == 0)
+			free_trace_kprobe(tk);
+		mutex_unlock(&probe_lock);
+		return ret;
+	}
+
+	if (argc < 2) {
+		pr_info("Probe point is not specified.\n");
+		return -EINVAL;
+	}
+
+	/* try to parse an address. if that fails, try to read the
+	 * input as a symbol. */
+	if (kstrtoul(argv[1], 0, (unsigned long *)&addr)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* a symbol specified */
 		symbol = kstrdup(argv[1], GFP_KERNEL);
 		if (!symbol)
@@ -808,8 +886,13 @@ static int trace_kprobe_create(int argc, const char *argv[])
 		/* TODO: support .init module functions */
 		ret = traceprobe_split_symbol_offset(symbol, &offset);
 		if (ret || offset < 0 || offset > UINT_MAX) {
+<<<<<<< HEAD
 			trace_probe_log_err(0, BAD_PROBE_ADDR);
 			goto parse_error;
+=======
+			pr_info("Failed to parse either an address or a symbol.\n");
+			return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		ret = kprobe_on_func_entry(NULL, symbol, offset);
 		if (ret == 0)
@@ -819,6 +902,9 @@ static int trace_kprobe_create(int argc, const char *argv[])
 			trace_probe_log_err(0, BAD_RETPROBE);
 			goto parse_error;
 		}
+	} else if (is_return) {
+		pr_info("Return probe point must be a symbol.\n");
+		return -EINVAL;
 	}
 
 	trace_probe_log_set_index(0);
@@ -1874,11 +1960,15 @@ static __init int kprobe_trace_self_tests_init(void)
 	}
 
 end:
+<<<<<<< HEAD
 	ret = dyn_events_release_all(&trace_kprobe_ops);
 	if (WARN_ON_ONCE(ret)) {
 		pr_warn("error on cleaning up probes.\n");
 		warn++;
 	}
+=======
+	release_all_trace_kprobes();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Wait for the optimizer work to finish. Otherwise it might fiddle
 	 * with probes in already freed __init text.

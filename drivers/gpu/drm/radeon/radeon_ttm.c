@@ -184,8 +184,12 @@ static int radeon_verify_access(struct ttm_buffer_object *bo, struct file *filp)
 
 	if (radeon_ttm_tt_has_userptr(bo->ttm))
 		return -EPERM;
+<<<<<<< HEAD
 	return drm_vma_node_verify_access(&rbo->tbo.base.vma_node,
 					  filp->private_data);
+=======
+	return drm_vma_node_verify_access(&rbo->gem_base.vma_node, filp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void radeon_move_null(struct ttm_buffer_object *bo,
@@ -700,7 +704,30 @@ static int radeon_ttm_tt_populate(struct ttm_tt *ttm,
 	}
 #endif
 
+<<<<<<< HEAD
 	return ttm_populate_and_map_pages(rdev->dev, &gtt->ttm, ctx);
+=======
+	r = ttm_pool_populate(ttm);
+	if (r) {
+		return r;
+	}
+
+	for (i = 0; i < ttm->num_pages; i++) {
+		gtt->ttm.dma_address[i] = pci_map_page(rdev->pdev, ttm->pages[i],
+						       0, PAGE_SIZE,
+						       PCI_DMA_BIDIRECTIONAL);
+		if (pci_dma_mapping_error(rdev->pdev, gtt->ttm.dma_address[i])) {
+			while (i--) {
+				pci_unmap_page(rdev->pdev, gtt->ttm.dma_address[i],
+					       PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
+				gtt->ttm.dma_address[i] = 0;
+			}
+			ttm_pool_unpopulate(ttm);
+			return -EFAULT;
+		}
+	}
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void radeon_ttm_tt_unpopulate(struct ttm_tt *ttm)

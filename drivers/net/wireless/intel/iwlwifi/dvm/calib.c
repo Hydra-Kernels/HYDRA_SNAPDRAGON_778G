@@ -895,7 +895,12 @@ static void iwlagn_gain_computation(struct iwl_priv *priv,
 
 		/* bound gain by 2 bits value max, 3rd bit is sign */
 		data->delta_gain_code[i] =
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/dvm/calib.c
 			min(abs(delta_g), CHAIN_NOISE_MAX_DELTA_GAIN_CODE);
+=======
+			min(abs(delta_g),
+			(s32) CHAIN_NOISE_MAX_DELTA_GAIN_CODE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/dvm/calib.c
 
 		if (delta_g < 0)
 			/*

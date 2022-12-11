@@ -475,7 +475,11 @@ mext_check_arguments(struct inode *orig_inode,
 		return -EBUSY;
 	}
 
+<<<<<<< HEAD
 	if (ext4_is_quota_file(orig_inode) && ext4_is_quota_file(donor_inode)) {
+=======
+	if (IS_NOQUOTA(orig_inode) || IS_NOQUOTA(donor_inode)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ext4_debug("ext4 move extent: The argument files should "
 			"not be quota files [ino:orig %lu, donor %lu]\n",
 			orig_inode->i_ino, donor_inode->i_ino);
@@ -593,7 +597,12 @@ ext4_move_extents(struct file *o_filp, struct file *d_filp, __u64 orig_blk,
 		return -EOPNOTSUPP;
 	}
 
+<<<<<<< HEAD
 	if (IS_ENCRYPTED(orig_inode) || IS_ENCRYPTED(donor_inode)) {
+=======
+	if (ext4_encrypted_inode(orig_inode) ||
+	    ext4_encrypted_inode(donor_inode)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ext4_msg(orig_inode->i_sb, KERN_ERR,
 			 "Online defrag not supported for encrypted files");
 		return -EOPNOTSUPP;

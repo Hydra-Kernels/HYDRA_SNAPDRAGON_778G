@@ -176,6 +176,7 @@ void ceph_fscache_unregister_inode_cookie(struct ceph_inode_info* ci)
 	fscache_relinquish_cookie(cookie, &ci->i_vino, false);
 }
 
+<<<<<<< HEAD
 static bool ceph_fscache_can_enable(void *data)
 {
 	struct inode *inode = data;
@@ -204,6 +205,8 @@ void ceph_fscache_file_set_cookie(struct inode *inode, struct file *filp)
 	}
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void ceph_readpage_from_fscache_complete(struct page *page, void *data, int error)
 {
 	if (!error)

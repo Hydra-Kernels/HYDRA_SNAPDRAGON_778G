@@ -113,6 +113,10 @@ static inline bool unconditional(const struct ipt_entry *e)
 
 	return e->target_offset == sizeof(struct ipt_entry) &&
 	       memcmp(&e->ip, &uncond, sizeof(uncond)) == 0;
+<<<<<<< HEAD
+=======
+#undef FWINV
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* for const-correctness */
@@ -417,7 +421,12 @@ mark_source_chains(const struct xt_table_info *newinfo,
 
 				/* Move along one */
 				size = e->next_offset;
+<<<<<<< HEAD
 				e = entry0 + pos + size;
+=======
+				e = (struct ipt_entry *)
+					(entry0 + pos + size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				if (pos + size >= newinfo->size)
 					return 0;
 				e->counters.pcnt = pos;
@@ -429,9 +438,19 @@ mark_source_chains(const struct xt_table_info *newinfo,
 					   XT_STANDARD_TARGET) == 0 &&
 				    newpos >= 0) {
 					/* This a jump; chase it. */
+<<<<<<< HEAD
 					if (!xt_find_jump_offset(offsets, newpos,
 								 newinfo->number))
 						return 0;
+=======
+					duprintf("Jump rule %u -> %u\n",
+						 pos, newpos);
+					if (!xt_find_jump_offset(offsets, newpos,
+								 newinfo->number))
+						return 0;
+					e = (struct ipt_entry *)
+						(entry0 + newpos);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				} else {
 					/* ... this is a fallthru */
 					newpos = pos + e->next_offset;
@@ -598,12 +617,25 @@ check_entry_size_and_hooks(struct ipt_entry *e,
 
 	if ((unsigned long)e % __alignof__(struct ipt_entry) != 0 ||
 	    (unsigned char *)e + sizeof(struct ipt_entry) >= limit ||
+<<<<<<< HEAD
 	    (unsigned char *)e + e->next_offset > limit)
+=======
+	    (unsigned char *)e + e->next_offset > limit) {
+		duprintf("Bad offset %p\n", e);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (e->next_offset
 	    < sizeof(struct ipt_entry) + sizeof(struct xt_entry_target))
 		return -EINVAL;
+
+	if (!ip_checkentry(&e->ip))
+		return -EINVAL;
+
+	err = xt_check_entry_offsets(e, e->elems, e->target_offset,
+				     e->next_offset);
+	if (err)
+		return err;
 
 	if (!ip_checkentry(&e->ip))
 		return -EINVAL;
@@ -620,7 +652,14 @@ check_entry_size_and_hooks(struct ipt_entry *e,
 		if ((unsigned char *)e - base == hook_entries[h])
 			newinfo->hook_entry[h] = hook_entries[h];
 		if ((unsigned char *)e - base == underflows[h]) {
+<<<<<<< HEAD
 			if (!check_underflow(e))
+=======
+			if (!check_underflow(e)) {
+				pr_debug("Underflows must be unconditional and "
+					 "use the STANDARD target with "
+					 "ACCEPT/DROP\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return -EINVAL;
 
 			newinfo->underflow[h] = underflows[h];
@@ -676,6 +715,10 @@ translate_table(struct net *net, struct xt_table_info *newinfo, void *entry0,
 		newinfo->underflow[i] = 0xFFFFFFFF;
 	}
 
+<<<<<<< HEAD
+=======
+	duprintf("translate_table: size %u\n", newinfo->size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	offsets = xt_alloc_entry_offsets(newinfo->number);
 	if (!offsets)
 		return -ENOMEM;
@@ -698,12 +741,37 @@ translate_table(struct net *net, struct xt_table_info *newinfo, void *entry0,
 	}
 
 	ret = -EINVAL;
+<<<<<<< HEAD
 	if (i != repl->num_entries)
 		goto out_free;
 
 	ret = xt_check_table_hooks(newinfo, repl->valid_hooks);
 	if (ret)
 		goto out_free;
+=======
+	if (i != repl->num_entries) {
+		duprintf("translate_table: %u not %u entries\n",
+			 i, repl->num_entries);
+		goto out_free;
+	}
+
+	/* Check hooks all assigned */
+	for (i = 0; i < NF_INET_NUMHOOKS; i++) {
+		/* Only hooks which are valid */
+		if (!(repl->valid_hooks & (1 << i)))
+			continue;
+		if (newinfo->hook_entry[i] == 0xFFFFFFFF) {
+			duprintf("Invalid hook entry %u %u\n",
+				 i, repl->hook_entry[i]);
+			goto out_free;
+		}
+		if (newinfo->underflow[i] == 0xFFFFFFFF) {
+			duprintf("Invalid underflow %u %u\n",
+				 i, repl->underflow[i]);
+			goto out_free;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!mark_source_chains(newinfo, repl->valid_hooks, entry0, offsets)) {
 		ret = -ELOOP;
@@ -1169,8 +1237,13 @@ do_add_counters(struct net *net, const void __user *user,
 		return PTR_ERR(paddc);
 
 	t = xt_find_table_lock(net, AF_INET, tmp.name);
+<<<<<<< HEAD
 	if (IS_ERR(t)) {
 		ret = PTR_ERR(t);
+=======
+	if (IS_ERR_OR_NULL(t)) {
+		ret = t ? PTR_ERR(t) : -ENOENT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto free;
 	}
 
@@ -1298,7 +1371,12 @@ check_compat_entry_size_and_hooks(struct compat_ipt_entry *e,
 
 	if ((unsigned long)e % __alignof__(struct compat_ipt_entry) != 0 ||
 	    (unsigned char *)e + sizeof(struct compat_ipt_entry) >= limit ||
+<<<<<<< HEAD
 	    (unsigned char *)e + e->next_offset > limit)
+=======
+	    (unsigned char *)e + e->next_offset > limit) {
+		duprintf("Bad offset %p, limit = %p\n", e, limit);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (e->next_offset < sizeof(struct compat_ipt_entry) +
@@ -1406,11 +1484,18 @@ translate_compat_table(struct net *net,
 	size = compatr->size;
 	info->number = compatr->num_entries;
 
+<<<<<<< HEAD
 	j = 0;
 	xt_compat_lock(AF_INET);
 	ret = xt_compat_init_offsets(AF_INET, compatr->num_entries);
 	if (ret)
 		goto out_unlock;
+=======
+	duprintf("translate_compat_table: size %u\n", info->size);
+	j = 0;
+	xt_compat_lock(AF_INET);
+	xt_compat_init_offsets(AF_INET, compatr->num_entries);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Walk through entries, checking offsets. */
 	xt_entry_foreach(iter0, entry0, compatr->size) {
 		ret = check_compat_entry_size_and_hooks(iter0, info, &size,
@@ -1422,16 +1507,27 @@ translate_compat_table(struct net *net,
 	}
 
 	ret = -EINVAL;
+<<<<<<< HEAD
 	if (j != compatr->num_entries)
 		goto out_unlock;
+=======
+	if (j != compatr->num_entries) {
+		duprintf("translate_compat_table: %u not %u entries\n",
+			 j, compatr->num_entries);
+		goto out_unlock;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = -ENOMEM;
 	newinfo = xt_alloc_table_info(size);
 	if (!newinfo)
 		goto out_unlock;
 
+<<<<<<< HEAD
 	memset(newinfo->entries, 0, size);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	newinfo->number = compatr->num_entries;
 	for (i = 0; i < NF_INET_NUMHOOKS; i++) {
 		newinfo->hook_entry[i] = compatr->hook_entry[i];

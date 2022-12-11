@@ -863,10 +863,35 @@ static void cpu_up_down_serialize_trainwrecks(bool tasks_frozen)
 		cpuset_wait_for_hotplug();
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_HOTPLUG_CPU
 #ifndef arch_clear_mm_cpumask_cpu
 #define arch_clear_mm_cpumask_cpu(cpu, mm) cpumask_clear_cpu(cpu, mm_cpumask(mm))
 #endif
+=======
+EXPORT_SYMBOL(register_cpu_notifier);
+EXPORT_SYMBOL(__register_cpu_notifier);
+
+void unregister_cpu_notifier(struct notifier_block *nb)
+{
+	cpu_maps_update_begin();
+	raw_notifier_chain_unregister(&cpu_chain, nb);
+	cpu_maps_update_done();
+}
+EXPORT_SYMBOL(unregister_cpu_notifier);
+
+void __unregister_cpu_notifier(struct notifier_block *nb)
+{
+	raw_notifier_chain_unregister(&cpu_chain, nb);
+}
+EXPORT_SYMBOL(__unregister_cpu_notifier);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+#ifdef CONFIG_HOTPLUG_CPU
+static void cpu_notify_nofail(unsigned long val, void *v)
+{
+	BUG_ON(cpu_notify(val, v));
+}
 
 /**
  * clear_tasks_mm_cpumask - Safely clear tasks' mm_cpumask for a CPU

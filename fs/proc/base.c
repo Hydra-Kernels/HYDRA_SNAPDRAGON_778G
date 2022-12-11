@@ -376,6 +376,26 @@ static const struct file_operations proc_pid_cmdline_ops = {
 	.llseek	= generic_file_llseek,
 };
 
+<<<<<<< HEAD
+=======
+static int proc_pid_auxv(struct seq_file *m, struct pid_namespace *ns,
+			 struct pid *pid, struct task_struct *task)
+{
+	struct mm_struct *mm = mm_access(task, PTRACE_MODE_READ_FSCREDS);
+	if (mm && !IS_ERR(mm)) {
+		unsigned int nwords = 0;
+		do {
+			nwords += 2;
+		} while (mm->saved_auxv[nwords - 2] != 0); /* AT_NULL */
+		seq_write(m, mm->saved_auxv, nwords * sizeof(mm->saved_auxv[0]));
+		mmput(mm);
+		return 0;
+	} else
+		return PTR_ERR(mm);
+}
+
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_KALLSYMS
 /*
  * Provides a wchan file via kallsyms in a proper one-value-per-file format.
@@ -396,8 +416,17 @@ static int proc_pid_wchan(struct seq_file *m, struct pid_namespace *ns,
 		return 0;
 	}
 
+<<<<<<< HEAD
 print0:
 	seq_putc(m, '0');
+=======
+	if (wchan && ptrace_may_access(task, PTRACE_MODE_READ_FSCREDS)
+			&& !lookup_symbol_name(wchan, symname))
+		seq_printf(m, "%s", symname);
+	else
+		seq_putc(m, '0');
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 #endif /* CONFIG_KALLSYMS */
@@ -948,10 +977,17 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 	if (!mmget_not_zero(mm))
 		goto free;
 
+<<<<<<< HEAD
 	spin_lock(&mm->arg_lock);
 	env_start = mm->env_start;
 	env_end = mm->env_end;
 	spin_unlock(&mm->arg_lock);
+=======
+	down_read(&mm->mmap_sem);
+	env_start = mm->env_start;
+	env_end = mm->env_end;
+	up_read(&mm->mmap_sem);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (count > 0) {
 		size_t this_len, max_len;
@@ -965,7 +1001,12 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 		max_len = min_t(size_t, PAGE_SIZE, count);
 		this_len = min(max_len, this_len);
 
+<<<<<<< HEAD
 		retval = access_remote_vm(mm, (env_start + src), page, this_len, FOLL_ANON);
+=======
+		retval = access_remote_vm(mm, (env_start + src),
+			page, this_len, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (retval <= 0) {
 			ret = retval;
@@ -2021,11 +2062,17 @@ static int dname_to_vma_addr(struct dentry *dentry,
 	unsigned long long sval, eval;
 	unsigned int len;
 
+<<<<<<< HEAD
 	if (str[0] == '0' && str[1] != '-')
 		return -EINVAL;
 	len = _parse_integer(str, 16, &sval);
 	if (len & KSTRTOX_OVERFLOW)
 		return -EINVAL;
+=======
+	len = _parse_integer(str, 16, &sval);
+	if (len & KSTRTOX_OVERFLOW)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (sval != (unsigned long)sval)
 		return -EINVAL;
 	str += len;
@@ -2034,8 +2081,11 @@ static int dname_to_vma_addr(struct dentry *dentry,
 		return -EINVAL;
 	str++;
 
+<<<<<<< HEAD
 	if (str[0] == '0' && str[1])
 		return -EINVAL;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	len = _parse_integer(str, 16, &eval);
 	if (len & KSTRTOX_OVERFLOW)
 		return -EINVAL;
@@ -2213,7 +2263,11 @@ static struct dentry *proc_map_files_lookup(struct inode *dir,
 	if (!task)
 		goto out;
 
+<<<<<<< HEAD
 	result = ERR_PTR(-EACCES);
+=======
+	result = -EACCES;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!ptrace_may_access(task, PTRACE_MODE_READ_FSCREDS))
 		goto out_put_task;
 
@@ -3627,11 +3681,19 @@ int proc_pid_readdir(struct file *file, struct dir_context *ctx)
 	for (iter = next_tgid(ns, iter);
 	     iter.task;
 	     iter.tgid += 1, iter = next_tgid(ns, iter)) {
+<<<<<<< HEAD
 		char name[10 + 1];
 		unsigned int len;
 
 		cond_resched();
 		if (!has_pid_permissions(ns, iter.task, HIDEPID_INVISIBLE))
+=======
+		char name[PROC_NUMBUF];
+		int len;
+
+		cond_resched();
+		if (!has_pid_permissions(ns, iter.task, 2))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			continue;
 
 		len = snprintf(name, sizeof(name), "%u", iter.tgid);

@@ -513,11 +513,17 @@ static void sctp_v4_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 		odev = __ip_dev_find(sock_net(sk), laddr->a.v4.sin_addr.s_addr,
 				     false);
 		if (!odev || odev->ifindex != fl4->flowi4_oif) {
+<<<<<<< HEAD
 			if (!dst) {
 				dst = &rt->dst;
 				t->dst = dst;
 				memcpy(fl, &_fl, sizeof(_fl));
 			} else {
+=======
+			if (!dst)
+				dst = &rt->dst;
+			else
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				dst_release(&rt->dst);
 			}
 			continue;
@@ -1445,6 +1451,18 @@ static __init int sctp_init(void)
 
 	/* Then compute the page order for said goal */
 	order = get_order(goal);
+<<<<<<< HEAD
+=======
+
+	/* Now compute the required page order for the maximum sized table we
+	 * want to create
+	 */
+	max_entry_order = get_order(MAX_SCTP_PORT_HASH_ENTRIES *
+				    sizeof(struct sctp_bind_hashbucket));
+
+	/* Limit the page order by that maximum hash table size */
+	order = min(order, max_entry_order);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Now compute the required page order for the maximum sized table we
 	 * want to create

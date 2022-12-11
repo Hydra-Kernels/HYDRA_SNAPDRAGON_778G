@@ -218,7 +218,11 @@ static struct twl4030_codec_data *twl4030_get_pdata(struct snd_soc_component *co
 	struct twl4030_codec_data *pdata = dev_get_platdata(component->dev);
 	struct device_node *twl4030_codec_node = NULL;
 
+<<<<<<< HEAD
 	twl4030_codec_node = of_get_child_by_name(component->dev->parent->of_node,
+=======
+	twl4030_codec_node = of_get_child_by_name(codec->dev->parent->of_node,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 						  "codec");
 
 	if (!pdata && twl4030_codec_node) {
@@ -226,6 +230,10 @@ static struct twl4030_codec_data *twl4030_get_pdata(struct snd_soc_component *co
 				     sizeof(struct twl4030_codec_data),
 				     GFP_KERNEL);
 		if (!pdata) {
+<<<<<<< HEAD
+=======
+			dev_err(codec->dev, "Can not allocate memory\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			of_node_put(twl4030_codec_node);
 			return NULL;
 		}

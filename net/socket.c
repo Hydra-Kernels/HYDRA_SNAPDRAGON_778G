@@ -85,7 +85,10 @@
 #include <linux/slab.h>
 #include <linux/xattr.h>
 #include <linux/nospec.h>
+<<<<<<< HEAD
 #include <linux/indirect_call_wrapper.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -2455,7 +2458,10 @@ int __sys_sendmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
 		++datagrams;
 		if (msg_data_left(&msg_sys))
 			break;
+<<<<<<< HEAD
 		cond_resched();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	fput_light(sock->file, fput_needed);
@@ -2644,12 +2650,19 @@ static int do_recvmmsg(int fd, struct mmsghdr __user *mmsg,
 	if (!sock)
 		return err;
 
+<<<<<<< HEAD
 	if (likely(!(flags & MSG_ERRQUEUE))) {
 		err = sock_error(sock->sk);
 		if (err) {
 			datagrams = err;
 			goto out_put;
 		}
+=======
+	err = sock_error(sock->sk);
+	if (err) {
+		datagrams = err;
+		goto out_put;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	entry = mmsg;
@@ -3042,6 +3055,15 @@ out_fs:
 }
 
 core_initcall(sock_init);	/* early initcall */
+
+static int __init jit_init(void)
+{
+#ifdef CONFIG_BPF_JIT_ALWAYS_ON
+	bpf_jit_enable = 1;
+#endif
+	return 0;
+}
+pure_initcall(jit_init);
 
 #ifdef CONFIG_PROC_FS
 void socket_seq_show(struct seq_file *seq)

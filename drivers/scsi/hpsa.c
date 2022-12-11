@@ -3919,6 +3919,67 @@ static unsigned char hpsa_volume_offline(struct ctlr_info *h,
 		break;
 	}
 	return HPSA_LV_OK;
+<<<<<<< HEAD
+=======
+}
+
+/*
+ * Find out if a logical device supports aborts by simply trying one.
+ * Smart Array may claim not to support aborts on logical drives, but
+ * if a MSA2000 * is connected, the drives on that will be presented
+ * by the Smart Array as logical drives, and aborts may be sent to
+ * those devices successfully.  So the simplest way to find out is
+ * to simply try an abort and see how the device responds.
+ */
+static int hpsa_device_supports_aborts(struct ctlr_info *h,
+					unsigned char *scsi3addr)
+{
+	struct CommandList *c;
+	struct ErrorInfo *ei;
+	int rc = 0;
+
+	u64 tag = (u64) -1; /* bogus tag */
+
+	/* Assume that physical devices support aborts */
+	if (!is_logical_dev_addr_mode(scsi3addr))
+		return 1;
+
+	c = cmd_alloc(h);
+
+	(void) fill_cmd(c, HPSA_ABORT_MSG, h, &tag, 0, 0, scsi3addr, TYPE_MSG);
+	(void) hpsa_scsi_do_simple_cmd(h, c, DEFAULT_REPLY_QUEUE, NO_TIMEOUT);
+	/* no unmap needed here because no data xfer. */
+	ei = c->err_info;
+	switch (ei->CommandStatus) {
+	case CMD_INVALID:
+		rc = 0;
+		break;
+	case CMD_UNABORTABLE:
+	case CMD_ABORT_FAILED:
+		rc = 1;
+		break;
+	case CMD_TMF_STATUS:
+		rc = hpsa_evaluate_tmf_status(h, c);
+		break;
+	default:
+		rc = 0;
+		break;
+	}
+	cmd_free(h, c);
+	return rc;
+}
+
+static void sanitize_inquiry_string(unsigned char *s, int len)
+{
+	bool terminated = false;
+
+	for (; len > 0; (--len, ++s)) {
+		if (*s == 0)
+			terminated = true;
+		if (terminated || *s < 0x20 || *s > 0x7e)
+			*s = ' ';
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hpsa_update_device_info(struct ctlr_info *h,
@@ -3986,6 +4047,7 @@ static int hpsa_update_device_info(struct ctlr_info *h,
 		if (h->fw_support & MISC_FW_RAID_OFFLOAD_BASIC)
 			hpsa_get_ioaccel_status(h, scsi3addr, this_device);
 		volume_offline = hpsa_volume_offline(h, scsi3addr);
+<<<<<<< HEAD
 		if (volume_offline == HPSA_VPD_LV_STATUS_UNSUPPORTED &&
 		    h->legacy_board) {
 			/*
@@ -3996,6 +4058,8 @@ static int hpsa_update_device_info(struct ctlr_info *h,
 				 this_device->target, this_device->lun);
 			volume_offline = 0;
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		this_device->volume_offline = volume_offline;
 		if (volume_offline == HPSA_LV_FAILED) {
 			rc = HPSA_LV_FAILED;
@@ -4399,8 +4463,11 @@ static void hpsa_update_scsi_devices(struct ctlr_info *h)
 		int rc = 0;
 		int phys_dev_index = i - (raid_ctlr_position == 0);
 		bool skip_device = false;
+<<<<<<< HEAD
 
 		memset(tmpdevice, 0, sizeof(*tmpdevice));
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		physical_device = i < nphysicals + (raid_ctlr_position == 0);
 
@@ -4408,10 +4475,22 @@ static void hpsa_update_scsi_devices(struct ctlr_info *h)
 		lunaddrbytes = figure_lunaddrbytes(h, raid_ctlr_position,
 			i, nphysicals, nlogicals, physdev_list, logdev_list);
 
+<<<<<<< HEAD
 		/* Determine if this is a lun from an external target array */
 		tmpdevice->external =
 			figure_external_status(h, raid_ctlr_position, i,
 						nphysicals, nlocal_logicals);
+=======
+		/*
+		 * Skip over some devices such as a spare.
+		 */
+		if (!tmpdevice->external && physical_device) {
+			skip_device = hpsa_skip_device(h, lunaddrbytes,
+					&physdev_list->LUN[phys_dev_index]);
+			if (skip_device)
+				continue;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * Skip over some devices such as a spare.
@@ -9054,6 +9133,8 @@ static void hpsa_remove_one(struct pci_dev *pdev)
 
 	hpsa_delete_sas_host(h);
 
+	hpsa_delete_sas_host(h);
+
 	/*
 	 * Call before disabling interrupts.
 	 * scsi_remove_host can trigger I/O operations especially
@@ -9088,7 +9169,11 @@ static void hpsa_remove_one(struct pci_dev *pdev)
 	h->lockup_detected = NULL;			/* init_one 2 */
 	/* (void) pci_disable_pcie_error_reporting(pdev); */	/* init_one 1 */
 
+<<<<<<< HEAD
 	hpda_free_ctlr_info(h);				/* init_one 1 */
+=======
+	kfree(h);					/* init_one 1 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hpsa_suspend(__attribute__((unused)) struct pci_dev *pdev,

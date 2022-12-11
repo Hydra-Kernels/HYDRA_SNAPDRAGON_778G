@@ -344,6 +344,7 @@ static void __unmap_stage2_range(struct kvm *kvm, phys_addr_t start, u64 size,
 
 	pgd = kvm->arch.pgd + stage2_pgd_index(kvm, addr);
 	do {
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
 		/*
 		 * Make sure the page table is still active, as another thread
 		 * could have possibly freed the page table, while we released
@@ -359,6 +360,18 @@ static void __unmap_stage2_range(struct kvm *kvm, phys_addr_t start, u64 size,
 		 * to prevent starvation and lockup detector warnings.
 		 */
 		if (may_block && next != end)
+=======
+		next = kvm_pgd_addr_end(addr, end);
+		if (!pgd_none(*pgd))
+			unmap_puds(kvm, pgd, addr, next);
+		/*
+		 * If we are dealing with a large range in
+		 * stage2 table, release the kvm->mmu_lock
+		 * to prevent starvation and lockup detector
+		 * warnings.
+		 */
+		if (kvm && (next != end))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 			cond_resched_lock(&kvm->mmu_lock);
 	} while (pgd++, addr = next, addr != end);
 }
@@ -926,6 +939,26 @@ int kvm_alloc_stage2_pgd(struct kvm *kvm)
 	return 0;
 }
 
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
+=======
+/**
+ * unmap_stage2_range -- Clear stage2 page table entries to unmap a range
+ * @kvm:   The VM pointer
+ * @start: The intermediate physical base address of the range to unmap
+ * @size:  The size of the area to unmap
+ *
+ * Clear a range of stage-2 mappings, lowering the various ref-counts.  Must
+ * be called while holding mmu_lock (unless for freeing the stage2 pgd before
+ * destroying the VM), otherwise another faulting VCPU may come in and mess
+ * with things behind our backs.
+ */
+static void unmap_stage2_range(struct kvm *kvm, phys_addr_t start, u64 size)
+{
+	assert_spin_locked(&kvm->mmu_lock);
+	unmap_range(kvm, kvm->arch.pgd, start, size);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 static void stage2_unmap_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *memslot)
 {
@@ -1004,6 +1037,7 @@ void stage2_unmap_vm(struct kvm *kvm)
 void kvm_free_stage2_pgd(struct kvm *kvm)
 {
 	void *pgd = NULL;
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
 
 	spin_lock(&kvm->mmu_lock);
 	if (kvm->arch.pgd) {
@@ -1017,6 +1051,23 @@ void kvm_free_stage2_pgd(struct kvm *kvm)
 	/* Free the HW pgd, one page at a time */
 	if (pgd)
 		free_pages_exact(pgd, stage2_pgd_size(kvm));
+=======
+	void *hwpgd = NULL;
+
+	spin_lock(&kvm->mmu_lock);
+	if (kvm->arch.pgd) {
+		unmap_stage2_range(kvm, 0, KVM_PHYS_SIZE);
+		pgd = READ_ONCE(kvm->arch.pgd);
+		hwpgd = kvm_get_hwpgd(kvm);
+		kvm->arch.pgd = NULL;
+	}
+	spin_unlock(&kvm->mmu_lock);
+
+	if (hwpgd)
+		kvm_free_hwpgd(hwpgd);
+	if (KVM_PREALLOC_LEVEL > 0 && pgd)
+		kfree(pgd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 }
 
 static pud_t *stage2_get_pud(struct kvm *kvm, struct kvm_mmu_memory_cache *cache,
@@ -1044,10 +1095,17 @@ static pmd_t *stage2_get_pmd(struct kvm *kvm, struct kvm_mmu_memory_cache *cache
 	pmd_t *pmd;
 
 	pud = stage2_get_pud(kvm, cache, addr);
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
 	if (!pud || stage2_pud_huge(kvm, *pud))
 		return NULL;
 
 	if (stage2_pud_none(kvm, *pud)) {
+=======
+	if (!pud)
+		return NULL;
+
+	if (pud_none(*pud)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 		if (!cache)
 			return NULL;
 		pmd = mmu_memory_cache_alloc(cache);
@@ -1068,6 +1126,7 @@ retry:
 	VM_BUG_ON(!pmd);
 
 	old_pmd = *pmd;
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
 	/*
 	 * Multiple vcpus faulting on the same PMD entry, can
 	 * lead to them sequentially updating the PMD with the
@@ -1112,6 +1171,9 @@ retry:
 		 * and mapped back in on-demand.
 		 */
 		WARN_ON_ONCE(pmd_pfn(old_pmd) != pmd_pfn(*new_pmd));
+=======
+	if (pmd_present(old_pmd)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 		pmd_clear(pmd);
 		kvm_tlb_flush_vmid_ipa(kvm, addr);
 	} else {
@@ -1294,6 +1356,7 @@ static int stage2_set_pte(struct kvm *kvm, struct kvm_mmu_memory_cache *cache,
 	/* Create 2nd stage page table mapping - Level 3 */
 	old_pte = *pte;
 	if (pte_present(old_pte)) {
+<<<<<<< HEAD:virt/kvm/arm/mmu.c
 		/* Skip page table update if there is no change */
 		if (pte_val(old_pte) == pte_val(*new_pte))
 			return 0;
@@ -1304,6 +1367,14 @@ static int stage2_set_pte(struct kvm *kvm, struct kvm_mmu_memory_cache *cache,
 		get_page(virt_to_page(pte));
 	}
 
+=======
+		kvm_set_pte(pte, __pte(0));
+		kvm_tlb_flush_vmid_ipa(kvm, addr);
+	} else {
+		get_page(virt_to_page(pte));
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/kvm/mmu.c
 	kvm_set_pte(pte, *new_pte);
 	return 0;
 }

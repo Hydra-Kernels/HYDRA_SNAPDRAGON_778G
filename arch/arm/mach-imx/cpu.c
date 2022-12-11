@@ -136,12 +136,15 @@ struct device * __init imx_soc_device_init(void)
 	case MXC_CPU_IMX6ULL:
 		soc_id = "i.MX6ULL";
 		break;
+<<<<<<< HEAD
 	case MXC_CPU_IMX6ULZ:
 		soc_id = "i.MX6ULZ";
 		break;
 	case MXC_CPU_IMX6SLL:
 		soc_id = "i.MX6SLL";
 		break;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case MXC_CPU_IMX7D:
 		soc_id = "i.MX7D";
 		break;

@@ -18,6 +18,12 @@
 #define TP_COMMAND		0xE2	/* Commands start with this */
 
 #define TP_READ_ID		0xE1	/* Sent for device identification */
+<<<<<<< HEAD
+=======
+#define TP_MAGIC_IDENT		0x03	/* Sent after a TP_READ_ID followed */
+					/* by the firmware ID */
+					/* Firmware ID includes 0x1, 0x2, 0x3 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Valid first byte responses to the "Read Secondary ID" (0xE1) command.

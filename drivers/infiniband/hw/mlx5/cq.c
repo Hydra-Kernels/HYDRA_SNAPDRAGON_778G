@@ -929,8 +929,14 @@ int mlx5_ib_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
 	    (entries > (1 << MLX5_CAP_GEN(dev->mdev, log_max_cq_sz))))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (check_cq_create_flags(attr->flags))
 		return -EOPNOTSUPP;
+=======
+	if (entries < 0 ||
+	    (entries > (1 << MLX5_CAP_GEN(dev->mdev, log_max_cq_sz))))
+		return ERR_PTR(-EINVAL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	entries = roundup_pow_of_two(entries + 1);
 	if (entries > (1 << MLX5_CAP_GEN(dev->mdev, log_max_cq_sz)))
@@ -1132,7 +1138,11 @@ static int resize_user(struct mlx5_ib_dev *dev, struct mlx5_ib_cq *cq,
 	if (ucmd.cqe_size && SIZE_MAX / ucmd.cqe_size <= entries - 1)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	umem = ib_umem_get(udata, ucmd.buf_addr,
+=======
+	umem = ib_umem_get(context, ucmd.buf_addr,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			   (size_t)ucmd.cqe_size * entries,
 			   IB_ACCESS_LOCAL_WRITE, 1);
 	if (IS_ERR(umem)) {

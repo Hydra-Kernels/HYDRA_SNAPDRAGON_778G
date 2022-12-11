@@ -964,6 +964,15 @@ static int armada_drm_crtc_create(struct drm_device *drm, struct device *dev,
 	if (!primary) {
 		ret = -ENOMEM;
 		goto err_crtc;
+<<<<<<< HEAD
+=======
+	}
+
+	ret = armada_drm_plane_init(primary);
+	if (ret) {
+		kfree(primary);
+		goto err_crtc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = armada_drm_primary_plane_init(drm, primary);
@@ -988,7 +997,11 @@ static int armada_drm_crtc_create(struct drm_device *drm, struct device *dev,
 	return armada_overlay_plane_create(drm, 1 << dcrtc->num);
 
 err_crtc_init:
+<<<<<<< HEAD
 	primary->funcs->destroy(primary);
+=======
+	primary->base.funcs->destroy(&primary->base);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_crtc:
 	kfree(dcrtc);
 

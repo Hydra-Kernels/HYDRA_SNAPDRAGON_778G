@@ -4770,6 +4770,10 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 		flags |= EXT4_GET_BLOCKS_KEEP_SIZE;
 
 	/* Wait all existing dio workers, newcomers will block on i_mutex */
+<<<<<<< HEAD
+=======
+	ext4_inode_block_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	inode_dio_wait(inode);
 
 	/* Preallocate the range including the unaligned edges */
@@ -4780,7 +4784,7 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 				 round_down(offset, 1 << blkbits)) >> blkbits,
 				new_size, flags);
 		if (ret)
-			goto out_mutex;
+			goto out_dio;
 
 	}
 
@@ -4794,6 +4798,7 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 		 * released from page cache.
 		 */
 		down_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
 
 		ret = ext4_break_layouts(inode);
 		if (ret) {
@@ -4812,6 +4817,19 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 
 		ret = ext4_alloc_file_blocks(file, lblk, max_blocks, new_size,
 					     flags);
+=======
+		ret = ext4_update_disksize_before_punch(inode, offset, len);
+		if (ret) {
+			up_write(&EXT4_I(inode)->i_mmap_sem);
+			goto out_dio;
+		}
+		/* Now release the pages and zero block aligned part of pages */
+		truncate_pagecache_range(inode, start, end - 1);
+		inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
+
+		ret = ext4_alloc_file_blocks(file, lblk, max_blocks, new_size,
+					     flags, mode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		up_write(&EXT4_I(inode)->i_mmap_sem);
 		if (ret)
 			goto out_mutex;
@@ -4942,9 +4960,18 @@ long ext4_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 	}
 
 	/* Wait all existing dio workers, newcomers will block on i_mutex */
+<<<<<<< HEAD
 	inode_dio_wait(inode);
 
 	ret = ext4_alloc_file_blocks(file, lblk, max_blocks, new_size, flags);
+=======
+	ext4_inode_block_unlocked_dio(inode);
+	inode_dio_wait(inode);
+
+	ret = ext4_alloc_file_blocks(file, lblk, max_blocks, new_size,
+				     flags, mode);
+	ext4_inode_resume_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		goto out;
 
@@ -5485,7 +5512,11 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 			return ret;
 	}
 
+<<<<<<< HEAD
 	inode_lock(inode);
+=======
+	mutex_lock(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * There is no need to overlap collapse range with EOF, in which case
 	 * it is effectively a truncate operation
@@ -5509,11 +5540,14 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 	 * page cache.
 	 */
 	down_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
 
 	ret = ext4_break_layouts(inode);
 	if (ret)
 		goto out_mmap;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Need to round down offset to be aligned with page size boundary
 	 * for page size > block size.
@@ -5583,6 +5617,10 @@ out_stop:
 	ext4_journal_stop(handle);
 out_mmap:
 	up_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
+=======
+	ext4_inode_resume_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_mutex:
 	inode_unlock(inode);
 	return ret;
@@ -5635,7 +5673,11 @@ int ext4_insert_range(struct inode *inode, loff_t offset, loff_t len)
 			return ret;
 	}
 
+<<<<<<< HEAD
 	inode_lock(inode);
+=======
+	mutex_lock(&inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Currently just for extent based files */
 	if (!ext4_test_inode_flag(inode, EXT4_INODE_EXTENTS)) {
 		ret = -EOPNOTSUPP;
@@ -5662,11 +5704,14 @@ int ext4_insert_range(struct inode *inode, loff_t offset, loff_t len)
 	 * page cache.
 	 */
 	down_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
 
 	ret = ext4_break_layouts(inode);
 	if (ret)
 		goto out_mmap;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Need to round down to align start offset to page size boundary
 	 * for page size > block size.
@@ -5761,6 +5806,10 @@ out_stop:
 	ext4_journal_stop(handle);
 out_mmap:
 	up_write(&EXT4_I(inode)->i_mmap_sem);
+<<<<<<< HEAD
+=======
+	ext4_inode_resume_unlocked_dio(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_mutex:
 	inode_unlock(inode);
 	return ret;

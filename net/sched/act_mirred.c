@@ -74,12 +74,16 @@ static void tcf_mirred_release(struct tc_action *a)
 
 	spin_lock(&mirred_list_lock);
 	list_del(&m->tcfm_list);
+<<<<<<< HEAD
 	spin_unlock(&mirred_list_lock);
 
 	/* last reference to action, no need to lock */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dev = rcu_dereference_protected(m->tcfm_dev, 1);
 	if (dev)
 		dev_put(dev);
+	spin_unlock_bh(&mirred_list_lock);
 }
 
 static const struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
@@ -248,6 +252,7 @@ static int tcf_mirred_act(struct sk_buff *skb, const struct tc_action *a,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* we could easily avoid the clone only if called by ingress and clsact;
 	 * since we can't easily detect the clsact caller, skip clone only for
 	 * ingress - that covers the TC S/W datapath.
@@ -259,6 +264,16 @@ static int tcf_mirred_act(struct sk_buff *skb, const struct tc_action *a,
 		skb2 = skb_clone(skb, GFP_ATOMIC);
 		if (!skb2)
 			goto out;
+=======
+	at = G_TC_AT(skb->tc_verd);
+	skb2 = skb_clone(skb, GFP_ATOMIC);
+	if (!skb2)
+		goto out;
+
+	if (!(at & AT_EGRESS)) {
+		if (m->tcfm_ok_push)
+			skb_push_rcsum(skb2, skb->mac_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* All mirred/redirected skbs should clear previous ct info */

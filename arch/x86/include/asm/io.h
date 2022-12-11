@@ -306,6 +306,7 @@ static inline unsigned type in##bwl##_p(int port)			\
 									\
 static inline void outs##bwl(int port, const void *addr, unsigned long count) \
 {									\
+<<<<<<< HEAD
 	if (sev_key_active()) {						\
 		unsigned type *value = (unsigned type *)addr;		\
 		while (count) {						\
@@ -318,10 +319,15 @@ static inline void outs##bwl(int port, const void *addr, unsigned long count) \
 			     : "+S"(addr), "+c"(count)			\
 			     : "d"(port) : "memory");			\
 	}								\
+=======
+	asm volatile("rep; outs" #bwl					\
+		     : "+S"(addr), "+c"(count) : "d"(port) : "memory");	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }									\
 									\
 static inline void ins##bwl(int port, void *addr, unsigned long count)	\
 {									\
+<<<<<<< HEAD
 	if (sev_key_active()) {						\
 		unsigned type *value = (unsigned type *)addr;		\
 		while (count) {						\
@@ -334,6 +340,10 @@ static inline void ins##bwl(int port, void *addr, unsigned long count)	\
 			     : "+D"(addr), "+c"(count)			\
 			     : "d"(port) : "memory");			\
 	}								\
+=======
+	asm volatile("rep; ins" #bwl					\
+		     : "+D"(addr), "+c"(count) : "d"(port) : "memory");	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 BUILDIO(b, b, char)

@@ -1227,8 +1227,11 @@ void mlx4_srq_event(struct mlx4_dev *dev, u32 srqn, int event_type);
 
 void mlx4_enter_error_state(struct mlx4_dev_persistent *persist);
 int mlx4_comm_internal_err(u32 slave_read);
+<<<<<<< HEAD
 
 int mlx4_crdump_collect(struct mlx4_dev *dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 int mlx4_SENSE_PORT(struct mlx4_dev *dev, int port,
 		    enum mlx4_port_type *type);

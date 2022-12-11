@@ -503,9 +503,14 @@ static unsigned int vfs_dent_type(uint8_t type)
  */
 static int ubifs_readdir(struct file *file, struct dir_context *ctx)
 {
+<<<<<<< HEAD
 	int fstr_real_len = 0, err = 0;
 	struct fscrypt_name nm;
 	struct fscrypt_str fstr = {0};
+=======
+	int err = 0;
+	struct qstr nm;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	union ubifs_key key;
 	struct ubifs_dent_node *dent;
 	struct inode *dir = file_inode(file);
@@ -640,9 +645,12 @@ out:
 	kfree(file->private_data);
 	file->private_data = NULL;
 
+<<<<<<< HEAD
 	if (encrypted)
 		fscrypt_fname_free_buffer(&fstr);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err != -ENOENT)
 		ubifs_err(c, "cannot find next direntry, error %d", err);
 	else

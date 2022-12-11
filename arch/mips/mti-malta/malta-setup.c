@@ -30,6 +30,12 @@
 
 #define ROCIT_CONFIG_GEN0		0x1f403000
 #define  ROCIT_CONFIG_GEN0_PCI_IOCU	BIT(7)
+<<<<<<< HEAD
+=======
+
+extern void malta_be_init(void);
+extern int malta_be_handler(struct pt_regs *regs, int is_fixup);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static struct resource standard_io_resources[] = {
 	{

@@ -642,6 +642,7 @@ qla25xx_delete_queues(struct scsi_qla_host *vha)
 	struct qla_hw_data *ha = vha->hw;
 	struct qla_qpair *qpair, *tqpair;
 
+<<<<<<< HEAD
 	if (ql2xmqsupport || ql2xnvmeenable) {
 		list_for_each_entry_safe(qpair, tqpair, &vha->qp_list,
 		    qp_list_elem)
@@ -672,10 +673,38 @@ qla25xx_delete_queues(struct scsi_qla_host *vha)
 					    rsp->id);
 					return ret;
 				}
+=======
+	/* Delete request queues */
+	for (cnt = 1; cnt < ha->max_req_queues; cnt++) {
+		req = ha->req_q_map[cnt];
+		if (req && test_bit(cnt, ha->req_qid_map)) {
+			ret = qla25xx_delete_req_que(vha, req);
+			if (ret != QLA_SUCCESS) {
+				ql_log(ql_log_warn, vha, 0x00ea,
+				    "Couldn't delete req que %d.\n",
+				    req->id);
+				return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	/* Delete response queues */
+	for (cnt = 1; cnt < ha->max_rsp_queues; cnt++) {
+		rsp = ha->rsp_q_map[cnt];
+		if (rsp && test_bit(cnt, ha->rsp_qid_map)) {
+			ret = qla25xx_delete_rsp_que(vha, rsp);
+			if (ret != QLA_SUCCESS) {
+				ql_log(ql_log_warn, vha, 0x00eb,
+				    "Couldn't delete rsp que %d.\n",
+				    rsp->id);
+				return ret;
+			}
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

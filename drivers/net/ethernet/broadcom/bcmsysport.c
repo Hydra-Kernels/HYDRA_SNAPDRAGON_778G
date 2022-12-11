@@ -875,14 +875,20 @@ static void bcm_sysport_tx_reclaim_one(struct bcm_sysport_tx_ring *ring,
 static unsigned int __bcm_sysport_tx_reclaim(struct bcm_sysport_priv *priv,
 					     struct bcm_sysport_tx_ring *ring)
 {
+<<<<<<< HEAD
 	unsigned int pkts_compl = 0, bytes_compl = 0;
 	struct net_device *ndev = priv->netdev;
+=======
+	struct net_device *ndev = priv->netdev;
+	unsigned int pkts_compl = 0, bytes_compl = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int txbds_processed = 0;
 	struct bcm_sysport_cb *cb;
 	unsigned int txbds_ready;
 	unsigned int c_index;
 	u32 hw_ind;
 
+<<<<<<< HEAD
 	/* Clear status before servicing to reduce spurious interrupts */
 	if (!ring->priv->is_lite)
 		intrl2_1_writel(ring->priv, BIT(ring->index), INTRL2_CPU_CLEAR);
@@ -890,6 +896,8 @@ static unsigned int __bcm_sysport_tx_reclaim(struct bcm_sysport_priv *priv,
 		intrl2_0_writel(ring->priv, BIT(ring->index +
 				INTRL2_0_TDMA_MBDONE_SHIFT), INTRL2_CPU_CLEAR);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Compute how many descriptors have been processed since last call */
 	hw_ind = tdma_readl(priv, TDMA_DESC_RING_PROD_CONS_INDEX(ring->index));
 	c_index = (hw_ind >> RING_CONS_INDEX_SHIFT) & RING_CONS_INDEX_MASK;
@@ -901,7 +909,11 @@ static unsigned int __bcm_sysport_tx_reclaim(struct bcm_sysport_priv *priv,
 
 	while (txbds_processed < txbds_ready) {
 		cb = &ring->cbs[ring->clean_index];
+<<<<<<< HEAD
 		bcm_sysport_tx_reclaim_one(ring, cb, &bytes_compl, &pkts_compl);
+=======
+		bcm_sysport_tx_reclaim_one(priv, cb, &bytes_compl, &pkts_compl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		ring->desc_count++;
 		txbds_processed++;
@@ -917,8 +929,11 @@ static unsigned int __bcm_sysport_tx_reclaim(struct bcm_sysport_priv *priv,
 	ring->bytes += bytes_compl;
 	u64_stats_update_end(&priv->syncp);
 
+<<<<<<< HEAD
 	ring->c_index = c_index;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	netif_dbg(priv, tx_done, ndev,
 		  "ring=%d c_index=%d pkts_compl=%d, bytes_compl=%d\n",
 		  ring->index, ring->c_index, pkts_compl, bytes_compl);
@@ -1296,6 +1311,18 @@ static netdev_tx_t bcm_sysport_xmit(struct sk_buff *skb,
 		netif_tx_stop_queue(txq);
 		netdev_err(dev, "queue %d awake and ring full!\n", queue);
 		ret = NETDEV_TX_BUSY;
+		goto out;
+	}
+
+	/* The Ethernet switch we are interfaced with needs packets to be at
+	 * least 64 bytes (including FCS) otherwise they will be discarded when
+	 * they enter the switch port logic. When Broadcom tags are enabled, we
+	 * need to make sure that packets are at least 68 bytes
+	 * (including FCS and tag) because the length verification is done after
+	 * the Broadcom tag is stripped off the ingress packet.
+	 */
+	if (skb_put_padto(skb, ETH_ZLEN + ENET_BRCM_TAG_LEN)) {
+		ret = NETDEV_TX_OK;
 		goto out;
 	}
 

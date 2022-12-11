@@ -61,6 +61,7 @@ static void init_runtime_instr_cb(struct runtime_instr_cb *cb)
 	cb->v = 1;
 }
 
+<<<<<<< HEAD
 /*
  * The signum argument is unused. In older kernels it was used to
  * specify a real-time signal. For backwards compatibility user space
@@ -68,6 +69,9 @@ static void init_runtime_instr_cb(struct runtime_instr_cb *cb)
  * was checked in older kernels).
  */
 SYSCALL_DEFINE2(s390_runtime_instr, int, command, int, signum)
+=======
+SYSCALL_DEFINE1(s390_runtime_instr, int, command)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct runtime_instr_cb *cb;
 

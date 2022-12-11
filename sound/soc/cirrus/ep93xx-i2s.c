@@ -53,6 +53,7 @@
 #define EP93XX_I2S_RXLINCTRLDATA_R_JUST	BIT(1) /* Right justify */
 
 #define EP93XX_I2S_TXLINCTRLDATA_R_JUST	BIT(2) /* Right justify */
+<<<<<<< HEAD
 
 /*
  * Transmit empty interrupt level select:
@@ -61,6 +62,8 @@
  */
 #define EP93XX_I2S_TXCTRL_TXEMPTY_LVL	BIT(0)
 #define EP93XX_I2S_TXCTRL_TXUFIE	BIT(1) /* Transmit interrupt enable */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define EP93XX_I2S_CLKCFG_LRS		(1 << 0) /* lrclk polarity */
 #define EP93XX_I2S_CLKCFG_CKP		(1 << 1) /* Bit clock polarity */

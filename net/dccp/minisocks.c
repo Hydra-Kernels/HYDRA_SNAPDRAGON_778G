@@ -121,7 +121,15 @@ struct sock *dccp_create_openreq_child(const struct sock *sk,
 		 * Activate features: initialise CCIDs, sequence windows etc.
 		 */
 		if (dccp_feat_activate_values(newsk, &dreq->dreq_featneg)) {
+<<<<<<< HEAD
 			sk_free_unlock_clone(newsk);
+=======
+			/* It is still raw copy of parent, so invalidate
+			 * destructor and make plain sk_free() */
+			newsk->sk_destruct = NULL;
+			bh_unlock_sock(newsk);
+			sk_free(newsk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return NULL;
 		}
 		dccp_init_xmit_timers(newsk);

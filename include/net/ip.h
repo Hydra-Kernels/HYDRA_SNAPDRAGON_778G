@@ -41,6 +41,8 @@ extern unsigned int sysctl_fib_sync_mem;
 extern unsigned int sysctl_fib_sync_mem_min;
 extern unsigned int sysctl_fib_sync_mem_max;
 
+#define IPV4_MIN_MTU		68			/* RFC 791 */
+
 struct sock;
 
 struct inet_skb_parm {
@@ -461,12 +463,16 @@ static inline unsigned int ip_dst_mtu_maybe_forward(const struct dst_entry *dst,
 	    !forwarding)
 		return dst_mtu(dst);
 
+<<<<<<< HEAD
 	/* 'forwarding = true' case should always honour route mtu */
 	mtu = dst_metric_raw(dst, RTAX_MTU);
 	if (!mtu)
 		mtu = min(READ_ONCE(dst->dev->mtu), IP_MAX_MTU);
 
 	return mtu - lwtunnel_headroom(dst->lwtstate, mtu);
+=======
+	return min(READ_ONCE(dst->dev->mtu), IP_MAX_MTU);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline unsigned int ip_skb_dst_mtu(struct sock *sk,
@@ -480,6 +486,7 @@ static inline unsigned int ip_skb_dst_mtu(struct sock *sk,
 		return ip_dst_mtu_maybe_forward(skb_dst(skb), forwarding);
 	}
 
+<<<<<<< HEAD
 	mtu = min(READ_ONCE(skb_dst(skb)->dev->mtu), IP_MAX_MTU);
 	return mtu - lwtunnel_headroom(skb_dst(skb)->lwtstate, mtu);
 }
@@ -513,6 +520,9 @@ void ip_dst_metrics_put(struct dst_entry *dst)
 
 	if (p != &dst_default_metrics && refcount_dec_and_test(&p->refcnt))
 		kfree(p);
+=======
+	return min(READ_ONCE(skb_dst(skb)->dev->mtu), IP_MAX_MTU);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 u32 ip_idents_reserve(u32 hash, int segs);
@@ -747,9 +757,14 @@ int ip_options_rcv_srr(struct sk_buff *skb, struct net_device *dev);
  */
 
 void ipv4_pktinfo_prepare(const struct sock *sk, struct sk_buff *skb);
+<<<<<<< HEAD
 void ip_cmsg_recv_offset(struct msghdr *msg, struct sock *sk,
 			 struct sk_buff *skb, int tlen, int offset);
 int ip_cmsg_send(struct sock *sk, struct msghdr *msg,
+=======
+void ip_cmsg_recv_offset(struct msghdr *msg, struct sk_buff *skb, int tlen, int offset);
+int ip_cmsg_send(struct net *net, struct msghdr *msg,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 struct ipcm_cookie *ipc, bool allow_ipv6);
 int ip_setsockopt(struct sock *sk, int level, int optname, char __user *optval,
 		  unsigned int optlen);
@@ -770,7 +785,11 @@ void ip_local_error(struct sock *sk, int err, __be32 daddr, __be16 dport,
 
 static inline void ip_cmsg_recv(struct msghdr *msg, struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	ip_cmsg_recv_offset(msg, skb->sk, skb, 0, 0);
+=======
+	ip_cmsg_recv_offset(msg, skb, 0, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 bool icmp_global_allow(void);

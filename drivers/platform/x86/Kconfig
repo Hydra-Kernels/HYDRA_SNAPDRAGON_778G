@@ -169,6 +169,11 @@ config DELL_SMBIOS_SMM
 
 config DELL_LAPTOP
 	tristate "Dell Laptop Extras"
+<<<<<<< HEAD
+=======
+	depends on X86
+	depends on DCDBAS
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	depends on DMI
 	depends on BACKLIGHT_CLASS_DEVICE
 	depends on ACPI_VIDEO || ACPI_VIDEO = n

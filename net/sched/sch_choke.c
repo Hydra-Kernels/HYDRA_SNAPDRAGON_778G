@@ -126,7 +126,11 @@ static void choke_drop_by_idx(struct Qdisc *sch, unsigned int idx,
 
 	qdisc_qstats_backlog_dec(sch, skb);
 	qdisc_tree_reduce_backlog(sch, 1, qdisc_pkt_len(skb));
+<<<<<<< HEAD
 	qdisc_drop(skb, sch, to_free);
+=======
+	qdisc_drop(skb, sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	--sch->q.qlen;
 }
 
@@ -370,6 +374,9 @@ static int choke_change(struct Qdisc *sch, struct nlattr *opt,
 	ctl = nla_data(tb[TCA_CHOKE_PARMS]);
 	stab = nla_data(tb[TCA_CHOKE_STAB]);
 	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog, ctl->Scell_log, stab))
+		return -EINVAL;
+
+	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog))
 		return -EINVAL;
 
 	if (ctl->limit > CHOKE_MAX_QUEUE)

@@ -1037,9 +1037,17 @@ static int ov6650_probe(struct i2c_client *client,
 	priv->rect.width  = W_CIF;
 	priv->rect.height = H_CIF;
 
+<<<<<<< HEAD:drivers/media/i2c/ov6650.c
 	/* Hardware default frame interval */
 	priv->tpf.numerator   = GET_CLKRC_DIV(DEF_CLKRC);
 	priv->tpf.denominator = FRAME_RATE_MAX;
+=======
+	priv->clk = v4l2_clk_get(&client->dev, NULL);
+	if (IS_ERR(priv->clk)) {
+		ret = PTR_ERR(priv->clk);
+		goto eclkget;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/media/i2c/soc_camera/ov6650.c
 
 	priv->subdev.internal_ops = &ov6650_internal_ops;
 

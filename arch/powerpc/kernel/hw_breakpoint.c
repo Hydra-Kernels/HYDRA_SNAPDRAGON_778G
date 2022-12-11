@@ -167,8 +167,13 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
 	if (dawr_enabled()) {
 		length_max = 512 ; /* 64 doublewords */
 		/* DAWR region can't cross 512 boundary */
+<<<<<<< HEAD
 		if ((attr->bp_addr >> 9) !=
 		    ((attr->bp_addr + attr->bp_len - 1) >> 9))
+=======
+		if ((bp->attr.bp_addr >> 9) !=
+		    ((bp->attr.bp_addr + bp->attr.bp_len - 1) >> 9))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EINVAL;
 	}
 	if (hw->len >

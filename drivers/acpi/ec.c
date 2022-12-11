@@ -176,6 +176,7 @@ static void acpi_ec_event_processor(struct work_struct *work);
 
 struct acpi_ec *first_ec;
 EXPORT_SYMBOL(first_ec);
+static struct workqueue_struct *ec_query_wq;
 
 static struct acpi_ec *boot_ec;
 static bool boot_ec_is_ecdt = false;
@@ -2106,9 +2107,29 @@ static const struct dmi_system_id acpi_ec_no_wakeup[] = {
 	{ },
 };
 
+static inline int acpi_ec_query_init(void)
+{
+	if (!ec_query_wq) {
+		ec_query_wq = alloc_workqueue("kec_query", 0,
+					      ec_max_queries);
+		if (!ec_query_wq)
+			return -ENODEV;
+	}
+	return 0;
+}
+
+static inline void acpi_ec_query_exit(void)
+{
+	if (ec_query_wq) {
+		destroy_workqueue(ec_query_wq);
+		ec_query_wq = NULL;
+	}
+}
+
 int __init acpi_ec_init(void)
 {
 	int result;
+<<<<<<< HEAD
 	int ecdt_fail, dsdt_fail;
 
 	result = acpi_ec_init_workqueues();
@@ -2134,6 +2155,22 @@ int __init acpi_ec_init(void)
 	 */
 	ecdt_fail = acpi_ec_ecdt_start();
 	return ecdt_fail && dsdt_fail ? -ENODEV : 0;
+=======
+
+	/* register workqueue for _Qxx evaluations */
+	result = acpi_ec_query_init();
+	if (result)
+		goto err_exit;
+	/* Now register the driver for the EC */
+	result = acpi_bus_register_driver(&acpi_ec_driver);
+	if (result)
+		goto err_exit;
+
+err_exit:
+	if (result)
+		acpi_ec_query_exit();
+	return result;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* EC driver currently not unloadable */
@@ -2142,6 +2179,10 @@ static void __exit acpi_ec_exit(void)
 {
 
 	acpi_bus_unregister_driver(&acpi_ec_driver);
+<<<<<<< HEAD
 	acpi_ec_destroy_workqueues();
+=======
+	acpi_ec_query_exit();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif	/* 0 */

@@ -415,7 +415,7 @@ int snd_tscm_stream_reserve_duplex(struct snd_tscm *tscm, unsigned int rate)
 		}
 	}
 
-	return 0;
+	return err;
 }
 
 int snd_tscm_stream_start_duplex(struct snd_tscm *tscm, unsigned int rate)

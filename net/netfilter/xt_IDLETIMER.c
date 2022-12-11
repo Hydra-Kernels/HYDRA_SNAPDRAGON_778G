@@ -358,6 +358,8 @@ static int idletimer_tg_create(struct idletimer_tg_info *info)
 
 	INIT_WORK(&info->timer->work, idletimer_tg_work);
 
+	INIT_WORK(&info->timer->work, idletimer_tg_work);
+
 	mod_timer(&info->timer->timer,
 		  msecs_to_jiffies(info->timeout * 1000) + jiffies);
 
@@ -635,9 +637,20 @@ static int idletimer_tg_checkentry_v1(const struct xt_tgchk_param *par)
 		pr_debug("checkentry helper return invalid\n");
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 
 	if (info->timer_type > XT_IDLETIMER_ALARM) {
 		pr_debug("invalid value for timer type\n");
+=======
+	if (info->timeout >= INT_MAX / 1000) {
+		pr_debug("timeout value is too big\n");
+		return -EINVAL;
+	}
+	if (info->label[0] == '\0' ||
+	    strnlen(info->label,
+		    MAX_IDLETIMER_LABEL_SIZE) == MAX_IDLETIMER_LABEL_SIZE) {
+		pr_debug("label is empty or not nul-terminated\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 

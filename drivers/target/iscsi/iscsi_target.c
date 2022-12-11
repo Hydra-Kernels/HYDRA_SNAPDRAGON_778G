@@ -483,7 +483,8 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
 void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
 {
 	spin_lock_bh(&conn->cmd_lock);
-	if (!list_empty(&cmd->i_conn_node))
+	if (!list_empty(&cmd->i_conn_node) &&
+	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
 		list_del_init(&cmd->i_conn_node);
 	spin_unlock_bh(&conn->cmd_lock);
 
@@ -1281,6 +1282,7 @@ iscsit_get_immediate_data(struct iscsi_cmd *cmd, struct iscsi_scsi_req *hdr,
 	/*
 	 * Special case for Unsupported SAM WRITE Opcodes and ImmediateData=Yes.
 	 */
+<<<<<<< HEAD
 	if (dump_payload) {
 		u32 length = min(cmd->se_cmd.data_length - cmd->write_data_done,
 				 cmd->first_burst_len);
@@ -1295,6 +1297,21 @@ iscsit_get_immediate_data(struct iscsi_cmd *cmd, struct iscsi_scsi_req *hdr,
 	} else {
 		immed_ret = iscsit_handle_immediate_data(cmd, hdr,
 							 cmd->first_burst_len);
+=======
+	if (dump_payload)
+		goto after_immediate_data;
+	/*
+	 * Check for underflow case where both EDTL and immediate data payload
+	 * exceeds what is presented by CDB's TRANSFER LENGTH, and what has
+	 * already been set in target_cmd_size_check() as se_cmd->data_length.
+	 *
+	 * For this special case, fail the command and dump the immediate data
+	 * payload.
+	 */
+	if (cmd->first_burst_len > cmd->se_cmd.data_length) {
+		cmd->sense_reason = TCM_INVALID_CDB_FIELD;
+		goto after_immediate_data;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (immed_ret == IMMEDIATE_DATA_NORMAL_OPERATION) {
@@ -2021,8 +2038,34 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
 	 * LIO-Target $FABRIC_MOD
 	 */
 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
+<<<<<<< HEAD
 		tcm_function = iscsit_convert_tmf(function);
 		if (tcm_function == TMR_UNKNOWN) {
+=======
+		switch (function) {
+		case ISCSI_TM_FUNC_ABORT_TASK:
+			tcm_function = TMR_ABORT_TASK;
+			break;
+		case ISCSI_TM_FUNC_ABORT_TASK_SET:
+			tcm_function = TMR_ABORT_TASK_SET;
+			break;
+		case ISCSI_TM_FUNC_CLEAR_ACA:
+			tcm_function = TMR_CLEAR_ACA;
+			break;
+		case ISCSI_TM_FUNC_CLEAR_TASK_SET:
+			tcm_function = TMR_CLEAR_TASK_SET;
+			break;
+		case ISCSI_TM_FUNC_LOGICAL_UNIT_RESET:
+			tcm_function = TMR_LUN_RESET;
+			break;
+		case ISCSI_TM_FUNC_TARGET_WARM_RESET:
+			tcm_function = TMR_TARGET_WARM_RESET;
+			break;
+		case ISCSI_TM_FUNC_TARGET_COLD_RESET:
+			tcm_function = TMR_TARGET_COLD_RESET;
+			break;
+		default:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			pr_err("Unknown iSCSI TMR Function:"
 			       " 0x%02x\n", function);
 			return iscsit_add_reject_cmd(cmd,
@@ -3954,6 +3997,22 @@ static void iscsit_get_rx_pdu(struct iscsi_conn *conn)
 	u8 *buffer, opcode;
 	u32 checksum = 0, digest = 0;
 	struct kvec iov;
+<<<<<<< HEAD
+=======
+	bool conn_freed = false;
+	/*
+	 * Allow ourselves to be interrupted by SIGINT so that a
+	 * connection recovery / failure event can be triggered externally.
+	 */
+	allow_signal(SIGINT);
+	/*
+	 * Wait for iscsi_post_login_handler() to complete before allowing
+	 * incoming iscsi/tcp socket I/O, and/or failing the connection.
+	 */
+	rc = wait_for_completion_interruptible(&conn->rx_login_comp);
+	if (rc < 0 || iscsi_target_check_conn_state(conn))
+		goto out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	buffer = kcalloc(ISCSI_HDR_LEN, sizeof(*buffer), GFP_KERNEL);
 	if (!buffer)
@@ -4057,14 +4116,20 @@ int iscsi_target_rx_thread(void *arg)
 	if (!signal_pending(current))
 		atomic_set(&conn->transport_failed, 1);
 	iscsit_take_action_for_connection_exit(conn, &conn_freed);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	if (!conn_freed) {
 		while (!kthread_should_stop()) {
 			msleep(100);
 		}
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -4081,6 +4146,7 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
 	spin_lock_bh(&conn->cmd_lock);
 	list_splice_init(&conn->conn_cmd_list, &tmp_list);
 
+<<<<<<< HEAD
 	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_list, i_conn_node) {
 		struct se_cmd *se_cmd = &cmd->se_cmd;
 
@@ -4098,6 +4164,15 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
 				se_cmd->transport_state |= CMD_T_FABRIC_STOP;
 			}
 			spin_unlock_irq(&se_cmd->t_state_lock);
+=======
+	list_for_each_entry(cmd, &tmp_list, i_conn_node) {
+		struct se_cmd *se_cmd = &cmd->se_cmd;
+
+		if (se_cmd->se_tfo != NULL) {
+			spin_lock(&se_cmd->t_state_lock);
+			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+			spin_unlock(&se_cmd->t_state_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 	spin_unlock_bh(&conn->cmd_lock);
@@ -4451,7 +4526,11 @@ static void iscsit_logout_post_handler_closesession(
 	 * always sleep waiting for RX/TX thread shutdown to complete
 	 * within iscsit_close_connection().
 	 */
+<<<<<<< HEAD
 	if (!conn->conn_transport->rdma_shutdown) {
+=======
+	if (conn->conn_transport->transport_type == ISCSI_TCP) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sleep = cmpxchg(&conn->tx_thread_active, true, false);
 		if (!sleep)
 			return;
@@ -4471,7 +4550,11 @@ static void iscsit_logout_post_handler_samecid(
 {
 	int sleep = 1;
 
+<<<<<<< HEAD
 	if (!conn->conn_transport->rdma_shutdown) {
+=======
+	if (conn->conn_transport->transport_type == ISCSI_TCP) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sleep = cmpxchg(&conn->tx_thread_active, true, false);
 		if (!sleep)
 			return;
@@ -4673,7 +4756,10 @@ int iscsit_release_sessions_for_tpg(struct iscsi_portal_group *tpg, int force)
 		iscsit_inc_session_usage_count(sess);
 		atomic_set(&sess->session_reinstatement, 1);
 		atomic_set(&sess->session_fall_back_to_erl0, 1);
+<<<<<<< HEAD
 		atomic_set(&sess->session_close, 1);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock(&sess->conn_lock);
 
 		list_move_tail(&se_sess->sess_list, &free_list);

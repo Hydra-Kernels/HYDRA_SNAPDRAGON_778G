@@ -346,7 +346,14 @@ void iser_free_fastreg_pool(struct ib_conn *ib_conn)
 
 	list_for_each_entry_safe(desc, tmp, &fr_pool->all_list, all_list) {
 		list_del(&desc->all_list);
+<<<<<<< HEAD
 		iser_destroy_fastreg_desc(desc);
+=======
+		iser_free_reg_res(&desc->rsc);
+		if (desc->pi_ctx)
+			iser_free_pi_ctx(desc->pi_ctx);
+		kfree(desc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		++i;
 	}
 

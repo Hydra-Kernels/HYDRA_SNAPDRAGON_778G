@@ -102,8 +102,13 @@ static int adau17x1_pll_event(struct snd_soc_dapm_widget *w,
 static int adau17x1_adc_fixup(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
+<<<<<<< HEAD
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct adau *adau = snd_soc_component_get_drvdata(component);
+=======
+	struct snd_soc_codec *codec = snd_soc_dapm_to_codec(w->dapm);
+	struct adau *adau = snd_soc_codec_get_drvdata(codec);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * If we are capturing, toggle the ADOSR bit in Converter Control 0 to

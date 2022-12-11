@@ -10,7 +10,11 @@
 #include <asm/nospec-insn.h>
 #include <asm/sigp.h>
 
+<<<<<<< HEAD
 	GEN_BR_THUNK %r9
+=======
+	GEN_BR_THUNK %r14
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #
 # Issue "store status" for the current CPU to its prefix page
@@ -65,6 +69,7 @@ ENTRY(store_status)
 	stckc	0(%r4)
 	mvc	1(7,%r1),1(%r4)
 	/* Program status word */
+<<<<<<< HEAD
 	lghi	%r1,__LC_PSW_SAVE_AREA
 	epsw	%r4,%r5
 	st	%r4,0(%r1)
@@ -74,6 +79,14 @@ ENTRY(store_status)
 	lgr	%r2,%r3
 	BR_EX	%r9
 ENDPROC(store_status)
+=======
+	epsw	%r2,%r3
+	st	%r2,__LC_PSW_SAVE_AREA-SAVE_AREA_BASE + 0(%r1)
+	st	%r3,__LC_PSW_SAVE_AREA-SAVE_AREA_BASE + 4(%r1)
+	larl	%r2,store_status
+	stg	%r2,__LC_PSW_SAVE_AREA-SAVE_AREA_BASE + 8(%r1)
+	BR_EX	%r14
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	.section .bss
 	.align	8

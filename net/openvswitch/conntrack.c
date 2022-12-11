@@ -1291,10 +1291,13 @@ int ovs_ct_execute(struct net *net, struct sk_buff *skb,
 	/* The conntrack module expects to be working at L3. */
 	nh_ofs = skb_network_offset(skb);
 	skb_pull_rcsum(skb, nh_ofs);
+<<<<<<< HEAD
 
 	err = ovs_skb_network_trim(skb);
 	if (err)
 		return err;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (key->ip.frag != OVS_FRAG_TYPE_NONE) {
 		err = handle_fragments(net, key, info->zone.id, skb);

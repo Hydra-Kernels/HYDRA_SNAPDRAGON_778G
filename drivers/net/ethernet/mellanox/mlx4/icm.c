@@ -119,6 +119,7 @@ static int mlx4_alloc_icm_coherent(struct device *dev, struct mlx4_icm_buf *buf,
 	if (!buf->addr)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (offset_in_page(buf->addr)) {
 		dma_free_coherent(dev, PAGE_SIZE << order, buf->addr,
 				  buf->dma_addr);
@@ -126,6 +127,16 @@ static int mlx4_alloc_icm_coherent(struct device *dev, struct mlx4_icm_buf *buf,
 	}
 
 	buf->size = PAGE_SIZE << order;
+=======
+	if (offset_in_page(buf)) {
+		dma_free_coherent(dev, PAGE_SIZE << order,
+				  buf, sg_dma_address(mem));
+		return -ENOMEM;
+	}
+
+	sg_set_buf(mem, buf, PAGE_SIZE << order);
+	sg_dma_len(mem) = PAGE_SIZE << order;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

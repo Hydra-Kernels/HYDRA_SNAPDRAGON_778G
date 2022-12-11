@@ -220,6 +220,7 @@ int main(void)
 #endif /* CONFIG_PPC_BOOK3E */
 
 #ifdef CONFIG_PPC_BOOK3S_64
+<<<<<<< HEAD
 	OFFSET(PACASLBCACHE, paca_struct, slb_cache);
 	OFFSET(PACASLBCACHEPTR, paca_struct, slb_cache_ptr);
 	OFFSET(PACASTABRR, paca_struct, stab_rr);
@@ -276,6 +277,14 @@ int main(void)
 	OFFSET(ACCOUNT_STARTTIME_USER, thread_info, accounting.starttime_user);
 	OFFSET(ACCOUNT_USER_TIME, thread_info, accounting.utime);
 	OFFSET(ACCOUNT_SYSTEM_TIME, thread_info, accounting.stime);
+=======
+	DEFINE(PACAMCEMERGSP, offsetof(struct paca_struct, mc_emergency_sp));
+	DEFINE(PACA_IN_MCE, offsetof(struct paca_struct, in_mce));
+	DEFINE(PACA_RFI_FLUSH_FALLBACK_AREA, offsetof(struct paca_struct, rfi_flush_fallback_area));
+	DEFINE(PACA_EXRFI, offsetof(struct paca_struct, exrfi));
+	DEFINE(PACA_L1D_FLUSH_CONGRUENCE, offsetof(struct paca_struct, l1d_flush_congruence));
+	DEFINE(PACA_L1D_FLUSH_SETS, offsetof(struct paca_struct, l1d_flush_sets));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 #endif /* CONFIG_PPC64 */
 
@@ -582,6 +591,7 @@ int main(void)
 	OFFSET(VCPU_SLB_V, kvmppc_slb, origv);
 	DEFINE(VCPU_SLB_SIZE, sizeof(struct kvmppc_slb));
 #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+<<<<<<< HEAD
 	OFFSET(VCPU_TFHAR, kvm_vcpu, arch.tfhar);
 	OFFSET(VCPU_TFIAR, kvm_vcpu, arch.tfiar);
 	OFFSET(VCPU_TEXASR, kvm_vcpu, arch.texasr);
@@ -598,6 +608,23 @@ int main(void)
 	OFFSET(VCPU_PPR_TM, kvm_vcpu, arch.ppr_tm);
 	OFFSET(VCPU_DSCR_TM, kvm_vcpu, arch.dscr_tm);
 	OFFSET(VCPU_TAR_TM, kvm_vcpu, arch.tar_tm);
+=======
+	DEFINE(VCPU_TFHAR, offsetof(struct kvm_vcpu, arch.tfhar));
+	DEFINE(VCPU_TFIAR, offsetof(struct kvm_vcpu, arch.tfiar));
+	DEFINE(VCPU_TEXASR, offsetof(struct kvm_vcpu, arch.texasr));
+	DEFINE(VCPU_GPR_TM, offsetof(struct kvm_vcpu, arch.gpr_tm));
+	DEFINE(VCPU_FPRS_TM, offsetof(struct kvm_vcpu, arch.fp_tm.fpr));
+	DEFINE(VCPU_VRS_TM, offsetof(struct kvm_vcpu, arch.vr_tm.vr));
+	DEFINE(VCPU_VRSAVE_TM, offsetof(struct kvm_vcpu, arch.vrsave_tm));
+	DEFINE(VCPU_CR_TM, offsetof(struct kvm_vcpu, arch.cr_tm));
+	DEFINE(VCPU_XER_TM, offsetof(struct kvm_vcpu, arch.xer_tm));
+	DEFINE(VCPU_LR_TM, offsetof(struct kvm_vcpu, arch.lr_tm));
+	DEFINE(VCPU_CTR_TM, offsetof(struct kvm_vcpu, arch.ctr_tm));
+	DEFINE(VCPU_AMR_TM, offsetof(struct kvm_vcpu, arch.amr_tm));
+	DEFINE(VCPU_PPR_TM, offsetof(struct kvm_vcpu, arch.ppr_tm));
+	DEFINE(VCPU_DSCR_TM, offsetof(struct kvm_vcpu, arch.dscr_tm));
+	DEFINE(VCPU_TAR_TM, offsetof(struct kvm_vcpu, arch.tar_tm));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #ifdef CONFIG_PPC_BOOK3S_64

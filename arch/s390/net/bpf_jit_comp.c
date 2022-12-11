@@ -28,7 +28,10 @@
 #include <asm/dis.h>
 #include <asm/facility.h>
 #include <asm/nospec-branch.h>
+<<<<<<< HEAD
 #include <asm/set_memory.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include "bpf_jit.h"
 
 struct bpf_jit {
@@ -440,6 +443,24 @@ static void bpf_jit_prologue(struct bpf_jit *jit, u32 stack_depth)
 			EMIT6_DISP_LH(0xe3000000, 0x0024, REG_W1, REG_0,
 				      REG_15, 152);
 	}
+<<<<<<< HEAD
+=======
+	if (jit->seen & SEEN_SKB)
+		emit_load_skb_data_hlen(jit);
+	if (jit->seen & SEEN_SKB_CHANGE)
+		/* stg %b1,ST_OFF_SKBP(%r0,%r15) */
+		EMIT6_DISP_LH(0xe3000000, 0x0024, BPF_REG_1, REG_0, REG_15,
+			      STK_OFF_SKBP);
+	/* Clear A (%b0) and X (%b7) registers for converted BPF programs */
+	if (is_classic) {
+		if (REG_SEEN(BPF_REG_A))
+			/* lghi %ba,0 */
+			EMIT4_IMM(0xa7090000, BPF_REG_A, 0);
+		if (REG_SEEN(BPF_REG_X))
+			/* lghi %bx,0 */
+			EMIT4_IMM(0xa7090000, BPF_REG_X, 0);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -457,8 +478,13 @@ static void bpf_jit_epilogue(struct bpf_jit *jit, u32 stack_depth)
 	/* Load exit code: lgr %r2,%b0 */
 	EMIT4(0xb9040000, REG_2, BPF_REG_0);
 	/* Restore registers */
+<<<<<<< HEAD
 	save_restore_regs(jit, REGS_RESTORE, stack_depth);
 	if (__is_defined(CC_USING_EXPOLINE) && !nospec_disable) {
+=======
+	save_restore_regs(jit, REGS_RESTORE);
+	if (IS_ENABLED(CC_USING_EXPOLINE) && !nospec_disable) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		jit->r14_thunk_ip = jit->prg;
 		/* Generate __s390_indirect_jump_r14 thunk */
 		if (test_facility(35)) {
@@ -476,7 +502,11 @@ static void bpf_jit_epilogue(struct bpf_jit *jit, u32 stack_depth)
 	/* br %r14 */
 	_EMIT2(0x07fe);
 
+<<<<<<< HEAD
 	if (__is_defined(CC_USING_EXPOLINE) && !nospec_disable &&
+=======
+	if (IS_ENABLED(CC_USING_EXPOLINE) && !nospec_disable &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    (jit->seen & SEEN_FUNC)) {
 		jit->r1_thunk_ip = jit->prg;
 		/* Generate __s390_indirect_jump_r1 thunk */
@@ -488,9 +518,17 @@ static void bpf_jit_epilogue(struct bpf_jit *jit, u32 stack_depth)
 			/* br %r1 */
 			_EMIT2(0x07f1);
 		} else {
+<<<<<<< HEAD
 			/* ex 0,S390_lowcore.br_r1_tampoline */
 			EMIT4_DISP(0x44000000, REG_0, REG_0,
 				   offsetof(struct lowcore, br_r1_trampoline));
+=======
+			/* larl %r1,.+14 */
+			EMIT6_PCREL_RILB(0xc0000000, REG_1, jit->prg + 14);
+			/* ex 0,S390_lowcore.br_r1_tampoline */
+			EMIT4_DISP(0x44000000, REG_0, REG_0,
+				   offsetof(struct _lowcore, br_r1_trampoline));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* j . */
 			EMIT4_PCREL(0xa7f40000, 0);
 		}
@@ -1032,7 +1070,11 @@ static noinline int bpf_jit_insn(struct bpf_jit *jit, struct bpf_prog *fp,
 		/* lg %w1,<d(imm)>(%l) */
 		EMIT6_DISP_LH(0xe3000000, 0x0004, REG_W1, REG_0, REG_L,
 			      EMIT_CONST_U64(func));
+<<<<<<< HEAD
 		if (__is_defined(CC_USING_EXPOLINE) && !nospec_disable) {
+=======
+		if (IS_ENABLED(CC_USING_EXPOLINE) && !nospec_disable) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* brasl %r14,__s390_indirect_jump_r1 */
 			EMIT6_PCREL_RILB(0xc0050000, REG_14, jit->r1_thunk_ip);
 		} else {

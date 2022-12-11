@@ -52,3 +52,8 @@
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
 #endif
+
+/* same as gcc, this was present in clang-2.6 so we can assume it works
+ * with any version that can compile the kernel
+ */
+#define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)

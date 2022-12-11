@@ -17,7 +17,10 @@
 #include <linux/pci.h>
 
 #include <asm/cpufeature.h>
+<<<<<<< HEAD:arch/x86/kernel/cpu/cacheinfo.c
 #include <asm/cacheinfo.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/intel_cacheinfo.c
 #include <asm/amd_nb.h>
 #include <asm/smp.h>
 
@@ -881,6 +884,7 @@ static int __cache_amd_cpumap_setup(unsigned int cpu, int index,
 	struct cacheinfo *this_leaf;
 	int i, sibling;
 
+<<<<<<< HEAD:arch/x86/kernel/cpu/cacheinfo.c
 	/*
 	 * For L3, always use the pre-calculated cpu_llc_shared_mask
 	 * to derive shared_cpu_map.
@@ -899,6 +903,9 @@ static int __cache_amd_cpumap_setup(unsigned int cpu, int index,
 			}
 		}
 	} else if (boot_cpu_has(X86_FEATURE_TOPOEXT)) {
+=======
+	if (boot_cpu_has(X86_FEATURE_TOPOEXT)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/intel_cacheinfo.c
 		unsigned int apicid, nshared, first, last;
 
 		nshared = base->eax.split.num_threads_sharing + 1;

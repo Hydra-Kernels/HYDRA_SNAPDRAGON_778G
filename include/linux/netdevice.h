@@ -273,10 +273,13 @@ struct header_ops {
 				const struct net_device *dev,
 				const unsigned char *haddr);
 	bool	(*validate)(const char *ll_header, unsigned int len);
+<<<<<<< HEAD
 	__be16	(*parse_protocol)(const struct sk_buff *skb);
 
 	ANDROID_KABI_RESERVE(1);
 	ANDROID_KABI_RESERVE(2);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* These flag bits are private to the generic network queueing
@@ -543,6 +546,7 @@ static inline void napi_synchronize(const struct napi_struct *n)
 			msleep(1);
 	else
 		barrier();
+<<<<<<< HEAD
 }
 
 /**
@@ -569,6 +573,8 @@ static inline bool napi_if_scheduled_mark_missed(struct napi_struct *n)
 	} while (cmpxchg(&n->state, val, new) != val);
 
 	return true;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 enum netdev_queue_state_t {
@@ -1912,7 +1918,11 @@ struct net_device {
 	unsigned int		max_mtu;
 	unsigned short		type;
 	unsigned short		hard_header_len;
+<<<<<<< HEAD
 	unsigned char		min_header_len;
+=======
+	unsigned short		min_header_len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	unsigned short		needed_headroom;
 	unsigned short		needed_tailroom;
@@ -2341,6 +2351,7 @@ struct napi_gro_cb {
 	/* Used in foo-over-udp, set in udp[46]_gro_receive */
 	u8	is_ipv6:1;
 
+<<<<<<< HEAD
 	/* Used in GRE, set in fou/gue_gro_receive */
 	u8	is_fou:1;
 
@@ -2352,6 +2363,12 @@ struct napi_gro_cb {
 
 	/* GRO is done by frag_list pointer chaining. */
 	u8	is_flist:1;
+=======
+	/* Number of gro_receive callbacks this packet already went through */
+	u8 recursion_counter:4;
+
+	/* 3 bit hole */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* used to support CHECKSUM_COMPLETE for tunneling protocols */
 	__wsum	csum;
@@ -2368,10 +2385,17 @@ static inline int gro_recursion_inc_test(struct sk_buff *skb)
 	return ++NAPI_GRO_CB(skb)->recursion_counter == GRO_RECURSION_LIMIT;
 }
 
+<<<<<<< HEAD
 typedef struct sk_buff *(*gro_receive_t)(struct list_head *, struct sk_buff *);
 static inline struct sk_buff *call_gro_receive(gro_receive_t cb,
 					       struct list_head *head,
 					       struct sk_buff *skb)
+=======
+typedef struct sk_buff **(*gro_receive_t)(struct sk_buff **, struct sk_buff *);
+static inline struct sk_buff **call_gro_receive(gro_receive_t cb,
+						struct sk_buff **head,
+						struct sk_buff *skb)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (unlikely(gro_recursion_inc_test(skb))) {
 		NAPI_GRO_CB(skb)->flush |= 1;
@@ -2381,6 +2405,7 @@ static inline struct sk_buff *call_gro_receive(gro_receive_t cb,
 	return cb(head, skb);
 }
 
+<<<<<<< HEAD
 typedef struct sk_buff *(*gro_receive_sk_t)(struct sock *, struct list_head *,
 					    struct sk_buff *);
 static inline struct sk_buff *call_gro_receive_sk(gro_receive_sk_t cb,
@@ -2396,6 +2421,8 @@ static inline struct sk_buff *call_gro_receive_sk(gro_receive_sk_t cb,
 	return cb(sk, head, skb);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct packet_type {
 	__be16			type;	/* This is really htons(ether_type). */
 	bool			ignore_outgoing;
@@ -2433,7 +2460,44 @@ struct packet_offload {
 	struct list_head	 list;
 };
 
+<<<<<<< HEAD
 /* often modified stats are per-CPU, other are shared (netdev->stats) */
+=======
+struct udp_offload;
+
+struct udp_offload_callbacks {
+	struct sk_buff		**(*gro_receive)(struct sk_buff **head,
+						 struct sk_buff *skb,
+						 struct udp_offload *uoff);
+	int			(*gro_complete)(struct sk_buff *skb,
+						int nhoff,
+						struct udp_offload *uoff);
+};
+
+struct udp_offload {
+	__be16			 port;
+	u8			 ipproto;
+	struct udp_offload_callbacks callbacks;
+};
+
+typedef struct sk_buff **(*gro_receive_udp_t)(struct sk_buff **,
+					      struct sk_buff *,
+					      struct udp_offload *);
+static inline struct sk_buff **call_gro_receive_udp(gro_receive_udp_t cb,
+						    struct sk_buff **head,
+						    struct sk_buff *skb,
+						    struct udp_offload *uoff)
+{
+	if (unlikely(gro_recursion_inc_test(skb))) {
+		NAPI_GRO_CB(skb)->flush |= 1;
+		return NULL;
+	}
+
+	return cb(head, skb, uoff);
+}
+
+/* often modified stats are per cpu, other are shared (netdev->stats) */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct pcpu_sw_netstats {
 	u64     rx_packets;
 	u64     rx_bytes;
@@ -2975,6 +3039,7 @@ static inline int dev_parse_header(const struct sk_buff *skb,
 	return dev->header_ops->parse(skb, haddr);
 }
 
+<<<<<<< HEAD
 static inline __be16 dev_parse_header_protocol(const struct sk_buff *skb)
 {
 	const struct net_device *dev = skb->dev;
@@ -2984,6 +3049,8 @@ static inline __be16 dev_parse_header_protocol(const struct sk_buff *skb)
 	return dev->header_ops->parse_protocol(skb);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* ll_header must have at least hard_header_len allocated */
 static inline bool dev_validate_header(const struct net_device *dev,
 				       char *ll_header, int len)
@@ -3004,8 +3071,12 @@ static inline bool dev_validate_header(const struct net_device *dev,
 	return false;
 }
 
+<<<<<<< HEAD
 typedef int gifconf_func_t(struct net_device * dev, char __user * bufptr,
 			   int len, int size);
+=======
+typedef int gifconf_func_t(struct net_device * dev, char __user * bufptr, int len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int register_gifconf(unsigned int family, gifconf_func_t *gifconf);
 static inline int unregister_gifconf(unsigned int family)
 {

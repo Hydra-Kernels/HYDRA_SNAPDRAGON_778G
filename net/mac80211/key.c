@@ -5,8 +5,16 @@
  * Copyright 2006-2007	Jiri Benc <jbenc@suse.cz>
  * Copyright 2007-2008	Johannes Berg <johannes@sipsolutions.net>
  * Copyright 2013-2014  Intel Mobile Communications GmbH
+<<<<<<< HEAD
  * Copyright 2015-2017	Intel Deutschland GmbH
  * Copyright 2018-2020  Intel Corporation
+=======
+ * Copyright 2017	Intel Deutschland GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #include <linux/if_ether.h>
@@ -812,15 +820,34 @@ int ieee80211_key_link(struct ieee80211_key *key,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	key->local = sdata->local;
 	key->sdata = sdata;
 	key->sta = sta;
+=======
+	pairwise = key->conf.flags & IEEE80211_KEY_FLAG_PAIRWISE;
+	idx = key->conf.keyidx;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Assign a unique ID to every key so we can easily prevent mixed
 	 * key and fragment cache attacks.
 	 */
 	key->color = atomic_inc_return(&key_color);
+
+	/*
+	 * Silently accept key re-installation without really installing the
+	 * new version of the key to avoid nonce reuse or replay issues.
+	 */
+	if (ieee80211_key_identical(sdata, old_key, key)) {
+		ieee80211_key_free_unused(key);
+		ret = 0;
+		goto out;
+	}
+
+	key->local = sdata->local;
+	key->sdata = sdata;
+	key->sta = sta;
 
 	increment_tailroom_need_count(sdata);
 

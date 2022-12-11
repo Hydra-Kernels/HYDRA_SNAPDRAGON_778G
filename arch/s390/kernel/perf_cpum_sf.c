@@ -840,9 +840,49 @@ static int __hw_perf_event_init(struct perf_event *event)
 	if (attr->config1 & PERF_CPUM_SF_FULL_BLOCKS)
 		SAMPL_FLAGS(hwc) |= PERF_CPUM_SF_FULL_BLOCKS;
 
+<<<<<<< HEAD
 	err =  __hw_perf_event_init_rate(event, &si);
 	if (err)
 		goto out;
+=======
+	/* The sampling information (si) contains information about the
+	 * min/max sampling intervals and the CPU speed.  So calculate the
+	 * correct sampling interval and avoid the whole period adjust
+	 * feedback loop.
+	 */
+	rate = 0;
+	if (attr->freq) {
+		if (!attr->sample_freq) {
+			err = -EINVAL;
+			goto out;
+		}
+		rate = freq_to_sample_rate(&si, attr->sample_freq);
+		rate = hw_limit_rate(&si, rate);
+		attr->freq = 0;
+		attr->sample_period = rate;
+	} else {
+		/* The min/max sampling rates specifies the valid range
+		 * of sample periods.  If the specified sample period is
+		 * out of range, limit the period to the range boundary.
+		 */
+		rate = hw_limit_rate(&si, hwc->sample_period);
+
+		/* The perf core maintains a maximum sample rate that is
+		 * configurable through the sysctl interface.  Ensure the
+		 * sampling rate does not exceed this value.  This also helps
+		 * to avoid throttling when pushing samples with
+		 * perf_event_overflow().
+		 */
+		if (sample_rate_to_freq(&si, rate) >
+		      sysctl_perf_event_sample_rate) {
+			err = -EINVAL;
+			debug_sprintf_event(sfdbg, 1, "Sampling rate exceeds maximum perf sample rate\n");
+			goto out;
+		}
+	}
+	SAMPL_RATE(hwc) = rate;
+	hw_init_period(hwc, SAMPL_RATE(hwc));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Initialize sample data overflow accounting */
 	hwc->extra_reg.reg = REG_OVERFLOW;

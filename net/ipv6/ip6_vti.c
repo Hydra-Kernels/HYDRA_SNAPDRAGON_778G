@@ -525,10 +525,42 @@ vti6_xmit(struct sk_buff *skb, struct net_device *dev, struct flowi *fl)
 	skb_dst_set(skb, dst);
 	skb->dev = skb_dst(skb)->dev;
 
+<<<<<<< HEAD
 	err = dst_output(t->net, skb->sk, skb);
 	if (net_xmit_eval(err) == 0)
 		err = pkt_len;
 	iptunnel_xmit_stats(dev, err);
+=======
+	mtu = dst_mtu(dst);
+	if (!skb->ignore_df && skb->len > mtu) {
+		skb_dst(skb)->ops->update_pmtu(dst, NULL, skb, mtu);
+
+		if (skb->protocol == htons(ETH_P_IPV6)) {
+			if (mtu < IPV6_MIN_MTU)
+				mtu = IPV6_MIN_MTU;
+
+			icmpv6_send(skb, ICMPV6_PKT_TOOBIG, 0, mtu);
+		} else {
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
+				  htonl(mtu));
+		}
+
+		return -EMSGSIZE;
+	}
+
+	err = dst_output(t->net, skb->sk, skb);
+	if (net_xmit_eval(err) == 0) {
+		struct pcpu_sw_netstats *tstats = this_cpu_ptr(dev->tstats);
+
+		u64_stats_update_begin(&tstats->syncp);
+		tstats->tx_bytes += pkt_len;
+		tstats->tx_packets++;
+		u64_stats_update_end(&tstats->syncp);
+	} else {
+		stats->tx_errors++;
+		stats->tx_aborted_errors++;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 tx_err_link_failure:
@@ -707,9 +739,14 @@ vti6_tnl_change(struct ip6_tnl *t, const struct __ip6_tnl_parm *p,
 	t->parms.i_key = p->i_key;
 	t->parms.o_key = p->o_key;
 	t->parms.proto = p->proto;
+<<<<<<< HEAD
 	t->parms.fwmark = p->fwmark;
 	dst_cache_reset(&t->dst_cache);
 	vti6_link_config(t, keep_mtu);
+=======
+	dst_cache_reset(&t->dst_cache);
+	vti6_link_config(t);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

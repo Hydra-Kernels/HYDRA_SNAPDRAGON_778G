@@ -239,6 +239,10 @@ static irqreturn_t rtclong1_interrupt(int irq, void *dev_id)
 }
 
 static const struct rtc_class_ops vr41xx_rtc_ops = {
+<<<<<<< HEAD
+=======
+	.release		= vr41xx_rtc_release,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.ioctl			= vr41xx_rtc_ioctl,
 	.read_time		= vr41xx_rtc_read_time,
 	.set_time		= vr41xx_rtc_set_time,

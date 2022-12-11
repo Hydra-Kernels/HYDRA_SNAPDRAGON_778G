@@ -88,6 +88,10 @@ static void dump_tl1_traplog(struct tl1_traplog *p)
 void bad_trap(struct pt_regs *regs, long lvl)
 {
 	char buffer[36];
+<<<<<<< HEAD
+=======
+	siginfo_t info;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (notify_die(DIE_TRAP, "bad trap", regs,
 		       0, lvl, SIGTRAP) == NOTIFY_STOP)

@@ -64,6 +64,7 @@ static int target_xcopy_locate_se_dev_e4_iter(struct se_device *se_dev,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	memset(&tmp_dev_wwn[0], 0, XCOPY_NAA_IEEE_REGEX_LEN);
 	target_xcopy_gen_naa_ieee(se_dev, &tmp_dev_wwn[0]);
 
@@ -121,6 +122,8 @@ static int target_xcopy_locate_se_dev_e4(struct se_session *sess,
 	*_found_lun_ref = &this_lun->lun_ref;
 	return 0;
 err_out:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pr_debug_ratelimited("Unable to locate 0xe4 descriptor for EXTENDED_COPY\n");
 	return -EINVAL;
 }
@@ -223,6 +226,8 @@ static int target_xcopy_parse_target_descriptors(struct se_cmd *se_cmd,
 
 	*sense_ret = TCM_INVALID_PARAMETER_LIST;
 
+	*sense_ret = TCM_INVALID_PARAMETER_LIST;
+
 	if (offset != 0) {
 		pr_err("XCOPY target descriptor list length is not"
 			" multiple of %d\n", XCOPY_TARGET_DESC_LEN);
@@ -267,6 +272,7 @@ static int target_xcopy_parse_target_descriptors(struct se_cmd *se_cmd,
 		}
 	}
 
+<<<<<<< HEAD
 	switch (xop->op_origin) {
 	case XCOL_SOURCE_RECV_OP:
 		rc = target_xcopy_locate_se_dev_e4(se_cmd->se_sess,
@@ -286,6 +292,12 @@ static int target_xcopy_parse_target_descriptors(struct se_cmd *se_cmd,
 		rc = -EINVAL;
 		break;
 	}
+=======
+	if (xop->op_origin == XCOL_SOURCE_RECV_OP)
+		rc = target_xcopy_locate_se_dev_e4(se_cmd, xop, true);
+	else
+		rc = target_xcopy_locate_se_dev_e4(se_cmd, xop, false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * If a matching IEEE NAA 0x83 descriptor for the requested device
 	 * is not located on this node, return COPY_ABORTED with ASQ/ASQC
@@ -838,8 +850,11 @@ static void target_xcopy_do_work(struct work_struct *work)
 
 out:
 	xcopy_pt_undepend_remotedev(xop);
+<<<<<<< HEAD
 
 err_free:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(xop);
 	/*
 	 * Don't override an error scsi status if it has already been set
@@ -904,6 +919,7 @@ static sense_reason_t target_parse_xcopy_cmd(struct xcopy_op *xop)
 		" tdll: %hu sdll: %u inline_dl: %u\n", list_id, list_id_usage,
 		tdll, sdll, inline_dl);
 
+<<<<<<< HEAD
 	/*
 	 * skip over the target descriptors until segment descriptors
 	 * have been passed - CSCD ids are needed to determine src and dest.
@@ -918,6 +934,8 @@ static sense_reason_t target_parse_xcopy_cmd(struct xcopy_op *xop)
 	pr_debug("XCOPY: Processed %d segment descriptors, length: %u\n", rc,
 				rc * XCOPY_SEGMENT_DESC_LEN);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rc = target_xcopy_parse_target_descriptors(se_cmd, xop, &p[16], tdll, &ret);
 	if (rc <= 0)
 		goto out;

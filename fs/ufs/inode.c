@@ -403,9 +403,18 @@ static int ufs_getfrag_block(struct inode *inode, sector_t fragment, struct buff
 	u64 phys64 = 0;
 	unsigned frag = fragment & uspi->s_fpbmask;
 
+<<<<<<< HEAD
 	phys64 = ufs_frag_map(inode, offsets, depth);
 	if (!create)
 		goto done;
+=======
+	if (!create) {
+		phys64 = ufs_frag_map(inode, offsets, depth);
+		if (phys64)
+			map_bh(bh_result, sb, phys64 + frag);
+		return 0;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (phys64) {
 		if (fragment >= UFS_NDIR_FRAGMENT)

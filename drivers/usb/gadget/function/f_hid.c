@@ -306,9 +306,15 @@ static ssize_t f_hidg_read(struct file *file, char __user *buffer,
 			return ret;
 		}
 	} else {
+<<<<<<< HEAD
 		spin_lock_irqsave(&hidg->read_spinlock, flags);
 		list_add(&list->list, &hidg->completed_out_req);
 		spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+=======
+		spin_lock_irqsave(&hidg->spinlock, flags);
+		list_add(&list->list, &hidg->completed_out_req);
+		spin_unlock_irqrestore(&hidg->spinlock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		wake_up(&hidg->read_queue);
 	}
@@ -645,12 +651,17 @@ static void hidg_disable(struct usb_function *f)
 	usb_ep_disable(hidg->in_ep);
 	usb_ep_disable(hidg->out_ep);
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&hidg->read_spinlock, flags);
+=======
+	spin_lock_irqsave(&hidg->spinlock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	list_for_each_entry_safe(list, next, &hidg->completed_out_req, list) {
 		free_ep_req(hidg->out_ep, list->req);
 		list_del(&list->list);
 		kfree(list);
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&hidg->read_spinlock, flags);
 
 	spin_lock_irqsave(&hidg->write_spinlock, flags);
@@ -661,6 +672,9 @@ static void hidg_disable(struct usb_function *f)
 
 	hidg->req = NULL;
 	spin_unlock_irqrestore(&hidg->write_spinlock, flags);
+=======
+	spin_unlock_irqrestore(&hidg->spinlock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
@@ -711,7 +725,11 @@ static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 		status = usb_ep_enable(hidg->out_ep);
 		if (status < 0) {
 			ERROR(cdev, "Enable OUT endpoint FAILED!\n");
+<<<<<<< HEAD
 			goto free_req_in;
+=======
+			goto fail;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		hidg->out_ep->driver_data = hidg;
 

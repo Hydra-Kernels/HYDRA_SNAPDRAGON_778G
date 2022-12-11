@@ -173,7 +173,11 @@ cifs_bp_rename_retry:
 
 		cifs_dbg(FYI, "using cifs_sb prepath <%s>\n", cifs_sb->prepath);
 		memcpy(full_path+dfsplen+1, cifs_sb->prepath, pplen-1);
+<<<<<<< HEAD
 		full_path[dfsplen] = dirsep;
+=======
+		full_path[dfsplen] = '\\';
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		for (i = 0; i < pplen-1; i++)
 			if (full_path[dfsplen+1+i] == '/')
 				full_path[dfsplen+1+i] = CIFS_DIR_SEP(cifs_sb);
@@ -642,9 +646,105 @@ int cifs_mknod(struct inode *inode, struct dentry *direntry, umode_t mode,
 		goto mknod_out;
 	}
 
+<<<<<<< HEAD
 	rc = tcon->ses->server->ops->make_node(xid, inode, direntry, tcon,
 					       full_path, mode,
 					       device_number);
+=======
+	if (tcon->unix_ext) {
+		struct cifs_unix_set_info_args args = {
+			.mode	= mode & ~current_umask(),
+			.ctime	= NO_CHANGE_64,
+			.atime	= NO_CHANGE_64,
+			.mtime	= NO_CHANGE_64,
+			.device	= device_number,
+		};
+		if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_SET_UID) {
+			args.uid = current_fsuid();
+			args.gid = current_fsgid();
+		} else {
+			args.uid = INVALID_UID; /* no change */
+			args.gid = INVALID_GID; /* no change */
+		}
+		rc = CIFSSMBUnixSetPathInfo(xid, tcon, full_path, &args,
+					    cifs_sb->local_nls,
+					    cifs_remap(cifs_sb));
+		if (rc)
+			goto mknod_out;
+
+		rc = cifs_get_inode_info_unix(&newinode, full_path,
+						inode->i_sb, xid);
+
+		if (rc == 0)
+			d_instantiate(direntry, newinode);
+		goto mknod_out;
+	}
+
+	if (!S_ISCHR(mode) && !S_ISBLK(mode))
+		goto mknod_out;
+
+	if (!(cifs_sb->mnt_cifs_flags & CIFS_MOUNT_UNX_EMUL))
+		goto mknod_out;
+
+
+	cifs_dbg(FYI, "sfu compat create special file\n");
+
+	buf = kmalloc(sizeof(FILE_ALL_INFO), GFP_KERNEL);
+	if (buf == NULL) {
+		rc = -ENOMEM;
+		goto mknod_out;
+	}
+
+	if (backup_cred(cifs_sb))
+		create_options |= CREATE_OPEN_BACKUP_INTENT;
+
+	oparms.tcon = tcon;
+	oparms.cifs_sb = cifs_sb;
+	oparms.desired_access = GENERIC_WRITE;
+	oparms.create_options = create_options;
+	oparms.disposition = FILE_CREATE;
+	oparms.path = full_path;
+	oparms.fid = &fid;
+	oparms.reconnect = false;
+
+	if (tcon->ses->server->oplocks)
+		oplock = REQ_OPLOCK;
+	else
+		oplock = 0;
+	rc = tcon->ses->server->ops->open(xid, &oparms, &oplock, buf);
+	if (rc)
+		goto mknod_out;
+
+	/*
+	 * BB Do not bother to decode buf since no local inode yet to put
+	 * timestamps in, but we can reuse it safely.
+	 */
+
+	pdev = (struct win_dev *)buf;
+	io_parms.pid = current->tgid;
+	io_parms.tcon = tcon;
+	io_parms.offset = 0;
+	io_parms.length = sizeof(struct win_dev);
+	iov[1].iov_base = buf;
+	iov[1].iov_len = sizeof(struct win_dev);
+	if (S_ISCHR(mode)) {
+		memcpy(pdev->type, "IntxCHR", 8);
+		pdev->major = cpu_to_le64(MAJOR(device_number));
+		pdev->minor = cpu_to_le64(MINOR(device_number));
+		rc = tcon->ses->server->ops->sync_write(xid, &fid, &io_parms,
+							&bytes_written, iov, 1);
+	} else if (S_ISBLK(mode)) {
+		memcpy(pdev->type, "IntxBLK", 8);
+		pdev->major = cpu_to_le64(MAJOR(device_number));
+		pdev->minor = cpu_to_le64(MINOR(device_number));
+		rc = tcon->ses->server->ops->sync_write(xid, &fid, &io_parms,
+							&bytes_written, iov, 1);
+	}
+	tcon->ses->server->ops->close(xid, tcon, &fid);
+	d_drop(direntry);
+
+	/* FIXME: add code here to set EAs */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 mknod_out:
 	kfree(full_path);
@@ -681,11 +781,16 @@ cifs_lookup(struct inode *parent_dir_inode, struct dentry *direntry,
 	pTcon = tlink_tcon(tlink);
 
 	rc = check_name(direntry, pTcon);
+<<<<<<< HEAD
 	if (unlikely(rc)) {
 		cifs_put_tlink(tlink);
 		free_xid(xid);
 		return ERR_PTR(rc);
 	}
+=======
+	if (rc)
+		goto lookup_out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* can not grab the rename sem here since it would
 	deadlock in the cases (beginning of sys_rename itself)

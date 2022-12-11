@@ -17,7 +17,10 @@
 #include <linux/module.h>
 #include <linux/netdevice.h>
 #include <linux/of.h>
+<<<<<<< HEAD
 #include <linux/of_mdio.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 #include <linux/property.h>

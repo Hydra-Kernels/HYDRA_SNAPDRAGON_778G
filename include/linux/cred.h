@@ -84,6 +84,18 @@ static inline int groups_search(const struct group_info *group_info, kgid_t grp)
 	return 1;
 }
 #endif
+<<<<<<< HEAD
+=======
+extern int set_current_groups(struct group_info *);
+extern void set_groups(struct cred *, struct group_info *);
+extern int groups_search(const struct group_info *, kgid_t);
+extern bool may_setgroups(void);
+extern void groups_sort(struct group_info *);
+
+/* access the groups "array" with this macro */
+#define GROUP_AT(gi, i) \
+	((gi)->blocks[(i) / NGROUPS_PER_BLOCK][(i) % NGROUPS_PER_BLOCK])
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * The security context of a task

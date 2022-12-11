@@ -57,6 +57,7 @@
 	;
 	; (B) Manually saved some regs: r12,r25,r30, sp,fp,gp, ACCL pair
 
+<<<<<<< HEAD
 #ifdef CONFIG_ARC_IRQ_NO_AUTOSAVE
 	; carve pt_regs on stack (case #3), PC/STAT32 already on stack
 	sub	sp, sp, SZ_PT_REGS - 8
@@ -138,6 +139,10 @@
 
 	st	r12, [sp, PT_sp + 4]
 	st	r30, [sp, PT_sp + 8]
+=======
+	PUSH	r30
+	PUSH	r12
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	; Saving pt_regs->sp correctly requires some extra work due to the way
 	; Auto stack switch works
@@ -184,6 +189,11 @@
 	ld	r10, [sp, PT_sp]	; SP (pt_regs->sp)
 	sr	r10, [AUX_USER_SP]
 1:
+<<<<<<< HEAD
+=======
+	POP	r12
+	POP	r30
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_ARC_CURR_IN_REG
 	ld	r25, [sp, PT_user_r25]

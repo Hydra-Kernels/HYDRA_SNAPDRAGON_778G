@@ -2827,6 +2827,11 @@ static int edge_startup(struct usb_serial *serial)
 						EDGE_COMPATIBILITY_MASK1,
 						EDGE_COMPATIBILITY_MASK2 };
 
+	if (serial->num_bulk_in < 1 || serial->num_interrupt_in < 1) {
+		dev_err(&serial->interface->dev, "missing endpoints\n");
+		return -ENODEV;
+	}
+
 	dev = serial->dev;
 
 	/* create our private serial structure */
@@ -3003,7 +3008,19 @@ static int edge_startup(struct usb_serial *serial)
 				response = -ENODEV;
 			}
 
+<<<<<<< HEAD
 			goto error;
+=======
+			usb_free_urb(edge_serial->interrupt_read_urb);
+			kfree(edge_serial->interrupt_in_buffer);
+
+			usb_free_urb(edge_serial->read_urb);
+			kfree(edge_serial->bulk_in_buffer);
+
+			kfree(edge_serial);
+
+			return response;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/* start interrupt read for this edgeport this interrupt will

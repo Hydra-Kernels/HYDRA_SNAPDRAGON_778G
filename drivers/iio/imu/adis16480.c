@@ -809,6 +809,7 @@ static const struct adis16480_chip_info adis16480_chip_info[] = {
 	[ADIS16480] = {
 		.channels = adis16480_channels,
 		.num_channels = ARRAY_SIZE(adis16480_channels),
+<<<<<<< HEAD
 		.gyro_max_val = 22500 << 16,
 		.gyro_max_scale = IIO_DEGREE_TO_RAD(450),
 		.accel_max_val = IIO_M_S_2_TO_G(12500 << 16),
@@ -817,6 +818,12 @@ static const struct adis16480_chip_info adis16480_chip_info[] = {
 		.int_clk = 2460000,
 		.max_dec_rate = 2048,
 		.filter_freqs = adis16480_def_filter_freqs,
+=======
+		.gyro_max_val = IIO_RAD_TO_DEGREE(22500),
+		.gyro_max_scale = 450,
+		.accel_max_val = IIO_M_S_2_TO_G(12500),
+		.accel_max_scale = 10,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	},
 	[ADIS16485] = {
 		.channels = adis16485_channels,

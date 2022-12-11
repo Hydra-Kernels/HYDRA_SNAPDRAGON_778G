@@ -980,10 +980,15 @@ static struct mfc_cache *ipmr_cache_alloc(void)
 	struct mfc_cache *c = kmem_cache_zalloc(mrt_cachep, GFP_KERNEL);
 
 	if (c) {
+<<<<<<< HEAD
 		c->_c.mfc_un.res.last_assert = jiffies - MFC_ASSERT_THRESH - 1;
 		c->_c.mfc_un.res.minvif = MAXVIFS;
 		c->_c.free = ipmr_cache_free_rcu;
 		refcount_set(&c->_c.mfc_un.res.refcount, 1);
+=======
+		c->mfc_un.res.last_assert = jiffies - MFC_ASSERT_THRESH - 1;
+		c->mfc_un.res.minvif = MAXVIFS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return c;
 }
@@ -2256,7 +2261,11 @@ drop:
 
 int ipmr_get_route(struct net *net, struct sk_buff *skb,
 		   __be32 saddr, __be32 daddr,
+<<<<<<< HEAD
 		   struct rtmsg *rtm, u32 portid)
+=======
+		   struct rtmsg *rtm, int nowait, u32 portid)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct mfc_cache *cache;
 	struct mr_table *mrt;

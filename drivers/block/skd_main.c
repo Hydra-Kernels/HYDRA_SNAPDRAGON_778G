@@ -1228,8 +1228,15 @@ static void skd_send_fitmsg(struct skd_device *skdev,
 		 */
 		qcmd |= FIT_QCMD_MSGSIZE_64;
 
+<<<<<<< HEAD
 	dma_sync_single_for_device(&skdev->pdev->dev, skmsg->mb_dma_address,
 				   skmsg->length, DMA_TO_DEVICE);
+=======
+	/* Make sure skd_msg_buf is written before the doorbell is triggered. */
+	smp_wmb();
+
+	SKD_WRITEQ(skdev, qcmd, FIT_Q_COMMAND);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Make sure skd_msg_buf is written before the doorbell is triggered. */
 	smp_wmb();
@@ -1277,6 +1284,7 @@ static void skd_send_special_fitmsg(struct skd_device *skdev,
 	qcmd = skspcl->mb_dma_address;
 	qcmd |= FIT_QCMD_QID_NORMAL + FIT_QCMD_MSGSIZE_128;
 
+<<<<<<< HEAD
 	dma_sync_single_for_device(&skdev->pdev->dev, skspcl->mb_dma_address,
 				   SKD_N_SPECIAL_FITMSG_BYTES, DMA_TO_DEVICE);
 	dma_sync_single_for_device(&skdev->pdev->dev,
@@ -1288,6 +1296,8 @@ static void skd_send_special_fitmsg(struct skd_device *skdev,
 				   skspcl->req.sksg_list[0].byte_count,
 				   DMA_BIDIRECTIONAL);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Make sure skd_msg_buf is written before the doorbell is triggered. */
 	smp_wmb();
 
@@ -3041,6 +3051,7 @@ static void skd_free_disk(struct skd_device *skdev)
 	if (skdev->queue) {
 		blk_cleanup_queue(skdev->queue);
 		skdev->queue = NULL;
+<<<<<<< HEAD
 		if (disk)
 			disk->queue = NULL;
 	}
@@ -3048,6 +3059,11 @@ static void skd_free_disk(struct skd_device *skdev)
 	if (skdev->tag_set.tags)
 		blk_mq_free_tag_set(&skdev->tag_set);
 
+=======
+		disk->queue = NULL;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	put_disk(disk);
 	skdev->disk = NULL;
 }

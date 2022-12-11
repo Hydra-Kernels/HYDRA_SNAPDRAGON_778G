@@ -156,10 +156,15 @@ static int proc_keys_show(struct seq_file *m, void *v)
 	struct key *key = rb_entry(_p, struct key, serial_node);
 	unsigned long flags;
 	key_ref_t key_ref, skey_ref;
+<<<<<<< HEAD
 	time64_t now, expiry;
 	char xbuf[16];
 	short state;
 	u64 timo;
+=======
+	char xbuf[16];
+	short state;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int rc;
 
 	struct keyring_search_context ctx = {
@@ -218,6 +223,12 @@ static int proc_keys_show(struct seq_file *m, void *v)
 	}
 
 	state = key_read_state(key);
+<<<<<<< HEAD
+=======
+
+#define showflag(KEY, LETTER, FLAG) \
+	(test_bit(FLAG,	&(KEY)->flags) ? LETTER : '-')
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define showflag(FLAGS, LETTER, FLAG) \
 	((FLAGS & (1 << FLAG)) ? LETTER : '-')
@@ -226,6 +237,7 @@ static int proc_keys_show(struct seq_file *m, void *v)
 	seq_printf(m, "%08x %c%c%c%c%c%c%c %5d %4s %08x %5d %5d %-9.9s ",
 		   key->serial,
 		   state != KEY_IS_UNINSTANTIATED ? 'I' : '-',
+<<<<<<< HEAD
 		   showflag(flags, 'R', KEY_FLAG_REVOKED),
 		   showflag(flags, 'D', KEY_FLAG_DEAD),
 		   showflag(flags, 'Q', KEY_FLAG_IN_QUOTA),
@@ -233,6 +245,15 @@ static int proc_keys_show(struct seq_file *m, void *v)
 		   state < 0 ? 'N' : '-',
 		   showflag(flags, 'i', KEY_FLAG_INVALIDATED),
 		   refcount_read(&key->usage),
+=======
+		   showflag(key, 'R', KEY_FLAG_REVOKED),
+		   showflag(key, 'D', KEY_FLAG_DEAD),
+		   showflag(key, 'Q', KEY_FLAG_IN_QUOTA),
+		   showflag(key, 'U', KEY_FLAG_USER_CONSTRUCT),
+		   state < 0 ? 'N' : '-',
+		   showflag(key, 'i', KEY_FLAG_INVALIDATED),
+		   atomic_read(&key->usage),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		   xbuf,
 		   key->perm,
 		   from_kuid_munged(seq_user_ns(m), key->uid),

@@ -213,10 +213,13 @@ struct kvm_s390_sie_block {
 	__u32	scaoh;			/* 0x005c */
 #define FPF_BPBC 	0x20
 	__u8	fpf;			/* 0x0060 */
+<<<<<<< HEAD
 #define ECB_GS		0x40
 #define ECB_TE		0x10
 #define ECB_SRSI	0x04
 #define ECB_HOSTPROTINT	0x02
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__u8	ecb;			/* 0x0061 */
 #define ECB2_CMMA	0x80
 #define ECB2_IEP	0x20

@@ -176,7 +176,16 @@ static __inline__ unsigned int dn_hash(__le16 src, __le16 dst)
 	return dn_rt_hash_mask & (unsigned int)tmp;
 }
 
+<<<<<<< HEAD
 static void dn_dst_check_expire(struct timer_list *unused)
+=======
+static inline void dnrt_free(struct dn_route *rt)
+{
+	call_rcu_bh(&rt->dst.rcu_head, dst_rcu_free);
+}
+
+static void dn_dst_check_expire(unsigned long dummy)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int i;
 	struct dn_route *rt;
@@ -229,10 +238,16 @@ static int dn_dst_gc(struct dst_ops *ops)
 				rtp = &rt->dn_next;
 				continue;
 			}
+<<<<<<< HEAD
 			*rtp = rt->dn_next;
 			rt->dn_next = NULL;
 			dst_dev_put(&rt->dst);
 			dst_release(&rt->dst);
+=======
+			*rtp = rt->dst.dn_next;
+			rt->dst.dn_next = NULL;
+			dnrt_free(rt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 		spin_unlock_bh(&dn_rt_hash_table[i].lock);
@@ -335,7 +350,11 @@ static int dn_insert_route(struct dn_route *rt, unsigned int hash, struct dn_rou
 			dst_hold_and_use(&rth->dst, now);
 			spin_unlock_bh(&dn_rt_hash_table[hash].lock);
 
+<<<<<<< HEAD
 			dst_release_immediate(&rt->dst);
+=======
+			dst_free(&rt->dst);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			*rp = rth;
 			return 0;
 		}
@@ -363,10 +382,16 @@ static void dn_run_flush(struct timer_list *unused)
 			goto nothing_to_declare;
 
 		for(; rt; rt = next) {
+<<<<<<< HEAD
 			next = rcu_dereference_raw(rt->dn_next);
 			RCU_INIT_POINTER(rt->dn_next, NULL);
 			dst_dev_put(&rt->dst);
 			dst_release(&rt->dst);
+=======
+			next = rcu_dereference_raw(rt->dst.dn_next);
+			RCU_INIT_POINTER(rt->dst.dn_next, NULL);
+			dnrt_free(rt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 nothing_to_declare:

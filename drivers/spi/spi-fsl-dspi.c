@@ -1181,6 +1181,10 @@ static int dspi_remove(struct platform_device *pdev)
 	if (dspi->irq)
 		free_irq(dspi->irq, dspi);
 	clk_disable_unprepare(dspi->clk);
+<<<<<<< HEAD
+=======
+	spi_unregister_master(dspi->master);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

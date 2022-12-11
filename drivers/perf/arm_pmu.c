@@ -333,9 +333,20 @@ validate_group(struct perf_event *event)
 	return 0;
 }
 
+static struct arm_pmu_platdata *armpmu_get_platdata(struct arm_pmu *armpmu)
+{
+	struct platform_device *pdev = armpmu->plat_device;
+
+	return pdev ? dev_get_platdata(&pdev->dev) : NULL;
+}
+
 static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
 {
 	struct arm_pmu *armpmu;
+<<<<<<< HEAD
+=======
+	struct arm_pmu_platdata *plat;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret;
 	u64 start_clock, finish_clock;
 
@@ -346,8 +357,13 @@ static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
 	 * dereference.
 	 */
 	armpmu = *(void **)dev;
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(!armpmu))
 		return IRQ_NONE;
+=======
+
+	plat = armpmu_get_platdata(armpmu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	start_clock = sched_clock();
 	ret = armpmu->handle_irq(armpmu);
@@ -780,6 +796,117 @@ static void cpu_pmu_destroy(struct arm_pmu *cpu_pmu)
 
 static struct arm_pmu *__armpmu_alloc(gfp_t flags)
 {
+<<<<<<< HEAD
+=======
+	int cpu = get_cpu();
+	unsigned int cpuid = read_cpuid_id();
+	int ret = -ENODEV;
+
+	pr_info("probing PMU on CPU %d\n", cpu);
+
+	for (; info->init != NULL; info++) {
+		if ((cpuid & info->mask) != info->cpuid)
+			continue;
+		ret = info->init(pmu);
+		break;
+	}
+
+	put_cpu();
+	return ret;
+}
+
+static int of_pmu_irq_cfg(struct arm_pmu *pmu)
+{
+	int *irqs, i = 0;
+	bool using_spi = false;
+	struct platform_device *pdev = pmu->plat_device;
+
+	irqs = kcalloc(pdev->num_resources, sizeof(*irqs), GFP_KERNEL);
+	if (!irqs)
+		return -ENOMEM;
+
+	do {
+		struct device_node *dn;
+		int cpu, irq;
+
+		/* See if we have an affinity entry */
+		dn = of_parse_phandle(pdev->dev.of_node, "interrupt-affinity", i);
+		if (!dn)
+			break;
+
+		/* Check the IRQ type and prohibit a mix of PPIs and SPIs */
+		irq = platform_get_irq(pdev, i);
+		if (irq >= 0) {
+			bool spi = !irq_is_percpu(irq);
+
+			if (i > 0 && spi != using_spi) {
+				pr_err("PPI/SPI IRQ type mismatch for %s!\n",
+					dn->name);
+				of_node_put(dn);
+				kfree(irqs);
+				return -EINVAL;
+			}
+
+			using_spi = spi;
+		}
+
+		/* Now look up the logical CPU number */
+		for_each_possible_cpu(cpu) {
+			struct device_node *cpu_dn;
+
+			cpu_dn = of_cpu_device_node_get(cpu);
+			of_node_put(cpu_dn);
+
+			if (dn == cpu_dn)
+				break;
+		}
+
+		if (cpu >= nr_cpu_ids) {
+			pr_warn("Failed to find logical CPU for %s\n",
+				dn->name);
+			of_node_put(dn);
+			cpumask_setall(&pmu->supported_cpus);
+			break;
+		}
+		of_node_put(dn);
+
+		/* For SPIs, we need to track the affinity per IRQ */
+		if (using_spi) {
+			if (i >= pdev->num_resources) {
+				of_node_put(dn);
+				break;
+			}
+
+			irqs[i] = cpu;
+		}
+
+		/* Keep track of the CPUs containing this PMU type */
+		cpumask_set_cpu(cpu, &pmu->supported_cpus);
+		of_node_put(dn);
+		i++;
+	} while (1);
+
+	/* If we didn't manage to parse anything, claim to support all CPUs */
+	if (cpumask_weight(&pmu->supported_cpus) == 0)
+		cpumask_setall(&pmu->supported_cpus);
+
+	/* If we matched up the IRQ affinities, use them to route the SPIs */
+	if (using_spi && i == pdev->num_resources)
+		pmu->irq_affinity = irqs;
+	else
+		kfree(irqs);
+
+	return 0;
+}
+
+int arm_pmu_device_probe(struct platform_device *pdev,
+			 const struct of_device_id *of_table,
+			 const struct pmu_probe_info *probe_table)
+{
+	const struct of_device_id *of_id;
+	const int (*init_fn)(struct arm_pmu *);
+	struct device_node *node = pdev->dev.of_node;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct arm_pmu *pmu;
 	int cpu;
 

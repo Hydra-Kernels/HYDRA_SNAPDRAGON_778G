@@ -1155,8 +1155,13 @@ int dso__load_sym(struct dso *dso, struct map *map, struct symsrc *syms_ss,
 	 * For misannotated, zeroed, ASM function sizes.
 	 */
 	if (nr > 0) {
+<<<<<<< HEAD
 		symbols__fixup_end(&dso->symbols);
 		symbols__fixup_duplicate(&dso->symbols);
+=======
+		symbols__fixup_end(&dso->symbols[map->type]);
+		symbols__fixup_duplicate(&dso->symbols[map->type]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (kmap) {
 			/*
 			 * We need to fixup this here too because we create new

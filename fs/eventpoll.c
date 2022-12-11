@@ -1216,9 +1216,13 @@ static int ep_poll_callback(wait_queue_entry_t *wait, unsigned mode, int sync, v
 	unsigned long flags;
 	int ewake = 0;
 
+<<<<<<< HEAD
 	read_lock_irqsave(&ep->lock, flags);
 
 	ep_set_busy_poll_napi_id(epi);
+=======
+	spin_lock_irqsave(&ep->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * If the event mask does not contain any poll(2) event, we consider the
@@ -1286,16 +1290,25 @@ out_unlock:
 	if (pwake)
 		ep_poll_safewake(&ep->poll_wait);
 
+<<<<<<< HEAD
 	if (!(epi->event.events & EPOLLEXCLUSIVE))
 		ewake = 1;
 
 	if (pollflags & POLLFREE) {
+=======
+
+	if ((unsigned long)key & POLLFREE) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * If we race with ep_remove_wait_queue() it can miss
 		 * ->whead = NULL and do another remove_wait_queue() after
 		 * us, so we can't use __remove_wait_queue().
 		 */
+<<<<<<< HEAD
 		list_del_init(&wait->entry);
+=======
+		list_del_init(&wait->task_list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * ->whead != NULL protects us from the race with ep_free()
 		 * or ep_remove(), ep_remove_wait_queue() takes whead->lock
@@ -1305,7 +1318,11 @@ out_unlock:
 		smp_store_release(&ep_pwq_from_wait(wait)->whead, NULL);
 	}
 
+<<<<<<< HEAD
 	return ewake;
+=======
+	return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

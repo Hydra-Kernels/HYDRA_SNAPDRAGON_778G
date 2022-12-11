@@ -1204,6 +1204,7 @@ acpi_get_next_subnode(const struct fwnode_handle *fwnode,
 	return NULL;
 }
 
+<<<<<<< HEAD
 static inline struct fwnode_handle *
 acpi_node_get_parent(const struct fwnode_handle *fwnode)
 {
@@ -1226,6 +1227,8 @@ acpi_graph_get_remote_endpoint(const struct fwnode_handle *fwnode,
 	return -ENXIO;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define ACPI_DECLARE_PROBE_ENTRY(table, name, table_id, subtable, valid, data, fn) \
 	static const void * __acpi_table_##name[]			\
 		__attribute__((unused))					\

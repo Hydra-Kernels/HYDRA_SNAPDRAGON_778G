@@ -495,8 +495,12 @@ static int dccp_v4_send_response(const struct sock *sk, struct request_sock *req
 		rcu_read_lock();
 		err = ip_build_and_send_pkt(skb, sk, ireq->ir_loc_addr,
 					    ireq->ir_rmt_addr,
+<<<<<<< HEAD
 					    rcu_dereference(ireq->ireq_opt));
 		rcu_read_unlock();
+=======
+					    ireq_opt_deref(ireq));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = net_xmit_eval(err);
 	}
 
@@ -838,7 +842,10 @@ lookup:
 			goto lookup;
 		}
 		sock_hold(sk);
+<<<<<<< HEAD
 		refcounted = true;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		nsk = dccp_check_req(sk, skb, req);
 		if (!nsk) {
 			reqsk_put(req);

@@ -6,10 +6,13 @@
  */
 
 #define DISABLE_BRANCH_PROFILING
+<<<<<<< HEAD
 
 /* cpu_feature_enabled() cannot be used this early */
 #define USE_EARLY_PGTABLE_L5
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/init.h>
 #include <linux/linkage.h>
 #include <linux/types.h>

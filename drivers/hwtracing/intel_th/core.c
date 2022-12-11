@@ -582,6 +582,41 @@ static const struct intel_th_subdevice {
 
 #ifdef CONFIG_MODULES
 static void __intel_th_request_hub_module(struct work_struct *work)
+<<<<<<< HEAD
+=======
+{
+	struct intel_th *th = container_of(work, struct intel_th,
+					   request_module_work);
+
+	request_module("intel_th_%s", th->hub->name);
+}
+
+static int intel_th_request_hub_module(struct intel_th *th)
+{
+	INIT_WORK(&th->request_module_work, __intel_th_request_hub_module);
+	schedule_work(&th->request_module_work);
+
+	return 0;
+}
+
+static void intel_th_request_hub_module_flush(struct intel_th *th)
+{
+	flush_work(&th->request_module_work);
+}
+#else
+static inline int intel_th_request_hub_module(struct intel_th *th)
+{
+	return -EINVAL;
+}
+
+static inline void intel_th_request_hub_module_flush(struct intel_th *th)
+{
+}
+#endif /* CONFIG_MODULES */
+
+static int intel_th_populate(struct intel_th *th, struct resource *devres,
+			     unsigned int ndevres, int irq)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct intel_th *th = container_of(work, struct intel_th,
 					   request_module_work);
@@ -796,7 +831,65 @@ static int intel_th_populate(struct intel_th *th)
 			return PTR_ERR(thdev);
 		}
 
+<<<<<<< HEAD
 		th->thdev[th->num_thdevs++] = thdev;
+=======
+		memcpy(res, subdev->res,
+		       sizeof(struct resource) * subdev->nres);
+
+		for (r = 0; r < subdev->nres; r++) {
+			int bar = TH_MMIO_CONFIG;
+
+			/*
+			 * Take .end == 0 to mean 'take the whole bar',
+			 * .start then tells us which bar it is. Default to
+			 * TH_MMIO_CONFIG.
+			 */
+			if (!res[r].end && res[r].flags == IORESOURCE_MEM) {
+				bar = res[r].start;
+				res[r].start = 0;
+				res[r].end = resource_size(&devres[bar]) - 1;
+			}
+
+			if (res[r].flags & IORESOURCE_MEM) {
+				res[r].start	+= devres[bar].start;
+				res[r].end	+= devres[bar].start;
+
+				dev_dbg(th->dev, "%s:%d @ %pR\n",
+					subdev->name, r, &res[r]);
+			} else if (res[r].flags & IORESOURCE_IRQ) {
+				res[r].start	= irq;
+			}
+		}
+
+		err = intel_th_device_add_resources(thdev, res, subdev->nres);
+		if (err) {
+			put_device(&thdev->dev);
+			goto kill_subdevs;
+		}
+
+		if (subdev->type == INTEL_TH_OUTPUT) {
+			thdev->dev.devt = MKDEV(th->major, i);
+			thdev->output.type = subdev->otype;
+			thdev->output.port = -1;
+		}
+
+		err = device_add(&thdev->dev);
+		if (err) {
+			put_device(&thdev->dev);
+			goto kill_subdevs;
+		}
+
+		/* need switch driver to be loaded to enumerate the rest */
+		if (subdev->type == INTEL_TH_SWITCH && !req) {
+			th->hub = thdev;
+			err = intel_th_request_hub_module(th);
+			if (!err)
+				req++;
+		}
+
+		th->thdev[i] = thdev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -945,6 +1038,12 @@ void intel_th_free(struct intel_th *th)
 	int i;
 
 	intel_th_request_hub_module_flush(th);
+<<<<<<< HEAD
+=======
+	for (i = 0; i < TH_SUBDEVICE_MAX; i++)
+		if (th->thdev[i] != th->hub)
+			intel_th_device_remove(th->thdev[i]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	intel_th_device_remove(th->hub);
 	for (i = 0; i < th->num_thdevs; i++) {

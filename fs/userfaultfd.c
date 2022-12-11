@@ -417,6 +417,12 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 	}
 
 	/*
+	 * We don't do userfault handling for the final child pid update.
+	 */
+	if (current->flags & PF_EXITING)
+		goto out;
+
+	/*
 	 * Check that we can return VM_FAULT_RETRY.
 	 *
 	 * NOTE: it should become possible to return VM_FAULT_RETRY

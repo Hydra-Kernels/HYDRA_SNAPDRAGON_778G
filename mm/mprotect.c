@@ -53,6 +53,7 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
 	if (pmd_trans_unstable(pmd))
 		return 0;
 
+<<<<<<< HEAD
 	/*
 	 * The pmd points to a regular pte so the pmd can't change
 	 * from under us even if the mmap_sem is only hold for
@@ -65,6 +66,8 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
 	    atomic_read(&vma->vm_mm->mm_users) == 1)
 		target_node = numa_node_id();
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	flush_tlb_batched_pending(vma->vm_mm);
 	arch_enter_lazy_mmu_mode();
 	do {
@@ -363,11 +366,28 @@ static int prot_none_test(unsigned long addr, unsigned long next,
 	return 0;
 }
 
+<<<<<<< HEAD
 static const struct mm_walk_ops prot_none_walk_ops = {
 	.pte_entry		= prot_none_pte_entry,
 	.hugetlb_entry		= prot_none_hugetlb_entry,
 	.test_walk		= prot_none_test,
 };
+=======
+static int prot_none_walk(struct vm_area_struct *vma, unsigned long start,
+			   unsigned long end, unsigned long newflags)
+{
+	pgprot_t new_pgprot = vm_get_page_prot(newflags);
+	struct mm_walk prot_none_walk = {
+		.pte_entry = prot_none_pte_entry,
+		.hugetlb_entry = prot_none_hugetlb_entry,
+		.test_walk = prot_none_test,
+		.mm = current->mm,
+		.private = &new_pgprot,
+	};
+
+	return walk_page_range(start, end, &prot_none_walk);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 int
 mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
@@ -394,10 +414,14 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
 	if (arch_has_pfn_modify_check() &&
 	    (vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP)) &&
 	    (newflags & (VM_READ|VM_WRITE|VM_EXEC)) == 0) {
+<<<<<<< HEAD
 		pgprot_t new_pgprot = vm_get_page_prot(newflags);
 
 		error = walk_page_range(current->mm, start, end,
 				&prot_none_walk_ops, &new_pgprot);
+=======
+		error = prot_none_walk(vma, start, end, newflags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (error)
 			return error;
 	}

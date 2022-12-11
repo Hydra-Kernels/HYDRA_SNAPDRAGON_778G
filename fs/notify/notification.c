@@ -94,12 +94,20 @@ int fsnotify_add_event(struct fsnotify_group *group,
 	spin_lock(&group->notification_lock);
 
 	if (group->shutdown) {
+<<<<<<< HEAD
 		spin_unlock(&group->notification_lock);
 		return 2;
 	}
 
 	if (event == group->overflow_event ||
 	    group->q_len >= group->max_events) {
+=======
+		mutex_unlock(&group->notification_mutex);
+		return 2;
+	}
+
+	if (group->q_len >= group->max_events) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = 2;
 		/* Queue overflow event only if it isn't already queued */
 		if (!list_empty(&group->overflow_event->list)) {
@@ -128,6 +136,7 @@ queue:
 	return ret;
 }
 
+<<<<<<< HEAD
 void fsnotify_remove_queued_event(struct fsnotify_group *group,
 				  struct fsnotify_event *event)
 {
@@ -140,6 +149,8 @@ void fsnotify_remove_queued_event(struct fsnotify_group *group,
 	group->q_len--;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * Remove and return the first event from the notification list.  It is the
  * responsibility of the caller to destroy the obtained event

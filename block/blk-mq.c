@@ -899,12 +899,28 @@ static bool blk_mq_check_expired(struct blk_mq_hw_ctx *hctx,
 {
 	unsigned long *next = priv;
 
+<<<<<<< HEAD
 	/*
 	 * Just do a quick check if it is expired before locking the request in
 	 * so we're not unnecessarilly synchronizing across CPUs.
 	 */
 	if (!blk_mq_req_expired(rq, next))
 		return true;
+=======
+	if (!test_bit(REQ_ATOM_STARTED, &rq->atomic_flags)) {
+		/*
+		 * If a request wasn't started before the queue was
+		 * marked dying, kill it here or it'll go unnoticed.
+		 */
+		if (unlikely(blk_queue_dying(rq->q))) {
+			rq->errors = -EIO;
+			blk_mq_end_request(rq, rq->errors);
+		}
+		return;
+	}
+	if (rq->cmd_flags & REQ_NO_TIMEOUT)
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * We have reason to believe the request may be expired. Take a
@@ -1253,10 +1269,31 @@ bool blk_mq_dispatch_rq_list(struct request_queue *q, struct list_head *list,
 
 		rq = list_first_entry(list, struct request, queuelist);
 
+<<<<<<< HEAD
 		hctx = rq->mq_hctx;
 		if (!got_budget && !blk_mq_get_dispatch_budget(hctx)) {
 			blk_mq_put_driver_tag(rq);
 			no_budget_avail = true;
+=======
+		bd.rq = rq;
+		bd.list = dptr;
+		bd.last = list_empty(&rq_list);
+
+		ret = q->mq_ops->queue_rq(hctx, &bd);
+		switch (ret) {
+		case BLK_MQ_RQ_QUEUE_OK:
+			queued++;
+			break;
+		case BLK_MQ_RQ_QUEUE_BUSY:
+			list_add(&rq->queuelist, &rq_list);
+			__blk_mq_requeue_request(rq);
+			break;
+		default:
+			pr_err("blk-mq: bad return on queue: %d\n", ret);
+		case BLK_MQ_RQ_QUEUE_ERROR:
+			rq->errors = -EIO;
+			blk_mq_end_request(rq, rq->errors);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 
@@ -1454,9 +1491,15 @@ static int blk_mq_hctx_next_cpu(struct blk_mq_hw_ctx *hctx)
 		return WORK_CPU_UNBOUND;
 
 	if (--hctx->next_cpu_batch <= 0) {
+<<<<<<< HEAD
 select_cpu:
 		next_cpu = cpumask_next_and(next_cpu, hctx->cpumask,
 				cpu_online_mask);
+=======
+		int next_cpu;
+
+		next_cpu = cpumask_next(hctx->next_cpu, hctx->cpumask);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (next_cpu >= nr_cpu_ids)
 			next_cpu = blk_mq_first_mapped_cpu(hctx);
 		hctx->next_cpu_batch = BLK_MQ_CPU_WORK_BATCH;
@@ -1864,6 +1907,35 @@ static blk_status_t __blk_mq_try_issue_directly(struct blk_mq_hw_ctx *hctx,
 	struct request_queue *q = rq->q;
 	bool run_queue = true;
 
+<<<<<<< HEAD
+=======
+	blk_queue_bounce(q, &bio);
+
+	blk_queue_split(q, &bio, q->bio_split);
+
+	if (bio_integrity_enabled(bio) && bio_integrity_prep(bio)) {
+		bio_io_error(bio);
+		return BLK_QC_T_NONE;
+	}
+
+	if (!is_flush_fua && !blk_queue_nomerges(q) &&
+	    blk_attempt_plug_merge(q, bio, &request_count, &same_queue_rq))
+		return BLK_QC_T_NONE;
+
+	rq = blk_mq_map_request(q, bio, &data);
+	if (unlikely(!rq))
+		return BLK_QC_T_NONE;
+
+	cookie = blk_tag_to_qc_t(rq->tag, data.hctx->queue_num);
+
+	if (unlikely(is_flush_fua)) {
+		blk_mq_bio_to_request(rq, bio);
+		blk_insert_flush(rq);
+		goto run_queue;
+	}
+
+	plug = current->plug;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * RCU or SRCU read lock is needed before checking quiesced flag.
 	 *
@@ -1948,8 +2020,77 @@ void blk_mq_try_issue_list_directly(struct blk_mq_hw_ctx *hctx,
 							list_empty(list));
 				break;
 			}
+<<<<<<< HEAD
 			blk_mq_end_request(rq, ret);
 		}
+=======
+			list_add_tail(&rq->queuelist, &plug->mq_list);
+		} else /* is_sync */
+			old_rq = rq;
+		blk_mq_put_ctx(data.ctx);
+		if (!old_rq)
+			goto done;
+		if (test_bit(BLK_MQ_S_STOPPED, &data.hctx->state) ||
+		    blk_mq_direct_issue_request(old_rq, &cookie) != 0)
+			blk_mq_insert_request(old_rq, false, true, true);
+		goto done;
+	}
+
+	if (!blk_mq_merge_queue_io(data.hctx, data.ctx, rq, bio)) {
+		/*
+		 * For a SYNC request, send it to the hardware immediately. For
+		 * an ASYNC request, just ensure that we run it later on. The
+		 * latter allows for merging opportunities and more efficient
+		 * dispatching.
+		 */
+run_queue:
+		blk_mq_run_hw_queue(data.hctx, !is_sync || is_flush_fua);
+	}
+	blk_mq_put_ctx(data.ctx);
+done:
+	return cookie;
+}
+
+/*
+ * Single hardware queue variant. This will attempt to use any per-process
+ * plug for merging and IO deferral.
+ */
+static blk_qc_t blk_sq_make_request(struct request_queue *q, struct bio *bio)
+{
+	const int is_sync = rw_is_sync(bio->bi_rw);
+	const int is_flush_fua = bio->bi_rw & (REQ_FLUSH | REQ_FUA);
+	struct blk_plug *plug;
+	unsigned int request_count = 0;
+	struct blk_map_ctx data;
+	struct request *rq;
+	blk_qc_t cookie;
+
+	blk_queue_bounce(q, &bio);
+
+	if (bio_integrity_enabled(bio) && bio_integrity_prep(bio)) {
+		bio_io_error(bio);
+		return BLK_QC_T_NONE;
+	}
+
+	blk_queue_split(q, &bio, q->bio_split);
+
+	if (!is_flush_fua && !blk_queue_nomerges(q)) {
+		if (blk_attempt_plug_merge(q, bio, &request_count, NULL))
+			return BLK_QC_T_NONE;
+	} else
+		request_count = blk_plug_queued_count(q);
+
+	rq = blk_mq_map_request(q, bio, &data);
+	if (unlikely(!rq))
+		return BLK_QC_T_NONE;
+
+	cookie = blk_tag_to_qc_t(rq->tag, data.hctx->queue_num);
+
+	if (unlikely(is_flush_fua)) {
+		blk_mq_bio_to_request(rq, bio);
+		blk_insert_flush(rq);
+		goto run_queue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/*
@@ -2182,9 +2323,17 @@ struct blk_mq_tags *blk_mq_alloc_rq_map(struct blk_mq_tag_set *set,
 	if (!tags)
 		return NULL;
 
+<<<<<<< HEAD
 	tags->rqs = kcalloc_node(nr_tags, sizeof(struct request *),
 				 GFP_NOIO | __GFP_NOWARN | __GFP_NORETRY,
 				 node);
+=======
+	INIT_LIST_HEAD(&tags->page_list);
+
+	tags->rqs = kzalloc_node(set->queue_depth * sizeof(struct request *),
+				 GFP_NOIO | __GFP_NOWARN | __GFP_NORETRY,
+				 set->numa_node);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!tags->rqs) {
 		blk_mq_free_tags(tags);
 		return NULL;
@@ -2248,7 +2397,11 @@ int blk_mq_alloc_rqs(struct blk_mq_tag_set *set, struct blk_mq_tags *tags,
 			this_order--;
 
 		do {
+<<<<<<< HEAD
 			page = alloc_pages_node(node,
+=======
+			page = alloc_pages_node(set->numa_node,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				GFP_NOIO | __GFP_NOWARN | __GFP_NORETRY | __GFP_ZERO,
 				this_order);
 			if (page)

@@ -41,7 +41,32 @@ struct microcode_amd {
 	unsigned int			mpb[0];
 };
 
+<<<<<<< HEAD
 #define PATCH_MAX_SIZE (3 * PAGE_SIZE)
+=======
+static inline u16 find_equiv_id(struct equiv_cpu_entry *equiv_cpu_table,
+				unsigned int sig)
+{
+	int i = 0;
+
+	if (!equiv_cpu_table)
+		return 0;
+
+	while (equiv_cpu_table[i].installed_cpu != 0) {
+		if (sig == equiv_cpu_table[i].installed_cpu)
+			return equiv_cpu_table[i].equiv_cpu;
+
+		i++;
+	}
+	return 0;
+}
+
+extern int __apply_microcode_amd(struct microcode_amd *mc_amd);
+extern int apply_microcode_amd(int cpu);
+
+#define PATCH_MAX_SIZE PAGE_SIZE
+extern u8 amd_ucode_patch[PATCH_MAX_SIZE];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_MICROCODE_AMD
 extern void __init load_ucode_amd_bsp(unsigned int family);

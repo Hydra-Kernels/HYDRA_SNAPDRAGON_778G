@@ -1153,6 +1153,7 @@ static int __snd_usb_parse_audio_interface(struct snd_usb_audio *chip,
 		case UAC_VERSION_2: {
 			int bm_quirk = 0;
 
+<<<<<<< HEAD
 			/*
 			 * Blue Microphones workaround: The last altsetting is
 			 * identical with the previous one, except for a larger
@@ -1160,6 +1161,110 @@ static int __snd_usb_parse_audio_interface(struct snd_usb_audio *chip,
 			 * setting; ignore it.
 			 *
 			 * Part 1: prepare quirk flag
+=======
+			if (!as) {
+				dev_err(&dev->dev,
+					"%u:%d : UAC_AS_GENERAL descriptor not found\n",
+					iface_no, altno);
+				continue;
+			}
+
+			if (as->bLength < sizeof(*as)) {
+				dev_err(&dev->dev,
+					"%u:%d : invalid UAC_AS_GENERAL desc\n",
+					iface_no, altno);
+				continue;
+			}
+
+			num_channels = as->bNrChannels;
+			format = le32_to_cpu(as->bmFormats);
+			chconfig = le32_to_cpu(as->bmChannelConfig);
+
+			/* lookup the terminal associated to this interface
+			 * to extract the clock */
+			input_term = snd_usb_find_input_terminal_descriptor(chip->ctrl_intf,
+									    as->bTerminalLink);
+			if (input_term) {
+				clock = input_term->bCSourceID;
+				if (!chconfig && (num_channels == input_term->bNrChannels))
+					chconfig = le32_to_cpu(input_term->bmChannelConfig);
+				break;
+			}
+
+			output_term = snd_usb_find_output_terminal_descriptor(chip->ctrl_intf,
+									      as->bTerminalLink);
+			if (output_term) {
+				clock = output_term->bCSourceID;
+				break;
+			}
+
+			dev_err(&dev->dev,
+				"%u:%d : bogus bTerminalLink %d\n",
+				iface_no, altno, as->bTerminalLink);
+			continue;
+		}
+		}
+
+		/* get format type */
+		fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen, NULL, UAC_FORMAT_TYPE);
+		if (!fmt) {
+			dev_err(&dev->dev,
+				"%u:%d : no UAC_FORMAT_TYPE desc\n",
+				iface_no, altno);
+			continue;
+		}
+		if (((protocol == UAC_VERSION_1) && (fmt->bLength < 8)) ||
+		    ((protocol == UAC_VERSION_2) && (fmt->bLength < 6))) {
+			dev_err(&dev->dev,
+				"%u:%d : invalid UAC_FORMAT_TYPE desc\n",
+				iface_no, altno);
+			continue;
+		}
+
+		/*
+		 * Blue Microphones workaround: The last altsetting is identical
+		 * with the previous one, except for a larger packet size, but
+		 * is actually a mislabeled two-channel setting; ignore it.
+		 */
+		if (fmt->bNrChannels == 1 &&
+		    fmt->bSubframeSize == 2 &&
+		    altno == 2 && num == 3 &&
+		    fp && fp->altsetting == 1 && fp->channels == 1 &&
+		    fp->formats == SNDRV_PCM_FMTBIT_S16_LE &&
+		    protocol == UAC_VERSION_1 &&
+		    le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize) ==
+							fp->maxpacksize * 2)
+			continue;
+
+		fp = kzalloc(sizeof(*fp), GFP_KERNEL);
+		if (! fp) {
+			dev_err(&dev->dev, "cannot malloc\n");
+			return -ENOMEM;
+		}
+
+		fp->iface = iface_no;
+		fp->altsetting = altno;
+		fp->altset_idx = i;
+		fp->endpoint = get_endpoint(alts, 0)->bEndpointAddress;
+		fp->ep_attr = get_endpoint(alts, 0)->bmAttributes;
+		fp->datainterval = snd_usb_parse_datainterval(chip, alts);
+		fp->protocol = protocol;
+		fp->maxpacksize = le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize);
+		fp->channels = num_channels;
+		if (snd_usb_get_speed(dev) == USB_SPEED_HIGH)
+			fp->maxpacksize = (((fp->maxpacksize >> 11) & 3) + 1)
+					* (fp->maxpacksize & 0x7ff);
+		fp->attributes = parse_uac_endpoint_attributes(chip, alts, protocol, iface_no);
+		fp->clock = clock;
+		INIT_LIST_HEAD(&fp->list);
+
+		/* some quirks for attributes here */
+
+		switch (chip->usb_id) {
+		case USB_ID(0x0a92, 0x0053): /* AudioTrak Optoplay */
+			/* Optoplay sets the sample rate attribute although
+			 * it seems not supporting it in fact.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			 */
 			if (altno == 2 && num == 3 &&
 			    fp && fp->altsetting == 1 && fp->channels == 1 &&
@@ -1202,8 +1307,15 @@ static int __snd_usb_parse_audio_interface(struct snd_usb_audio *chip,
 			err = snd_usb_add_audio_stream(chip, stream, fp);
 
 		if (err < 0) {
+<<<<<<< HEAD
 			audioformat_free(fp);
 			kfree(pd);
+=======
+			list_del(&fp->list); /* unlink for avoiding double-free */
+			kfree(fp->rate_table);
+			kfree(fp->chmap);
+			kfree(fp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return err;
 		}
 		/* try to set the interface... */

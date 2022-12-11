@@ -37,6 +37,11 @@
 #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
 #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
 
+<<<<<<< HEAD
+=======
+#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* The sub-arch has lwsync */
 #if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
 #    define SMPWMB      LWSYNC

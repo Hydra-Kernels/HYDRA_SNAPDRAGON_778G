@@ -417,8 +417,11 @@ static int ashmem_mmap(struct file *file, struct vm_area_struct *vma)
 			goto out;
 		}
 		vmfile->f_mode |= FMODE_LSEEK;
+<<<<<<< HEAD
 		inode = file_inode(vmfile);
 		lockdep_set_class(&inode->i_rwsem, &backing_shmem_inode_class);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		asma->file = vmfile;
 		/*
 		 * override mmap operation of the vmfile so that it can't be
@@ -762,6 +765,7 @@ static int ashmem_pin_unpin(struct ashmem_area *asma, unsigned long cmd,
 	int ret = -EINVAL;
 	struct ashmem_range *range = NULL;
 
+<<<<<<< HEAD
 	if (copy_from_user(&pin, p, sizeof(pin)))
 		return -EFAULT;
 
@@ -775,12 +779,21 @@ static int ashmem_pin_unpin(struct ashmem_area *asma, unsigned long cmd,
 	wait_event(ashmem_shrink_wait, !atomic_read(&ashmem_shrink_inflight));
 
 	if (!asma->file)
+=======
+	if (unlikely(copy_from_user(&pin, p, sizeof(pin))))
+		return -EFAULT;
+
+	mutex_lock(&ashmem_mutex);
+
+	if (unlikely(!asma->file))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out_unlock;
 
 	/* per custom, you can pass zero for len to mean "everything onward" */
 	if (!pin.len)
 		pin.len = PAGE_ALIGN(asma->size) - pin.offset;
 
+<<<<<<< HEAD
 	if ((pin.offset | pin.len) & ~PAGE_MASK)
 		goto out_unlock;
 
@@ -788,6 +801,15 @@ static int ashmem_pin_unpin(struct ashmem_area *asma, unsigned long cmd,
 		goto out_unlock;
 
 	if (PAGE_ALIGN(asma->size) < pin.offset + pin.len)
+=======
+	if (unlikely((pin.offset | pin.len) & ~PAGE_MASK))
+		goto out_unlock;
+
+	if (unlikely(((__u32)-1) - pin.offset < pin.len))
+		goto out_unlock;
+
+	if (unlikely(PAGE_ALIGN(asma->size) < pin.offset + pin.len))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out_unlock;
 
 	pgstart = pin.offset / PAGE_SIZE;

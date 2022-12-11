@@ -212,6 +212,7 @@ static int prio_tune(struct Qdisc *sch, struct nlattr *opt,
 	q->bands = qopt->bands;
 	memcpy(q->prio2band, qopt->priomap, TC_PRIO_MAX+1);
 
+<<<<<<< HEAD
 	for (i = q->bands; i < oldbands; i++)
 		qdisc_tree_flush_backlog(q->queues[i]);
 
@@ -219,12 +220,46 @@ static int prio_tune(struct Qdisc *sch, struct nlattr *opt,
 		q->queues[i] = queues[i];
 		if (q->queues[i] != &noop_qdisc)
 			qdisc_hash_add(q->queues[i], true);
+=======
+	for (i = q->bands; i < TCQ_PRIO_BANDS; i++) {
+		struct Qdisc *child = q->queues[i];
+		q->queues[i] = &noop_qdisc;
+		if (child != &noop_qdisc) {
+			qdisc_tree_reduce_backlog(child, child->q.qlen, child->qstats.backlog);
+			qdisc_destroy(child);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	sch_tree_unlock(sch);
 
+<<<<<<< HEAD
 	for (i = q->bands; i < oldbands; i++)
 		qdisc_put(q->queues[i]);
+=======
+	for (i = 0; i < q->bands; i++) {
+		if (q->queues[i] == &noop_qdisc) {
+			struct Qdisc *child, *old;
+
+			child = qdisc_create_dflt(sch->dev_queue,
+						  &pfifo_qdisc_ops,
+						  TC_H_MAKE(sch->handle, i + 1));
+			if (child) {
+				sch_tree_lock(sch);
+				old = q->queues[i];
+				q->queues[i] = child;
+
+				if (old != &noop_qdisc) {
+					qdisc_tree_reduce_backlog(old,
+								  old->q.qlen,
+								  old->qstats.backlog);
+					qdisc_destroy(old);
+				}
+				sch_tree_unlock(sch);
+			}
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -302,6 +337,7 @@ static int prio_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
 	}
 
 	*old = qdisc_replace(sch, new, &q->queues[band]);
+<<<<<<< HEAD
 
 	graft_offload.handle = sch->handle;
 	graft_offload.parent = sch->parent;
@@ -312,6 +348,8 @@ static int prio_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
 	qdisc_offload_graft_helper(qdisc_dev(sch), sch, new, *old,
 				   TC_SETUP_QDISC_PRIO, &graft_offload,
 				   extack);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -383,7 +383,49 @@ stex;	stb	r0,0(r3)
  */
 .Lst_exc_r7:
 	add	r3,r3,r7
+<<<<<<< HEAD
 	b	.Lst_exc
+=======
+	b	1f
+371:
+180:
+	addi	r3,r3,8
+171:
+177:
+179:
+	addi	r3,r3,8
+370:
+372:
+176:
+178:
+	addi	r3,r3,4
+185:
+	addi	r3,r3,4
+170:
+172:
+345:
+173:
+174:
+175:
+181:
+184:
+186:
+187:
+188:
+189:	
+194:
+195:
+196:
+1:
+	ld	r6,-24(r1)
+	ld	r5,-8(r1)
+	add	r6,r6,r5
+	subf	r3,r3,r6	/* #bytes not copied */
+190:
+191:
+192:
+	blr			/* #bytes not copied in r3 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* adjust by 24 */
 	addi	r3,r3,8

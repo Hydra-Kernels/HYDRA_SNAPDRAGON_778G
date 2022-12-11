@@ -354,6 +354,23 @@ static void rb_init_page(struct buffer_data_page *bpage)
 	local_set(&bpage->commit, 0);
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * ring_buffer_page_len - the size of data on the page.
+ * @page: The page to read
+ *
+ * Returns the amount of data on the page, including buffer page header.
+ */
+size_t ring_buffer_page_len(void *page)
+{
+	struct buffer_data_page *bpage = page;
+
+	return (local_read(&bpage->commit) & ~RB_MISSED_FLAGS)
+		+ BUF_PAGE_HDR_SIZE;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * Also stolen from mm/slob.c. Thanks to Mathieu Desnoyers for pointing
  * this issue out.
@@ -458,7 +475,10 @@ struct ring_buffer_per_cpu {
 	raw_spinlock_t			reader_lock;	/* serialize readers */
 	arch_spinlock_t			lock;
 	struct lock_class_key		lock_key;
+<<<<<<< HEAD
 	struct buffer_data_page		*free_page;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long			nr_pages;
 	unsigned int			current_context;
 	struct list_head		*pages;
@@ -1200,8 +1220,11 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
 static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 {
 	struct buffer_page *bpage, *tmp;
+<<<<<<< HEAD
 	bool user_thread = current->mm != NULL;
 	gfp_t mflags;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	long i;
 
 	/*
@@ -1392,7 +1415,10 @@ struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 	long nr_pages;
 	int bsize;
 	int cpu;
+<<<<<<< HEAD
 	int ret;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* keep it in its own cache line */
 	buffer = kzalloc(ALIGN(sizeof(*buffer), cache_line_size()),
@@ -1728,7 +1754,11 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size,
 {
 	struct ring_buffer_per_cpu *cpu_buffer;
 	unsigned long nr_pages;
+<<<<<<< HEAD
 	int cpu, err;
+=======
+	int cpu, err = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Always succeed at resizing a non-existent buffer:
@@ -1739,9 +1769,19 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size,
 	/* Make sure the requested buffer exists */
 	if (cpu_id != RING_BUFFER_ALL_CPUS &&
 	    !cpumask_test_cpu(cpu_id, buffer->cpumask))
+<<<<<<< HEAD
 		return 0;
+=======
+		return size;
 
 	nr_pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
+
+	/* we need a minimum of two pages */
+	if (nr_pages < 2)
+		nr_pages = 2;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+	size = nr_pages * BUF_PAGE_SIZE;
 
 	/* we need a minimum of two pages */
 	if (nr_pages < 2)
@@ -3343,7 +3383,11 @@ bool ring_buffer_record_is_on(struct ring_buffer *buffer)
  * ring_buffer_record_disable(), as that is a temporary disabling of
  * the ring buffer.
  */
+<<<<<<< HEAD
 bool ring_buffer_record_is_set_on(struct ring_buffer *buffer)
+=======
+int ring_buffer_record_is_set_on(struct ring_buffer *buffer)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return !(atomic_read(&buffer->record_disabled) & RB_BUFFER_OFF);
 }
@@ -4935,7 +4979,13 @@ EXPORT_SYMBOL_GPL(ring_buffer_read_page);
  */
 int trace_rb_cpu_prepare(unsigned int cpu, struct hlist_node *node)
 {
+<<<<<<< HEAD
 	struct ring_buffer *buffer;
+=======
+	struct ring_buffer *buffer =
+		container_of(self, struct ring_buffer, cpu_notify);
+	long cpu = (long)hcpu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	long nr_pages_same;
 	int cpu_i;
 	unsigned long nr_pages;

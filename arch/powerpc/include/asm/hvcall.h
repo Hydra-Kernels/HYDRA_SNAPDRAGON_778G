@@ -348,25 +348,32 @@
 #define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE	3
 #define H_SET_MODE_RESOURCE_LE			4
 
+<<<<<<< HEAD
 /* Values for argument to H_SIGNAL_SYS_RESET */
 #define H_SIGNAL_SYS_RESET_ALL			-1
 #define H_SIGNAL_SYS_RESET_ALL_OTHERS		-2
 /* >= 0 values are CPU number */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* H_GET_CPU_CHARACTERISTICS return values */
 #define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
 #define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
 #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
 #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
 #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
+<<<<<<< HEAD
 #define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
 #define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
 #define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
 #define H_CPU_CHAR_BCCTR_FLUSH_ASSIST	(1ull << 54) // IBM bit 9
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
 #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
 #define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
+<<<<<<< HEAD
 #define H_CPU_BEHAV_FLUSH_COUNT_CACHE	(1ull << 58) // IBM bit 5
 
 /* Flag values used in H_REGISTER_PROC_TBL hcall */
@@ -378,6 +385,8 @@
 #define PROC_TABLE_HPT_PT	0x02
 #define PROC_TABLE_RADIX	0x04
 #define PROC_TABLE_GTSE		0x01
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
@@ -516,6 +525,11 @@ struct hv_guest_state {
 
 /* Latest version of hv_guest_state structure */
 #define HV_GUEST_STATE_VERSION	1
+
+struct h_cpu_char_result {
+	u64 character;
+	u64 behaviour;
+};
 
 #endif /* __ASSEMBLY__ */
 #endif /* __KERNEL__ */

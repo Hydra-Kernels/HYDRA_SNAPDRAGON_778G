@@ -91,12 +91,16 @@ struct inet_request_sock {
 	u32                     ir_mark;
 	union {
 		struct ip_options_rcu __rcu	*ireq_opt;
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_IPV6)
 		struct {
 			struct ipv6_txoptions	*ipv6_opt;
 			struct sk_buff		*pktopts;
 		};
 #endif
+=======
+		struct sk_buff		*pktopts;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	};
 };
 
@@ -113,6 +117,7 @@ static inline u32 inet_request_mark(const struct sock *sk, struct sk_buff *skb)
 	return sk->sk_mark;
 }
 
+<<<<<<< HEAD
 static inline int inet_request_bound_dev_if(const struct sock *sk,
 					    struct sk_buff *skb)
 {
@@ -145,6 +150,12 @@ static inline bool inet_bound_dev_eq(bool l3mdev_accept, int bound_dev_if,
 	if (!bound_dev_if)
 		return !sdif || l3mdev_accept;
 	return bound_dev_if == dif || bound_dev_if == sdif;
+=======
+static inline struct ip_options_rcu *ireq_opt_deref(const struct inet_request_sock *ireq)
+{
+	return rcu_dereference_check(ireq->ireq_opt,
+				     atomic_read(&ireq->req.rsk_refcnt) > 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct inet_cork {

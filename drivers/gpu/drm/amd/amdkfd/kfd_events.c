@@ -689,7 +689,11 @@ int kfd_wait_on_events(struct kfd_process *p,
 		if (copy_from_user(&event_data, &events[i],
 				sizeof(struct kfd_event_data))) {
 			ret = -EFAULT;
+<<<<<<< HEAD
 			goto out_unlock;
+=======
+			goto fail;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		ret = init_event_waiter_get_status(p, &event_waiters[i],

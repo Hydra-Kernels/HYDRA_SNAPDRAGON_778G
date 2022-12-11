@@ -367,8 +367,13 @@ int ovl_xattr_set(struct dentry *dentry, struct inode *inode, const char *name,
 int ovl_xattr_get(struct dentry *dentry, struct inode *inode, const char *name,
 		  void *value, size_t size, int flags);
 ssize_t ovl_listxattr(struct dentry *dentry, char *list, size_t size);
+<<<<<<< HEAD
 struct posix_acl *ovl_get_acl(struct inode *inode, int type);
 int ovl_update_time(struct inode *inode, struct timespec64 *ts, int flags);
+=======
+int ovl_removexattr(struct dentry *dentry, const char *name);
+struct inode *ovl_d_select_inode(struct dentry *dentry, unsigned file_flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 bool ovl_is_private_xattr(const char *name);
 
 struct ovl_inode_params {
@@ -392,6 +397,7 @@ static inline void ovl_copyattr(struct inode *from, struct inode *to)
 	to->i_uid = from->i_uid;
 	to->i_gid = from->i_gid;
 	to->i_mode = from->i_mode;
+<<<<<<< HEAD
 	to->i_atime = from->i_atime;
 	to->i_mtime = from->i_mtime;
 	to->i_ctime = from->i_ctime;
@@ -403,6 +409,8 @@ static inline void ovl_copyflags(struct inode *from, struct inode *to)
 	unsigned int mask = S_SYNC | S_IMMUTABLE | S_APPEND | S_NOATIME;
 
 	inode_set_flags(to, from->i_flags & mask, mask);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* dir.c */

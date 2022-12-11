@@ -9602,6 +9602,16 @@ enum skl_power_gate {
 #define  TGL_TRANS_CLK_SEL_DISABLED	(0x0 << 28)
 #define  TGL_TRANS_CLK_SEL_PORT(x)	(((x) + 1) << 28)
 
+<<<<<<< HEAD
+=======
+#define CDCLK_FREQ			0x46200
+
+#define TRANSA_MSA_MISC			0x60410
+#define TRANSB_MSA_MISC			0x61410
+#define TRANSC_MSA_MISC			0x62410
+#define TRANS_EDP_MSA_MISC		0x6f410
+#define TRANS_MSA_MISC(tran) _TRANSCODER2(tran, TRANSA_MSA_MISC)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define CDCLK_FREQ			_MMIO(0x46200)
 

@@ -930,7 +930,11 @@ static inline int ceph_do_getattr(struct inode *inode, int mask, bool force)
 	return __ceph_do_getattr(inode, NULL, mask, force);
 }
 extern int ceph_permission(struct inode *inode, int mask);
+<<<<<<< HEAD
 extern int __ceph_setattr(struct inode *inode, struct iattr *attr);
+=======
+extern int __ceph_setattr(struct dentry *dentry, struct iattr *attr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern int ceph_setattr(struct dentry *dentry, struct iattr *attr);
 extern int ceph_getattr(const struct path *path, struct kstat *stat,
 			u32 request_mask, unsigned int flags);

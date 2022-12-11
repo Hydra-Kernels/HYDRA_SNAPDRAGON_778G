@@ -1818,7 +1818,11 @@ static int sun4i_codec_probe(struct platform_device *pdev)
 		goto err_assert_reset;
 	}
 
+<<<<<<< HEAD
 	card = quirks->create_card(&pdev->dev);
+=======
+	card = sun4i_codec_create_card(&pdev->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(card)) {
 		ret = PTR_ERR(card);
 		dev_err(&pdev->dev, "Failed to create our card\n");

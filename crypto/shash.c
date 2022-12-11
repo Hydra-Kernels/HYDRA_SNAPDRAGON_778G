@@ -20,11 +20,12 @@
 
 static const struct crypto_type crypto_shash_type;
 
-static int shash_no_setkey(struct crypto_shash *tfm, const u8 *key,
-			   unsigned int keylen)
+int shash_no_setkey(struct crypto_shash *tfm, const u8 *key,
+		    unsigned int keylen)
 {
 	return -ENOSYS;
 }
+EXPORT_SYMBOL_GPL(shash_no_setkey);
 
 /*
  * Check whether an shash algorithm has a setkey function.
@@ -312,7 +313,11 @@ int shash_ahash_digest(struct ahash_request *req, struct shash_desc *desc)
 
 	if (nbytes &&
 	    (sg = req->src, offset = sg->offset,
+<<<<<<< HEAD
 	     nbytes <= min(sg->length, ((unsigned int)(PAGE_SIZE)) - offset))) {
+=======
+	     nbytes < min(sg->length, ((unsigned int)(PAGE_SIZE)) - offset))) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		void *data;
 
 		data = kmap_atomic(sg_page(sg));
@@ -384,6 +389,7 @@ int crypto_init_shash_ops_async(struct crypto_tfm *tfm)
 	crt->final = shash_async_final;
 	crt->finup = shash_async_finup;
 	crt->digest = shash_async_digest;
+<<<<<<< HEAD
 	if (crypto_shash_alg_has_setkey(alg))
 		crt->setkey = shash_async_setkey;
 
@@ -392,6 +398,16 @@ int crypto_init_shash_ops_async(struct crypto_tfm *tfm)
 
 	crt->export = shash_async_export;
 	crt->import = shash_async_import;
+=======
+	crt->setkey = shash_async_setkey;
+
+	crt->has_setkey = alg->setkey != shash_no_setkey;
+
+	if (alg->export)
+		crt->export = shash_async_export;
+	if (alg->import)
+		crt->import = shash_async_import;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	crt->reqsize = sizeof(struct shash_desc) + crypto_shash_descsize(shash);
 

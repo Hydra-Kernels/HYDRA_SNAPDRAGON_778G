@@ -1269,9 +1269,14 @@ static bool m_can_niso_supported(struct m_can_classdev *cdev)
 		usleep_range(1, 5);
 	}
 
+<<<<<<< HEAD
 	/* Clear NISO */
 	cccr_reg &= ~(CCCR_NISO);
 	m_can_write(cdev, M_CAN_CCCR, cccr_reg);
+=======
+	/* CAN_CTRLMODE_FD_NON_ISO is fixed with M_CAN IP v3.0.1 */
+	can_set_static_ctrlmode(dev, CAN_CTRLMODE_FD_NON_ISO);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	m_can_config_endisable(cdev, false);
 

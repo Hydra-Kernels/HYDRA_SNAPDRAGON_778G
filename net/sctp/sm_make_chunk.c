@@ -1390,12 +1390,20 @@ static struct sctp_chunk *_sctp_make_chunk(const struct sctp_association *asoc,
 	struct sock *sk;
 	int chunklen;
 
+<<<<<<< HEAD
 	chunklen = SCTP_PAD4(sizeof(*chunk_hdr) + paylen);
+=======
+	chunklen = WORD_ROUND(sizeof(*chunk_hdr) + paylen);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (chunklen > SCTP_MAX_CHUNK_LEN)
 		goto nodata;
 
 	/* No need to allocate LL here, as this is only a chunk. */
+<<<<<<< HEAD
 	skb = alloc_skb(chunklen, gfp);
+=======
+	skb = alloc_skb(chunklen, GFP_ATOMIC);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!skb)
 		goto nodata;
 

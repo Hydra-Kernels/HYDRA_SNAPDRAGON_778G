@@ -153,10 +153,13 @@ static const struct usb_device_id btusb_table[] = {
 	{ USB_VENDOR_AND_INTERFACE_INFO(0x13d3, 0xff, 0x01, 0x01),
 	  .driver_info = BTUSB_BCM_PATCHRAM },
 
+<<<<<<< HEAD
 	/* Dell Computer - Broadcom based  */
 	{ USB_VENDOR_AND_INTERFACE_INFO(0x413c, 0xff, 0x01, 0x01),
 	  .driver_info = BTUSB_BCM_PATCHRAM },
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Toshiba Corp - Broadcom based */
 	{ USB_VENDOR_AND_INTERFACE_INFO(0x0930, 0xff, 0x01, 0x01),
 	  .driver_info = BTUSB_BCM_PATCHRAM },
@@ -370,7 +373,10 @@ static const struct usb_device_id blacklist_table[] = {
 	{ USB_DEVICE(0x7392, 0xa611), .driver_info = BTUSB_REALTEK },
 
 	/* Additional Realtek 8723DE Bluetooth devices */
+<<<<<<< HEAD
 	{ USB_DEVICE(0x0bda, 0xb009), .driver_info = BTUSB_REALTEK },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ USB_DEVICE(0x2ff8, 0xb011), .driver_info = BTUSB_REALTEK },
 
 	/* Additional Realtek 8821AE Bluetooth devices */
@@ -381,12 +387,17 @@ static const struct usb_device_id blacklist_table[] = {
 	{ USB_DEVICE(0x13d3, 0x3462), .driver_info = BTUSB_REALTEK },
 
 	/* Additional Realtek 8822BE Bluetooth devices */
+<<<<<<< HEAD
 	{ USB_DEVICE(0x13d3, 0x3526), .driver_info = BTUSB_REALTEK },
 	{ USB_DEVICE(0x0b05, 0x185c), .driver_info = BTUSB_REALTEK },
 
 	/* Additional Realtek 8822CE Bluetooth devices */
 	{ USB_DEVICE(0x04ca, 0x4005), .driver_info = BTUSB_REALTEK },
 
+=======
+	{ USB_DEVICE(0x0b05, 0x185c), .driver_info = BTUSB_REALTEK },
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Silicon Wave based devices */
 	{ USB_DEVICE(0x0c10, 0x0000), .driver_info = BTUSB_SWAVE },
 
@@ -436,9 +447,12 @@ static const struct dmi_system_id btusb_needs_reset_resume_table[] = {
 #define BTUSB_BOOTING		9
 #define BTUSB_DIAG_RUNNING	10
 #define BTUSB_OOB_WAKE_ENABLED	11
+<<<<<<< HEAD
 #define BTUSB_HW_RESET_ACTIVE	12
 #define BTUSB_TX_WAIT_VND_EVT	13
 #define BTUSB_WAKEUP_DISABLE	14
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct btusb_data {
 	struct hci_dev       *hdev;
@@ -2195,12 +2209,18 @@ static int btusb_setup_intel_new(struct hci_dev *hdev)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	/* Check for supported iBT hardware variants of this firmware
 	 * loading method.
+=======
+	/* At the moment the iBT 3.0 hardware variants 0x0b (LnP/SfP)
+	 * and 0x0c (WsP) are supported by this firmware loading method.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 *
 	 * This check has been put in place to ensure correct forward
 	 * compatibility options when newer hardware variants come along.
 	 */
+<<<<<<< HEAD
 	switch (ver.hw_variant) {
 	case 0x0b:	/* SfP */
 	case 0x0c:	/* WsP */
@@ -2212,6 +2232,12 @@ static int btusb_setup_intel_new(struct hci_dev *hdev)
 	default:
 		bt_dev_err(hdev, "Unsupported Intel hardware variant (%u)",
 			   ver.hw_variant);
+=======
+	if (ver->hw_variant != 0x0b && ver->hw_variant != 0x0c) {
+		BT_ERR("%s: Unsupported Intel hardware variant (%u)",
+		       hdev->name, ver->hw_variant);
+		kfree_skb(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	}
 
@@ -3824,8 +3850,17 @@ static int btusb_probe(struct usb_interface *intf,
 	if (id->driver_info & BTUSB_QCA_ROME) {
 		data->setup_on_usb = btusb_setup_qca;
 		hdev->set_bdaddr = btusb_set_bdaddr_ath3012;
+<<<<<<< HEAD
 		set_bit(HCI_QUIRK_SIMULTANEOUS_DISCOVERY, &hdev->quirks);
 		btusb_check_needs_reset_resume(intf);
+=======
+
+		/* QCA Rome devices lose their updated firmware over suspend,
+		 * but the USB hub doesn't notice any status change.
+		 * explicitly request a device reset on resume.
+		 */
+		interface_to_usbdev(intf)->quirks |= USB_QUIRK_RESET_RESUME;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (IS_ENABLED(CONFIG_BT_HCIBTUSB_RTL) &&
@@ -3838,11 +3873,15 @@ static int btusb_probe(struct usb_interface *intf,
 		 * suspend that means host doesn't send SET_FEATURE
 		 * (DEVICE_REMOTE_WAKEUP)
 		 */
+<<<<<<< HEAD
 		set_bit(BTUSB_WAKEUP_DISABLE, &data->flags);
 
 		err = usb_autopm_get_interface(intf);
 		if (err < 0)
 			goto out_free_dev;
+=======
+		interface_to_usbdev(intf)->quirks |= USB_QUIRK_RESET_RESUME;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (id->driver_info & BTUSB_AMP) {
@@ -4009,6 +4048,7 @@ static int btusb_suspend(struct usb_interface *intf, pm_message_t message)
 	btusb_stop_traffic(data);
 	usb_kill_anchored_urbs(&data->tx_anchor);
 
+<<<<<<< HEAD
 	if (data->oob_wake_irq && device_may_wakeup(&data->udev->dev)) {
 		set_bit(BTUSB_OOB_WAKE_ENABLED, &data->flags);
 		enable_irq_wake(data->oob_wake_irq);
@@ -4028,6 +4068,8 @@ static int btusb_suspend(struct usb_interface *intf, pm_message_t message)
 			data->udev->reset_resume = 1;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -120,6 +120,7 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
 {
 	struct ast_private *ast = dev->dev_private;
 	uint32_t jreg, scu_rev;
+<<<<<<< HEAD
 
 	/*
 	 * If VGA isn't enabled, we need to enable now or subsequent
@@ -139,6 +140,27 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
 	ast_open_key(ast);
 	ast_enable_mmio(dev);
 
+=======
+
+	/*
+	 * If VGA isn't enabled, we need to enable now or subsequent
+	 * access to the scratch registers will fail. We also inform
+	 * our caller that it needs to POST the chip
+	 * (Assumption: VGA not enabled -> need to POST)
+	 */
+	if (!ast_is_vga_enabled(dev)) {
+		ast_enable_vga(dev);
+		DRM_INFO("VGA not enabled on entry, requesting chip POST\n");
+		*need_post = true;
+	} else
+		*need_post = false;
+
+
+	/* Enable extended register access */
+	ast_enable_mmio(dev);
+	ast_open_key(ast);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Find out whether P2A works or whether to use device-tree */
 	ast_detect_config_mode(dev, &scu_rev);
 
@@ -203,9 +225,12 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
 				ast->support_wide_screen = true;
 			if (ast->chip == AST2400 &&
 			    (scu_rev & 0x300) == 0x100) /* ast1400 */
+<<<<<<< HEAD
 				ast->support_wide_screen = true;
 			if (ast->chip == AST2500 &&
 			    scu_rev == 0x100)           /* ast2510 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				ast->support_wide_screen = true;
 		}
 		break;
@@ -302,10 +327,14 @@ static int ast_get_dram_info(struct drm_device *dev)
 	default:
 		ast->dram_bus_width = 16;
 		ast->dram_type = AST_DRAM_1Gx16;
+<<<<<<< HEAD
 		if (ast->chip == AST2500)
 			ast->mclk = 800;
 		else
 			ast->mclk = 396;
+=======
+		ast->mclk = 396;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
 	}
 
@@ -314,6 +343,7 @@ static int ast_get_dram_info(struct drm_device *dev)
 	else
 		ast->dram_bus_width = 32;
 
+<<<<<<< HEAD
 	if (ast->chip == AST2500) {
 		switch (mcr_cfg & 0x03) {
 		case 0:
@@ -331,6 +361,9 @@ static int ast_get_dram_info(struct drm_device *dev)
 			break;
 		}
 	} else if (ast->chip == AST2300 || ast->chip == AST2400) {
+=======
+	if (ast->chip == AST2300 || ast->chip == AST2400) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		switch (mcr_cfg & 0x03) {
 		case 0:
 			ast->dram_type = AST_DRAM_512Mx16;
@@ -464,6 +497,17 @@ int ast_driver_load(struct drm_device *dev, unsigned long flags)
 
 	ast_detect_chip(dev, &need_post);
 
+<<<<<<< HEAD
+=======
+	if (ast->chip != AST1180) {
+		ret = ast_get_dram_info(dev);
+		if (ret)
+			goto out_free;
+		ast->vram_size = ast_get_vram_info(dev);
+		DRM_INFO("dram %d %d %d %08x\n", ast->mclk, ast->dram_type, ast->dram_bus_width, ast->vram_size);
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (need_post)
 		ast_post_gpu(dev);
 

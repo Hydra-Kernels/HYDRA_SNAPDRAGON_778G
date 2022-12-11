@@ -324,10 +324,13 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
 	if (dev->non_compliant_bars)
 		return;
 
+<<<<<<< HEAD
 	/* Per PCIe r4.0, sec 9.3.4.1.11, the VF BARs are all RO Zero */
 	if (dev->is_virtfn)
 		return;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for (pos = 0; pos < howmany; pos++) {
 		struct resource *res = &dev->resource[pos];
 		reg = PCI_BASE_ADDRESS_0 + (pos << 2);
@@ -1439,12 +1442,28 @@ void set_pcie_port_type(struct pci_dev *pdev)
 		return;
 
 	/*
+<<<<<<< HEAD
 	 * Some systems do not identify their upstream/downstream ports
 	 * correctly so detect impossible configurations here and correct
 	 * the port type accordingly.
 	 */
 	type = pci_pcie_type(pdev);
 	if (type == PCI_EXP_TYPE_DOWNSTREAM) {
+=======
+	 * A Root Port or a PCI-to-PCIe bridge is always the upstream end
+	 * of a Link.  No PCIe component has two Links.  Two Links are
+	 * connected by a Switch that has a Port on each Link and internal
+	 * logic to connect the two Ports.
+	 */
+	type = pci_pcie_type(pdev);
+	if (type == PCI_EXP_TYPE_ROOT_PORT ||
+	    type == PCI_EXP_TYPE_PCIE_BRIDGE)
+		pdev->has_secondary_link = 1;
+	else if (type == PCI_EXP_TYPE_UPSTREAM ||
+		 type == PCI_EXP_TYPE_DOWNSTREAM) {
+		parent = pci_upstream_bridge(pdev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/*
 		 * If pdev claims to be downstream port but the parent
 		 * device is also downstream port assume pdev is actually
@@ -1778,18 +1797,28 @@ int pci_setup_device(struct pci_dev *dev)
 	/* Device class may be changed after fixup */
 	class = dev->class >> 8;
 
+<<<<<<< HEAD
 	if (dev->non_compliant_bars && !dev->mmio_always_on) {
 		pci_read_config_word(dev, PCI_COMMAND, &cmd);
 		if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
 			pci_info(dev, "device has non-compliant BARs; disabling IO/MEM decoding\n");
+=======
+	if (dev->non_compliant_bars) {
+		pci_read_config_word(dev, PCI_COMMAND, &cmd);
+		if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
+			dev_info(&dev->dev, "device has non-compliant BARs; disabling IO/MEM decoding\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			cmd &= ~PCI_COMMAND_IO;
 			cmd &= ~PCI_COMMAND_MEMORY;
 			pci_write_config_word(dev, PCI_COMMAND, cmd);
 		}
 	}
 
+<<<<<<< HEAD
 	dev->broken_intx_masking = pci_intx_mask_broken(dev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	switch (dev->hdr_type) {		    /* header type */
 	case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
 		if (class == PCI_CLASS_BRIDGE_PCI)
@@ -1976,9 +2005,57 @@ int pci_configure_extended_tags(struct pci_dev *dev, void *ign)
 	if (ret)
 		return 0;
 
+<<<<<<< HEAD
 	host = pci_find_host_bridge(dev->bus);
 	if (!host)
 		return 0;
+=======
+static void program_hpp_type1(struct pci_dev *dev, struct hpp_type1 *hpp)
+{
+	int pos;
+
+	if (!hpp)
+		return;
+
+	pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+	if (!pos)
+		return;
+
+	dev_warn(&dev->dev, "PCI-X settings not supported\n");
+}
+
+static bool pcie_root_rcb_set(struct pci_dev *dev)
+{
+	struct pci_dev *rp = pcie_find_root_port(dev);
+	u16 lnkctl;
+
+	if (!rp)
+		return false;
+
+	pcie_capability_read_word(rp, PCI_EXP_LNKCTL, &lnkctl);
+	if (lnkctl & PCI_EXP_LNKCTL_RCB)
+		return true;
+
+	return false;
+}
+
+static void program_hpp_type2(struct pci_dev *dev, struct hpp_type2 *hpp)
+{
+	int pos;
+	u32 reg32;
+
+	if (!hpp)
+		return;
+
+	if (!pci_is_pcie(dev))
+		return;
+
+	if (hpp->revision > 1) {
+		dev_warn(&dev->dev, "PCIe settings rev %d not supported\n",
+			 hpp->revision);
+		return;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * If some device in the hierarchy doesn't handle Extended Tags
@@ -2001,6 +2078,7 @@ int pci_configure_extended_tags(struct pci_dev *dev, void *ign)
 	return 0;
 }
 
+<<<<<<< HEAD
 /**
  * pcie_relaxed_ordering_enabled - Probe for PCIe relaxed ordering enable
  * @dev: PCI device to query
@@ -2010,6 +2088,23 @@ int pci_configure_extended_tags(struct pci_dev *dev, void *ign)
 bool pcie_relaxed_ordering_enabled(struct pci_dev *dev)
 {
 	u16 v;
+=======
+	/* Initialize Link Control Register */
+	if (pcie_cap_has_lnkctl(dev)) {
+
+		/*
+		 * If the Root Port supports Read Completion Boundary of
+		 * 128, set RCB to 128.  Otherwise, clear it.
+		 */
+		hpp->pci_exp_lnkctl_and |= PCI_EXP_LNKCTL_RCB;
+		hpp->pci_exp_lnkctl_or &= ~PCI_EXP_LNKCTL_RCB;
+		if (pcie_root_rcb_set(dev))
+			hpp->pci_exp_lnkctl_or |= PCI_EXP_LNKCTL_RCB;
+
+		pcie_capability_clear_and_set_word(dev, PCI_EXP_LNKCTL,
+			~hpp->pci_exp_lnkctl_and, hpp->pci_exp_lnkctl_or);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pcie_capability_read_word(dev, PCI_EXP_DEVCTL, &v);
 

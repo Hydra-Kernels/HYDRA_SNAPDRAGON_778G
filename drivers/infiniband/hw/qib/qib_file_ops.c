@@ -2041,11 +2041,16 @@ static ssize_t qib_write(struct file *fp, const char __user *data,
 	ssize_t ret = 0;
 	void *dest;
 
+<<<<<<< HEAD
 	if (!ib_safe_file_access(fp)) {
 		pr_err_once("qib_write: process %d (%s) changed security contexts after opening file descriptor, this is not allowed.\n",
 			    task_tgid_vnr(current), current->comm);
 		return -EACCES;
 	}
+=======
+	if (WARN_ON_ONCE(!ib_safe_file_access(fp)))
+		return -EACCES;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (count < sizeof(cmd.type)) {
 		ret = -EINVAL;

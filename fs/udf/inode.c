@@ -1232,7 +1232,11 @@ int udf_setsize(struct inode *inode, loff_t newsize)
 {
 	int err;
 	struct udf_inode_info *iinfo;
+<<<<<<< HEAD
 	unsigned int bsize = i_blocksize(inode);
+=======
+	int bsize = i_blocksize(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
 	      S_ISLNK(inode->i_mode)))
@@ -1282,7 +1286,11 @@ set_size:
 		truncate_setsize(inode, newsize);
 		down_write(&iinfo->i_data_sem);
 		udf_clear_extent_cache(inode);
+<<<<<<< HEAD
 		err = udf_truncate_extents(inode);
+=======
+		udf_truncate_extents(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		up_write(&iinfo->i_data_sem);
 		if (err)
 			return err;
@@ -2150,7 +2158,11 @@ int8_t udf_next_aext(struct inode *inode, struct extent_position *epos,
 
 	while ((etype = udf_current_aext(inode, epos, eloc, elen, inc)) ==
 	       (EXT_NEXT_EXTENT_ALLOCDECS >> 30)) {
+<<<<<<< HEAD
 		udf_pblk_t block;
+=======
+		int block;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (++indirections > UDF_MAX_INDIR_EXTS) {
 			udf_err(inode->i_sb,

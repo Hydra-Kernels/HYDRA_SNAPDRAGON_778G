@@ -10,6 +10,24 @@
 #include "usbip_common.h"
 #include "stub.h"
 
+<<<<<<< HEAD
+=======
+static void stub_free_priv_and_urb(struct stub_priv *priv)
+{
+	struct urb *urb = priv->urb;
+
+	kfree(urb->setup_packet);
+	urb->setup_packet = NULL;
+
+	kfree(urb->transfer_buffer);
+	urb->transfer_buffer = NULL;
+
+	list_del(&priv->list);
+	kmem_cache_free(stub_priv_cache, priv);
+	usb_free_urb(urb);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* be in spin_lock_irqsave(&sdev->priv_lock, flags) */
 void stub_enqueue_ret_unlink(struct stub_device *sdev, __u32 seqnum,
 			     __u32 status)
@@ -172,8 +190,12 @@ static int stub_send_ret_submit(struct stub_device *sdev)
 		memset(&pdu_header, 0, sizeof(pdu_header));
 		memset(&msg, 0, sizeof(msg));
 
+<<<<<<< HEAD
 		if (urb->actual_length > 0 && !urb->transfer_buffer &&
 		   !urb->num_sgs) {
+=======
+		if (urb->actual_length > 0 && !urb->transfer_buffer) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev_err(&sdev->udev->dev,
 				"urb: actual_length %d transfer_buffer null\n",
 				urb->actual_length);
@@ -203,6 +225,7 @@ static int stub_send_ret_submit(struct stub_device *sdev)
 		setup_ret_submit_pdu(&pdu_header, urb);
 		usbip_dbg_stub_tx("setup txdata seqnum: %d\n",
 				  pdu_header.base.seqnum);
+<<<<<<< HEAD
 
 		if (priv->sgl) {
 			for (i = 0; i < priv->num_urbs; i++)
@@ -212,6 +235,8 @@ static int stub_send_ret_submit(struct stub_device *sdev)
 			pdu_header.u.ret_submit.actual_length = actual_length;
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		usbip_header_correct_endian(&pdu_header, 1);
 
 		iov[iovnum].iov_base = &pdu_header;

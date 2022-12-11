@@ -564,6 +564,13 @@ affs_remount(struct super_block *sb, int *flags, char *data)
 	char			 volume[32];
 	char			*prefix = NULL;
 
+<<<<<<< HEAD
+=======
+	new_opts = kstrdup(data, GFP_KERNEL);
+	if (data && !new_opts)
+		return -ENOMEM;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pr_debug("%s(flags=0x%x,opts=\"%s\")\n", __func__, *flags, data);
 
 	sync_filesystem(sb);
@@ -578,6 +585,11 @@ affs_remount(struct super_block *sb, int *flags, char *data)
 	}
 
 	flush_delayed_work(&sbi->sb_work);
+<<<<<<< HEAD
+=======
+	if (new_opts)
+		replace_mount_options(sb, new_opts);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sbi->s_flags = mount_flags;
 	sbi->s_mode  = mode;

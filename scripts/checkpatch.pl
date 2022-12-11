@@ -4953,7 +4953,11 @@ sub process {
 			if (ERROR("SPACING",
 				  "space required before the open brace '{'\n" . $herecurr) &&
 			    $fix) {
+<<<<<<< HEAD
 				$fixed[$fixlinenr] =~ s/^(\+.*(?:do|else|\)))\{/$1 {/;
+=======
+				$fixed[$fixlinenr] =~ s/^(\+.*(?:do|\)))\{/$1 {/;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 

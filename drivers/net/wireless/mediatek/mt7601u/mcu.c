@@ -59,7 +59,11 @@ static struct sk_buff *mt7601u_mcu_msg_alloc(const void *data, int len)
 	skb = alloc_skb(len + MT_DMA_HDR_LEN + 4, GFP_KERNEL);
 	if (skb) {
 		skb_reserve(skb, MT_DMA_HDR_LEN);
+<<<<<<< HEAD
 		skb_put_data(skb, data, len);
+=======
+		memcpy(skb_put(skb, len), data, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return skb;
@@ -162,7 +166,11 @@ static int mt7601u_mcu_function_select(struct mt7601u_dev *dev,
 		.value = cpu_to_le32(val),
 	};
 
+<<<<<<< HEAD
 	skb = mt7601u_mcu_msg_alloc(&msg, sizeof(msg));
+=======
+	skb = mt7601u_mcu_msg_alloc(dev, &msg, sizeof(msg));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!skb)
 		return -ENOMEM;
 	return mt7601u_mcu_msg_send(dev, skb, CMD_FUN_SET_OP, func == 5);
@@ -199,7 +207,11 @@ mt7601u_mcu_calibrate(struct mt7601u_dev *dev, enum mcu_calibrate cal, u32 val)
 		.value = cpu_to_le32(val),
 	};
 
+<<<<<<< HEAD
 	skb = mt7601u_mcu_msg_alloc(&msg, sizeof(msg));
+=======
+	skb = mt7601u_mcu_msg_alloc(dev, &msg, sizeof(msg));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!skb)
 		return -ENOMEM;
 	return mt7601u_mcu_msg_send(dev, skb, CMD_CALIBRATION_OP, true);

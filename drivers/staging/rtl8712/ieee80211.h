@@ -144,6 +144,10 @@ struct ieee80211_hdr_3addr {
 	u8 addr3[ETH_ALEN];
 	__le16 seq_ctl;
 }  __packed __aligned(2);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct	ieee80211_hdr_qos {
 	__le16 frame_ctl;

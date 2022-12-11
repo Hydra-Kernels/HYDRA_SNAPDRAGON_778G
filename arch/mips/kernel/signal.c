@@ -213,6 +213,9 @@ static int restore_msa_extcontext(void __user *buf, unsigned int size)
 	unsigned int csr;
 	int i, err;
 
+	if (!config_enabled(CONFIG_CPU_HAS_MSA))
+		return SIGSYS;
+
 	if (size != sizeof(*msa))
 		return -EINVAL;
 
@@ -804,6 +807,7 @@ static void handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 	int ret;
 	struct mips_abi *abi = current->thread.abi;
 	void *vdso = current->mm->context.vdso;
+<<<<<<< HEAD
 
 	/*
 	 * If we were emulating a delay slot instruction, exit that frame such
@@ -812,6 +816,8 @@ static void handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 	 * instruction within the signal handler.
 	 */
 	dsemul_thread_rollback(regs);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (regs->regs[0]) {
 		switch(regs->regs[2]) {

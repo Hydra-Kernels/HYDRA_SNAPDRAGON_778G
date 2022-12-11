@@ -21,7 +21,10 @@ struct lpc32xx_pwm_chip {
 };
 
 #define PWM_ENABLE	BIT(31)
+<<<<<<< HEAD
 #define PWM_PIN_LEVEL	BIT(30)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define to_lpc32xx_pwm_chip(_chip) \
 	container_of(_chip, struct lpc32xx_pwm_chip, chip)
@@ -38,9 +41,15 @@ static int lpc32xx_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	/* The highest acceptable divisor is 256, which is represented by 0 */
 	period_cycles = div64_u64(c * period_ns,
 			       (unsigned long long)NSEC_PER_SEC * 256);
+<<<<<<< HEAD
 	if (!period_cycles || period_cycles > 256)
 		return -ERANGE;
 	if (period_cycles == 256)
+=======
+	if (!period_cycles)
+		period_cycles = 1;
+	if (period_cycles > 255)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		period_cycles = 0;
 
 	/* Compute 256 x #duty/period value and care for corner cases */

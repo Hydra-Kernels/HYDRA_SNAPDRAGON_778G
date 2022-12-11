@@ -810,13 +810,37 @@ int blkg_conf_prep(struct blkcg *blkcg, const struct blkcg_policy *pol,
 	struct gendisk *disk;
 	struct request_queue *q;
 	struct blkcg_gq *blkg;
+<<<<<<< HEAD
 	int ret;
+=======
+	struct module *owner;
+	unsigned int major, minor;
+	int key_len, part, ret;
+	char *body;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	disk = blkcg_conf_get_disk(&input);
 	if (IS_ERR(disk))
 		return PTR_ERR(disk);
 
+<<<<<<< HEAD
 	q = disk->queue;
+=======
+	body = input + key_len;
+	if (!isspace(*body))
+		return -EINVAL;
+	body = skip_spaces(body);
+
+	disk = get_gendisk(MKDEV(major, minor), &part);
+	if (!disk)
+		return -ENODEV;
+	if (part) {
+		owner = disk->fops->owner;
+		put_disk(disk);
+		module_put(owner);
+		return -ENODEV;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcu_read_lock();
 	spin_lock_irq(&q->queue_lock);
@@ -824,7 +848,26 @@ int blkg_conf_prep(struct blkcg *blkcg, const struct blkcg_policy *pol,
 	blkg = blkg_lookup_check(blkcg, pol, q);
 	if (IS_ERR(blkg)) {
 		ret = PTR_ERR(blkg);
+<<<<<<< HEAD
 		goto fail_unlock;
+=======
+		rcu_read_unlock();
+		spin_unlock_irq(disk->queue->queue_lock);
+		owner = disk->fops->owner;
+		put_disk(disk);
+		module_put(owner);
+		/*
+		 * If queue was bypassing, we should retry.  Do so after a
+		 * short msleep().  It isn't strictly necessary but queue
+		 * can be bypassing for some time and it's always nice to
+		 * avoid busy looping.
+		 */
+		if (ret == -EBUSY) {
+			msleep(10);
+			ret = restart_syscall();
+		}
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (blkg)
@@ -923,9 +966,19 @@ EXPORT_SYMBOL_GPL(blkg_conf_prep);
 void blkg_conf_finish(struct blkg_conf_ctx *ctx)
 	__releases(&ctx->disk->queue->queue_lock) __releases(rcu)
 {
+<<<<<<< HEAD
 	spin_unlock_irq(&ctx->disk->queue->queue_lock);
 	rcu_read_unlock();
 	put_disk_and_module(ctx->disk);
+=======
+	struct module *owner;
+
+	spin_unlock_irq(ctx->disk->queue->queue_lock);
+	rcu_read_unlock();
+	owner = ctx->disk->fops->owner;
+	put_disk(ctx->disk);
+	module_put(owner);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(blkg_conf_finish);
 
@@ -1238,6 +1291,15 @@ int blkcg_init_queue(struct request_queue *q)
 	if (preloaded)
 		radix_tree_preload_end();
 
+<<<<<<< HEAD
+=======
+	if (IS_ERR(blkg))
+		return PTR_ERR(blkg);
+
+	q->root_blkg = blkg;
+	q->root_rl.blkg = blkg;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = blk_throtl_init(q);
 	if (ret)
 		goto err_destroy_all;

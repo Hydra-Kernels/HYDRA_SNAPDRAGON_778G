@@ -143,7 +143,11 @@ static inline int mips_atomic_set(unsigned long addr, unsigned long new)
 		"	move	%[tmp], %[new]				\n"
 		"2:							\n"
 		user_sc("%[tmp]", "(%[addr])")
+<<<<<<< HEAD
 		"	beqz	%[tmp], 1b				\n"
+=======
+		"	beqz	%[tmp], 4f				\n"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		"3:							\n"
 		"	.insn						\n"
 		"	.section .fixup,\"ax\"				\n"

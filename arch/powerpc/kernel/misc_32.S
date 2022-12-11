@@ -292,7 +292,11 @@ _GLOBAL(flush_instruction_cache)
 	iccci	0,r3
 #endif
 #elif defined(CONFIG_FSL_BOOKE)
+<<<<<<< HEAD
 #ifdef CONFIG_E200
+=======
+BEGIN_FTR_SECTION
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mfspr   r3,SPRN_L1CSR0
 	ori     r3,r3,L1CSR0_CFI|L1CSR0_CLFC
 	/* msync; isync recommended here */

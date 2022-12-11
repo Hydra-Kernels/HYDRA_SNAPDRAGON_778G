@@ -37,6 +37,7 @@ ifdef CONFIG_FUNCTION_TRACER
 PURGATORY_CFLAGS_REMOVE		+= $(CC_FLAGS_FTRACE)
 endif
 
+<<<<<<< HEAD
 ifdef CONFIG_STACKPROTECTOR
 PURGATORY_CFLAGS_REMOVE		+= -fstack-protector
 endif
@@ -57,6 +58,11 @@ CFLAGS_sha256.o			+= $(PURGATORY_CFLAGS)
 
 CFLAGS_REMOVE_string.o		+= $(PURGATORY_CFLAGS_REMOVE)
 CFLAGS_string.o			+= $(PURGATORY_CFLAGS)
+=======
+KBUILD_CFLAGS := -fno-strict-aliasing -Wall -Wstrict-prototypes -fno-zero-initialized-in-bss -fno-builtin -ffreestanding -c -MD -Os -mcmodel=large
+KBUILD_CFLAGS += -m$(BITS)
+KBUILD_CFLAGS += $(call cc-option,-fno-PIE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 $(obj)/purgatory.ro: $(PURGATORY_OBJS) FORCE
 		$(call if_changed,ld)

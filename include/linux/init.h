@@ -6,10 +6,17 @@
 #include <linux/types.h>
 
 /* Built-in __init functions needn't be compiled with retpoline */
+<<<<<<< HEAD
 #if defined(__noretpoline) && !defined(MODULE)
 #define __noinitretpoline __noretpoline
 #else
 #define __noinitretpoline
+=======
+#if defined(RETPOLINE) && !defined(MODULE)
+#define __noretpoline __attribute__((indirect_branch("keep")))
+#else
+#define __noretpoline
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /* These macros are used to mark some functions or 
@@ -47,7 +54,11 @@
 
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
+<<<<<<< HEAD
 #define __init		__section(.init.text) __cold  __latent_entropy __noinitretpoline __nocfi
+=======
+#define __init		__section(.init.text) __cold notrace __noretpoline
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define __initdata	__section(.init.data)
 #define __initconst	__section(.init.rodata)
 #define __exitdata	__section(.exit.data)

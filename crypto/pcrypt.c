@@ -205,8 +205,11 @@ static void pcrypt_free(struct aead_instance *inst)
 	struct pcrypt_instance_ctx *ctx = aead_instance_ctx(inst);
 
 	crypto_drop_aead(&ctx->spawn);
+<<<<<<< HEAD
 	padata_free_shell(ctx->psdec);
 	padata_free_shell(ctx->psenc);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(inst);
 }
 
@@ -321,6 +324,39 @@ static int pcrypt_create(struct crypto_template *tmpl, struct rtattr **tb)
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
+=======
+static int pcrypt_cpumask_change_notify(struct notifier_block *self,
+					unsigned long val, void *data)
+{
+	struct padata_pcrypt *pcrypt;
+	struct pcrypt_cpumask *new_mask, *old_mask;
+	struct padata_cpumask *cpumask = (struct padata_cpumask *)data;
+
+	if (!(val & PADATA_CPU_SERIAL))
+		return 0;
+
+	pcrypt = container_of(self, struct padata_pcrypt, nblock);
+	new_mask = kmalloc(sizeof(*new_mask), GFP_KERNEL);
+	if (!new_mask)
+		return -ENOMEM;
+	if (!alloc_cpumask_var(&new_mask->mask, GFP_KERNEL)) {
+		kfree(new_mask);
+		return -ENOMEM;
+	}
+
+	old_mask = pcrypt->cb_cpumask;
+
+	cpumask_copy(new_mask->mask, cpumask->cbcpu);
+	rcu_assign_pointer(pcrypt->cb_cpumask, new_mask);
+	synchronize_rcu_bh();
+
+	free_cpumask_var(old_mask->mask);
+	kfree(old_mask);
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int pcrypt_sysfs_add(struct padata_instance *pinst, const char *name)
 {
 	int ret;

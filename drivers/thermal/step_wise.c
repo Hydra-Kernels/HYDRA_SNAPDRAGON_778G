@@ -331,7 +331,10 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
 			update_passive_instance(tz, trip_type, -1);
 
 		instance->initialized = true;
+<<<<<<< HEAD
 		mutex_lock(&instance->cdev->lock);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		instance->cdev->updated = false; /* cdev needs update */
 		mutex_unlock(&instance->cdev->lock);
 	}

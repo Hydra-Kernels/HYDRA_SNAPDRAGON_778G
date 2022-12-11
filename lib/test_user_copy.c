@@ -210,7 +210,12 @@ static int __init test_user_copy_init(void)
 	/*
 	 * Legitimate usage: none of these copies should fail.
 	 */
+<<<<<<< HEAD
 	memset(kmem, 0x3a, PAGE_SIZE * 2);
+=======
+	ret |= test(copy_from_user(kmem, usermem, PAGE_SIZE),
+		    "legitimate copy_from_user failed");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret |= test(copy_to_user(usermem, kmem, PAGE_SIZE),
 		    "legitimate copy_to_user failed");
 	memset(kmem, 0x0, PAGE_SIZE);
@@ -219,6 +224,7 @@ static int __init test_user_copy_init(void)
 	ret |= test(memcmp(kmem, kmem + PAGE_SIZE, PAGE_SIZE),
 		    "legitimate usercopy failed to copy data");
 
+<<<<<<< HEAD
 #define test_legit(size, check)						  \
 	do {								  \
 		val_##size = check;					  \
@@ -249,23 +255,31 @@ static int __init test_user_copy_init(void)
 	/* Test usage of copy_struct_from_user(). */
 	ret |= test_copy_struct_from_user(kmem, usermem, 2 * PAGE_SIZE);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Invalid usage: none of these copies should succeed.
 	 */
 
+<<<<<<< HEAD
 	/* Prepare kernel memory with check values. */
 	memset(kmem, 0x5a, PAGE_SIZE);
 	memset(kmem + PAGE_SIZE, 0, PAGE_SIZE);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Reject kernel-to-kernel copies through copy_from_user(). */
 	ret |= test(!copy_from_user(kmem, (char __user *)(kmem + PAGE_SIZE),
 				    PAGE_SIZE),
 		    "illegal all-kernel copy_from_user passed");
 
+<<<<<<< HEAD
 	/* Destination half of buffer should have been zeroed. */
 	ret |= test(memcmp(kmem + PAGE_SIZE, kmem, PAGE_SIZE),
 		    "zeroing failure for illegal all-kernel copy_from_user");
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if 0
 	/*
 	 * When running with SMAP/PAN/etc, this will Oops the kernel
@@ -284,6 +298,7 @@ static int __init test_user_copy_init(void)
 				  PAGE_SIZE),
 		    "illegal reversed copy_to_user passed");
 
+<<<<<<< HEAD
 #define test_illegal(size, check)					    \
 	do {								    \
 		val_##size = (check);					    \
@@ -306,6 +321,12 @@ static int __init test_user_copy_init(void)
 	test_illegal(u64, 0x5a5b5c5d6a6b6c6d);
 #endif
 #undef test_illegal
+=======
+	ret |= test(!get_user(value, (unsigned long __user *)kmem),
+		    "illegal get_user passed");
+	ret |= test(!put_user(value, (unsigned long __user *)kmem),
+		    "illegal put_user passed");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	vm_munmap(user_addr, PAGE_SIZE * 2);
 	kfree(kmem);

@@ -198,8 +198,14 @@ static int multiq_tune(struct Qdisc *sch, struct nlattr *opt,
 			struct Qdisc *child = q->queues[i];
 
 			q->queues[i] = &noop_qdisc;
+<<<<<<< HEAD
 			qdisc_purge_queue(child);
 			removed[n_removed++] = child;
+=======
+			qdisc_tree_reduce_backlog(child, child->q.qlen,
+						  child->qstats.backlog);
+			qdisc_destroy(child);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -223,8 +229,17 @@ static int multiq_tune(struct Qdisc *sch, struct nlattr *opt,
 				if (child != &noop_qdisc)
 					qdisc_hash_add(child, true);
 
+<<<<<<< HEAD
 				if (old != &noop_qdisc)
 					qdisc_purge_queue(old);
+=======
+				if (old != &noop_qdisc) {
+					qdisc_tree_reduce_backlog(old,
+								  old->q.qlen,
+								  old->qstats.backlog);
+					qdisc_destroy(old);
+				}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				sch_tree_unlock(sch);
 				qdisc_put(old);
 			}

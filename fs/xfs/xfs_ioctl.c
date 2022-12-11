@@ -1802,6 +1802,7 @@ xfs_ioc_getbmap(
 	void			__user *arg)
 {
 	struct getbmapx		bmx = { 0 };
+<<<<<<< HEAD
 	struct kgetbmap		*buf;
 	size_t			recsize;
 	int			error, i;
@@ -1824,6 +1825,12 @@ xfs_ioc_getbmap(
 	}
 
 	if (copy_from_user(&bmx, arg, recsize))
+=======
+	int			error;
+
+	/* struct getbmap is a strict subset of struct getbmapx. */
+	if (copy_from_user(&bmx, arg, offsetof(struct getbmapx, bmv_iflags)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EFAULT;
 
 	if (bmx.bmv_count < 2)

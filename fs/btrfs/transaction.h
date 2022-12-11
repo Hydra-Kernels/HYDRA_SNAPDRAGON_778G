@@ -109,6 +109,11 @@ struct btrfs_trans_handle {
 	u64 transid;
 	u64 bytes_reserved;
 	u64 chunk_bytes_reserved;
+<<<<<<< HEAD
+=======
+	unsigned long use_count;
+	unsigned long blocks_reserved;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long delayed_ref_updates;
 	struct btrfs_transaction *transaction;
 	struct btrfs_block_rsv *block_rsv;
@@ -124,7 +129,18 @@ struct btrfs_trans_handle {
 	bool allocating_chunk;
 	bool can_flush_pending_bgs;
 	bool reloc_reserved;
+<<<<<<< HEAD
 	bool dirty;
+=======
+	bool sync;
+	bool dirty;
+	unsigned int type;
+	/*
+	 * this root is only needed to validate that the root passed to
+	 * start_transaction is the same as the one passed to end_transaction.
+	 * Subvolume quota depends on this
+	 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct btrfs_root *root;
 	struct btrfs_fs_info *fs_info;
 	struct list_head new_bgs;

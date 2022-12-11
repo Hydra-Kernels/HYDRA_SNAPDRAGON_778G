@@ -198,9 +198,14 @@ static int sun6i_spi_transfer_one(struct spi_master *master,
 				  struct spi_transfer *tfr)
 {
 	struct sun6i_spi *sspi = spi_master_get_devdata(master);
+<<<<<<< HEAD
 	unsigned int mclk_rate, div, div_cdr1, div_cdr2, timeout;
 	unsigned int start, end, tx_time;
 	unsigned int trig_level;
+=======
+	unsigned int mclk_rate, div, timeout;
+	unsigned int start, end, tx_time;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int tx_len = 0;
 	int ret = 0;
 	u32 reg;

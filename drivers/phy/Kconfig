@@ -49,6 +49,7 @@ config PHY_XGENE
 	help
 	  This option enables support for APM X-Gene SoC multi-purpose PHY.
 
+<<<<<<< HEAD
 source "drivers/phy/allwinner/Kconfig"
 source "drivers/phy/amlogic/Kconfig"
 source "drivers/phy/broadcom/Kconfig"
@@ -69,5 +70,56 @@ source "drivers/phy/socionext/Kconfig"
 source "drivers/phy/st/Kconfig"
 source "drivers/phy/tegra/Kconfig"
 source "drivers/phy/ti/Kconfig"
+=======
+config PHY_STIH407_USB
+	tristate "STMicroelectronics USB2 picoPHY driver for STiH407 family"
+	depends on RESET_CONTROLLER
+	depends on ARCH_STI || COMPILE_TEST
+	select GENERIC_PHY
+	help
+	  Enable this support to enable the picoPHY device used by USB2
+	  and USB3 controllers on STMicroelectronics STiH407 SoC families.
+
+config PHY_STIH41X_USB
+	tristate "STMicroelectronics USB2 PHY driver for STiH41x series"
+	depends on ARCH_STI
+	select GENERIC_PHY
+	help
+	  Enable this to support the USB transceiver that is part of
+	  STMicroelectronics STiH41x SoC series.
+
+config PHY_QCOM_UFS
+	tristate "Qualcomm UFS PHY driver"
+	depends on OF && ARCH_QCOM
+	select GENERIC_PHY
+	help
+	  Support for UFS PHY on QCOM chipsets.
+
+config PHY_TUSB1210
+	tristate "TI TUSB1210 ULPI PHY module"
+	depends on USB_ULPI_BUS
+	depends on EXTCON || !EXTCON # if EXTCON=m, this cannot be built-in
+	select GENERIC_PHY
+	help
+	  Support for TI TUSB1210 USB ULPI PHY.
+
+config PHY_BRCMSTB_SATA
+	tristate "Broadcom STB SATA PHY driver"
+	depends on ARCH_BRCMSTB
+	depends on OF
+	select GENERIC_PHY
+	help
+	  Enable this to support the SATA3 PHY on 28nm Broadcom STB SoCs.
+	  Likely useful only with CONFIG_SATA_BRCMSTB enabled.
+
+config PHY_CYGNUS_PCIE
+	tristate "Broadcom Cygnus PCIe PHY driver"
+	depends on OF && (ARCH_BCM_CYGNUS || COMPILE_TEST)
+	select GENERIC_PHY
+	default ARCH_BCM_CYGNUS
+	help
+	  Enable this to support the Broadcom Cygnus PCIe PHY.
+	  If unsure, say N.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 endmenu

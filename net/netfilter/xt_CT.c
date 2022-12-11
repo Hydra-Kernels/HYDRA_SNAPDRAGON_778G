@@ -118,6 +118,47 @@ xt_ct_set_timeout(struct nf_conn *ct, const struct xt_tgchk_param *par,
 	return nf_ct_set_timeout(par->net, ct, par->family, l4proto->l4proto,
 				 timeout_name);
 
+<<<<<<< HEAD
+=======
+	timeout = timeout_find_get(timeout_name);
+	if (timeout == NULL) {
+		ret = -ENOENT;
+		pr_info("No such timeout policy \"%s\"\n", timeout_name);
+		goto out;
+	}
+
+	if (timeout->l3num != par->family) {
+		ret = -EINVAL;
+		pr_info("Timeout policy `%s' can only be used by L3 protocol "
+			"number %d\n", timeout_name, timeout->l3num);
+		goto err_put_timeout;
+	}
+	/* Make sure the timeout policy matches any existing protocol tracker,
+	 * otherwise default to generic.
+	 */
+	l4proto = __nf_ct_l4proto_find(par->family, proto);
+	if (timeout->l4proto->l4proto != l4proto->l4proto) {
+		ret = -EINVAL;
+		pr_info("Timeout policy `%s' can only be used by L4 protocol "
+			"number %d\n",
+			timeout_name, timeout->l4proto->l4proto);
+		goto err_put_timeout;
+	}
+	timeout_ext = nf_ct_timeout_ext_add(ct, timeout, GFP_ATOMIC);
+	if (!timeout_ext) {
+		ret = -ENOMEM;
+		goto err_put_timeout;
+	}
+
+	rcu_read_unlock();
+	return ret;
+
+err_put_timeout:
+	__xt_ct_tg_timeout_put(timeout);
+out:
+	rcu_read_unlock();
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 	return -EOPNOTSUPP;
 #endif
@@ -210,7 +251,11 @@ out:
 err4:
 	help = nfct_help(ct);
 	if (help)
+<<<<<<< HEAD
 		nf_conntrack_helper_put(help->helper);
+=======
+		module_put(help->helper->me);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err3:
 	nf_ct_tmpl_free(ct);
 err2:

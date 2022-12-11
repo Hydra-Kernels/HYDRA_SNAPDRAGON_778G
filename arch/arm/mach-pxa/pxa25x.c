@@ -247,12 +247,21 @@ static int __init pxa25x_init(void)
 		register_syscore_ops(&pxa_irq_syscore_ops);
 		register_syscore_ops(&pxa2xx_mfp_syscore_ops);
 
+<<<<<<< HEAD
 		if (!of_have_populated_dt()) {
 			pxa2xx_set_dmac_info(&pxa25x_dma_pdata);
 			pxa_register_device(&pxa25x_device_gpio, &pxa25x_gpio_info);
 			ret = platform_add_devices(pxa25x_devices,
 						   ARRAY_SIZE(pxa25x_devices));
 		}
+=======
+		pxa2xx_set_dmac_info(16, 40);
+		pxa_register_device(&pxa25x_device_gpio, &pxa25x_gpio_info);
+		ret = platform_add_devices(pxa25x_devices,
+					   ARRAY_SIZE(pxa25x_devices));
+		if (ret)
+			return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return ret;

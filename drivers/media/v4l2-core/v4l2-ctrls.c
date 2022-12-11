@@ -3018,7 +3018,11 @@ int v4l2_query_ext_ctrl(struct v4l2_ctrl_handler *hdl, struct v4l2_query_ext_ctr
 		qc->id = id;
 	else
 		qc->id = ctrl->id;
+<<<<<<< HEAD
 	strscpy(qc->name, ctrl->name, sizeof(qc->name));
+=======
+	strlcpy(qc->name, ctrl->name, sizeof(qc->name));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	qc->flags = user_flags(ctrl);
 	qc->type = ctrl->type;
 	qc->elem_size = ctrl->elem_size;

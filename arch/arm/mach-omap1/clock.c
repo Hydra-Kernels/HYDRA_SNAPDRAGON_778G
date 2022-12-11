@@ -995,9 +995,32 @@ static void clk_debugfs_register_one(struct clk *c)
 	d = debugfs_create_dir(c->name, pa ? pa->dent : clk_debugfs_root);
 	c->dent = d;
 
+<<<<<<< HEAD
 	debugfs_create_u8("usecount", S_IRUGO, c->dent, &c->usecount);
 	debugfs_create_ulong("rate", S_IRUGO, c->dent, &c->rate);
 	debugfs_create_x8("flags", S_IRUGO, c->dent, &c->flags);
+=======
+	d = debugfs_create_u8("usecount", S_IRUGO, c->dent, &c->usecount);
+	if (!d) {
+		err = -ENOMEM;
+		goto err_out;
+	}
+	d = debugfs_create_ulong("rate", S_IRUGO, c->dent, &c->rate);
+	if (!d) {
+		err = -ENOMEM;
+		goto err_out;
+	}
+	d = debugfs_create_x8("flags", S_IRUGO, c->dent, &c->flags);
+	if (!d) {
+		err = -ENOMEM;
+		goto err_out;
+	}
+	return 0;
+
+err_out:
+	debugfs_remove_recursive(c->dent);
+	return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void clk_debugfs_register(struct clk *c)

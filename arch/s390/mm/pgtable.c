@@ -31,6 +31,7 @@ static inline void ptep_ipte_local(struct mm_struct *mm, unsigned long addr,
 {
 	unsigned long opt, asce;
 
+<<<<<<< HEAD
 	if (MACHINE_HAS_TLB_GUEST) {
 		opt = 0;
 		asce = READ_ONCE(mm->context.gmap_asce);
@@ -48,9 +49,60 @@ static inline void ptep_ipte_local(struct mm_struct *mm, unsigned long addr,
 
 static inline void ptep_ipte_global(struct mm_struct *mm, unsigned long addr,
 				    pte_t *ptep, int nodat)
+=======
+	if (!page)
+		return NULL;
+	return (unsigned long *) page_to_phys(page);
+}
+
+void crst_table_free(struct mm_struct *mm, unsigned long *table)
+{
+	free_pages((unsigned long) table, 2);
+}
+
+static void __crst_table_upgrade(void *arg)
+{
+	struct mm_struct *mm = arg;
+
+	if (current->active_mm == mm) {
+		clear_user_asce();
+		set_user_asce(mm);
+	}
+	__tlb_flush_local();
+}
+
+int crst_table_upgrade(struct mm_struct *mm)
+{
+	unsigned long *table, *pgd;
+
+	/* upgrade should only happen from 3 to 4 levels */
+	BUG_ON(mm->context.asce_limit != (1UL << 42));
+
+	table = crst_table_alloc(mm);
+	if (!table)
+		return -ENOMEM;
+
+	spin_lock_bh(&mm->page_table_lock);
+	pgd = (unsigned long *) mm->pgd;
+	crst_table_init(table, _REGION2_ENTRY_EMPTY);
+	pgd_populate(mm, (pgd_t *) table, (pud_t *) pgd);
+	mm->pgd = (pgd_t *) table;
+	mm->context.asce_limit = 1UL << 53;
+	mm->context.asce = __pa(mm->pgd) | _ASCE_TABLE_LENGTH |
+			   _ASCE_USER_BITS | _ASCE_TYPE_REGION2;
+	mm->task_size = mm->context.asce_limit;
+	spin_unlock_bh(&mm->page_table_lock);
+
+	on_each_cpu(__crst_table_upgrade, mm, 0);
+	return 0;
+}
+
+void crst_table_downgrade(struct mm_struct *mm)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned long opt, asce;
 
+<<<<<<< HEAD
 	if (MACHINE_HAS_TLB_GUEST) {
 		opt = 0;
 		asce = READ_ONCE(mm->context.gmap_asce);
@@ -408,11 +460,397 @@ static inline pmd_t pmdp_flush_lazy(struct mm_struct *mm,
 	}
 	atomic_dec(&mm->context.flush_count);
 	return old;
+=======
+	/* downgrade should only happen from 3 to 2 levels (compat only) */
+	BUG_ON(mm->context.asce_limit != (1UL << 42));
+
+	if (current->active_mm == mm) {
+		clear_user_asce();
+		__tlb_flush_mm(mm);
+	}
+
+	pgd = mm->pgd;
+	mm->pgd = (pgd_t *) (pgd_val(*pgd) & _REGION_ENTRY_ORIGIN);
+	mm->context.asce_limit = 1UL << 31;
+	mm->context.asce = __pa(mm->pgd) | _ASCE_TABLE_LENGTH |
+			   _ASCE_USER_BITS | _ASCE_TYPE_SEGMENT;
+	mm->task_size = mm->context.asce_limit;
+	crst_table_free(mm, (unsigned long *) pgd);
+
+	if (current->active_mm == mm)
+		set_user_asce(mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_PGSTE
 static pmd_t *pmd_alloc_map(struct mm_struct *mm, unsigned long addr)
 {
+<<<<<<< HEAD
+=======
+	struct gmap *gmap;
+	struct page *page;
+	unsigned long *table;
+	unsigned long etype, atype;
+
+	if (limit < (1UL << 31)) {
+		limit = (1UL << 31) - 1;
+		atype = _ASCE_TYPE_SEGMENT;
+		etype = _SEGMENT_ENTRY_EMPTY;
+	} else if (limit < (1UL << 42)) {
+		limit = (1UL << 42) - 1;
+		atype = _ASCE_TYPE_REGION3;
+		etype = _REGION3_ENTRY_EMPTY;
+	} else if (limit < (1UL << 53)) {
+		limit = (1UL << 53) - 1;
+		atype = _ASCE_TYPE_REGION2;
+		etype = _REGION2_ENTRY_EMPTY;
+	} else {
+		limit = -1UL;
+		atype = _ASCE_TYPE_REGION1;
+		etype = _REGION1_ENTRY_EMPTY;
+	}
+	gmap = kzalloc(sizeof(struct gmap), GFP_KERNEL);
+	if (!gmap)
+		goto out;
+	INIT_LIST_HEAD(&gmap->crst_list);
+	INIT_RADIX_TREE(&gmap->guest_to_host, GFP_KERNEL);
+	INIT_RADIX_TREE(&gmap->host_to_guest, GFP_ATOMIC);
+	spin_lock_init(&gmap->guest_table_lock);
+	gmap->mm = mm;
+	page = alloc_pages(GFP_KERNEL, 2);
+	if (!page)
+		goto out_free;
+	page->index = 0;
+	list_add(&page->lru, &gmap->crst_list);
+	table = (unsigned long *) page_to_phys(page);
+	crst_table_init(table, etype);
+	gmap->table = table;
+	gmap->asce = atype | _ASCE_TABLE_LENGTH |
+		_ASCE_USER_BITS | __pa(table);
+	gmap->asce_end = limit;
+	down_write(&mm->mmap_sem);
+	list_add(&gmap->list, &mm->context.gmap_list);
+	up_write(&mm->mmap_sem);
+	return gmap;
+
+out_free:
+	kfree(gmap);
+out:
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(gmap_alloc);
+
+static void gmap_flush_tlb(struct gmap *gmap)
+{
+	if (MACHINE_HAS_IDTE)
+		__tlb_flush_idte(gmap->asce);
+	else
+		__tlb_flush_global();
+}
+
+static void gmap_radix_tree_free(struct radix_tree_root *root)
+{
+	struct radix_tree_iter iter;
+	unsigned long indices[16];
+	unsigned long index;
+	void **slot;
+	int i, nr;
+
+	/* A radix tree is freed by deleting all of its entries */
+	index = 0;
+	do {
+		nr = 0;
+		radix_tree_for_each_slot(slot, root, &iter, index) {
+			indices[nr] = iter.index;
+			if (++nr == 16)
+				break;
+		}
+		for (i = 0; i < nr; i++) {
+			index = indices[i];
+			radix_tree_delete(root, index);
+		}
+	} while (nr > 0);
+}
+
+/**
+ * gmap_free - free a guest address space
+ * @gmap: pointer to the guest address space structure
+ */
+void gmap_free(struct gmap *gmap)
+{
+	struct page *page, *next;
+
+	/* Flush tlb. */
+	if (MACHINE_HAS_IDTE)
+		__tlb_flush_idte(gmap->asce);
+	else
+		__tlb_flush_global();
+
+	/* Free all segment & region tables. */
+	list_for_each_entry_safe(page, next, &gmap->crst_list, lru)
+		__free_pages(page, 2);
+	gmap_radix_tree_free(&gmap->guest_to_host);
+	gmap_radix_tree_free(&gmap->host_to_guest);
+	down_write(&gmap->mm->mmap_sem);
+	list_del(&gmap->list);
+	up_write(&gmap->mm->mmap_sem);
+	kfree(gmap);
+}
+EXPORT_SYMBOL_GPL(gmap_free);
+
+/**
+ * gmap_enable - switch primary space to the guest address space
+ * @gmap: pointer to the guest address space structure
+ */
+void gmap_enable(struct gmap *gmap)
+{
+	S390_lowcore.gmap = (unsigned long) gmap;
+}
+EXPORT_SYMBOL_GPL(gmap_enable);
+
+/**
+ * gmap_disable - switch back to the standard primary address space
+ * @gmap: pointer to the guest address space structure
+ */
+void gmap_disable(struct gmap *gmap)
+{
+	S390_lowcore.gmap = 0UL;
+}
+EXPORT_SYMBOL_GPL(gmap_disable);
+
+/*
+ * gmap_alloc_table is assumed to be called with mmap_sem held
+ */
+static int gmap_alloc_table(struct gmap *gmap, unsigned long *table,
+			    unsigned long init, unsigned long gaddr)
+{
+	struct page *page;
+	unsigned long *new;
+
+	/* since we dont free the gmap table until gmap_free we can unlock */
+	page = alloc_pages(GFP_KERNEL, 2);
+	if (!page)
+		return -ENOMEM;
+	new = (unsigned long *) page_to_phys(page);
+	crst_table_init(new, init);
+	spin_lock(&gmap->mm->page_table_lock);
+	if (*table & _REGION_ENTRY_INVALID) {
+		list_add(&page->lru, &gmap->crst_list);
+		*table = (unsigned long) new | _REGION_ENTRY_LENGTH |
+			(*table & _REGION_ENTRY_TYPE_MASK);
+		page->index = gaddr;
+		page = NULL;
+	}
+	spin_unlock(&gmap->mm->page_table_lock);
+	if (page)
+		__free_pages(page, 2);
+	return 0;
+}
+
+/**
+ * __gmap_segment_gaddr - find virtual address from segment pointer
+ * @entry: pointer to a segment table entry in the guest address space
+ *
+ * Returns the virtual address in the guest address space for the segment
+ */
+static unsigned long __gmap_segment_gaddr(unsigned long *entry)
+{
+	struct page *page;
+	unsigned long offset, mask;
+
+	offset = (unsigned long) entry / sizeof(unsigned long);
+	offset = (offset & (PTRS_PER_PMD - 1)) * PMD_SIZE;
+	mask = ~(PTRS_PER_PMD * sizeof(pmd_t) - 1);
+	page = virt_to_page((void *)((unsigned long) entry & mask));
+	return page->index + offset;
+}
+
+/**
+ * __gmap_unlink_by_vmaddr - unlink a single segment via a host address
+ * @gmap: pointer to the guest address space structure
+ * @vmaddr: address in the host process address space
+ *
+ * Returns 1 if a TLB flush is required
+ */
+static int __gmap_unlink_by_vmaddr(struct gmap *gmap, unsigned long vmaddr)
+{
+	unsigned long *entry;
+	int flush = 0;
+
+	spin_lock(&gmap->guest_table_lock);
+	entry = radix_tree_delete(&gmap->host_to_guest, vmaddr >> PMD_SHIFT);
+	if (entry) {
+		flush = (*entry != _SEGMENT_ENTRY_INVALID);
+		*entry = _SEGMENT_ENTRY_INVALID;
+	}
+	spin_unlock(&gmap->guest_table_lock);
+	return flush;
+}
+
+/**
+ * __gmap_unmap_by_gaddr - unmap a single segment via a guest address
+ * @gmap: pointer to the guest address space structure
+ * @gaddr: address in the guest address space
+ *
+ * Returns 1 if a TLB flush is required
+ */
+static int __gmap_unmap_by_gaddr(struct gmap *gmap, unsigned long gaddr)
+{
+	unsigned long vmaddr;
+
+	vmaddr = (unsigned long) radix_tree_delete(&gmap->guest_to_host,
+						   gaddr >> PMD_SHIFT);
+	return vmaddr ? __gmap_unlink_by_vmaddr(gmap, vmaddr) : 0;
+}
+
+/**
+ * gmap_unmap_segment - unmap segment from the guest address space
+ * @gmap: pointer to the guest address space structure
+ * @to: address in the guest address space
+ * @len: length of the memory area to unmap
+ *
+ * Returns 0 if the unmap succeeded, -EINVAL if not.
+ */
+int gmap_unmap_segment(struct gmap *gmap, unsigned long to, unsigned long len)
+{
+	unsigned long off;
+	int flush;
+
+	if ((to | len) & (PMD_SIZE - 1))
+		return -EINVAL;
+	if (len == 0 || to + len < to)
+		return -EINVAL;
+
+	flush = 0;
+	down_write(&gmap->mm->mmap_sem);
+	for (off = 0; off < len; off += PMD_SIZE)
+		flush |= __gmap_unmap_by_gaddr(gmap, to + off);
+	up_write(&gmap->mm->mmap_sem);
+	if (flush)
+		gmap_flush_tlb(gmap);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(gmap_unmap_segment);
+
+/**
+ * gmap_mmap_segment - map a segment to the guest address space
+ * @gmap: pointer to the guest address space structure
+ * @from: source address in the parent address space
+ * @to: target address in the guest address space
+ * @len: length of the memory area to map
+ *
+ * Returns 0 if the mmap succeeded, -EINVAL or -ENOMEM if not.
+ */
+int gmap_map_segment(struct gmap *gmap, unsigned long from,
+		     unsigned long to, unsigned long len)
+{
+	unsigned long off;
+	int flush;
+
+	if ((from | to | len) & (PMD_SIZE - 1))
+		return -EINVAL;
+	if (len == 0 || from + len < from || to + len < to ||
+	    from + len > TASK_MAX_SIZE || to + len > gmap->asce_end)
+		return -EINVAL;
+
+	flush = 0;
+	down_write(&gmap->mm->mmap_sem);
+	for (off = 0; off < len; off += PMD_SIZE) {
+		/* Remove old translation */
+		flush |= __gmap_unmap_by_gaddr(gmap, to + off);
+		/* Store new translation */
+		if (radix_tree_insert(&gmap->guest_to_host,
+				      (to + off) >> PMD_SHIFT,
+				      (void *) from + off))
+			break;
+	}
+	up_write(&gmap->mm->mmap_sem);
+	if (flush)
+		gmap_flush_tlb(gmap);
+	if (off >= len)
+		return 0;
+	gmap_unmap_segment(gmap, to, len);
+	return -ENOMEM;
+}
+EXPORT_SYMBOL_GPL(gmap_map_segment);
+
+/**
+ * __gmap_translate - translate a guest address to a user space address
+ * @gmap: pointer to guest mapping meta data structure
+ * @gaddr: guest address
+ *
+ * Returns user space address which corresponds to the guest address or
+ * -EFAULT if no such mapping exists.
+ * This function does not establish potentially missing page table entries.
+ * The mmap_sem of the mm that belongs to the address space must be held
+ * when this function gets called.
+ */
+unsigned long __gmap_translate(struct gmap *gmap, unsigned long gaddr)
+{
+	unsigned long vmaddr;
+
+	vmaddr = (unsigned long)
+		radix_tree_lookup(&gmap->guest_to_host, gaddr >> PMD_SHIFT);
+	return vmaddr ? (vmaddr | (gaddr & ~PMD_MASK)) : -EFAULT;
+}
+EXPORT_SYMBOL_GPL(__gmap_translate);
+
+/**
+ * gmap_translate - translate a guest address to a user space address
+ * @gmap: pointer to guest mapping meta data structure
+ * @gaddr: guest address
+ *
+ * Returns user space address which corresponds to the guest address or
+ * -EFAULT if no such mapping exists.
+ * This function does not establish potentially missing page table entries.
+ */
+unsigned long gmap_translate(struct gmap *gmap, unsigned long gaddr)
+{
+	unsigned long rc;
+
+	down_read(&gmap->mm->mmap_sem);
+	rc = __gmap_translate(gmap, gaddr);
+	up_read(&gmap->mm->mmap_sem);
+	return rc;
+}
+EXPORT_SYMBOL_GPL(gmap_translate);
+
+/**
+ * gmap_unlink - disconnect a page table from the gmap shadow tables
+ * @gmap: pointer to guest mapping meta data structure
+ * @table: pointer to the host page table
+ * @vmaddr: vm address associated with the host page table
+ */
+static void gmap_unlink(struct mm_struct *mm, unsigned long *table,
+			unsigned long vmaddr)
+{
+	struct gmap *gmap;
+	int flush;
+
+	list_for_each_entry(gmap, &mm->context.gmap_list, list) {
+		flush = __gmap_unlink_by_vmaddr(gmap, vmaddr);
+		if (flush)
+			gmap_flush_tlb(gmap);
+	}
+}
+
+/**
+ * gmap_link - set up shadow page tables to connect a host to a guest address
+ * @gmap: pointer to guest mapping meta data structure
+ * @gaddr: guest address
+ * @vmaddr: vm address
+ *
+ * Returns 0 on success, -ENOMEM for out of memory conditions, and -EFAULT
+ * if the vm address is already mapped to a different guest segment.
+ * The mmap_sem of the mm that belongs to the address space must be held
+ * when this function gets called.
+ */
+int __gmap_link(struct gmap *gmap, unsigned long gaddr, unsigned long vmaddr)
+{
+	struct mm_struct *mm;
+	unsigned long *table;
+	spinlock_t *ptl;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pgd_t *pgd;
 	p4d_t *p4d;
 	pud_t *pud;
@@ -514,6 +952,222 @@ pud_t pudp_xchg_direct(struct mm_struct *mm, unsigned long addr,
 EXPORT_SYMBOL(pudp_xchg_direct);
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+<<<<<<< HEAD
+=======
+static inline void thp_split_vma(struct vm_area_struct *vma)
+{
+	unsigned long addr;
+
+	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE)
+		follow_page(vma, addr, FOLL_SPLIT);
+}
+
+static inline void thp_split_mm(struct mm_struct *mm)
+{
+	struct vm_area_struct *vma;
+
+	for (vma = mm->mmap; vma != NULL; vma = vma->vm_next) {
+		thp_split_vma(vma);
+		vma->vm_flags &= ~VM_HUGEPAGE;
+		vma->vm_flags |= VM_NOHUGEPAGE;
+	}
+	mm->def_flags |= VM_NOHUGEPAGE;
+}
+#else
+static inline void thp_split_mm(struct mm_struct *mm)
+{
+}
+#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+
+/*
+ * switch on pgstes for its userspace process (for kvm)
+ */
+int s390_enable_sie(void)
+{
+	struct mm_struct *mm = current->mm;
+
+	/* Do we have pgstes? if yes, we are done */
+	if (mm_has_pgste(mm))
+		return 0;
+	/* Fail if the page tables are 2K */
+	if (!mm_alloc_pgste(mm))
+		return -EINVAL;
+	down_write(&mm->mmap_sem);
+	mm->context.has_pgste = 1;
+	/* split thp mappings and disable thp for future mappings */
+	thp_split_mm(mm);
+	up_write(&mm->mmap_sem);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(s390_enable_sie);
+
+/*
+ * Enable storage key handling from now on and initialize the storage
+ * keys with the default key.
+ */
+static int __s390_enable_skey(pte_t *pte, unsigned long addr,
+			      unsigned long next, struct mm_walk *walk)
+{
+	unsigned long ptev;
+	pgste_t pgste;
+
+	pgste = pgste_get_lock(pte);
+	/*
+	 * Remove all zero page mappings,
+	 * after establishing a policy to forbid zero page mappings
+	 * following faults for that page will get fresh anonymous pages
+	 */
+	if (is_zero_pfn(pte_pfn(*pte))) {
+		ptep_flush_direct(walk->mm, addr, pte);
+		pte_val(*pte) = _PAGE_INVALID;
+	}
+	/* Clear storage key */
+	pgste_val(pgste) &= ~(PGSTE_ACC_BITS | PGSTE_FP_BIT |
+			      PGSTE_GR_BIT | PGSTE_GC_BIT);
+	ptev = pte_val(*pte);
+	if (!(ptev & _PAGE_INVALID) && (ptev & _PAGE_WRITE))
+		page_set_storage_key(ptev & PAGE_MASK, PAGE_DEFAULT_KEY, 1);
+	pgste_set_unlock(pte, pgste);
+	return 0;
+}
+
+int s390_enable_skey(void)
+{
+	struct mm_walk walk = { .pte_entry = __s390_enable_skey };
+	struct mm_struct *mm = current->mm;
+	struct vm_area_struct *vma;
+	int rc = 0;
+
+	down_write(&mm->mmap_sem);
+	if (mm_use_skey(mm))
+		goto out_up;
+
+	mm->context.use_skey = 1;
+	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+		if (ksm_madvise(vma, vma->vm_start, vma->vm_end,
+				MADV_UNMERGEABLE, &vma->vm_flags)) {
+			mm->context.use_skey = 0;
+			rc = -ENOMEM;
+			goto out_up;
+		}
+	}
+	mm->def_flags &= ~VM_MERGEABLE;
+
+	walk.mm = mm;
+	walk_page_range(0, TASK_SIZE, &walk);
+
+out_up:
+	up_write(&mm->mmap_sem);
+	return rc;
+}
+EXPORT_SYMBOL_GPL(s390_enable_skey);
+
+/*
+ * Reset CMMA state, make all pages stable again.
+ */
+static int __s390_reset_cmma(pte_t *pte, unsigned long addr,
+			     unsigned long next, struct mm_walk *walk)
+{
+	pgste_t pgste;
+
+	pgste = pgste_get_lock(pte);
+	pgste_val(pgste) &= ~_PGSTE_GPS_USAGE_MASK;
+	pgste_set_unlock(pte, pgste);
+	return 0;
+}
+
+void s390_reset_cmma(struct mm_struct *mm)
+{
+	struct mm_walk walk = { .pte_entry = __s390_reset_cmma };
+
+	down_write(&mm->mmap_sem);
+	walk.mm = mm;
+	walk_page_range(0, TASK_SIZE, &walk);
+	up_write(&mm->mmap_sem);
+}
+EXPORT_SYMBOL_GPL(s390_reset_cmma);
+
+/*
+ * Test and reset if a guest page is dirty
+ */
+bool gmap_test_and_clear_dirty(unsigned long address, struct gmap *gmap)
+{
+	pgd_t *pgd;
+	pud_t *pud;
+	pmd_t *pmd;
+	pte_t *pte;
+	spinlock_t *ptl;
+	bool dirty = false;
+
+	pgd = pgd_offset(gmap->mm, address);
+	pud = pud_alloc(gmap->mm, pgd, address);
+	if (!pud)
+		return false;
+	pmd = pmd_alloc(gmap->mm, pud, address);
+	if (!pmd)
+		return false;
+	/* We can't run guests backed by huge pages, but userspace can
+	 * still set them up and then try to migrate them without any
+	 * migration support.
+	 */
+	if (pmd_large(*pmd))
+		return true;
+
+	pte = pte_alloc_map_lock(gmap->mm, pmd, address, &ptl);
+	if (unlikely(!pte))
+		return false;
+
+	if (ptep_test_and_clear_user_dirty(gmap->mm, address, pte))
+		dirty = true;
+
+	spin_unlock(ptl);
+	return dirty;
+}
+EXPORT_SYMBOL_GPL(gmap_test_and_clear_dirty);
+
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+int pmdp_clear_flush_young(struct vm_area_struct *vma, unsigned long address,
+			   pmd_t *pmdp)
+{
+	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+	/* No need to flush TLB
+	 * On s390 reference bits are in storage key and never in TLB */
+	return pmdp_test_and_clear_young(vma, address, pmdp);
+}
+
+int pmdp_set_access_flags(struct vm_area_struct *vma,
+			  unsigned long address, pmd_t *pmdp,
+			  pmd_t entry, int dirty)
+{
+	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+
+	entry = pmd_mkyoung(entry);
+	if (dirty)
+		entry = pmd_mkdirty(entry);
+	if (pmd_same(*pmdp, entry))
+		return 0;
+	pmdp_invalidate(vma, address, pmdp);
+	set_pmd_at(vma->vm_mm, address, pmdp, entry);
+	return 1;
+}
+
+static void pmdp_splitting_flush_sync(void *arg)
+{
+	/* Simply deliver the interrupt */
+}
+
+void pmdp_splitting_flush(struct vm_area_struct *vma, unsigned long address,
+			  pmd_t *pmdp)
+{
+	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+	if (!test_and_set_bit(_SEGMENT_ENTRY_SPLIT_BIT,
+			      (unsigned long *) pmdp)) {
+		/* need to serialize against gup-fast (IRQ disabled) */
+		smp_call_function(pmdp_splitting_flush_sync, NULL, 1);
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 				pgtable_t pgtable)
 {

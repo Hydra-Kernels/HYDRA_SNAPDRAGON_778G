@@ -244,7 +244,24 @@ extern long pnv_pci_link_table_and_group(int node, int num,
 extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
 		struct iommu_table_group *table_group);
 extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+<<<<<<< HEAD
 		void *tce_mem, u64 tce_size,
 		u64 dma_offset, unsigned int page_shift);
+=======
+				      void *tce_mem, u64 tce_size,
+				      u64 dma_offset, unsigned page_shift);
+extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+extern void pnv_pci_init_ioda_hub(struct device_node *np);
+extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+					__be64 *startp, __be64 *endp, bool rm);
+extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
+extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
+
+extern void pnv_pci_dma_dev_setup(struct pci_dev *pdev);
+extern void pnv_pci_dma_bus_setup(struct pci_bus *bus);
+extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* __POWERNV_PCI_H */

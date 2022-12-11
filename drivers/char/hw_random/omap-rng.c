@@ -476,6 +476,7 @@ static int omap_rng_probe(struct platform_device *pdev)
 		pm_runtime_put_noidle(&pdev->dev);
 		goto err_ioremap;
 	}
+<<<<<<< HEAD
 
 	priv->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(priv->clk) && PTR_ERR(priv->clk) == -EPROBE_DEFER)
@@ -501,6 +502,8 @@ static int omap_rng_probe(struct platform_device *pdev)
 			goto err_register;
 		}
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = (dev->of_node) ? of_get_omap_rng_device_details(priv, pdev) :
 				get_omap_rng_device_details(priv);

@@ -3,14 +3,18 @@
 #ifndef _ASM_X86_NOSPEC_BRANCH_H_
 #define _ASM_X86_NOSPEC_BRANCH_H_
 
+<<<<<<< HEAD
 #include <linux/static_key.h>
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/alternative.h>
 #include <asm/alternative-asm.h>
 #include <asm/cpufeatures.h>
 #include <asm/msr-index.h>
 
 /*
+<<<<<<< HEAD
  * This should be used immediately before a retpoline alternative. It tells
  * objtool where the retpolines are so that it can make sense of the control
  * flow by just reading the original instruction(s) and ignoring the
@@ -20,6 +24,8 @@
 	ANNOTATE_IGNORE_ALTERNATIVE
 
 /*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Fill the CPU return stack buffer.
  *
  * Each entry in the RSB, if used for a speculative 'ret', contains an
@@ -66,6 +72,7 @@
 #ifdef __ASSEMBLY__
 
 /*
+<<<<<<< HEAD
  * This should be used immediately before an indirect jump/call. It tells
  * objtool the subsequent indirect jump/call is vouched safe for retpoline
  * builds.
@@ -78,6 +85,8 @@
 .endm
 
 /*
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * These are the bare retpoline primitives for indirect jmp and call.
  * Do not use these directly; they only exist to make the ALTERNATIVE
  * invocation below less ugly.
@@ -112,10 +121,16 @@
  */
 .macro JMP_NOSPEC reg:req
 #ifdef CONFIG_RETPOLINE
+<<<<<<< HEAD
 	ANNOTATE_NOSPEC_ALTERNATIVE
 	ALTERNATIVE_2 __stringify(ANNOTATE_RETPOLINE_SAFE; jmp *\reg),	\
 		__stringify(RETPOLINE_JMP \reg), X86_FEATURE_RETPOLINE,	\
 		__stringify(lfence; ANNOTATE_RETPOLINE_SAFE; jmp *\reg), X86_FEATURE_RETPOLINE_AMD
+=======
+	ALTERNATIVE_2 __stringify(jmp *\reg),				\
+		__stringify(RETPOLINE_JMP \reg), X86_FEATURE_RETPOLINE,	\
+		__stringify(lfence; jmp *\reg), X86_FEATURE_RETPOLINE_AMD
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 	jmp	*\reg
 #endif
@@ -123,10 +138,16 @@
 
 .macro CALL_NOSPEC reg:req
 #ifdef CONFIG_RETPOLINE
+<<<<<<< HEAD
 	ANNOTATE_NOSPEC_ALTERNATIVE
 	ALTERNATIVE_2 __stringify(ANNOTATE_RETPOLINE_SAFE; call *\reg),	\
 		__stringify(RETPOLINE_CALL \reg), X86_FEATURE_RETPOLINE,\
 		__stringify(lfence; ANNOTATE_RETPOLINE_SAFE; call *\reg), X86_FEATURE_RETPOLINE_AMD
+=======
+	ALTERNATIVE_2 __stringify(call *\reg),				\
+		__stringify(RETPOLINE_CALL \reg), X86_FEATURE_RETPOLINE,\
+		__stringify(lfence; call *\reg), X86_FEATURE_RETPOLINE_AMD
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 	call	*\reg
 #endif
@@ -138,7 +159,10 @@
   */
 .macro FILL_RETURN_BUFFER reg:req nr:req ftr:req
 #ifdef CONFIG_RETPOLINE
+<<<<<<< HEAD
 	ANNOTATE_NOSPEC_ALTERNATIVE
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ALTERNATIVE "jmp .Lskip_rsb_\@",				\
 		__stringify(__FILL_RETURN_BUFFER(\reg,\nr,%_ASM_SP))	\
 		\ftr
@@ -148,6 +172,7 @@
 
 #else /* __ASSEMBLY__ */
 
+<<<<<<< HEAD
 #define ANNOTATE_RETPOLINE_SAFE					\
 	"999:\n\t"						\
 	".pushsection .discard.retpoline_safe\n\t"		\
@@ -175,16 +200,36 @@
 # define THUNK_TARGET(addr) [thunk_target] "r" (addr)
 
 #else /* CONFIG_X86_32 */
+=======
+#if defined(CONFIG_X86_64) && defined(RETPOLINE)
+
+/*
+ * Since the inline asm uses the %V modifier which is only in newer GCC,
+ * the 64-bit one is dependent on RETPOLINE not CONFIG_RETPOLINE.
+ */
+# define CALL_NOSPEC						\
+	ALTERNATIVE(						\
+	"call *%[thunk_target]\n",				\
+	"call __x86_indirect_thunk_%V[thunk_target]\n",		\
+	X86_FEATURE_RETPOLINE)
+# define THUNK_TARGET(addr) [thunk_target] "r" (addr)
+
+#elif defined(CONFIG_X86_32) && defined(CONFIG_RETPOLINE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * For i386 we use the original ret-equivalent retpoline, because
  * otherwise we'll run out of registers. We don't care about CET
  * here, anyway.
  */
+<<<<<<< HEAD
 # define CALL_NOSPEC						\
 	ANNOTATE_NOSPEC_ALTERNATIVE				\
 	ALTERNATIVE_2(						\
 	ANNOTATE_RETPOLINE_SAFE					\
 	"call *%[thunk_target]\n",				\
+=======
+# define CALL_NOSPEC ALTERNATIVE("call *%[thunk_target]\n",	\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	"       jmp    904f;\n"					\
 	"       .align 16\n"					\
 	"901:	call   903f;\n"					\
@@ -192,11 +237,16 @@
 	"    	lfence;\n"					\
 	"       jmp    902b;\n"					\
 	"       .align 16\n"					\
+<<<<<<< HEAD
 	"903:	lea    4(%%esp), %%esp;\n"			\
+=======
+	"903:	addl   $4, %%esp;\n"				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	"       pushl  %[thunk_target];\n"			\
 	"       ret;\n"						\
 	"       .align 16\n"					\
 	"904:	call   901b;\n",				\
+<<<<<<< HEAD
 	X86_FEATURE_RETPOLINE,					\
 	"lfence;\n"						\
 	ANNOTATE_RETPOLINE_SAFE					\
@@ -205,6 +255,11 @@
 
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 #endif
+=======
+	X86_FEATURE_RETPOLINE)
+
+# define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else /* No retpoline for C / inline asm */
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
@@ -213,6 +268,7 @@
 /* The Spectre V2 mitigation variants */
 enum spectre_v2_mitigation {
 	SPECTRE_V2_NONE,
+<<<<<<< HEAD
 	SPECTRE_V2_RETPOLINE_GENERIC,
 	SPECTRE_V2_RETPOLINE_AMD,
 	SPECTRE_V2_IBRS_ENHANCED,
@@ -225,6 +281,13 @@ enum spectre_v2_user_mitigation {
 	SPECTRE_V2_USER_STRICT_PREFERRED,
 	SPECTRE_V2_USER_PRCTL,
 	SPECTRE_V2_USER_SECCOMP,
+=======
+	SPECTRE_V2_RETPOLINE_MINIMAL,
+	SPECTRE_V2_RETPOLINE_MINIMAL_AMD,
+	SPECTRE_V2_RETPOLINE_GENERIC,
+	SPECTRE_V2_RETPOLINE_AMD,
+	SPECTRE_V2_IBRS,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* The Speculative Store Bypass disable variants */
@@ -249,8 +312,12 @@ static inline void vmexit_fill_RSB(void)
 #ifdef CONFIG_RETPOLINE
 	unsigned long loops;
 
+<<<<<<< HEAD
 	asm volatile (ANNOTATE_NOSPEC_ALTERNATIVE
 		      ALTERNATIVE("jmp 910f",
+=======
+	asm volatile (ALTERNATIVE("jmp 910f",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  __stringify(__FILL_RETURN_BUFFER(%0, RSB_CLEAR_LOOPS, %1)),
 				  X86_FEATURE_RETPOLINE)
 		      "910:"
@@ -304,6 +371,7 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
+<<<<<<< HEAD
 DECLARE_STATIC_KEY_FALSE(switch_to_cond_stibp);
 DECLARE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
 DECLARE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
@@ -358,6 +426,8 @@ static inline void mds_idle_clear_cpu_buffers(void)
 		mds_clear_cpu_buffers();
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* __ASSEMBLY__ */
 
 /*
@@ -372,12 +442,17 @@ static inline void mds_idle_clear_cpu_buffers(void)
  *    lfence
  *    jmp spec_trap
  *  do_rop:
+<<<<<<< HEAD
  *    mov %rax,(%rsp) for x86_64
  *    mov %edx,(%esp) for x86_32
+=======
+ *    mov %rax,(%rsp)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *    retq
  *
  * Without retpolines configured:
  *
+<<<<<<< HEAD
  *    jmp *%rax for x86_64
  *    jmp *%edx for x86_32
  */
@@ -386,6 +461,13 @@ static inline void mds_idle_clear_cpu_buffers(void)
 #  define RETPOLINE_RAX_BPF_JIT_SIZE	17
 #  define RETPOLINE_RAX_BPF_JIT()				\
 do {								\
+=======
+ *    jmp *%rax
+ */
+#ifdef CONFIG_RETPOLINE
+# define RETPOLINE_RAX_BPF_JIT_SIZE	17
+# define RETPOLINE_RAX_BPF_JIT()				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	EMIT1_off32(0xE8, 7);	 /* callq do_rop */		\
 	/* spec_trap: */					\
 	EMIT2(0xF3, 0x90);       /* pause */			\
@@ -393,6 +475,7 @@ do {								\
 	EMIT2(0xEB, 0xF9);       /* jmp spec_trap */		\
 	/* do_rop: */						\
 	EMIT4(0x48, 0x89, 0x04, 0x24); /* mov %rax,(%rsp) */	\
+<<<<<<< HEAD
 	EMIT1(0xC3);             /* retq */			\
 } while (0)
 # else /* !CONFIG_X86_64 */
@@ -417,6 +500,13 @@ do {								\
 #  define RETPOLINE_EDX_BPF_JIT()				\
 	EMIT2(0xFF, 0xE2)        /* jmp *%edx */
 # endif
+=======
+	EMIT1(0xC3);             /* retq */
+#else
+# define RETPOLINE_RAX_BPF_JIT_SIZE	2
+# define RETPOLINE_RAX_BPF_JIT()				\
+	EMIT2(0xFF, 0xE0);	 /* jmp *%rax */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #endif /* _ASM_X86_NOSPEC_BRANCH_H_ */

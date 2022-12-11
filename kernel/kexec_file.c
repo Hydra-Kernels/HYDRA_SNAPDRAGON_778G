@@ -1052,7 +1052,11 @@ int kexec_load_purgatory(struct kimage *image, struct kexec_buf *kbuf)
 out:
 	vfree(pi->sechdrs);
 	pi->sechdrs = NULL;
+<<<<<<< HEAD
 out_free_kbuf:
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vfree(pi->purgatory_buf);
 	pi->purgatory_buf = NULL;
 	return ret;

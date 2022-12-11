@@ -907,8 +907,18 @@ EXPORT_SYMBOL(file_path);
  */
 int vfs_open(const struct path *path, struct file *file)
 {
+<<<<<<< HEAD
 	file->f_path = *path;
 	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
+=======
+	struct inode *inode = vfs_select_inode(path->dentry, file->f_flags);
+
+	if (IS_ERR(inode))
+		return PTR_ERR(inode);
+
+	file->f_path = *path;
+	return do_dentry_open(file, inode, NULL, cred);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct file *dentry_open(const struct path *path, int flags,
@@ -956,6 +966,12 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
 {
 	int lookup_flags = 0;
 	int acc_mode = ACC_MODE(flags);
+
+	/*
+	 * Clear out all open flags we don't know about so that we don't report
+	 * them in fcntl(F_GETFD) or similar interfaces.
+	 */
+	flags &= VALID_OPEN_FLAGS;
 
 	/*
 	 * Clear out all open flags we don't know about so that we don't report

@@ -357,6 +357,7 @@ void afs_put_server(struct afs_net *net, struct afs_server *server,
 	afs_set_server_timer(net, afs_server_gc_delay);
 }
 
+<<<<<<< HEAD
 static void afs_server_rcu(struct rcu_head *rcu)
 {
 	struct afs_server *server = container_of(rcu, struct afs_server, rcu);
@@ -365,6 +366,17 @@ static void afs_server_rcu(struct rcu_head *rcu)
 			 afs_server_trace_free);
 	afs_put_addrlist(rcu_access_pointer(server->addresses));
 	kfree(server);
+=======
+	spin_lock(&afs_server_graveyard_lock);
+	if (atomic_read(&server->usage) == 0) {
+		list_move_tail(&server->grave, &afs_server_graveyard);
+		server->time_of_death = ktime_get_real_seconds();
+		queue_delayed_work(afs_wq, &afs_server_reaper,
+				   afs_server_timeout * HZ);
+	}
+	spin_unlock(&afs_server_graveyard_lock);
+	_leave(" [dead]");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -400,11 +412,19 @@ static void afs_destroy_server(struct afs_net *net, struct afs_server *server)
 static void afs_gc_servers(struct afs_net *net, struct afs_server *gc_list)
 {
 	struct afs_server *server;
+<<<<<<< HEAD
 	bool deleted;
 	int usage;
 
 	while ((server = gc_list)) {
 		gc_list = server->gc_next;
+=======
+	unsigned long delay, expiry;
+	time64_t now;
+
+	now = ktime_get_real_seconds();
+	spin_lock(&afs_server_graveyard_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		write_seqlock(&net->fs_lock);
 		usage = 1;

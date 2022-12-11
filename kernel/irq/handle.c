@@ -140,9 +140,14 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 	unsigned int irq = desc->irq_data.irq;
 	struct irqaction *action;
 
+<<<<<<< HEAD
 	record_irq_time(desc);
 
 	for_each_action_of_desc(desc, action) {
+=======
+	/* action might have become NULL since we dropped the lock */
+	while (action) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		irqreturn_t res;
 
 		trace_irq_handler_entry(irq, action);
@@ -176,6 +181,10 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 		}
 
 		retval |= res;
+<<<<<<< HEAD
+=======
+		action = action->next;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return retval;

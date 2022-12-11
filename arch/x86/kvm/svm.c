@@ -45,7 +45,10 @@
 #include <asm/desc.h>
 #include <asm/debugreg.h>
 #include <asm/kvm_para.h>
+<<<<<<< HEAD
 #include <asm/irq_remapping.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/spec-ctrl.h>
 
 #include <asm/virtext.h>
@@ -2820,7 +2823,18 @@ static int bp_interception(struct vcpu_svm *svm)
 
 static int ud_interception(struct vcpu_svm *svm)
 {
+<<<<<<< HEAD
 	return handle_ud(&svm->vcpu);
+=======
+	int er;
+
+	er = emulate_instruction(&svm->vcpu, EMULTYPE_TRAP_UD);
+	if (er == EMULATE_USER_EXIT)
+		return 0;
+	if (er != EMULATE_DONE)
+		kvm_queue_exception(&svm->vcpu, UD_VECTOR);
+	return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int ac_interception(struct vcpu_svm *svm)
@@ -4335,6 +4349,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
 		svm->vmcb->save.g_pat = data;
 		mark_dirty(svm->vmcb, VMCB_NPT);
 		break;
+<<<<<<< HEAD
 	case MSR_IA32_SPEC_CTRL:
 		if (!msr->host_initiated &&
 		    !guest_has_spec_ctrl_msr(vcpu))
@@ -4384,6 +4399,10 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
 			return 1;
 
 		svm->virt_spec_ctrl = data;
+=======
+	case MSR_IA32_TSC:
+		kvm_write_tsc(vcpu, msr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case MSR_STAR:
 		svm->vmcb->save.star = data;
@@ -5776,11 +5795,33 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu)
 		"xor %%r14d, %%r14d \n\t"
 		"xor %%r15d, %%r15d \n\t"
 #endif
+<<<<<<< HEAD
 		"xor %%ebx, %%ebx \n\t"
 		"xor %%ecx, %%ecx \n\t"
 		"xor %%edx, %%edx \n\t"
 		"xor %%esi, %%esi \n\t"
 		"xor %%edi, %%edi \n\t"
+=======
+		/*
+		* Clear host registers marked as clobbered to prevent
+		* speculative use.
+		*/
+		"xor %%" _ASM_BX ", %%" _ASM_BX " \n\t"
+		"xor %%" _ASM_CX ", %%" _ASM_CX " \n\t"
+		"xor %%" _ASM_DX ", %%" _ASM_DX " \n\t"
+		"xor %%" _ASM_SI ", %%" _ASM_SI " \n\t"
+		"xor %%" _ASM_DI ", %%" _ASM_DI " \n\t"
+#ifdef CONFIG_X86_64
+		"xor %%r8, %%r8 \n\t"
+		"xor %%r9, %%r9 \n\t"
+		"xor %%r10, %%r10 \n\t"
+		"xor %%r11, %%r11 \n\t"
+		"xor %%r12, %%r12 \n\t"
+		"xor %%r13, %%r13 \n\t"
+		"xor %%r14, %%r14 \n\t"
+		"xor %%r15, %%r15 \n\t"
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		"pop %%" _ASM_BP
 		:
 		: [svm]"a"(svm),

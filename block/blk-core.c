@@ -260,6 +260,92 @@ void blk_dump_rq_flags(struct request *rq, char *msg)
 }
 EXPORT_SYMBOL(blk_dump_rq_flags);
 
+<<<<<<< HEAD
+=======
+static void blk_delay_work(struct work_struct *work)
+{
+	struct request_queue *q;
+
+	q = container_of(work, struct request_queue, delay_work.work);
+	spin_lock_irq(q->queue_lock);
+	__blk_run_queue(q);
+	spin_unlock_irq(q->queue_lock);
+}
+
+/**
+ * blk_delay_queue - restart queueing after defined interval
+ * @q:		The &struct request_queue in question
+ * @msecs:	Delay in msecs
+ *
+ * Description:
+ *   Sometimes queueing needs to be postponed for a little while, to allow
+ *   resources to come back. This function will make sure that queueing is
+ *   restarted around the specified time. Queue lock must be held.
+ */
+void blk_delay_queue(struct request_queue *q, unsigned long msecs)
+{
+	if (likely(!blk_queue_dead(q)))
+		queue_delayed_work(kblockd_workqueue, &q->delay_work,
+				   msecs_to_jiffies(msecs));
+}
+EXPORT_SYMBOL(blk_delay_queue);
+
+/**
+ * blk_start_queue_async - asynchronously restart a previously stopped queue
+ * @q:    The &struct request_queue in question
+ *
+ * Description:
+ *   blk_start_queue_async() will clear the stop flag on the queue, and
+ *   ensure that the request_fn for the queue is run from an async
+ *   context.
+ **/
+void blk_start_queue_async(struct request_queue *q)
+{
+	queue_flag_clear(QUEUE_FLAG_STOPPED, q);
+	blk_run_queue_async(q);
+}
+EXPORT_SYMBOL(blk_start_queue_async);
+
+/**
+ * blk_start_queue - restart a previously stopped queue
+ * @q:    The &struct request_queue in question
+ *
+ * Description:
+ *   blk_start_queue() will clear the stop flag on the queue, and call
+ *   the request_fn for the queue if it was in a stopped state when
+ *   entered. Also see blk_stop_queue(). Queue lock must be held.
+ **/
+void blk_start_queue(struct request_queue *q)
+{
+	WARN_ON(!in_interrupt() && !irqs_disabled());
+
+	queue_flag_clear(QUEUE_FLAG_STOPPED, q);
+	__blk_run_queue(q);
+}
+EXPORT_SYMBOL(blk_start_queue);
+
+/**
+ * blk_stop_queue - stop a queue
+ * @q:    The &struct request_queue in question
+ *
+ * Description:
+ *   The Linux block layer assumes that a block driver will consume all
+ *   entries on the request queue when the request_fn strategy is called.
+ *   Often this will not happen, because of hardware limitations (queue
+ *   depth settings). If a device driver gets a 'queue full' response,
+ *   or if it simply chooses not to queue more I/O at one point, it can
+ *   call this function to prevent the request_fn from being called until
+ *   the driver has signalled it's ready to go again. This happens by calling
+ *   blk_start_queue() to restart queue operations. Queue lock must be held.
+ **/
+void blk_stop_queue(struct request_queue *q)
+{
+	cancel_delayed_work(&q->delay_work);
+	queue_flag_set(QUEUE_FLAG_STOPPED, q);
+}
+EXPORT_SYMBOL(blk_stop_queue);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * blk_sync_queue - cancel any pending callbacks on a queue
  * @q: the queue
@@ -314,7 +400,13 @@ EXPORT_SYMBOL(blk_put_queue);
 
 void blk_set_queue_dying(struct request_queue *q)
 {
+<<<<<<< HEAD
 	blk_queue_flag_set(QUEUE_FLAG_DYING, q);
+=======
+	spin_lock_irq(q->queue_lock);
+	queue_flag_set(QUEUE_FLAG_DYING, q);
+	spin_unlock_irq(q->queue_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * When queue DYING flag is set, we need to block new req
@@ -326,8 +418,18 @@ void blk_set_queue_dying(struct request_queue *q)
 	if (queue_is_mq(q))
 		blk_mq_wake_waiters(q);
 
+<<<<<<< HEAD
 	/* Make blk_queue_enter() reexamine the DYING flag. */
 	wake_up_all(&q->mq_freeze_wq);
+=======
+		blk_queue_for_each_rl(rl, q) {
+			if (rl->rq_pool) {
+				wake_up_all(&rl->wait[BLK_RW_SYNC]);
+				wake_up_all(&rl->wait[BLK_RW_ASYNC]);
+			}
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(blk_set_queue_dying);
 
@@ -403,6 +505,7 @@ EXPORT_SYMBOL(blk_alloc_queue);
  */
 int blk_queue_enter(struct request_queue *q, blk_mq_req_flags_t flags)
 {
+<<<<<<< HEAD
 	const bool pm = flags & BLK_MQ_REQ_PREEMPT;
 
 	while (true) {
@@ -424,11 +527,16 @@ int blk_queue_enter(struct request_queue *q, blk_mq_req_flags_t flags)
 		rcu_read_unlock();
 
 		if (success)
+=======
+	while (true) {
+		if (percpu_ref_tryget_live(&q->q_usage_counter))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return 0;
 
 		if (flags & BLK_MQ_REQ_NOWAIT)
 			return -EBUSY;
 
+<<<<<<< HEAD
 		/*
 		 * read pair of barrier in blk_freeze_queue_start(),
 		 * we need to order reading __PERCPU_REF_DEAD flag of
@@ -442,6 +550,10 @@ int blk_queue_enter(struct request_queue *q, blk_mq_req_flags_t flags)
 			   (!q->mq_freeze_depth &&
 			    (pm || (blk_pm_request_resume(q),
 				    !blk_queue_pm_only(q)))) ||
+=======
+		wait_event(q->mq_freeze_wq,
+			   !atomic_read(&q->mq_freeze_depth) ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			   blk_queue_dying(q));
 		if (blk_queue_dying(q))
 			return -ENODEV;
@@ -1061,8 +1173,17 @@ blk_qc_t generic_make_request(struct bio *bio)
 		blk_mq_req_flags_t flags = bio->bi_opf & REQ_NOWAIT ?
 			BLK_MQ_REQ_NOWAIT : 0;
 
+<<<<<<< HEAD
 		if (likely(blk_queue_enter(q, flags) == 0)) {
 			struct bio_list lower, same;
+=======
+		if (likely(blk_queue_enter(q, __GFP_DIRECT_RECLAIM) == 0)) {
+			struct bio_list lower, same;
+
+			/* Create a fresh bio_list for all subordinate requests */
+			bio_list_on_stack[1] = bio_list_on_stack[0];
+			bio_list_init(&bio_list_on_stack[0]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/* Create a fresh bio_list for all subordinate requests */
 			bio_list_on_stack[1] = bio_list_on_stack[0];
@@ -1072,14 +1193,21 @@ blk_qc_t generic_make_request(struct bio *bio)
 				ret = q->make_request_fn(q, bio);
 
 			blk_queue_exit(q);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/* sort new bios into those for a lower level
 			 * and those for the same level
 			 */
 			bio_list_init(&lower);
 			bio_list_init(&same);
 			while ((bio = bio_list_pop(&bio_list_on_stack[0])) != NULL)
+<<<<<<< HEAD
 				if (q == bio->bi_disk->queue)
+=======
+				if (q == bdev_get_queue(bio->bi_bdev))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					bio_list_add(&same, bio);
 				else
 					bio_list_add(&lower, bio);
@@ -1088,11 +1216,15 @@ blk_qc_t generic_make_request(struct bio *bio)
 			bio_list_merge(&bio_list_on_stack[0], &same);
 			bio_list_merge(&bio_list_on_stack[0], &bio_list_on_stack[1]);
 		} else {
+<<<<<<< HEAD
 			if (unlikely(!blk_queue_dying(q) &&
 					(bio->bi_opf & REQ_NOWAIT)))
 				bio_wouldblock_error(bio);
 			else
 				bio_io_error(bio);
+=======
+			bio_io_error(bio);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		bio = bio_list_pop(&bio_list_on_stack[0]);
 	} while (bio);
@@ -1262,8 +1394,23 @@ blk_status_t blk_insert_cloned_request(struct request_queue *q, struct request *
 	    should_fail_request(&rq->rq_disk->part0, blk_rq_bytes(rq)))
 		return BLK_STS_IOERR;
 
+<<<<<<< HEAD
 	if (blk_queue_io_stat(q))
 		blk_account_io_start(rq, true);
+=======
+	if (q->mq_ops) {
+		if (blk_queue_io_stat(q))
+			blk_account_io_start(rq, true);
+		blk_mq_insert_request(rq, false, true, false);
+		return 0;
+	}
+
+	spin_lock_irqsave(q->queue_lock, flags);
+	if (unlikely(blk_queue_dying(q))) {
+		spin_unlock_irqrestore(q->queue_lock, flags);
+		return -ENODEV;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Since we have a scheduler attached on the top device,

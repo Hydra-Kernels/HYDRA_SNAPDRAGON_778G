@@ -82,7 +82,10 @@ static struct resource smc91x_resources[] = {
 static struct smc91x_platdata smc91x_platdata = {
 	.flags = SMC91X_USE_8BIT | SMC91X_USE_16BIT | SMC91X_USE_32BIT |
 		 SMC91X_USE_DMA | SMC91X_NOWAIT,
+<<<<<<< HEAD
 	.pxa_u16_align4 = true,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static struct platform_device smc91x_device = {

@@ -72,6 +72,7 @@ struct bpf_map_memory {
 };
 
 struct bpf_map {
+<<<<<<< HEAD
 	/* The first two cachelines with read-mostly members of which some
 	 * are also accessed in fast-path (e.g. ops, max_entries).
 	 */
@@ -80,10 +81,17 @@ struct bpf_map {
 #ifdef CONFIG_SECURITY
 	void *security;
 #endif
+=======
+	/* 1st cacheline with read-mostly members of which some
+	 * are also accessed in fast-path (e.g. ops, max_entries).
+	 */
+	const struct bpf_map_ops *ops ____cacheline_aligned;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	enum bpf_map_type map_type;
 	u32 key_size;
 	u32 value_size;
 	u32 max_entries;
+<<<<<<< HEAD
 	u32 map_flags;
 	int spin_lock_off; /* >=0 valid offset, <0 error */
 	u32 id;
@@ -103,6 +111,19 @@ struct bpf_map {
 	atomic_t usercnt;
 	struct work_struct work;
 	char name[BPF_OBJ_NAME_LEN];
+=======
+	u32 pages;
+	bool unpriv_array;
+	/* 7 bytes hole */
+
+	/* 2nd cacheline with misc members to avoid false sharing
+	 * particularly with refcounting.
+	 */
+	struct user_struct *user ____cacheline_aligned;
+	atomic_t refcnt;
+	atomic_t usercnt;
+	struct work_struct work;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static inline bool map_value_has_spin_lock(const struct bpf_map *map)
@@ -635,12 +656,16 @@ extern const struct bpf_verifier_ops tc_cls_act_analyzer_ops;
 extern const struct bpf_verifier_ops xdp_analyzer_ops;
 
 struct bpf_prog *bpf_prog_get(u32 ufd);
+<<<<<<< HEAD
 struct bpf_prog *bpf_prog_get_type_dev(u32 ufd, enum bpf_prog_type type,
 				       bool attach_drv);
 struct bpf_prog * __must_check bpf_prog_add(struct bpf_prog *prog, int i);
 void bpf_prog_sub(struct bpf_prog *prog, int i);
 struct bpf_prog * __must_check bpf_prog_inc(struct bpf_prog *prog);
 struct bpf_prog * __must_check bpf_prog_inc_not_zero(struct bpf_prog *prog);
+=======
+struct bpf_prog *bpf_prog_inc(struct bpf_prog *prog);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void bpf_prog_put(struct bpf_prog *prog);
 int __bpf_prog_charge(struct user_struct *user, u32 pages);
 void __bpf_prog_uncharge(struct user_struct *user, u32 pages);
@@ -650,9 +675,13 @@ void bpf_map_free_id(struct bpf_map *map, bool do_idr_lock);
 
 struct bpf_map *bpf_map_get_with_uref(u32 ufd);
 struct bpf_map *__bpf_map_get(struct fd f);
+<<<<<<< HEAD
 struct bpf_map * __must_check bpf_map_inc(struct bpf_map *map, bool uref);
 struct bpf_map * __must_check bpf_map_inc_not_zero(struct bpf_map *map,
 						   bool uref);
+=======
+struct bpf_map *bpf_map_inc(struct bpf_map *map, bool uref);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void bpf_map_put_with_uref(struct bpf_map *map);
 void bpf_map_put(struct bpf_map *map);
 int bpf_map_charge_memlock(struct bpf_map *map, u32 pages);
@@ -778,6 +807,7 @@ static inline void bpf_prog_put(struct bpf_prog *prog)
 {
 }
 
+<<<<<<< HEAD
 static inline struct bpf_prog * __must_check bpf_prog_inc(struct bpf_prog *prog)
 {
 	return ERR_PTR(-EOPNOTSUPP);
@@ -881,6 +911,11 @@ static inline int bpf_prog_test_run_flow_dissector(struct bpf_prog *prog,
 {
 	return -ENOTSUPP;
 }
+=======
+static inline void bpf_prog_put_rcu(struct bpf_prog *prog)
+{
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_BPF_SYSCALL */
 
 static inline struct bpf_prog *bpf_prog_get_type(u32 ufd,

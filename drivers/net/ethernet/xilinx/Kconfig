@@ -34,7 +34,12 @@ config XILINX_AXI_EMAC
 
 config XILINX_LL_TEMAC
 	tristate "Xilinx LL TEMAC (LocalLink Tri-mode Ethernet MAC) driver"
+<<<<<<< HEAD
 	depends on PPC || MICROBLAZE || X86 || COMPILE_TEST
+=======
+	depends on (PPC || MICROBLAZE)
+	depends on !64BIT || BROKEN
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select PHYLIB
 	---help---
 	  This driver supports the Xilinx 10/100/1000 LocalLink TEMAC

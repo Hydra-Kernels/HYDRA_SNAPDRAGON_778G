@@ -438,11 +438,59 @@ MODULE_DEVICE_TABLE(of, rcar_du_of_table);
  * DRM operations
  */
 
+<<<<<<< HEAD
 DEFINE_DRM_GEM_CMA_FOPS(rcar_du_fops);
 
 static struct drm_driver rcar_du_driver = {
 	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
 	.gem_free_object_unlocked = drm_gem_cma_free_object,
+=======
+static void rcar_du_lastclose(struct drm_device *dev)
+{
+	struct rcar_du_device *rcdu = dev->dev_private;
+
+	drm_fbdev_cma_restore_mode(rcdu->fbdev);
+}
+
+static int rcar_du_enable_vblank(struct drm_device *dev, unsigned int pipe)
+{
+	struct rcar_du_device *rcdu = dev->dev_private;
+
+	rcar_du_crtc_enable_vblank(&rcdu->crtcs[pipe], true);
+
+	return 0;
+}
+
+static void rcar_du_disable_vblank(struct drm_device *dev, unsigned int pipe)
+{
+	struct rcar_du_device *rcdu = dev->dev_private;
+
+	rcar_du_crtc_enable_vblank(&rcdu->crtcs[pipe], false);
+}
+
+static const struct file_operations rcar_du_fops = {
+	.owner		= THIS_MODULE,
+	.open		= drm_open,
+	.release	= drm_release,
+	.unlocked_ioctl	= drm_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl	= drm_compat_ioctl,
+#endif
+	.poll		= drm_poll,
+	.read		= drm_read,
+	.llseek		= no_llseek,
+	.mmap		= drm_gem_cma_mmap,
+};
+
+static struct drm_driver rcar_du_driver = {
+	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_PRIME
+				| DRIVER_ATOMIC,
+	.lastclose		= rcar_du_lastclose,
+	.get_vblank_counter	= drm_vblank_no_hw_counter,
+	.enable_vblank		= rcar_du_enable_vblank,
+	.disable_vblank		= rcar_du_disable_vblank,
+	.gem_free_object	= drm_gem_cma_free_object,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.gem_vm_ops		= &drm_gem_cma_vm_ops,
 	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,
 	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,
@@ -493,30 +541,68 @@ static int rcar_du_remove(struct platform_device *pdev)
 	struct rcar_du_device *rcdu = platform_get_drvdata(pdev);
 	struct drm_device *ddev = rcdu->ddev;
 
+<<<<<<< HEAD
 	drm_dev_unregister(ddev);
 
 	drm_kms_helper_poll_fini(ddev);
 	drm_mode_config_cleanup(ddev);
 
 	drm_dev_put(ddev);
+=======
+	mutex_lock(&ddev->mode_config.mutex);
+	drm_connector_unplug_all(ddev);
+	mutex_unlock(&ddev->mode_config.mutex);
+
+	drm_dev_unregister(ddev);
+
+	if (rcdu->fbdev)
+		drm_fbdev_cma_fini(rcdu->fbdev);
+
+	drm_kms_helper_poll_fini(ddev);
+	drm_mode_config_cleanup(ddev);
+
+	drm_dev_unref(ddev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
 
 static int rcar_du_probe(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	struct rcar_du_device *rcdu;
+=======
+	struct device_node *np = pdev->dev.of_node;
+	struct rcar_du_device *rcdu;
+	struct drm_connector *connector;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct drm_device *ddev;
 	struct resource *mem;
 	int ret;
 
+<<<<<<< HEAD
 	/* Allocate and initialize the R-Car device structure. */
+=======
+	if (np == NULL) {
+		dev_err(&pdev->dev, "no device tree node\n");
+		return -ENODEV;
+	}
+
+	/* Allocate and initialize the DRM and R-Car device structures. */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rcdu = devm_kzalloc(&pdev->dev, sizeof(*rcdu), GFP_KERNEL);
 	if (rcdu == NULL)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	rcdu->dev = &pdev->dev;
 	rcdu->info = of_device_get_match_data(rcdu->dev);
+=======
+	init_waitqueue_head(&rcdu->commit.wait);
+
+	rcdu->dev = &pdev->dev;
+	rcdu->info = of_match_device(rcar_du_of_table, rcdu->dev)->data;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	platform_set_drvdata(pdev, rcdu);
 
@@ -528,33 +614,63 @@ static int rcar_du_probe(struct platform_device *pdev)
 
 	/* DRM/KMS objects */
 	ddev = drm_dev_alloc(&rcar_du_driver, &pdev->dev);
+<<<<<<< HEAD
 	if (IS_ERR(ddev))
 		return PTR_ERR(ddev);
+=======
+	if (!ddev)
+		return -ENOMEM;
+
+	drm_dev_set_unique(ddev, dev_name(&pdev->dev));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rcdu->ddev = ddev;
 	ddev->dev_private = rcdu;
 
 	ret = rcar_du_modeset_init(rcdu);
 	if (ret < 0) {
+<<<<<<< HEAD
 		if (ret != -EPROBE_DEFER)
 			dev_err(&pdev->dev,
 				"failed to initialize DRM/KMS (%d)\n", ret);
+=======
+		dev_err(&pdev->dev, "failed to initialize DRM/KMS (%d)\n", ret);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto error;
 	}
 
 	ddev->irq_enabled = 1;
 
+<<<<<<< HEAD
 	/*
 	 * Register the DRM device with the core and the connectors with
+=======
+	/* Register the DRM device with the core and the connectors with
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * sysfs.
 	 */
 	ret = drm_dev_register(ddev, 0);
 	if (ret)
 		goto error;
 
+<<<<<<< HEAD
 	DRM_INFO("Device %s probed\n", dev_name(&pdev->dev));
 
 	drm_fbdev_generic_setup(ddev, 32);
+=======
+	mutex_lock(&ddev->mode_config.mutex);
+	drm_for_each_connector(connector, ddev) {
+		ret = drm_connector_register(connector);
+		if (ret < 0)
+			break;
+	}
+	mutex_unlock(&ddev->mode_config.mutex);
+
+	if (ret < 0)
+		goto error;
+
+	DRM_INFO("Device %s probed\n", dev_name(&pdev->dev));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 

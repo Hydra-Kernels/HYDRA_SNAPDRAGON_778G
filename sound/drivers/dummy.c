@@ -406,6 +406,10 @@ static int dummy_hrtimer_stop(struct snd_pcm_substream *substream)
 static inline void dummy_hrtimer_sync(struct dummy_hrtimer_pcm *dpcm)
 {
 	hrtimer_cancel(&dpcm->timer);
+<<<<<<< HEAD
+=======
+	tasklet_kill(&dpcm->tasklet);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static snd_pcm_uframes_t

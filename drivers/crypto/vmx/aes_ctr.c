@@ -95,8 +95,31 @@ static int p8_aes_ctr_crypt(struct skcipher_request *req)
 	unsigned int nbytes;
 	int ret;
 
+<<<<<<< HEAD
 	if (!crypto_simd_usable()) {
 		struct skcipher_request *subreq = skcipher_request_ctx(req);
+=======
+	if (in_interrupt()) {
+		ret = crypto_blkcipher_encrypt(&fallback_desc, dst, src,
+					       nbytes);
+	} else {
+		blkcipher_walk_init(&walk, dst, src, nbytes);
+		ret = blkcipher_walk_virt_block(desc, &walk, AES_BLOCK_SIZE);
+		while ((nbytes = walk.nbytes) >= AES_BLOCK_SIZE) {
+			preempt_disable();
+			pagefault_disable();
+			enable_kernel_altivec();
+			enable_kernel_vsx();
+			aes_p8_ctr32_encrypt_blocks(walk.src.virt.addr,
+						    walk.dst.virt.addr,
+						    (nbytes &
+						     AES_BLOCK_MASK) /
+						    AES_BLOCK_SIZE,
+						    &ctx->enc_key,
+						    walk.iv);
+			pagefault_enable();
+			preempt_enable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		*subreq = *req;
 		skcipher_request_set_tfm(subreq, ctx->fallback);
@@ -129,6 +152,7 @@ static int p8_aes_ctr_crypt(struct skcipher_request *req)
 	return ret;
 }
 
+<<<<<<< HEAD
 struct skcipher_alg p8_aes_ctr_alg = {
 	.base.cra_name = "ctr(aes)",
 	.base.cra_driver_name = "p8_aes_ctr",
@@ -146,4 +170,26 @@ struct skcipher_alg p8_aes_ctr_alg = {
 	.max_keysize = AES_MAX_KEY_SIZE,
 	.ivsize = AES_BLOCK_SIZE,
 	.chunksize = AES_BLOCK_SIZE,
+=======
+struct crypto_alg p8_aes_ctr_alg = {
+	.cra_name = "ctr(aes)",
+	.cra_driver_name = "p8_aes_ctr",
+	.cra_module = THIS_MODULE,
+	.cra_priority = 2000,
+	.cra_type = &crypto_blkcipher_type,
+	.cra_flags = CRYPTO_ALG_TYPE_BLKCIPHER | CRYPTO_ALG_NEED_FALLBACK,
+	.cra_alignmask = 0,
+	.cra_blocksize = 1,
+	.cra_ctxsize = sizeof(struct p8_aes_ctr_ctx),
+	.cra_init = p8_aes_ctr_init,
+	.cra_exit = p8_aes_ctr_exit,
+	.cra_blkcipher = {
+			  .ivsize = AES_BLOCK_SIZE,
+			  .min_keysize = AES_MIN_KEY_SIZE,
+			  .max_keysize = AES_MAX_KEY_SIZE,
+			  .setkey = p8_aes_ctr_setkey,
+			  .encrypt = p8_aes_ctr_crypt,
+			  .decrypt = p8_aes_ctr_crypt,
+	},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };

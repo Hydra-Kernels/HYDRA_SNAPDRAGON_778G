@@ -281,9 +281,14 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
 {
 	struct kvmppc_spapr_tce_table *stt = NULL;
 	struct kvmppc_spapr_tce_table *siter;
+<<<<<<< HEAD
 	unsigned long npages, size = args->size;
+=======
+	long npages;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int ret = -ENOMEM;
 
+<<<<<<< HEAD
 	if (!args->size || args->page_shift < 12 || args->page_shift > 34 ||
 		(args->offset + args->size > (ULLONG_MAX >> args->page_shift)))
 		return -EINVAL;
@@ -292,12 +297,19 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
 	ret = account_locked_vm(current->mm, kvmppc_stt_pages(npages), true);
 	if (ret)
 		return ret;
+=======
+	npages = kvmppc_stt_npages(args->window_size);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = -ENOMEM;
 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
 		      GFP_KERNEL);
 	if (!stt)
+<<<<<<< HEAD
 		goto fail_acct;
+=======
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	stt->liobn = args->liobn;
 	stt->page_shift = args->page_shift;
@@ -318,24 +330,54 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
 		}
 	}
 
+<<<<<<< HEAD
 	kvm_get_kvm(kvm);
+=======
+	mutex_lock(&kvm->lock);
+
+	/* Check this LIOBN hasn't been previously allocated */
+	ret = 0;
+	list_for_each_entry(siter, &kvm->arch.spapr_tce_tables, list) {
+		if (siter->liobn == args->liobn) {
+			ret = -EBUSY;
+			break;
+		}
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!ret)
 		ret = anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
 				       stt, O_RDWR | O_CLOEXEC);
 
+<<<<<<< HEAD
 	if (ret >= 0)
 		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
 	else
 		kvm_put_kvm(kvm);
+=======
+	if (ret >= 0) {
+		list_add(&stt->list, &kvm->arch.spapr_tce_tables);
+		kvm_get_kvm(kvm);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_unlock(&kvm->lock);
 
 	if (ret >= 0)
 		return ret;
 
+<<<<<<< HEAD
 	kfree(stt);
  fail_acct:
 	account_locked_vm(current->mm, kvmppc_stt_pages(npages), false);
+=======
+ fail:
+	for (i = 0; i < npages; i++)
+		if (stt->pages[i])
+			__free_page(stt->pages[i]);
+
+	kfree(stt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

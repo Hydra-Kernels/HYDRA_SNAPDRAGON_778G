@@ -244,6 +244,17 @@ unsigned int rsnd_ssi_clk_query(struct rsnd_dai *rdai,
 		 * with it is not allowed. (SSIWSR.WS_MODE with
 		 * SSICR.CKDV = 000 is not allowed either).
 		 * Skip it. See SSICR.CKDV
+<<<<<<< HEAD
+=======
+		 */
+		if (j == 0)
+			continue;
+
+		/*
+		 * this driver is assuming that
+		 * system word is 64fs (= 2 x 32bit)
+		 * see rsnd_ssi_init()
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 */
 		if (j == 0)
 			continue;
@@ -509,8 +520,12 @@ static int rsnd_ssi_init(struct rsnd_mod *mod,
 	struct rsnd_ssi *ssi = rsnd_mod_to_ssi(mod);
 	int ret;
 
+<<<<<<< HEAD
 	if (!rsnd_ssi_is_run_mods(mod, io))
 		return 0;
+=======
+	cr = FORCE | PDTA;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = rsnd_ssi_master_clk_start(mod, io);
 	if (ret < 0)
@@ -764,8 +779,35 @@ static void __rsnd_ssi_interrupt(struct rsnd_mod *mod,
 	status = rsnd_ssi_status_get(mod);
 
 	/* PIO only */
+<<<<<<< HEAD
 	if (!is_dma && (status & DIRQ))
 		elapsed = rsnd_ssi_pio_interrupt(mod, io);
+=======
+	if (!is_dma && (status & DIRQ)) {
+		struct snd_pcm_runtime *runtime = rsnd_io_to_runtime(io);
+		u32 *buf = (u32 *)(runtime->dma_area +
+				   rsnd_dai_pointer_offset(io, 0));
+		int shift = 0;
+
+		switch (runtime->sample_bits) {
+		case 32:
+			shift = 8;
+			break;
+		}
+
+		/*
+		 * 8/16/32 data can be assesse to TDR/RDR register
+		 * directly as 32bit data
+		 * see rsnd_ssi_init()
+		 */
+		if (rsnd_io_is_play(io))
+			rsnd_mod_write(mod, SSITDR, (*buf) << shift);
+		else
+			*buf = (rsnd_mod_read(mod, SSIRDR) >> shift);
+
+		elapsed = rsnd_dai_pointer_update(io, sizeof(*buf));
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* DMA only */
 	if (is_dma && (status & (UIRQ | OIRQ))) {
@@ -1101,6 +1143,30 @@ static int rsnd_ssi_dma_probe(struct rsnd_mod *mod,
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static int rsnd_ssi_dma_remove(struct rsnd_mod *mod,
+			       struct rsnd_dai_stream *io,
+			       struct rsnd_priv *priv)
+{
+	struct rsnd_ssi *ssi = rsnd_mod_to_ssi(mod);
+	struct rsnd_mod *pure_ssi_mod = rsnd_io_to_mod_ssi(io);
+	struct device *dev = rsnd_priv_to_dev(priv);
+	int irq = ssi->info->irq;
+
+	rsnd_dma_quit(io, rsnd_mod_to_dma(mod));
+
+	/* Do nothing if non SSI (= SSI parent, multi SSI) mod */
+	if (pure_ssi_mod != mod)
+		return 0;
+
+	/* PIO will request IRQ again */
+	devm_free_irq(dev, irq, mod);
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int rsnd_ssi_fallback(struct rsnd_mod *mod,
 			     struct rsnd_dai_stream *io,
 			     struct rsnd_priv *priv)

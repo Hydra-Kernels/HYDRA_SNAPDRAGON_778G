@@ -38,7 +38,11 @@ static int pfifo_tail_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 {
 	unsigned int prev_backlog;
 
+<<<<<<< HEAD
 	if (likely(sch->q.qlen < sch->limit))
+=======
+	if (likely(skb_queue_len(&sch->q) < sch->limit))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return qdisc_enqueue_tail(skb, sch);
 
 	prev_backlog = sch->qstats.backlog;

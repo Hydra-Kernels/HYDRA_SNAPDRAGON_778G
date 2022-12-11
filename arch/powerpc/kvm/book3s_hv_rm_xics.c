@@ -876,6 +876,7 @@ long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu,
 
 	state = &ics->irq_state[src];
 
+<<<<<<< HEAD
 	/* only MSIs register bypass producers, so it must be MSI here */
 	do {
 		pq_old = state->pq_state;
@@ -911,6 +912,11 @@ static void rm_host_ipi_action(int action, void *data)
 		WARN(1, "Unexpected rm_action=%d data=%p\n", action, data);
 		break;
 	}
+=======
+	/* Still asserted, resend it */
+	if (state->asserted)
+		icp_rm_deliver_irq(xics, icp, irq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 }
 

@@ -856,6 +856,7 @@ posix_acl_xattr_get(const struct xattr_handler *handler,
 
 int
 set_posix_acl(struct inode *inode, int type, struct posix_acl *acl)
+<<<<<<< HEAD
 {
 	if (!IS_POSIXACL(inode))
 		return -EOPNOTSUPP;
@@ -866,6 +867,39 @@ set_posix_acl(struct inode *inode, int type, struct posix_acl *acl)
 		return acl ? -EACCES : 0;
 	if (!inode_owner_or_capable(inode))
 		return -EPERM;
+=======
+{
+	if (!IS_POSIXACL(inode))
+		return -EOPNOTSUPP;
+	if (!inode->i_op->set_acl)
+		return -EOPNOTSUPP;
+
+	if (type == ACL_TYPE_DEFAULT && !S_ISDIR(inode->i_mode))
+		return acl ? -EACCES : 0;
+	if (!inode_owner_or_capable(inode))
+		return -EPERM;
+
+	if (acl) {
+		int ret = posix_acl_valid(acl);
+		if (ret)
+			return ret;
+	}
+	return inode->i_op->set_acl(inode, acl, type);
+}
+EXPORT_SYMBOL(set_posix_acl);
+
+static int
+posix_acl_xattr_set(const struct xattr_handler *handler,
+		    struct dentry *dentry, const char *name,
+		    const void *value, size_t size, int flags)
+{
+	struct inode *inode = d_backing_inode(dentry);
+	struct posix_acl *acl = NULL;
+	int ret;
+
+	if (strcmp(name, "") != 0)
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (acl) {
 		int ret = posix_acl_valid(inode->i_sb->s_user_ns, acl);

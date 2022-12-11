@@ -119,6 +119,7 @@ static int udf_name_conv_char(uint8_t *str_o, int str_o_max_len,
 			gotch = 1;
 		*str_i_idx += len;
 	}
+<<<<<<< HEAD
 	if (illChar) {
 		*needsCRC = 1;
 		c = ILLEGAL_CHAR_MARK;
@@ -134,6 +135,182 @@ static int udf_name_conv_char(uint8_t *str_o, int str_o_max_len,
 			if (len < 0)
 				len = -ENAMETOOLONG;
 		}
+=======
+
+	ocu = ocu_i->u_name;
+	utf_o->u_len = 0;
+	for (i = 0; (i < ocu_len) && (utf_o->u_len <= (UDF_NAME_LEN - 3));) {
+
+		/* Expand OSTA compressed Unicode to Unicode */
+		uint32_t c = ocu[i++];
+		if (cmp_id == 16)
+			c = (c << 8) | ocu[i++];
+
+		/* Compress Unicode to UTF-8 */
+		if (c < 0x80U)
+			utf_o->u_name[utf_o->u_len++] = (uint8_t)c;
+		else if (c < 0x800U) {
+			if (utf_o->u_len > (UDF_NAME_LEN - 4))
+				break;
+			utf_o->u_name[utf_o->u_len++] =
+						(uint8_t)(0xc0 | (c >> 6));
+			utf_o->u_name[utf_o->u_len++] =
+						(uint8_t)(0x80 | (c & 0x3f));
+		} else {
+			if (utf_o->u_len > (UDF_NAME_LEN - 5))
+				break;
+			utf_o->u_name[utf_o->u_len++] =
+						(uint8_t)(0xe0 | (c >> 12));
+			utf_o->u_name[utf_o->u_len++] =
+						(uint8_t)(0x80 |
+							  ((c >> 6) & 0x3f));
+			utf_o->u_name[utf_o->u_len++] =
+						(uint8_t)(0x80 | (c & 0x3f));
+		}
+	}
+	utf_o->u_cmpID = 8;
+
+	return utf_o->u_len;
+}
+
+/*
+ *
+ * udf_UTF8toCS0
+ *
+ * PURPOSE
+ *	Convert UTF-8 to the OSTA Compressed Unicode equivalent.
+ *
+ * DESCRIPTION
+ *	This routine is only called by udf_lookup().
+ *
+ * PRE-CONDITIONS
+ *	ocu			Pointer to OSTA Compressed Unicode output
+ *				buffer of size UDF_NAME_LEN bytes.
+ *	utf			Pointer to UTF-8 input buffer.
+ *	utf_len			Length of UTF-8 input buffer in bytes.
+ *
+ * POST-CONDITIONS
+ *	<return>		Zero on success.
+ *
+ * HISTORY
+ *	November 12, 1997 - Andrew E. Mileski
+ *	Written, tested, and released.
+ */
+static int udf_UTF8toCS0(dstring *ocu, struct ustr *utf, int length)
+{
+	unsigned c, i, max_val, utf_char;
+	int utf_cnt, u_len, u_ch;
+
+	memset(ocu, 0, sizeof(dstring) * length);
+	ocu[0] = 8;
+	max_val = 0xffU;
+	u_ch = 1;
+
+try_again:
+	u_len = 0U;
+	utf_char = 0U;
+	utf_cnt = 0U;
+	for (i = 0U; i < utf->u_len; i++) {
+		/* Name didn't fit? */
+		if (u_len + 1 + u_ch >= length)
+			return 0;
+
+		c = (uint8_t)utf->u_name[i];
+
+		/* Complete a multi-byte UTF-8 character */
+		if (utf_cnt) {
+			utf_char = (utf_char << 6) | (c & 0x3fU);
+			if (--utf_cnt)
+				continue;
+		} else {
+			/* Check for a multi-byte UTF-8 character */
+			if (c & 0x80U) {
+				/* Start a multi-byte UTF-8 character */
+				if ((c & 0xe0U) == 0xc0U) {
+					utf_char = c & 0x1fU;
+					utf_cnt = 1;
+				} else if ((c & 0xf0U) == 0xe0U) {
+					utf_char = c & 0x0fU;
+					utf_cnt = 2;
+				} else if ((c & 0xf8U) == 0xf0U) {
+					utf_char = c & 0x07U;
+					utf_cnt = 3;
+				} else if ((c & 0xfcU) == 0xf8U) {
+					utf_char = c & 0x03U;
+					utf_cnt = 4;
+				} else if ((c & 0xfeU) == 0xfcU) {
+					utf_char = c & 0x01U;
+					utf_cnt = 5;
+				} else {
+					goto error_out;
+				}
+				continue;
+			} else {
+				/* Single byte UTF-8 character (most common) */
+				utf_char = c;
+			}
+		}
+
+		/* Choose no compression if necessary */
+		if (utf_char > max_val) {
+			if (max_val == 0xffU) {
+				max_val = 0xffffU;
+				ocu[0] = (uint8_t)0x10U;
+				u_ch = 2;
+				goto try_again;
+			}
+			goto error_out;
+		}
+
+		if (max_val == 0xffffU)
+			ocu[++u_len] = (uint8_t)(utf_char >> 8);
+		ocu[++u_len] = (uint8_t)(utf_char & 0xffU);
+	}
+
+	if (utf_cnt) {
+error_out:
+		ocu[++u_len] = '?';
+		printk(KERN_DEBUG pr_fmt("bad UTF-8 character\n"));
+	}
+
+	ocu[length - 1] = (uint8_t)u_len + 1;
+
+	return u_len + 1;
+}
+
+static int udf_CS0toNLS(struct nls_table *nls, struct ustr *utf_o,
+			const struct ustr *ocu_i)
+{
+	const uint8_t *ocu;
+	uint8_t cmp_id, ocu_len;
+	int i, len;
+
+
+	ocu_len = ocu_i->u_len;
+	if (ocu_len == 0) {
+		memset(utf_o, 0, sizeof(struct ustr));
+		return 0;
+	}
+
+	cmp_id = ocu_i->u_cmpID;
+	if (cmp_id != 8 && cmp_id != 16) {
+		memset(utf_o, 0, sizeof(struct ustr));
+		pr_err("unknown compression code (%d) stri=%s\n",
+		       cmp_id, ocu_i->u_name);
+		return -EINVAL;
+	}
+
+	ocu = ocu_i->u_name;
+	utf_o->u_len = 0;
+	for (i = 0; (i < ocu_len) && (utf_o->u_len <= (UDF_NAME_LEN - 3));) {
+		/* Expand OSTA compressed Unicode to Unicode */
+		uint32_t c = ocu[i++];
+		if (cmp_id == 16)
+			c = (c << 8) | ocu[i++];
+
+		len = nls->uni2char(c, &utf_o->u_name[utf_o->u_len],
+				    UDF_NAME_LEN - 2 - utf_o->u_len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Valid character? */
 		if (len >= 0)
 			*str_o_idx += len;
@@ -153,6 +330,7 @@ static int udf_name_from_CS0(struct super_block *sb,
 			     const uint8_t *ocu, int ocu_len,
 			     int translate)
 {
+<<<<<<< HEAD
 	uint32_t c;
 	uint8_t cmp_id;
 	int idx, len;
@@ -168,6 +346,12 @@ static int udf_name_from_CS0(struct super_block *sb,
 	uint8_t ext[EXT_SIZE * NLS_MAX_CHARSET_SIZE + 1];
 	uint8_t crc[CRC_LEN];
 	int (*conv_f)(wchar_t, unsigned char *, int);
+=======
+	int len;
+	unsigned i, max_val;
+	uint16_t uni_char;
+	int u_len, u_ch;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (str_max_len <= 0)
 		return 0;
@@ -292,6 +476,7 @@ static int udf_name_to_CS0(struct super_block *sb,
 
 	memset(ocu, 0, ocu_max_len);
 	ocu[0] = 8;
+<<<<<<< HEAD
 	max_val = 0xff;
 	u_ch = 1;
 
@@ -311,6 +496,20 @@ try_again:
 			len = utf8_to_utf32(&str_i[i], str_len - i,
 					    &uni_char);
 		}
+=======
+	max_val = 0xffU;
+	u_ch = 1;
+
+try_again:
+	u_len = 0U;
+	for (i = 0U; i < uni->u_len; i++) {
+		/* Name didn't fit? */
+		if (u_len + 1 + u_ch >= length)
+			return 0;
+		len = nls->char2uni(&uni->u_name[i], uni->u_len - i, &uni_char);
+		if (!len)
+			continue;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Invalid character, deal with it */
 		if (len <= 0 || uni_char > UNICODE_MAX) {
 			len = 1;
@@ -318,6 +517,7 @@ try_again:
 		}
 
 		if (uni_char > max_val) {
+<<<<<<< HEAD
 			unicode_t c;
 
 			if (max_val == 0xff) {
@@ -341,6 +541,12 @@ try_again:
 			ocu[u_len++] = (uint8_t)(c & 0xff);
 			uni_char = SURROGATE_PAIR | SURROGATE_LOW |
 					(uni_char & SURROGATE_CHAR_MASK);
+=======
+			max_val = 0xffffU;
+			ocu[0] = (uint8_t)0x10U;
+			u_ch = 2;
+			goto try_again;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (max_val == 0xffff)

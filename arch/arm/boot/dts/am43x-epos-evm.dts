@@ -998,6 +998,7 @@
 	rx-num-evt = <32>;
 };
 
+<<<<<<< HEAD
 &mux_synctimer32k_ck {
 	assigned-clocks = <&mux_synctimer32k_ck>;
 	assigned-clock-parents = <&clkdiv32k_ick>;
@@ -1006,3 +1007,9 @@
 &cpu {
 	cpu0-supply = <&dcdc2>;
 };
+=======
+&synctimer_32kclk {
+	assigned-clocks = <&mux_synctimer32k_ck>;
+	assigned-clock-parents = <&clkdiv32k_ick>;
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

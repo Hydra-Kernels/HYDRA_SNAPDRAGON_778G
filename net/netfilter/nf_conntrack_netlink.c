@@ -45,9 +45,17 @@
 #include <net/netfilter/nf_conntrack_zones.h>
 #include <net/netfilter/nf_conntrack_timestamp.h>
 #include <net/netfilter/nf_conntrack_labels.h>
+<<<<<<< HEAD
 #include <net/netfilter/nf_conntrack_synproxy.h>
 #if IS_ENABLED(CONFIG_NF_NAT)
 #include <net/netfilter/nf_nat.h>
+=======
+#include <net/netfilter/nf_conntrack_seqadj.h>
+#include <net/netfilter/nf_conntrack_synproxy.h>
+#ifdef CONFIG_NF_NAT_NEEDED
+#include <net/netfilter/nf_nat_core.h>
+#include <net/netfilter/nf_nat_l4proto.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <net/netfilter/nf_nat_helper.h>
 #endif
 
@@ -990,6 +998,7 @@ out:
 
 		nf_ct_put(last);
 	}
+<<<<<<< HEAD
 
 	while (i) {
 		i--;
@@ -997,6 +1006,8 @@ out:
 			nf_ct_kill(nf_ct_evict[i]);
 		nf_ct_put(nf_ct_evict[i]);
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return skb->len;
 }
@@ -2668,9 +2679,16 @@ static struct nfnl_ct_hook ctnetlink_glue_hook = {
  * EXPECT
  ***********************************************************************/
 
+<<<<<<< HEAD
 static int ctnetlink_exp_dump_tuple(struct sk_buff *skb,
 				    const struct nf_conntrack_tuple *tuple,
 				    u32 type)
+=======
+static inline int
+ctnetlink_exp_dump_tuple(struct sk_buff *skb,
+			 const struct nf_conntrack_tuple *tuple,
+			 u32 type)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct nlattr *nest_parms;
 

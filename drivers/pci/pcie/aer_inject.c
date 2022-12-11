@@ -316,6 +316,29 @@ out:
 	return 0;
 }
 
+<<<<<<< HEAD:drivers/pci/pcie/aer_inject.c
+=======
+static int find_aer_device_iter(struct device *device, void *data)
+{
+	struct pcie_device **result = data;
+	struct pcie_device *pcie_dev;
+
+	if (device->bus == &pcie_port_bus_type) {
+		pcie_dev = to_pcie_device(device);
+		if (pcie_dev->service & PCIE_PORT_SERVICE_AER) {
+			*result = pcie_dev;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int find_aer_device(struct pci_dev *dev, struct pcie_device **result)
+{
+	return device_for_each_child(&dev->dev, result, find_aer_device_iter);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/pci/pcie/aer/aer_inject.c
 static int aer_inject(struct aer_error_inj *einj)
 {
 	struct aer_error *err, *rperr;

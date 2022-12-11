@@ -81,6 +81,7 @@ alternative_else_nop_endif
 	 */
 	ldr_l	x5, idmap_t0sz
 	bfi	x4, x5, TCR_T0SZ_OFFSET, TCR_TxSZ_WIDTH
+<<<<<<< HEAD
 
 	/*
 	 * Set the PS bits in TCR_EL2.
@@ -88,6 +89,22 @@ alternative_else_nop_endif
 	tcr_compute_pa_size x4, #TCR_EL2_PS_SHIFT, x5, x6
 
 	msr	tcr_el2, x4
+=======
+#endif
+	/*
+	 * Read the PARange bits from ID_AA64MMFR0_EL1 and set the PS bits in
+	 * TCR_EL2 and VTCR_EL2.
+	 */
+	mrs	x5, ID_AA64MMFR0_EL1
+	bfi	x4, x5, #16, #3
+
+	msr	tcr_el2, x4
+
+	ldr	x4, =VTCR_EL2_FLAGS
+	bfi	x4, x5, #16, #3
+
+	msr	vtcr_el2, x4
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mrs	x4, mair_el1
 	msr	mair_el2, x4

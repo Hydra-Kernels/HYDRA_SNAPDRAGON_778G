@@ -30,7 +30,11 @@ static inline void restore_access_regs(unsigned int *acrs)
 	asm volatile("lam 0,15,%0" : : "Q" (*(acrstype *)acrs));
 }
 
+<<<<<<< HEAD
 #define switch_to(prev, next, last) do {				\
+=======
+#define switch_to(prev,next,last) do {					\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* save_fpu_regs() sets the CIF_FPU flag, which enforces	\
 	 * a restore of the floating point / vector registers as	\
 	 * soon as the next task returns to user space			\
@@ -38,12 +42,19 @@ static inline void restore_access_regs(unsigned int *acrs)
 	save_fpu_regs();						\
 	save_access_regs(&prev->thread.acrs[0]);			\
 	save_ri_cb(prev->thread.ri_cb);					\
+<<<<<<< HEAD
 	save_gs_cb(prev->thread.gs_cb);					\
 	update_cr_regs(next);						\
 	restore_access_regs(&next->thread.acrs[0]);			\
 	restore_ri_cb(next->thread.ri_cb, prev->thread.ri_cb);		\
 	restore_gs_cb(next->thread.gs_cb);				\
 	prev = __switch_to(prev, next);					\
+=======
+	update_cr_regs(next);						\
+	restore_access_regs(&next->thread.acrs[0]);			\
+	restore_ri_cb(next->thread.ri_cb, prev->thread.ri_cb);		\
+	prev = __switch_to(prev,next);					\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } while (0)
 
 #endif /* __ASM_SWITCH_TO_H */

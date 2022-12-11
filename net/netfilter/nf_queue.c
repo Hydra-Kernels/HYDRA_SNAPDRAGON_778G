@@ -162,7 +162,10 @@ static int __nf_queue(struct sk_buff *skb, const struct nf_hook_state *state,
 	struct nf_queue_entry *entry = NULL;
 	const struct nf_queue_handler *qh;
 	struct net *net = state->net;
+<<<<<<< HEAD
 	unsigned int route_key_size;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* QUEUE == DROP if no one is waiting, to be safe. */
 	qh = rcu_dereference(net->nf.queue_handler);

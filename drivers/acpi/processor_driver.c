@@ -255,9 +255,15 @@ static int acpi_processor_start(struct device *dev)
 		return -ENODEV;
 
 	/* Protect against concurrent CPU hotplug operations */
+<<<<<<< HEAD
 	cpu_hotplug_disable();
 	ret = __acpi_processor_start(device);
 	cpu_hotplug_enable();
+=======
+	get_online_cpus();
+	ret = __acpi_processor_start(device);
+	put_online_cpus();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

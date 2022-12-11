@@ -351,7 +351,11 @@ typedef struct xfs_perag {
 	uint8_t		pagf_levels[XFS_BTNUM_AGF];
 					/* # of levels in bno & cnt btree */
 	bool		pagf_agflreset; /* agfl requires reset before use */
+<<<<<<< HEAD
 	uint32_t	pagf_flcount;	/* count of blocks in freelist */
+=======
+	__uint32_t	pagf_flcount;	/* count of blocks in freelist */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	xfs_extlen_t	pagf_freeblks;	/* total free blocks */
 	xfs_extlen_t	pagf_longest;	/* longest free space */
 	uint32_t	pagf_btreeblks;	/* # of blocks held in AGF btrees */

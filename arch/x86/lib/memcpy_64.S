@@ -2,9 +2,13 @@
 /* Copyright 2002 Andi Kleen */
 
 #include <linux/linkage.h>
+<<<<<<< HEAD
 #include <asm/errno.h>
 #include <asm/cpufeatures.h>
 #include <asm/mcsafe_test.h>
+=======
+#include <asm/cpufeatures.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/alternative-asm.h>
 #include <asm/export.h>
 

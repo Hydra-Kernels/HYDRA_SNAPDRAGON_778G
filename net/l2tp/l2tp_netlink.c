@@ -282,8 +282,11 @@ static int l2tp_nl_cmd_tunnel_delete(struct sk_buff *skb, struct genl_info *info
 			   tunnel, L2TP_CMD_TUNNEL_DELETE);
 
 	l2tp_tunnel_delete(tunnel);
+<<<<<<< HEAD
 
 	l2tp_tunnel_dec_refcount(tunnel);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 out:
 	return ret;
@@ -830,7 +833,11 @@ static int l2tp_nl_cmd_session_dump(struct sk_buff *skb, struct netlink_callback
 				goto out;
 		}
 
+<<<<<<< HEAD
 		session = l2tp_session_get_nth(tunnel, si);
+=======
+		session = l2tp_session_get_nth(tunnel, si, false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (session == NULL) {
 			ti++;
 			l2tp_tunnel_dec_refcount(tunnel);
@@ -843,7 +850,10 @@ static int l2tp_nl_cmd_session_dump(struct sk_buff *skb, struct netlink_callback
 					 cb->nlh->nlmsg_seq, NLM_F_MULTI,
 					 session, L2TP_CMD_SESSION_GET) < 0) {
 			l2tp_session_dec_refcount(session);
+<<<<<<< HEAD
 			l2tp_tunnel_dec_refcount(tunnel);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 		l2tp_session_dec_refcount(session);

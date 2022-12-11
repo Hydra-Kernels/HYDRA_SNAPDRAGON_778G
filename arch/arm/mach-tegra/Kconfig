@@ -14,6 +14,9 @@ menuconfig ARCH_TEGRA
 	select PM_OPP
 	select RESET_CONTROLLER
 	select SOC_BUS
+<<<<<<< HEAD
 	select ZONE_DMA if ARM_LPAE
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  This enables support for NVIDIA Tegra based systems.

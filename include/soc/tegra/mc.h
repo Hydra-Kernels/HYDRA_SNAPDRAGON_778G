@@ -156,10 +156,13 @@ struct tegra_mc_soc {
 	const struct tegra_smmu_soc *smmu;
 
 	u32 intmask;
+<<<<<<< HEAD
 
 	const struct tegra_mc_reset_ops *reset_ops;
 	const struct tegra_mc_reset *resets;
 	unsigned int num_resets;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct tegra_mc {

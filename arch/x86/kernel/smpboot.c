@@ -75,11 +75,22 @@
 #include <linux/mc146818rtc.h>
 #include <asm/i8259.h>
 #include <asm/misc.h>
+<<<<<<< HEAD
 #include <asm/qspinlock.h>
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
 #include <asm/spec-ctrl.h>
 #include <asm/hw_irq.h>
+=======
+#include <asm/spec-ctrl.h>
+
+/* Number of siblings per CPU package */
+int smp_num_siblings = 1;
+EXPORT_SYMBOL(smp_num_siblings);
+
+/* Last level cache ID of each logical CPU */
+DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* representing HT siblings of each logical CPU */
 DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
@@ -1680,8 +1691,12 @@ static inline void mwait_play_dead(void)
 	void *mwait_ptr;
 	int i;
 
+<<<<<<< HEAD
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
 	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
+=======
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	if (!this_cpu_has(X86_FEATURE_MWAIT))
 		return;

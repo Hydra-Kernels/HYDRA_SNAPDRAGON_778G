@@ -157,6 +157,7 @@
 #define OPAL_LEDS_SET_INDICATOR			115
 #define OPAL_CEC_REBOOT2			116
 #define OPAL_CONSOLE_FLUSH			117
+<<<<<<< HEAD
 #define OPAL_GET_DEVICE_TREE			118
 #define OPAL_PCI_GET_PRESENCE_STATE		119
 #define OPAL_PCI_GET_POWER_STATE		120
@@ -218,6 +219,9 @@
 #define QUIESCE_LOCK_BREAK		3 /* Set to ignore locks. */
 #define QUIESCE_RESUME			4 /* Un-quiesce */
 #define QUIESCE_RESUME_FAST_REBOOT	5 /* Un-quiesce, fast reboot */
+=======
+#define OPAL_LAST				117
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Device tree flags */
 

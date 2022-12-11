@@ -107,6 +107,14 @@
 #define xemaclite_writel	iowrite32
 #endif
 
+#ifdef __BIG_ENDIAN
+#define xemaclite_readl		ioread32be
+#define xemaclite_writel	iowrite32be
+#else
+#define xemaclite_readl		ioread32
+#define xemaclite_writel	iowrite32
+#endif
+
 /**
  * struct net_local - Our private per device data
  * @ndev:		instance of the network device
@@ -357,8 +365,12 @@ static int xemaclite_send_data(struct net_local *drvdata, u8 *data,
 	/* Update the Tx Status Register to indicate that there is a
 	 * frame to send. Set the XEL_TSR_XMIT_ACTIVE_MASK flag which
 	 * is used by the interrupt handler to check whether a frame
+<<<<<<< HEAD
 	 * has been transmitted
 	 */
+=======
+	 * has been transmitted */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	reg_data = xemaclite_readl(addr + XEL_TSR_OFFSET);
 	reg_data |= (XEL_TSR_XMIT_BUSY_MASK | XEL_TSR_XMIT_ACTIVE_MASK);
 	xemaclite_writel(reg_data, addr + XEL_TSR_OFFSET);
@@ -411,15 +423,23 @@ static u16 xemaclite_recv_data(struct net_local *drvdata, u8 *data, int maxlen)
 			return 0;	/* No data was available */
 	}
 
+<<<<<<< HEAD
 	/* Get the protocol type of the ethernet frame that arrived
 	 */
+=======
+	/* Get the protocol type of the ethernet frame that arrived */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	proto_type = ((ntohl(xemaclite_readl(addr + XEL_HEADER_OFFSET +
 			XEL_RXBUFF_OFFSET)) >> XEL_HEADER_SHIFT) &
 			XEL_RPLR_LENGTH_MASK);
 
 	/* Check if received ethernet frame is a raw ethernet frame
+<<<<<<< HEAD
 	 * or an IP packet or an ARP packet
 	 */
+=======
+	 * or an IP packet or an ARP packet */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (proto_type > ETH_DATA_LEN) {
 
 		if (proto_type == ETH_P_IP) {
@@ -619,7 +639,11 @@ static void xemaclite_rx_handler(struct net_device *dev)
 
 	skb_reserve(skb, 2);
 
+<<<<<<< HEAD
 	len = xemaclite_recv_data(lp, (u8 *)skb->data, len);
+=======
+	len = xemaclite_recv_data(lp, (u8 *) skb->data, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!len) {
 		dev->stats.rx_errors++;
@@ -714,12 +738,26 @@ static int xemaclite_mdio_wait(struct net_local *lp)
 	u32 val;
 
 	/* wait for the MDIO interface to not be busy or timeout
+<<<<<<< HEAD
 	 * after some time.
 	 */
 	return readx_poll_timeout(xemaclite_readl,
 				  lp->base_addr + XEL_MDIOCTRL_OFFSET,
 				  val, !(val & XEL_MDIOCTRL_MDIOSTS_MASK),
 				  1000, 20000);
+=======
+	   after some time.
+	*/
+	while (xemaclite_readl(lp->base_addr + XEL_MDIOCTRL_OFFSET) &
+			XEL_MDIOCTRL_MDIOSTS_MASK) {
+		if (time_before_eq(end, jiffies)) {
+			WARN_ON(1);
+			return -ETIMEDOUT;
+		}
+		msleep(1);
+	}
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**

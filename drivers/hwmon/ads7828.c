@@ -111,8 +111,11 @@ static int ads7828_probe(struct i2c_client *client,
 	bool diff_input = false;
 	bool ext_vref = false;
 	unsigned int regval;
+<<<<<<< HEAD
 	enum ads7828_chips chip;
 	struct regulator *reg;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	data = devm_kzalloc(dev, sizeof(struct ads7828_data), GFP_KERNEL);
 	if (!data)

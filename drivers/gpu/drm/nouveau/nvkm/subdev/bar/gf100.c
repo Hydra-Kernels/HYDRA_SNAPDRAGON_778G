@@ -145,6 +145,30 @@ gf100_bar_oneinit(struct nvkm_bar *base)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+int
+gf100_bar_init(struct nvkm_bar *base)
+{
+	struct gf100_bar *bar = gf100_bar(base);
+	struct nvkm_device *device = bar->base.subdev.device;
+	u32 addr;
+
+	nvkm_mask(device, 0x000200, 0x00000100, 0x00000000);
+	nvkm_mask(device, 0x000200, 0x00000100, 0x00000100);
+
+	addr = nvkm_memory_addr(bar->bar[1].mem) >> 12;
+	nvkm_wr32(device, 0x001704, 0x80000000 | addr);
+
+	if (bar->bar[0].mem) {
+		addr = nvkm_memory_addr(bar->bar[0].mem) >> 12;
+		nvkm_wr32(device, 0x001714, 0x80000000 | addr);
+	}
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void *
 gf100_bar_dtor(struct nvkm_bar *base)
 {

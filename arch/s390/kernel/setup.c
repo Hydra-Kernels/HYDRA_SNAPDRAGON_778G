@@ -71,9 +71,12 @@
 #include <asm/numa.h>
 #include <asm/alternative.h>
 #include <asm/nospec-branch.h>
+<<<<<<< HEAD
 #include <asm/mem_detect.h>
 #include <asm/uv.h>
 #include <asm/asm-offsets.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include "entry.h"
 
 /*
@@ -400,7 +403,18 @@ static void __init setup_lowcore_dat_off(void)
 	lc->clock_comparator = clock_comparator_max;
 	lc->nodat_stack = ((unsigned long) &init_thread_union)
 		+ THREAD_SIZE - STACK_FRAME_OVERHEAD - sizeof(struct pt_regs);
+<<<<<<< HEAD
 	lc->current_task = (unsigned long)&init_task;
+=======
+	lc->async_stack = (unsigned long)
+		__alloc_bootmem(ASYNC_SIZE, ASYNC_SIZE, 0)
+		+ ASYNC_SIZE - STACK_FRAME_OVERHEAD - sizeof(struct pt_regs);
+	lc->panic_stack = (unsigned long)
+		__alloc_bootmem(PAGE_SIZE, PAGE_SIZE, 0)
+		+ PAGE_SIZE - STACK_FRAME_OVERHEAD - sizeof(struct pt_regs);
+	lc->current_task = (unsigned long) init_thread_union.thread_info.task;
+	lc->thread_info = (unsigned long) &init_thread_union;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lc->lpp = LPP_MAGIC;
 	lc->machine_flags = S390_lowcore.machine_flags;
 	lc->preempt_count = S390_lowcore.preempt_count;
@@ -409,8 +423,15 @@ static void __init setup_lowcore_dat_off(void)
 	       sizeof(lc->stfle_fac_list));
 	memcpy(lc->alt_stfle_fac_list, S390_lowcore.alt_stfle_fac_list,
 	       sizeof(lc->alt_stfle_fac_list));
+<<<<<<< HEAD
 	nmi_alloc_boot_cpu(lc);
 	vdso_alloc_boot_cpu(lc);
+=======
+	if (MACHINE_HAS_VX)
+		lc->vector_save_area_addr =
+			(unsigned long) &lc->vector_save_area;
+	lc->vdso_per_cpu_data = (unsigned long) &lc->paste[0];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lc->sync_enter_timer = S390_lowcore.sync_enter_timer;
 	lc->async_enter_timer = S390_lowcore.async_enter_timer;
 	lc->exit_timer = S390_lowcore.exit_timer;
@@ -448,11 +469,16 @@ static void __init setup_lowcore_dat_off(void)
 	mem_assign_absolute(S390_lowcore.restart_psw, lc->restart_psw);
 
 	lc->spinlock_lockval = arch_spin_lockval(0);
+<<<<<<< HEAD
 	lc->spinlock_index = 0;
 	arch_spin_lock_setup(0);
 	lc->br_r1_trampoline = 0x07f1;	/* br %r1 */
 	lc->return_lpswe = gen_lpswe(__LC_RETURN_PSW);
 	lc->return_mcck_lpswe = gen_lpswe(__LC_RETURN_MCCK_PSW);
+=======
+#endif
+	lc->br_r1_trampoline = 0x07f1;	/* br %r1 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	set_prefix((u32)(unsigned long) lc);
 	lowcore_ptr[0] = lc;
@@ -1000,6 +1026,7 @@ static void __init setup_randomness(void)
 {
 	struct sysinfo_3_2_2 *vmms;
 
+<<<<<<< HEAD
 	vmms = (struct sysinfo_3_2_2 *) memblock_phys_alloc(PAGE_SIZE,
 							    PAGE_SIZE);
 	if (!vmms)
@@ -1075,6 +1102,12 @@ static void __init log_component_list(void)
 			ptr->addr, ptr->addr + ptr->len, str);
 		ptr++;
 	}
+=======
+	vmms = (struct sysinfo_3_2_2 *) memblock_alloc(PAGE_SIZE, PAGE_SIZE);
+	if (stsi(vmms, 3, 2, 2) == 0 && vmms->count)
+		add_device_randomness(&vmms->vm, sizeof(vmms->vm[0]) * vmms->count);
+	memblock_free((unsigned long) vmms, PAGE_SIZE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -1113,7 +1146,10 @@ void __init setup_arch(char **cmdline_p)
 	if (IS_ENABLED(CONFIG_EXPOLINE_AUTO))
 		nospec_auto_detect();
 
+<<<<<<< HEAD
 	jump_label_init();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	parse_early_param();
 #ifdef CONFIG_CRASH_DUMP
 	/* Deactivate elfcorehdr= kernel parameter */

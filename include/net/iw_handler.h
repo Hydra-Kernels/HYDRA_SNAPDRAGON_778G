@@ -525,8 +525,32 @@ iwe_stream_add_event_check(struct iw_request_info *info, char *stream,
  * Wrapper to add an short Wireless Event containing a pointer to a
  * stream of events.
  */
+<<<<<<< HEAD
 char *iwe_stream_add_point(struct iw_request_info *info, char *stream,
 			   char *ends, struct iw_event *iwe, char *extra);
+=======
+static inline char *
+iwe_stream_add_point(struct iw_request_info *info, char *stream, char *ends,
+		     struct iw_event *iwe, char *extra)
+{
+	int event_len = iwe_stream_point_len(info) + iwe->u.data.length;
+	int point_len = iwe_stream_point_len(info);
+	int lcp_len   = iwe_stream_lcp_len(info);
+
+	/* Check if it's possible */
+	if(likely((stream + event_len) < ends)) {
+		iwe->len = event_len;
+		memcpy(stream, (char *) iwe, IW_EV_LCP_PK_LEN);
+		memcpy(stream + lcp_len,
+		       ((char *) &iwe->u) + IW_EV_POINT_OFF,
+		       IW_EV_POINT_PK_LEN - IW_EV_LCP_PK_LEN);
+		if (iwe->u.data.length && extra)
+			memcpy(stream + point_len, extra, iwe->u.data.length);
+		stream += event_len;
+	}
+	return stream;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline char *
 iwe_stream_add_point_check(struct iw_request_info *info, char *stream,

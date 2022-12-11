@@ -409,8 +409,12 @@ static void tfifo_enqueue(struct sk_buff *nskb, struct Qdisc *sch)
  * when we statistically choose to corrupt one, we instead segment it, returning
  * the first packet to be corrupted, and re-enqueue the remaining frames
  */
+<<<<<<< HEAD
 static struct sk_buff *netem_segment(struct sk_buff *skb, struct Qdisc *sch,
 				     struct sk_buff **to_free)
+=======
+static struct sk_buff *netem_segment(struct sk_buff *skb, struct Qdisc *sch)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct sk_buff *segs;
 	netdev_features_t features = netif_skb_features(skb);
@@ -418,7 +422,11 @@ static struct sk_buff *netem_segment(struct sk_buff *skb, struct Qdisc *sch,
 	segs = skb_gso_segment(skb, features & ~NETIF_F_GSO_MASK);
 
 	if (IS_ERR_OR_NULL(segs)) {
+<<<<<<< HEAD
 		qdisc_drop(skb, sch, to_free);
+=======
+		qdisc_reshape_fail(skb, sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return NULL;
 	}
 	consume_skb(skb);
@@ -439,6 +447,7 @@ static int netem_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 	struct netem_skb_cb *cb;
 	struct sk_buff *skb2;
 	struct sk_buff *segs = NULL;
+<<<<<<< HEAD
 	unsigned int prev_len = qdisc_pkt_len(skb);
 	int count = 1;
 	int rc = NET_XMIT_SUCCESS;
@@ -446,6 +455,12 @@ static int netem_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 
 	/* Do not fool qdisc_drop_all() */
 	skb->prev = NULL;
+=======
+	unsigned int len = 0, last_len, prev_len = qdisc_pkt_len(skb);
+	int nb = 0;
+	int count = 1;
+	int rc = NET_XMIT_SUCCESS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Random duplication */
 	if (q->duplicate && q->duplicate >= get_crandom(&q->dup_cor))
@@ -493,6 +508,7 @@ static int netem_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 	 */
 	if (q->corrupt && q->corrupt >= get_crandom(&q->corrupt_cor)) {
 		if (skb_is_gso(skb)) {
+<<<<<<< HEAD
 			skb = netem_segment(skb, sch, to_free);
 			if (!skb)
 				return rc_drop;
@@ -510,6 +526,22 @@ static int netem_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 		    skb_checksum_help(skb)) {
 			qdisc_drop(skb, sch, to_free);
 			skb = NULL;
+=======
+			segs = netem_segment(skb, sch);
+			if (!segs)
+				return NET_XMIT_DROP;
+		} else {
+			segs = skb;
+		}
+
+		skb = segs;
+		segs = segs->next;
+
+		if (!(skb = skb_unshare(skb, GFP_ATOMIC)) ||
+		    (skb->ip_summed == CHECKSUM_PARTIAL &&
+		     skb_checksum_help(skb))) {
+			rc = qdisc_drop(skb, sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto finish_segs;
 		}
 
@@ -593,6 +625,7 @@ static int netem_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 
 finish_segs:
 	if (segs) {
+<<<<<<< HEAD
 		unsigned int len, last_len;
 		int nb;
 
@@ -605,6 +638,14 @@ finish_segs:
 			qdisc_skb_cb(segs)->pkt_len = segs->len;
 			last_len = segs->len;
 			rc = qdisc_enqueue(segs, sch, to_free);
+=======
+		while (segs) {
+			skb2 = segs->next;
+			segs->next = NULL;
+			qdisc_skb_cb(segs)->pkt_len = segs->len;
+			last_len = segs->len;
+			rc = qdisc_enqueue(segs, sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (rc != NET_XMIT_SUCCESS) {
 				if (net_xmit_drop_count(rc))
 					qdisc_qstats_drop(sch);
@@ -614,10 +655,16 @@ finish_segs:
 			}
 			segs = skb2;
 		}
+<<<<<<< HEAD
 		/* Parent qdiscs accounted for 1 skb of size @prev_len */
 		qdisc_tree_reduce_backlog(sch, -(nb - 1), -(len - prev_len));
 	} else if (!skb) {
 		return NET_XMIT_DROP;
+=======
+		sch->q.qlen += nb;
+		if (nb > 1)
+			qdisc_tree_reduce_backlog(sch, 1 - nb, prev_len - len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return NET_XMIT_SUCCESS;
 }
@@ -717,11 +764,16 @@ deliver:
 
 			if (q->qdisc) {
 				unsigned int pkt_len = qdisc_pkt_len(skb);
+<<<<<<< HEAD
 				struct sk_buff *to_free = NULL;
 				int err;
 
 				err = qdisc_enqueue(skb, q->qdisc, &to_free);
 				kfree_skb_list(to_free);
+=======
+				int err = qdisc_enqueue(skb, q->qdisc);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				if (err != NET_XMIT_SUCCESS &&
 				    net_xmit_drop_count(err)) {
 					qdisc_qstats_drop(sch);

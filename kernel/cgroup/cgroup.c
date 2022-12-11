@@ -49,6 +49,11 @@
 #include <linux/hashtable.h>
 #include <linux/idr.h>
 #include <linux/kthread.h>
+<<<<<<< HEAD:kernel/cgroup/cgroup.c
+=======
+#include <linux/delay.h>
+#include <linux/cpuset.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cgroup.c
 #include <linux/atomic.h>
 #include <linux/cpuset.h>
 #include <linux/proc_ns.h>
@@ -2845,7 +2850,14 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup)
 	__acquires(&cgroup_threadgroup_rwsem)
 {
 	struct task_struct *tsk;
+<<<<<<< HEAD:kernel/cgroup/cgroup.c
 	pid_t pid;
+=======
+	struct cgroup_subsys *ss;
+	struct cgroup *cgrp;
+	pid_t pid;
+	int ssid, ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cgroup.c
 
 	if (kstrtoint(strstrip(buf), 0, &pid) || pid < 0)
 		return ERR_PTR(-EINVAL);
@@ -2873,8 +2885,13 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup)
 	 * cgroup with no rt_runtime allocated.  Just say no.
 	 */
 	if (tsk->no_cgroup_migration || (tsk->flags & PF_NO_SETAFFINITY)) {
+<<<<<<< HEAD:kernel/cgroup/cgroup.c
 		tsk = ERR_PTR(-EINVAL);
 		goto out_unlock_threadgroup;
+=======
+		ret = -EINVAL;
+		goto out_unlock_rcu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cgroup.c
 	}
 
 	get_task_struct(tsk);
@@ -2882,9 +2899,17 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup)
 
 out_unlock_threadgroup:
 	percpu_up_write(&cgroup_threadgroup_rwsem);
+<<<<<<< HEAD:kernel/cgroup/cgroup.c
 out_unlock_rcu:
 	rcu_read_unlock();
 	return tsk;
+=======
+	for_each_subsys(ss, ssid)
+		if (ss->post_attach)
+			ss->post_attach();
+	cgroup_kn_unlock(of->kn);
+	return ret ?: nbytes;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cgroup.c
 }
 
 void cgroup_procs_write_finish(struct task_struct *task)
@@ -5604,10 +5629,17 @@ static int cgroup_destroy_locked(struct cgroup *cgrp)
 	 */
 	cgrp->self.flags &= ~CSS_ONLINE;
 
+<<<<<<< HEAD:kernel/cgroup/cgroup.c
 	spin_lock_irq(&css_set_lock);
 	list_for_each_entry(link, &cgrp->cset_links, cset_link)
 		link->cset->dead = true;
 	spin_unlock_irq(&css_set_lock);
+=======
+	spin_lock_bh(&css_set_lock);
+	list_for_each_entry(link, &cgrp->cset_links, cset_link)
+		link->cset->dead = true;
+	spin_unlock_bh(&css_set_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:kernel/cgroup.c
 
 	/* initiate massacre of all css's */
 	for_each_css(css, ssid, cgrp)

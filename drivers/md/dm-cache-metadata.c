@@ -926,6 +926,7 @@ static int blocks_are_clean_combined_dirty(struct dm_cache_metadata *cmd,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int blocks_are_clean_separate_dirty(struct dm_cache_metadata *cmd,
 					   dm_cblock_t begin, dm_cblock_t end,
 					   bool *result)
@@ -1003,6 +1004,18 @@ static bool cmd_write_lock(struct dm_cache_metadata *cmd)
 	return true;
 }
 
+=======
+static bool cmd_write_lock(struct dm_cache_metadata *cmd)
+{
+	down_write(&cmd->root_lock);
+	if (cmd->fail_io || dm_bm_is_read_only(cmd->bm)) {
+		up_write(&cmd->root_lock);
+		return false;
+	}
+	return true;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define WRITE_LOCK(cmd)				\
 	do {					\
 		if (!cmd_write_lock((cmd)))	\

@@ -350,11 +350,19 @@ static struct sk_buff *br_ip6_multicast_alloc_query(struct net_bridge *br,
 	if (ipv6_dev_get_saddr(dev_net(br->dev), br->dev, &ip6h->daddr, 0,
 			       &ip6h->saddr)) {
 		kfree_skb(skb);
+<<<<<<< HEAD
 		br_opt_toggle(br, BROPT_HAS_IPV6_ADDR, false);
 		return NULL;
 	}
 
 	br_opt_toggle(br, BROPT_HAS_IPV6_ADDR, true);
+=======
+		br->has_ipv6_addr = 0;
+		return NULL;
+	}
+
+	br->has_ipv6_addr = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ipv6_eth_mc_map(&ip6h->daddr, eth->h_dest);
 
 	hopopt = (u8 *)(ip6h + 1);
@@ -871,7 +879,11 @@ static void __br_multicast_enable_port(struct net_bridge_port *port)
 {
 	struct net_bridge *br = port->br;
 
+<<<<<<< HEAD
 	if (!br_opt_get(br, BROPT_MULTICAST_ENABLED) || !netif_running(br->dev))
+=======
+	if (br->multicast_disabled || !netif_running(br->dev))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 
 	br_multicast_enable(&port->ip4_own_query);
@@ -1046,8 +1058,12 @@ static int br_ip6_multicast_mld2_report(struct net_bridge *br,
 						     vid, src);
 		} else {
 			err = br_ip6_multicast_add_group(br, port,
+<<<<<<< HEAD
 							 &grec->grec_mca, vid,
 							 src);
+=======
+							 &grec->grec_mca, vid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (err)
 				break;
 		}
@@ -1227,6 +1243,7 @@ static void br_ip4_multicast_query(struct net_bridge *br,
 	struct br_ip saddr;
 	unsigned long max_delay;
 	unsigned long now = jiffies;
+	unsigned int offset = skb_transport_offset(skb);
 	__be32 group;
 
 	spin_lock(&br->multicast_lock);
@@ -1236,14 +1253,22 @@ static void br_ip4_multicast_query(struct net_bridge *br,
 
 	group = ih->group;
 
+<<<<<<< HEAD
 	if (transport_len == sizeof(*ih)) {
+=======
+	if (skb->len == offset + sizeof(*ih)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		max_delay = ih->code * (HZ / IGMP_TIMER_SCALE);
 
 		if (!max_delay) {
 			max_delay = 10 * HZ;
 			group = 0;
 		}
+<<<<<<< HEAD
 	} else if (transport_len >= sizeof(*ih3)) {
+=======
+	} else if (skb->len >= offset + sizeof(*ih3)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ih3 = igmpv3_query_hdr(skb);
 		if (ih3->nsrcs)
 			goto out;
@@ -1313,7 +1338,11 @@ static int br_ip6_multicast_query(struct net_bridge *br,
 	    (port && port->state == BR_STATE_DISABLED))
 		goto out;
 
+<<<<<<< HEAD
 	if (transport_len == sizeof(*mld)) {
+=======
+	if (skb->len == offset + sizeof(*mld)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!pskb_may_pull(skb, offset + sizeof(*mld))) {
 			err = -EINVAL;
 			goto out;
@@ -1787,8 +1816,12 @@ void br_multicast_init(struct net_bridge *br)
 	br->ip6_other_query.delay_time = 0;
 	br->ip6_querier.port = NULL;
 #endif
+<<<<<<< HEAD
 	br_opt_toggle(br, BROPT_MULTICAST_ENABLED, true);
 	br_opt_toggle(br, BROPT_HAS_IPV6_ADDR, true);
+=======
+	br->has_ipv6_addr = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_init(&br->multicast_lock);
 	timer_setup(&br->multicast_router_timer,
@@ -2025,8 +2058,14 @@ static void br_multicast_start_querier(struct net_bridge *br,
 
 int br_multicast_toggle(struct net_bridge *br, unsigned long val)
 {
+<<<<<<< HEAD
 	struct net_bridge_port *port;
 	bool change_snoopers = false;
+=======
+	struct net_bridge_mdb_htable *mdb;
+	struct net_bridge_port *port;
+	int err = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_bh(&br->multicast_lock);
 	if (!!br_opt_get(br, BROPT_MULTICAST_ENABLED) == !!val)
@@ -2046,7 +2085,19 @@ int br_multicast_toggle(struct net_bridge *br, unsigned long val)
 	list_for_each_entry(port, &br->port_list, list)
 		__br_multicast_enable_port(port);
 
+<<<<<<< HEAD
 	change_snoopers = true;
+=======
+		err = br_mdb_rehash(&br->mdb, mdb->max,
+				    br->hash_elasticity);
+		if (err)
+			goto rollback;
+	}
+
+	br_multicast_open(br);
+	list_for_each_entry(port, &br->port_list, list)
+		__br_multicast_enable_port(port);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 unlock:
 	spin_unlock_bh(&br->multicast_lock);

@@ -208,7 +208,10 @@ lookup_protocol:
 	np->mc_loop	= 1;
 	np->mc_all	= 1;
 	np->pmtudisc	= IPV6_PMTUDISC_WANT;
+<<<<<<< HEAD
 	np->repflow	= net->ipv6.sysctl.flowlabel_reflect & FLOWLABEL_REFLECT_ESTABLISHED;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sk->sk_ipv6only	= net->ipv6.sysctl.bindv6only;
 
 	/* Init the ipv4 part of the socket since we can have sockets
@@ -1184,11 +1187,17 @@ netfilter_fail:
 igmp_fail:
 	ndisc_cleanup();
 ndisc_fail:
+<<<<<<< HEAD
 	icmpv6_cleanup();
+=======
+	ip6_mr_cleanup();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 icmp_fail:
 	ip6_mr_cleanup();
 ipmr_fail:
 	unregister_pernet_subsys(&inet6_net_ops);
+ipmr_fail:
+	icmpv6_cleanup();
 register_pernet_fail:
 	sock_unregister(PF_INET6);
 	rtnl_unregister_all(PF_INET6);

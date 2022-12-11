@@ -14,9 +14,13 @@
  *
  */
 
+<<<<<<< HEAD
 #include <linux/bitops.h>
 #include <linux/ftrace.h>
 #include <linux/init.h>
+=======
+#include <linux/ftrace.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/printk.h>
@@ -483,6 +487,7 @@ void __kasan_report(unsigned long addr, size_t size, bool is_write, unsigned lon
 
 	disable_trace_on_warning();
 
+<<<<<<< HEAD
 	tagged_addr = (void *)addr;
 	untagged_addr = reset_tag(tagged_addr);
 
@@ -491,6 +496,9 @@ void __kasan_report(unsigned long addr, size_t size, bool is_write, unsigned lon
 		info.first_bad_addr = find_first_bad_addr(tagged_addr, size);
 	else
 		info.first_bad_addr = untagged_addr;
+=======
+	info.access_addr = (void *)addr;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	info.access_size = size;
 	info.is_write = is_write;
 	info.ip = ip;

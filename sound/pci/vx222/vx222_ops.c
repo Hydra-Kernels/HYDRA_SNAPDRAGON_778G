@@ -262,7 +262,11 @@ static void vx2_dma_write(struct vx_core *chip, struct snd_pcm_runtime *runtime,
 		length >>= 2; /* in 32bit words */
 		/* Transfer using pseudo-dma. */
 		for (; length > 0; length--) {
+<<<<<<< HEAD
 			outl(*addr, port);
+=======
+			outl(cpu_to_le32(*addr), port);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			addr++;
 		}
 		addr = (u32 *)runtime->dma_area;
@@ -272,7 +276,11 @@ static void vx2_dma_write(struct vx_core *chip, struct snd_pcm_runtime *runtime,
 	count >>= 2; /* in 32bit words */
 	/* Transfer using pseudo-dma. */
 	for (; count > 0; count--) {
+<<<<<<< HEAD
 		outl(*addr, port);
+=======
+		outl(cpu_to_le32(*addr), port);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		addr++;
 	}
 
@@ -300,7 +308,11 @@ static void vx2_dma_read(struct vx_core *chip, struct snd_pcm_runtime *runtime,
 		length >>= 2; /* in 32bit words */
 		/* Transfer using pseudo-dma. */
 		for (; length > 0; length--)
+<<<<<<< HEAD
 			*addr++ = inl(port);
+=======
+			*addr++ = le32_to_cpu(inl(port));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		addr = (u32 *)runtime->dma_area;
 		pipe->hw_ptr = 0;
 	}
@@ -308,7 +320,11 @@ static void vx2_dma_read(struct vx_core *chip, struct snd_pcm_runtime *runtime,
 	count >>= 2; /* in 32bit words */
 	/* Transfer using pseudo-dma. */
 	for (; count > 0; count--)
+<<<<<<< HEAD
 		*addr++ = inl(port);
+=======
+		*addr++ = le32_to_cpu(inl(port));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	vx2_release_pseudo_dma(chip);
 }

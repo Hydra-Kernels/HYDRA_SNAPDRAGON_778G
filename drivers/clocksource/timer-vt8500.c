@@ -148,8 +148,11 @@ static int __init vt8500_timer_init(struct device_node *np)
 
 	clockevents_config_and_register(&clockevent, VT8500_TIMER_HZ,
 					MIN_OSCR_DELTA * 2, 0xf0000000);
+<<<<<<< HEAD:drivers/clocksource/timer-vt8500.c
 
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/clocksource/vt8500_timer.c
 }
 
 TIMER_OF_DECLARE(vt8500, "via,vt8500-timer", vt8500_timer_init);

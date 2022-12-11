@@ -716,9 +716,12 @@ noinline void slc_op_rgn(phys_addr_t paddr, unsigned long sz, const int op)
 		write_aux_reg(ARC_REG_SLC_RGN_START1, upper_32_bits(paddr));
 
 	write_aux_reg(ARC_REG_SLC_RGN_START, lower_32_bits(paddr));
+<<<<<<< HEAD
 
 	/* Make sure "busy" bit reports correct stataus, see STAR 9001165532 */
 	read_aux_reg(ARC_REG_SLC_CTRL);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (read_aux_reg(ARC_REG_SLC_CTRL) & SLC_CTRL_BUSY);
 
@@ -1216,6 +1219,15 @@ noinline void __init arc_ioc_setup(void)
 void __init arc_cache_init_master(void)
 {
 	unsigned int __maybe_unused cpu = smp_processor_id();
+
+	/*
+	 * Only master CPU needs to execute rest of function:
+	 *  - Assume SMP so all cores will have same cache config so
+	 *    any geomtry checks will be same for all
+	 *  - IOC setup / dma callbacks only need to be setup once
+	 */
+	if (cpu)
+		return;
 
 	if (IS_ENABLED(CONFIG_ARC_HAS_ICACHE)) {
 		struct cpuinfo_arc_cache *ic = &cpuinfo_arc700[cpu].icache;

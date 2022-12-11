@@ -6,7 +6,11 @@
  *
  * Author: 林政維 (Duson Lin) <dusonlin@emc.com.tw>
  * Author: KT Liao <kt.liao@emc.com.tw>
+<<<<<<< HEAD
  * Version: 1.6.3
+=======
+ * Version: 1.6.2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Based on cyapa driver:
  * copyright (c) 2011-2012 Cypress Semiconductor, Inc.
@@ -41,6 +45,10 @@
 #include "elan_i2c.h"
 
 #define DRIVER_NAME		"elan_i2c"
+<<<<<<< HEAD
+=======
+#define ELAN_DRIVER_VERSION	"1.6.2"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define ELAN_VENDOR_ID		0x04f3
 #define ETP_MAX_PRESSURE	255
 #define ETP_FWIDTH_REDUCE	90
@@ -216,7 +224,11 @@ static int elan_query_product(struct elan_tp_data *data)
 		return error;
 
 	error = data->ops->get_sm_version(data->client, &data->ic_type,
+<<<<<<< HEAD
 					  &data->sm_version, &data->clickpad);
+=======
+					  &data->sm_version);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (error)
 		return error;
 
@@ -312,7 +324,10 @@ static int elan_initialize(struct elan_tp_data *data)
 static int elan_query_device_info(struct elan_tp_data *data)
 {
 	int error;
+<<<<<<< HEAD
 	u16 ic_type;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	error = data->ops->get_version(data->client, false, &data->fw_version);
 	if (error)
@@ -1358,6 +1373,28 @@ static const struct i2c_device_id elan_id[] = {
 MODULE_DEVICE_TABLE(i2c, elan_id);
 
 #ifdef CONFIG_ACPI
+<<<<<<< HEAD
+=======
+static const struct acpi_device_id elan_acpi_id[] = {
+	{ "ELAN0000", 0 },
+	{ "ELAN0100", 0 },
+	{ "ELAN0600", 0 },
+	{ "ELAN0602", 0 },
+	{ "ELAN0605", 0 },
+	{ "ELAN0608", 0 },
+	{ "ELAN0605", 0 },
+	{ "ELAN0609", 0 },
+	{ "ELAN060B", 0 },
+	{ "ELAN060C", 0 },
+	{ "ELAN0611", 0 },
+	{ "ELAN0612", 0 },
+	{ "ELAN0618", 0 },
+	{ "ELAN061D", 0 },
+	{ "ELAN0622", 0 },
+	{ "ELAN1000", 0 },
+	{ }
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 MODULE_DEVICE_TABLE(acpi, elan_acpi_id);
 #endif
 

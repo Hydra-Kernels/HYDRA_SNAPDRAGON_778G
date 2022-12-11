@@ -40,6 +40,9 @@ static int __change_memory_common(unsigned long start, unsigned long size,
 	struct page_change_data data;
 	int ret;
 
+	if (!numpages)
+		return 0;
+
 	data.set_mask = set_mask;
 	data.clear_mask = clear_mask;
 

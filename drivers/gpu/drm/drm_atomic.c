@@ -155,7 +155,7 @@ void drm_atomic_state_default_clear(struct drm_atomic_state *state)
 	for (i = 0; i < state->num_connector; i++) {
 		struct drm_connector *connector = state->connectors[i].ptr;
 
-		if (!connector)
+		if (!connector || !connector->funcs)
 			continue;
 
 		connector->funcs->atomic_destroy_state(connector,
@@ -325,6 +325,169 @@ static int drm_atomic_crtc_check(const struct drm_crtc_state *old_crtc_state,
 {
 	struct drm_crtc *crtc = new_crtc_state->crtc;
 
+<<<<<<< HEAD
+=======
+	/* Early return for no change. */
+	if (mode && memcmp(&state->mode, mode, sizeof(*mode)) == 0)
+		return 0;
+
+	if (state->mode_blob)
+		drm_property_unreference_blob(state->mode_blob);
+	state->mode_blob = NULL;
+
+	if (mode) {
+		drm_mode_convert_to_umode(&umode, mode);
+		state->mode_blob =
+			drm_property_create_blob(state->crtc->dev,
+		                                 sizeof(umode),
+		                                 &umode);
+		if (IS_ERR(state->mode_blob))
+			return PTR_ERR(state->mode_blob);
+
+		drm_mode_copy(&state->mode, mode);
+		state->enable = true;
+		DRM_DEBUG_ATOMIC("Set [MODE:%s] for CRTC state %p\n",
+				 mode->name, state);
+	} else {
+		memset(&state->mode, 0, sizeof(state->mode));
+		state->enable = false;
+		DRM_DEBUG_ATOMIC("Set [NOMODE] for CRTC state %p\n",
+				 state);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_atomic_set_mode_for_crtc);
+
+/**
+ * drm_atomic_set_mode_prop_for_crtc - set mode for CRTC
+ * @state: the CRTC whose incoming state to update
+ * @blob: pointer to blob property to use for mode
+ *
+ * Set a mode (originating from a blob property) on the desired CRTC state.
+ * This function will take a reference on the blob property for the CRTC state,
+ * and release the reference held on the state's existing mode property, if any
+ * was set.
+ *
+ * RETURNS:
+ * Zero on success, error code on failure. Cannot return -EDEADLK.
+ */
+int drm_atomic_set_mode_prop_for_crtc(struct drm_crtc_state *state,
+                                      struct drm_property_blob *blob)
+{
+	if (blob == state->mode_blob)
+		return 0;
+
+	if (state->mode_blob)
+		drm_property_unreference_blob(state->mode_blob);
+	state->mode_blob = NULL;
+
+	memset(&state->mode, 0, sizeof(state->mode));
+
+	if (blob) {
+		if (blob->length != sizeof(struct drm_mode_modeinfo) ||
+		    drm_mode_convert_umode(&state->mode,
+		                           (const struct drm_mode_modeinfo *)
+		                            blob->data))
+			return -EINVAL;
+
+		state->mode_blob = drm_property_reference_blob(blob);
+		state->enable = true;
+		DRM_DEBUG_ATOMIC("Set [MODE:%s] for CRTC state %p\n",
+				 state->mode.name, state);
+	} else {
+		state->enable = false;
+		DRM_DEBUG_ATOMIC("Set [NOMODE] for CRTC state %p\n",
+				 state);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_atomic_set_mode_prop_for_crtc);
+
+/**
+ * drm_atomic_crtc_set_property - set property on CRTC
+ * @crtc: the drm CRTC to set a property on
+ * @state: the state object to update with the new property value
+ * @property: the property to set
+ * @val: the new property value
+ *
+ * Use this instead of calling crtc->atomic_set_property directly.
+ * This function handles generic/core properties and calls out to
+ * driver's ->atomic_set_property() for driver properties.  To ensure
+ * consistent behavior you must call this function rather than the
+ * driver hook directly.
+ *
+ * RETURNS:
+ * Zero on success, error code on failure
+ */
+int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
+		struct drm_crtc_state *state, struct drm_property *property,
+		uint64_t val)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_mode_config *config = &dev->mode_config;
+	int ret;
+
+	if (property == config->prop_active)
+		state->active = val;
+	else if (property == config->prop_mode_id) {
+		struct drm_property_blob *mode =
+			drm_property_lookup_blob(dev, val);
+		ret = drm_atomic_set_mode_prop_for_crtc(state, mode);
+		if (mode)
+			drm_property_unreference_blob(mode);
+		return ret;
+	}
+	else if (crtc->funcs->atomic_set_property)
+		return crtc->funcs->atomic_set_property(crtc, state, property, val);
+	else
+		return -EINVAL;
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_atomic_crtc_set_property);
+
+/*
+ * This function handles generic/core properties and calls out to
+ * driver's ->atomic_get_property() for driver properties.  To ensure
+ * consistent behavior you must call this function rather than the
+ * driver hook directly.
+ */
+static int
+drm_atomic_crtc_get_property(struct drm_crtc *crtc,
+		const struct drm_crtc_state *state,
+		struct drm_property *property, uint64_t *val)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_mode_config *config = &dev->mode_config;
+
+	if (property == config->prop_active)
+		*val = state->active;
+	else if (property == config->prop_mode_id)
+		*val = (state->mode_blob) ? state->mode_blob->base.id : 0;
+	else if (crtc->funcs->atomic_get_property)
+		return crtc->funcs->atomic_get_property(crtc, state, property, val);
+	else
+		return -EINVAL;
+
+	return 0;
+}
+
+/**
+ * drm_atomic_crtc_check - check crtc state
+ * @crtc: crtc to check
+ * @state: crtc state to check
+ *
+ * Provides core sanity checks for crtc state.
+ *
+ * RETURNS:
+ * Zero on success, error code on failure
+ */
+static int drm_atomic_crtc_check(struct drm_crtc *crtc,
+		struct drm_crtc_state *state)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* NOTE: we explicitly don't enforce constraints such as primary
 	 * layer covering entire screen, since that is something we want
 	 * to allow (on hw that supports it).  For hw that does not, it
@@ -1014,6 +1177,195 @@ static void drm_atomic_connector_print_state(struct drm_printer *p,
 	if (connector->funcs->atomic_print_state)
 		connector->funcs->atomic_print_state(p, state);
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(drm_atomic_connector_set_property);
+
+/*
+ * This function handles generic/core properties and calls out to
+ * driver's ->atomic_get_property() for driver properties.  To ensure
+ * consistent behavior you must call this function rather than the
+ * driver hook directly.
+ */
+static int
+drm_atomic_connector_get_property(struct drm_connector *connector,
+		const struct drm_connector_state *state,
+		struct drm_property *property, uint64_t *val)
+{
+	struct drm_device *dev = connector->dev;
+	struct drm_mode_config *config = &dev->mode_config;
+
+	if (property == config->prop_crtc_id) {
+		*val = (state->crtc) ? state->crtc->base.id : 0;
+	} else if (property == config->dpms_property) {
+		*val = connector->dpms;
+	} else if (connector->funcs->atomic_get_property) {
+		return connector->funcs->atomic_get_property(connector,
+				state, property, val);
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int drm_atomic_get_property(struct drm_mode_object *obj,
+		struct drm_property *property, uint64_t *val)
+{
+	struct drm_device *dev = property->dev;
+	int ret;
+
+	switch (obj->type) {
+	case DRM_MODE_OBJECT_CONNECTOR: {
+		struct drm_connector *connector = obj_to_connector(obj);
+		WARN_ON(!drm_modeset_is_locked(&dev->mode_config.connection_mutex));
+		ret = drm_atomic_connector_get_property(connector,
+				connector->state, property, val);
+		break;
+	}
+	case DRM_MODE_OBJECT_CRTC: {
+		struct drm_crtc *crtc = obj_to_crtc(obj);
+		WARN_ON(!drm_modeset_is_locked(&crtc->mutex));
+		ret = drm_atomic_crtc_get_property(crtc,
+				crtc->state, property, val);
+		break;
+	}
+	case DRM_MODE_OBJECT_PLANE: {
+		struct drm_plane *plane = obj_to_plane(obj);
+		WARN_ON(!drm_modeset_is_locked(&plane->mutex));
+		ret = drm_atomic_plane_get_property(plane,
+				plane->state, property, val);
+		break;
+	}
+	default:
+		ret = -EINVAL;
+		break;
+	}
+
+	return ret;
+}
+
+/**
+ * drm_atomic_set_crtc_for_plane - set crtc for plane
+ * @plane_state: the plane whose incoming state to update
+ * @crtc: crtc to use for the plane
+ *
+ * Changing the assigned crtc for a plane requires us to grab the lock and state
+ * for the new crtc, as needed. This function takes care of all these details
+ * besides updating the pointer in the state object itself.
+ *
+ * Returns:
+ * 0 on success or can fail with -EDEADLK or -ENOMEM. When the error is EDEADLK
+ * then the w/w mutex code has detected a deadlock and the entire atomic
+ * sequence must be restarted. All other errors are fatal.
+ */
+int
+drm_atomic_set_crtc_for_plane(struct drm_plane_state *plane_state,
+			      struct drm_crtc *crtc)
+{
+	struct drm_plane *plane = plane_state->plane;
+	struct drm_crtc_state *crtc_state;
+	/* Nothing to do for same crtc*/
+	if (plane_state->crtc == crtc)
+		return 0;
+	if (plane_state->crtc) {
+		crtc_state = drm_atomic_get_crtc_state(plane_state->state,
+						       plane_state->crtc);
+		if (WARN_ON(IS_ERR(crtc_state)))
+			return PTR_ERR(crtc_state);
+
+		crtc_state->plane_mask &= ~(1 << drm_plane_index(plane));
+	}
+
+	plane_state->crtc = crtc;
+
+	if (crtc) {
+		crtc_state = drm_atomic_get_crtc_state(plane_state->state,
+						       crtc);
+		if (IS_ERR(crtc_state))
+			return PTR_ERR(crtc_state);
+		crtc_state->plane_mask |= (1 << drm_plane_index(plane));
+	}
+
+	if (crtc)
+		DRM_DEBUG_ATOMIC("Link plane state %p to [CRTC:%d]\n",
+				 plane_state, crtc->base.id);
+	else
+		DRM_DEBUG_ATOMIC("Link plane state %p to [NOCRTC]\n",
+				 plane_state);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_atomic_set_crtc_for_plane);
+
+/**
+ * drm_atomic_set_fb_for_plane - set framebuffer for plane
+ * @plane_state: atomic state object for the plane
+ * @fb: fb to use for the plane
+ *
+ * Changing the assigned framebuffer for a plane requires us to grab a reference
+ * to the new fb and drop the reference to the old fb, if there is one. This
+ * function takes care of all these details besides updating the pointer in the
+ * state object itself.
+ */
+void
+drm_atomic_set_fb_for_plane(struct drm_plane_state *plane_state,
+			    struct drm_framebuffer *fb)
+{
+	if (plane_state->fb)
+		drm_framebuffer_unreference(plane_state->fb);
+	if (fb)
+		drm_framebuffer_reference(fb);
+	plane_state->fb = fb;
+
+	if (fb)
+		DRM_DEBUG_ATOMIC("Set [FB:%d] for plane state %p\n",
+				 fb->base.id, plane_state);
+	else
+		DRM_DEBUG_ATOMIC("Set [NOFB] for plane state %p\n",
+				 plane_state);
+}
+EXPORT_SYMBOL(drm_atomic_set_fb_for_plane);
+
+/**
+ * drm_atomic_set_crtc_for_connector - set crtc for connector
+ * @conn_state: atomic state object for the connector
+ * @crtc: crtc to use for the connector
+ *
+ * Changing the assigned crtc for a connector requires us to grab the lock and
+ * state for the new crtc, as needed. This function takes care of all these
+ * details besides updating the pointer in the state object itself.
+ *
+ * Returns:
+ * 0 on success or can fail with -EDEADLK or -ENOMEM. When the error is EDEADLK
+ * then the w/w mutex code has detected a deadlock and the entire atomic
+ * sequence must be restarted. All other errors are fatal.
+ */
+int
+drm_atomic_set_crtc_for_connector(struct drm_connector_state *conn_state,
+				  struct drm_crtc *crtc)
+{
+	struct drm_crtc_state *crtc_state;
+
+	if (crtc) {
+		crtc_state = drm_atomic_get_crtc_state(conn_state->state, crtc);
+		if (IS_ERR(crtc_state))
+			return PTR_ERR(crtc_state);
+	}
+
+	conn_state->crtc = crtc;
+
+	if (crtc)
+		DRM_DEBUG_ATOMIC("Link connector state %p to [CRTC:%d]\n",
+				 conn_state, crtc->base.id);
+	else
+		DRM_DEBUG_ATOMIC("Link connector state %p to [NOCRTC]\n",
+				 conn_state);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_atomic_set_crtc_for_connector);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * drm_atomic_add_affected_connectors - add connectors for crtc
@@ -1176,12 +1528,17 @@ int drm_atomic_check_only(struct drm_atomic_state *state)
 	if (config->funcs->atomic_check) {
 		ret = config->funcs->atomic_check(state->dev, state);
 
+<<<<<<< HEAD
 		if (ret) {
 			DRM_DEBUG_ATOMIC("atomic driver check for %p failed: %d\n",
 					 state, ret);
 			return ret;
 		}
 	}
+=======
+	if (ret)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!state->allow_modeset) {
 		for_each_new_crtc_in_state(state, crtc, new_crtc_state, i) {

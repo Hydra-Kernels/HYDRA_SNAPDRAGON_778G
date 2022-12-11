@@ -264,12 +264,19 @@ static uint64_t amdgpu_mm_node_addr(struct ttm_buffer_object *bo,
 {
 	uint64_t addr = 0;
 
+<<<<<<< HEAD
 	if (mm_node->start != AMDGPU_BO_INVALID_OFFSET) {
 		addr = mm_node->start << PAGE_SHIFT;
 		addr += bo->bdev->man[mem->mem_type].gpu_offset;
 	}
 	return addr;
 }
+=======
+	adev = amdgpu_get_adev(bo->bdev);
+	ring = adev->mman.buffer_funcs_ring;
+	old_start = (u64)old_mem->start << PAGE_SHIFT;
+	new_start = (u64)new_mem->start << PAGE_SHIFT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * amdgpu_find_mm_node - Helper function finds the drm_mm_node corresponding to
@@ -1280,9 +1287,32 @@ static int amdgpu_ttm_tt_populate(struct ttm_tt *ttm,
 	}
 #endif
 
+<<<<<<< HEAD
 	/* fall back to generic helper to populate the page array
 	 * and map them to the device */
 	return ttm_populate_and_map_pages(adev->dev, &gtt->ttm, ctx);
+=======
+	r = ttm_pool_populate(ttm);
+	if (r) {
+		return r;
+	}
+
+	for (i = 0; i < ttm->num_pages; i++) {
+		gtt->ttm.dma_address[i] = pci_map_page(adev->pdev, ttm->pages[i],
+						       0, PAGE_SIZE,
+						       PCI_DMA_BIDIRECTIONAL);
+		if (pci_dma_mapping_error(adev->pdev, gtt->ttm.dma_address[i])) {
+			while (i--) {
+				pci_unmap_page(adev->pdev, gtt->ttm.dma_address[i],
+					       PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
+				gtt->ttm.dma_address[i] = 0;
+			}
+			ttm_pool_unpopulate(ttm);
+			return -EFAULT;
+		}
+	}
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1367,23 +1397,35 @@ struct mm_struct *amdgpu_ttm_tt_get_usermm(struct ttm_tt *ttm)
 	return gtt->usertask->mm;
 }
 
+<<<<<<< HEAD
 /**
  * amdgpu_ttm_tt_affect_userptr - Determine if a ttm_tt object lays inside an
  * address range for the current task.
  *
  */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 bool amdgpu_ttm_tt_affect_userptr(struct ttm_tt *ttm, unsigned long start,
 				  unsigned long end)
 {
 	struct amdgpu_ttm_tt *gtt = (void *)ttm;
 	unsigned long size;
 
+<<<<<<< HEAD
 	if (gtt == NULL || !gtt->userptr)
 		return false;
 
 	/* Return false if no part of the ttm_tt object lies within
 	 * the range
 	 */
+=======
+	if (gtt == NULL)
+		return false;
+
+	if (gtt->ttm.ttm.state != tt_bound || !gtt->userptr)
+		return false;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	size = (unsigned long)gtt->ttm.ttm.num_pages * PAGE_SIZE;
 	if (gtt->userptr > end || gtt->userptr + size <= start)
 		return false;
@@ -1391,6 +1433,7 @@ bool amdgpu_ttm_tt_affect_userptr(struct ttm_tt *ttm, unsigned long start,
 	return true;
 }
 
+<<<<<<< HEAD
 /**
  * amdgpu_ttm_tt_is_userptr - Have the pages backing by userptr?
  */
@@ -1407,6 +1450,8 @@ bool amdgpu_ttm_tt_is_userptr(struct ttm_tt *ttm)
 /**
  * amdgpu_ttm_tt_is_readonly - Is the ttm_tt object read only?
  */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 bool amdgpu_ttm_tt_is_readonly(struct ttm_tt *ttm)
 {
 	struct amdgpu_ttm_tt *gtt = (void *)ttm;
@@ -1439,8 +1484,13 @@ uint64_t amdgpu_ttm_tt_pde_flags(struct ttm_tt *ttm, struct ttm_mem_reg *mem)
 			flags |= AMDGPU_PTE_SNOOPED;
 	}
 
+<<<<<<< HEAD
 	return flags;
 }
+=======
+	if (adev->asic_type >= CHIP_TONGA)
+		flags |= AMDGPU_PTE_EXECUTABLE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * amdgpu_ttm_tt_pte_flags - Compute PTE flags for ttm_tt object
@@ -2170,7 +2220,11 @@ static ssize_t amdgpu_ttm_vram_read(struct file *f, char __user *buf,
 	if (size & 0x3 || *pos & 0x3)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (*pos >= adev->gmc.mc_vram_size)
+=======
+	if (*pos >= adev->mc.mc_vram_size)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENXIO;
 
 	while (size) {

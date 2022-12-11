@@ -164,8 +164,12 @@ out_cancel:
 	host_ui->xattr_cnt -= 1;
 	host_ui->xattr_size -= CALC_DENT_SIZE(fname_len(nm));
 	host_ui->xattr_size -= CALC_XATTR_BYTES(size);
+<<<<<<< HEAD
 	host_ui->xattr_names -= fname_len(nm);
 	host_ui->flags &= ~UBIFS_CRYPT_FL;
+=======
+	host_ui->xattr_names -= nm->len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&host_ui->ui_mutex);
 out_free:
 	make_bad_inode(inode);
@@ -496,7 +500,11 @@ out_cancel:
 	host_ui->xattr_cnt += 1;
 	host_ui->xattr_size += CALC_DENT_SIZE(fname_len(nm));
 	host_ui->xattr_size += CALC_XATTR_BYTES(ui->data_len);
+<<<<<<< HEAD
 	host_ui->xattr_names += fname_len(nm);
+=======
+	host_ui->xattr_names += nm->len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&host_ui->ui_mutex);
 	ubifs_release_budget(c, &req);
 	make_bad_inode(inode);

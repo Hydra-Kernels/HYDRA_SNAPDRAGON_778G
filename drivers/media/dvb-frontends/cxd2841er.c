@@ -3978,8 +3978,13 @@ static struct dvb_frontend_ops cxd2841er_t_c_ops = {
 			FE_CAN_HIERARCHY_AUTO |
 			FE_CAN_MUTE_TS |
 			FE_CAN_2G_MODULATION,
+<<<<<<< HEAD
 		.frequency_min_hz =   42 * MHz,
 		.frequency_max_hz = 1002 * MHz,
+=======
+		.frequency_min = 42000000,
+		.frequency_max = 1002000000,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.symbol_rate_min = 870000,
 		.symbol_rate_max = 11700000
 	},

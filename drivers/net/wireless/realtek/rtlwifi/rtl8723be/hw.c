@@ -2686,6 +2686,7 @@ void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 	}
 
 	/* override ant_num / ant_path */
+<<<<<<< HEAD
 	if (mod_params->ant_sel) {
 		rtlpriv->btcoexist.btc_info.ant_num =
 			(mod_params->ant_sel == 1 ? ANT_X1 : ANT_X2);
@@ -2693,6 +2694,11 @@ void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 		rtlpriv->btcoexist.btc_info.single_ant_path =
 			(mod_params->ant_sel == 1 ? ANT_AUX : ANT_MAIN);
 	}
+=======
+	if (mod_params->ant_sel)
+		rtlpriv->btcoexist.btc_info.ant_num =
+			(mod_params->ant_sel == 1 ? ANT_X2 : ANT_X1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void rtl8723be_bt_reg_init(struct ieee80211_hw *hw)

@@ -338,7 +338,11 @@ void amdtp_dot_midi_trigger(struct amdtp_stream *s, unsigned int port,
 	struct amdtp_dot *p = s->protocol;
 
 	if (port < MAX_MIDI_PORTS)
+<<<<<<< HEAD
 		WRITE_ONCE(p->midi[port], midi);
+=======
+		ACCESS_ONCE(p->midi[port]) = midi;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static unsigned int process_ir_ctx_payloads(struct amdtp_stream *s,

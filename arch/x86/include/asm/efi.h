@@ -4,10 +4,14 @@
 
 #include <asm/fpu/api.h>
 #include <asm/pgtable.h>
+<<<<<<< HEAD
 #include <asm/processor-flags.h>
 #include <asm/tlb.h>
 #include <asm/nospec-branch.h>
 #include <asm/mmu_context.h>
+=======
+#include <asm/nospec-branch.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * We map the EFI regions needed for runtime services non-contiguously,
@@ -56,7 +60,29 @@ extern asmlinkage unsigned long efi_call_phys(void *, ...);
  */
 #define arch_efi_call_virt(p, f, args...)				\
 ({									\
+<<<<<<< HEAD
 	((efi_##f##_t __attribute__((regparm(0)))*) p->f)(args);	\
+=======
+	efi_status_t __s;						\
+	kernel_fpu_begin();						\
+	firmware_restrict_branch_speculation_start();			\
+	__s = ((efi_##f##_t __attribute__((regparm(0)))*)		\
+		efi.systab->runtime->f)(args);				\
+	firmware_restrict_branch_speculation_end();			\
+	kernel_fpu_end();						\
+	__s;								\
+})
+
+/* Use this macro if your virtual call does not return any value */
+#define __efi_call_virt(f, args...) \
+({									\
+	kernel_fpu_begin();						\
+	firmware_restrict_branch_speculation_start();			\
+	((efi_##f##_t __attribute__((regparm(0)))*)			\
+		efi.systab->runtime->f)(args);				\
+	firmware_restrict_branch_speculation_end();			\
+	kernel_fpu_end();						\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 })
 
 #define efi_ioremap(addr, size, type, attr)	ioremap_cache(addr, size)
@@ -82,11 +108,22 @@ struct efi_scratch {
 #define arch_efi_call_virt_setup()					\
 ({									\
 	efi_sync_low_kernel_mappings();					\
+<<<<<<< HEAD
 	kernel_fpu_begin();						\
 	firmware_restrict_branch_speculation_start();			\
 									\
 	if (!efi_enabled(EFI_OLD_MEMMAP))				\
 		efi_switch_mm(&efi_mm);					\
+=======
+	preempt_disable();						\
+	__kernel_fpu_begin();						\
+	firmware_restrict_branch_speculation_start();			\
+	__s = efi_call((void *)efi.systab->runtime->f, __VA_ARGS__);	\
+	firmware_restrict_branch_speculation_end();			\
+	__kernel_fpu_end();						\
+	preempt_enable();						\
+	__s;								\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 })
 
 #define arch_efi_call_virt(p, f, args...)				\

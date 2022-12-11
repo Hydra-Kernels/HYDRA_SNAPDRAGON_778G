@@ -530,7 +530,10 @@ struct snd_pcm_mmap_status_x32 {
 	u32 pad2; /* alignment */
 	struct timespec tstamp;
 	s32 suspended_state;
+<<<<<<< HEAD
 	s32 pad3;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct timespec audio_tstamp;
 } __packed;
 
@@ -742,10 +745,13 @@ static long snd_pcm_ioctl_compat(struct file *file, unsigned int cmd, unsigned l
 	case SNDRV_PCM_IOCTL_CHANNEL_INFO_X32:
 		return snd_pcm_ioctl_channel_info_x32(substream, argp);
 #endif /* CONFIG_X86_X32 */
+<<<<<<< HEAD
 #ifdef CONFIG_AUDIO_QGKI
 	default:
 		return snd_pcm_ioctl32_compat(substream, cmd, argp);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return -ENOIOCTLCMD;

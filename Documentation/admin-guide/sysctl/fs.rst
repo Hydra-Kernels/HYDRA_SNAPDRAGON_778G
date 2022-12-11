@@ -41,7 +41,10 @@ Currently, these files are in /proc/sys/fs:
 - overflowgid
 - pipe-user-pages-hard
 - pipe-user-pages-soft
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/fs.rst
 - protected_fifos
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/fs.txt
 - protected_hardlinks
 - protected_regular
 - protected_symlinks
@@ -177,17 +180,27 @@ These sysctls allow you to change the value of the fixed UID and GID.
 The default is 65534.
 
 
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/fs.rst
 pipe-user-pages-hard
 --------------------
+=======
+pipe-user-pages-hard:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/fs.txt
 
 Maximum total number of pages a non-privileged user may allocate for pipes.
 Once this limit is reached, no new pipes may be allocated until usage goes
 below the limit again. When set to 0, no limit is applied, which is the default
 setting.
 
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/fs.rst
 
 pipe-user-pages-soft
 --------------------
+=======
+==============================================================
+
+pipe-user-pages-soft:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/fs.txt
 
 Maximum total number of pages a non-privileged user may allocate for pipes
 before the pipe size gets limited to a single page. Once this limit is reached,
@@ -197,6 +210,7 @@ denied until usage goes below the limit again. The default value allows to
 allocate up to 1024 pipes at their default size. When set to 0, no limit is
 applied.
 
+<<<<<<< HEAD:Documentation/admin-guide/sysctl/fs.rst
 
 protected_fifos
 ---------------
@@ -218,6 +232,11 @@ This protection is based on the restrictions in Openwall.
 
 protected_hardlinks
 --------------------
+=======
+==============================================================
+
+protected_hardlinks:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/sysctl/fs.txt
 
 A long-standing class of security issues is the hardlink-based
 time-of-check-time-of-use race, most commonly seen in world-writable
@@ -325,6 +344,13 @@ mount-max
 This denotes the maximum number of mounts that may exist
 in a mount namespace.
 
+
+mount-max:
+
+This denotes the maximum number of mounts that may exist
+in a mount namespace.
+
+==============================================================
 
 
 2. /proc/sys/fs/binfmt_misc

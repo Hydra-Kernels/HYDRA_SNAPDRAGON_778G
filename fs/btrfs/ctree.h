@@ -666,8 +666,12 @@ struct btrfs_fs_info {
 
 	spinlock_t delayed_iput_lock;
 	struct list_head delayed_iputs;
+<<<<<<< HEAD
 	atomic_t nr_delayed_iputs;
 	wait_queue_head_t delayed_iputs_wait;
+=======
+	struct mutex cleaner_delayed_iput_mutex;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	atomic64_t tree_mod_seq;
 

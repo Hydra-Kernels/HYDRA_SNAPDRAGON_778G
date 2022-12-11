@@ -744,6 +744,7 @@ done:
 	hci_dev_unlock(hdev);
 }
 
+<<<<<<< HEAD
 static bool conn_use_rpa(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
@@ -771,6 +772,8 @@ static void set_ext_conn_params(struct hci_conn *conn,
 	p->max_ce_len = cpu_to_le16(0x0000);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void hci_req_add_le_create_conn(struct hci_request *req,
 				       struct hci_conn *conn,
 				       bdaddr_t *direct_rpa)
@@ -778,6 +781,11 @@ static void hci_req_add_le_create_conn(struct hci_request *req,
 	struct hci_dev *hdev = conn->hdev;
 	u8 own_addr_type;
 
+<<<<<<< HEAD
+=======
+	memset(&cp, 0, sizeof(cp));
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* If direct address was provided we use it instead of current
 	 * address.
 	 */
@@ -792,10 +800,32 @@ static void hci_req_add_le_create_conn(struct hci_request *req,
 		/* Update random address, but set require_privacy to false so
 		 * that we never connect with an non-resolvable address.
 		 */
+<<<<<<< HEAD
 		if (hci_update_random_address(req, false, conn_use_rpa(conn),
 					      &own_addr_type))
 			return;
 	}
+=======
+		if (hci_update_random_address(req, false, &own_addr_type))
+			return;
+	}
+
+	/* Set window to be the same value as the interval to enable
+	 * continuous scanning.
+	 */
+	cp.scan_interval = cpu_to_le16(hdev->le_scan_interval);
+	cp.scan_window = cp.scan_interval;
+
+	bacpy(&cp.peer_addr, &conn->dst);
+	cp.peer_addr_type = conn->dst_type;
+	cp.own_address_type = own_addr_type;
+	cp.conn_interval_min = cpu_to_le16(conn->le_conn_min_interval);
+	cp.conn_interval_max = cpu_to_le16(conn->le_conn_max_interval);
+	cp.conn_latency = cpu_to_le16(conn->le_conn_latency);
+	cp.supervision_timeout = cpu_to_le16(conn->le_supv_timeout);
+	cp.min_ce_len = cpu_to_le16(0x0000);
+	cp.max_ce_len = cpu_to_le16(0x0000);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (use_ext_conn(hdev)) {
 		struct hci_cp_le_ext_create_conn *cp;

@@ -1065,6 +1065,10 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_hi_font_mask = 0;
 	vc->vc_complement_mask = 0;
 	vc->vc_can_do_color = 0;
+<<<<<<< HEAD
+=======
+	vc->vc_panic_force_write = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
 	vc->vc_sw->con_init(vc, init);
 	if (!vc->vc_complement_mask)
@@ -1218,6 +1222,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
 	if (new_cols == vc->vc_cols && new_rows == vc->vc_rows)
 		return 0;
 
+<<<<<<< HEAD
 	if (new_screen_size > KMALLOC_MAX_SIZE || !new_screen_size)
 		return -EINVAL;
 	newscreen = kzalloc(new_screen_size, GFP_USER);
@@ -1233,6 +1238,15 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
 	}
 
 	if (vc_is_sel(vc))
+=======
+	if (new_screen_size > (4 << 20))
+		return -EINVAL;
+	newscreen = kmalloc(new_screen_size, GFP_USER);
+	if (!newscreen)
+		return -ENOMEM;
+
+	if (vc == sel_cons)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		clear_selection();
 
 	old_rows = vc->vc_rows;
@@ -1553,9 +1567,19 @@ static void csi_J(struct vc_data *vc, int vpar)
 			count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
 			start = (unsigned short *)vc->vc_origin;
 			break;
+<<<<<<< HEAD
 		case 3: /* include scrollback */
 			flush_scrollback(vc);
 			/* fallthrough */
+=======
+		case 3: /* erase scroll-back buffer (and whole display) */
+			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
+				    vc->vc_screenbuf_size);
+			set_origin(vc);
+			if (CON_IS_VISIBLE(vc))
+				update_screen(vc);
+			/* fall through */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case 2: /* erase whole display */
 			vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
 			count = vc->vc_cols * vc->vc_rows;
@@ -1716,6 +1740,7 @@ static void csi_m(struct vc_data *vc)
 
 	for (i = 0; i <= vc->vc_npar; i++)
 		switch (vc->vc_par[i]) {
+<<<<<<< HEAD
 		case 0:	/* all attributes off */
 			default_attr(vc);
 			break;
@@ -1810,6 +1835,141 @@ static void csi_m(struct vc_data *vc)
 				vc->vc_color = (color_table[vc->vc_par[i] - 40] << 4)
 					| (vc->vc_color & 0x0f);
 			break;
+=======
+			case 0:	/* all attributes off */
+				default_attr(vc);
+				break;
+			case 1:
+				vc->vc_intensity = 2;
+				break;
+			case 2:
+				vc->vc_intensity = 0;
+				break;
+			case 3:
+				vc->vc_italic = 1;
+				break;
+			case 21:
+				/*
+				 * No console drivers support double underline, so
+				 * convert it to a single underline.
+				 */
+			case 4:
+				vc->vc_underline = 1;
+				break;
+			case 5:
+				vc->vc_blink = 1;
+				break;
+			case 7:
+				vc->vc_reverse = 1;
+				break;
+			case 10: /* ANSI X3.64-1979 (SCO-ish?)
+				  * Select primary font, don't display
+				  * control chars if defined, don't set
+				  * bit 8 on output.
+				  */
+				vc->vc_translate = set_translate(vc->vc_charset == 0
+						? vc->vc_G0_charset
+						: vc->vc_G1_charset, vc);
+				vc->vc_disp_ctrl = 0;
+				vc->vc_toggle_meta = 0;
+				break;
+			case 11: /* ANSI X3.64-1979 (SCO-ish?)
+				  * Select first alternate font, lets
+				  * chars < 32 be displayed as ROM chars.
+				  */
+				vc->vc_translate = set_translate(IBMPC_MAP, vc);
+				vc->vc_disp_ctrl = 1;
+				vc->vc_toggle_meta = 0;
+				break;
+			case 12: /* ANSI X3.64-1979 (SCO-ish?)
+				  * Select second alternate font, toggle
+				  * high bit before displaying as ROM char.
+				  */
+				vc->vc_translate = set_translate(IBMPC_MAP, vc);
+				vc->vc_disp_ctrl = 1;
+				vc->vc_toggle_meta = 1;
+				break;
+			case 22:
+				vc->vc_intensity = 1;
+				break;
+			case 23:
+				vc->vc_italic = 0;
+				break;
+			case 24:
+				vc->vc_underline = 0;
+				break;
+			case 25:
+				vc->vc_blink = 0;
+				break;
+			case 27:
+				vc->vc_reverse = 0;
+				break;
+			case 38: /* ITU T.416
+				  * Higher colour modes.
+				  * They break the usual properties of SGR codes
+				  * and thus need to be detected and ignored by
+				  * hand.  Strictly speaking, that standard also
+				  * wants : rather than ; as separators, contrary
+				  * to ECMA-48, but no one produces such codes
+				  * and almost no one accepts them.
+				  */
+				i++;
+				if (i > vc->vc_npar)
+					break;
+				if (vc->vc_par[i] == 5 &&  /* 256 colours */
+				    i < vc->vc_npar) {     /* ubiquitous */
+					i++;
+					rgb_foreground(vc,
+						rgb_from_256(vc->vc_par[i]));
+				} else if (vc->vc_par[i] == 2 &&  /* 24 bit */
+				           i <= vc->vc_npar + 3) {/* extremely rare */
+					struct rgb c = {
+						.r = vc->vc_par[i + 1],
+						.g = vc->vc_par[i + 2],
+						.b = vc->vc_par[i + 3],
+					};
+					rgb_foreground(vc, c);
+					i += 3;
+				}
+				/* Subcommands 3 (CMY) and 4 (CMYK) are so insane
+				 * there's no point in supporting them.
+				 */
+				break;
+			case 48:
+				i++;
+				if (i > vc->vc_npar)
+					break;
+				if (vc->vc_par[i] == 5 &&  /* 256 colours */
+				    i < vc->vc_npar) {
+					i++;
+					rgb_background(vc,
+						rgb_from_256(vc->vc_par[i]));
+				} else if (vc->vc_par[i] == 2 && /* 24 bit */
+				           i <= vc->vc_npar + 3) {
+					struct rgb c = {
+						.r = vc->vc_par[i + 1],
+						.g = vc->vc_par[i + 2],
+						.b = vc->vc_par[i + 3],
+					};
+					rgb_background(vc, c);
+					i += 3;
+				}
+				break;
+			case 39:
+				vc->vc_color = (vc->vc_def_color & 0x0f) | (vc->vc_color & 0xf0);
+				break;
+			case 49:
+				vc->vc_color = (vc->vc_def_color & 0xf0) | (vc->vc_color & 0x0f);
+				break;
+			default:
+				if (vc->vc_par[i] >= 30 && vc->vc_par[i] <= 37)
+					vc->vc_color = color_table[vc->vc_par[i] - 30]
+						| (vc->vc_color & 0xf0);
+				else if (vc->vc_par[i] >= 40 && vc->vc_par[i] <= 47)
+					vc->vc_color = (color_table[vc->vc_par[i] - 40] << 4)
+						| (vc->vc_color & 0x0f);
+				break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	update_attr(vc);
 }

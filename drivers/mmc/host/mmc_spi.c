@@ -1422,6 +1422,7 @@ static int mmc_spi_probe(struct spi_device *spi)
 	if (status != 0)
 		goto fail_add_host;
 
+<<<<<<< HEAD
 	/*
 	 * Index 0 is card detect
 	 * Old boardfiles were specifying 1 ms as debounce
@@ -1432,6 +1433,15 @@ static int mmc_spi_probe(struct spi_device *spi)
 	if (!status) {
 		/*
 		 * The platform has a CD GPIO signal that may support
+=======
+	if (host->pdata && host->pdata->flags & MMC_SPI_USE_CD_GPIO) {
+		status = mmc_gpio_request_cd(mmc, host->pdata->cd_gpio,
+					     host->pdata->cd_debounce);
+		if (status != 0)
+			goto fail_add_host;
+
+		/* The platform has a CD GPIO signal that may support
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		 * interrupts, so let mmc_gpiod_request_cd_irq() decide
 		 * if polling is needed or not.
 		 */

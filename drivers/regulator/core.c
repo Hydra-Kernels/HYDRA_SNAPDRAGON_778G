@@ -127,6 +127,7 @@ static bool have_full_constraints(void)
 	return has_full_constraints || of_have_populated_dt();
 }
 
+<<<<<<< HEAD
 static bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops)
 {
 	if (!rdev->constraints) {
@@ -138,6 +139,26 @@ static bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops)
 		return true;
 
 	return false;
+=======
+static inline struct regulator_dev *rdev_get_supply(struct regulator_dev *rdev)
+{
+	if (rdev && rdev->supply)
+		return rdev->supply->rdev;
+
+	return NULL;
+}
+
+/**
+ * regulator_lock_supply - lock a regulator and its supplies
+ * @rdev:         regulator source
+ */
+static void regulator_lock_supply(struct regulator_dev *rdev)
+{
+	int i;
+
+	for (i = 0; rdev; rdev = rdev_get_supply(rdev), i++)
+		mutex_lock_nested(&rdev->mutex, i);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1894,7 +1915,11 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		if (ret < 0) {
 			_regulator_put(rdev->supply);
 			rdev->supply = NULL;
+<<<<<<< HEAD
 			goto out;
+=======
+			return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 

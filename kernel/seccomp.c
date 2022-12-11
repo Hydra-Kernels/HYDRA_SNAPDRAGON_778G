@@ -17,8 +17,11 @@
 #include <linux/refcount.h>
 #include <linux/audit.h>
 #include <linux/compat.h>
+<<<<<<< HEAD
 #include <linux/coredump.h>
 #include <linux/kmemleak.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/nospec.h>
 #include <linux/prctl.h>
 #include <linux/sched.h>
@@ -556,9 +559,16 @@ static long seccomp_attach_filter(unsigned int flags,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void __get_seccomp_filter(struct seccomp_filter *filter)
 {
 	refcount_inc(&filter->usage);
+=======
+void __get_seccomp_filter(struct seccomp_filter *filter)
+{
+	/* Reference count is bounded by the number of total processes. */
+	atomic_inc(&filter->usage);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* get_seccomp_filter - increments the reference count of the filter on @tsk */
@@ -594,6 +604,7 @@ void put_seccomp_filter(struct task_struct *tsk)
 	__put_seccomp_filter(tsk->seccomp.filter);
 }
 
+<<<<<<< HEAD
 static void seccomp_init_siginfo(kernel_siginfo_t *info, int syscall, int reason)
 {
 	clear_siginfo(info);
@@ -605,6 +616,8 @@ static void seccomp_init_siginfo(kernel_siginfo_t *info, int syscall, int reason
 	info->si_syscall = syscall;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * seccomp_send_sigsys - signals the task to allow in-process syscall emulation
  * @syscall: syscall number to send to userland
@@ -1561,9 +1574,21 @@ long seccomp_get_filter(struct task_struct *task, unsigned long filter_off,
 	if (!data)
 		goto out;
 
+<<<<<<< HEAD
 	if (copy_to_user(data, fprog->filter, bpf_classic_proglen(fprog)))
 		ret = -EFAULT;
 
+=======
+	__get_seccomp_filter(filter);
+	spin_unlock_irq(&task->sighand->siglock);
+
+	if (copy_to_user(data, fprog->filter, bpf_classic_proglen(fprog)))
+		ret = -EFAULT;
+
+	__put_seccomp_filter(filter);
+	return ret;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	__put_seccomp_filter(filter);
 	return ret;

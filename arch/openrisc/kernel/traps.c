@@ -253,7 +253,15 @@ asmlinkage void do_unaligned_access(struct pt_regs *regs, unsigned long address)
 {
 	if (user_mode(regs)) {
 		/* Send a SIGBUS */
+<<<<<<< HEAD
 		force_sig_fault(SIGBUS, BUS_ADRALN, (void __user *)address);
+=======
+		info.si_signo = SIGBUS;
+		info.si_errno = 0;
+		info.si_code = BUS_ADRALN;
+		info.si_addr = (void __user *)address;
+		force_sig_info(SIGBUS, &info, current);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		printk("KERNEL: Unaligned Access 0x%.8lx\n", address);
 		show_registers(regs);

@@ -927,8 +927,13 @@ static void synaptics_report_ext_buttons(struct psmouse *psmouse,
 		return;
 
 	/* Bug in FW 8.1 & 8.2, buttons are reported only when ExtBit is 1 */
+<<<<<<< HEAD
 	if ((SYN_ID_FULL(priv->info.identity) == 0x801 ||
 	     SYN_ID_FULL(priv->info.identity) == 0x802) &&
+=======
+	if ((SYN_ID_FULL(priv->identity) == 0x801 ||
+	     SYN_ID_FULL(priv->identity) == 0x802) &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    !((psmouse->packet[0] ^ psmouse->packet[3]) & 0x02))
 		return;
 

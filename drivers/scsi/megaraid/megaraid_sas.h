@@ -1528,10 +1528,13 @@ struct megasas_ctrl_info {
 
 #define SCAN_PD_CHANNEL	0x1
 #define SCAN_VD_CHANNEL	0x2
+<<<<<<< HEAD
 
 #define MEGASAS_KDUMP_QUEUE_DEPTH               100
 #define MR_LARGE_IO_MIN_SIZE			(32 * 1024)
 #define MR_R1_LDIO_PIGGYBACK_DEFAULT		4
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 enum MR_SCSI_CMD_TYPE {
 	READ_WRITE_LDIO = 0,
@@ -2548,8 +2551,13 @@ struct megasas_instance_template {
 			    struct megasas_cmd *cmd);
 };
 
+<<<<<<< HEAD
 #define MEGASAS_IS_LOGICAL(sdev)					\
 	((sdev->channel < MEGASAS_MAX_PD_CHANNELS) ? 0 : 1)
+=======
+#define MEGASAS_IS_LOGICAL(scp)						\
+	((scp->device->channel < MEGASAS_MAX_PD_CHANNELS) ? 0 : 1)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define MEGASAS_DEV_INDEX(scp)						\
 	(((scp->device->channel % 2) * MEGASAS_MAX_DEV_PER_CHANNEL) +	\

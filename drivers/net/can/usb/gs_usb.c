@@ -997,7 +997,10 @@ static int gs_usb_probe(struct usb_interface *intf,
 				gs_destroy_candev(dev->canch[i]);
 
 			usb_kill_anchored_urbs(&dev->rx_submitted);
+<<<<<<< HEAD
 			kfree(dconf);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			kfree(dev);
 			return rc;
 		}

@@ -165,8 +165,13 @@ static int tc_shutdown(struct clock_event_device *d)
 	struct tc_clkevt_device *tcd = to_tc_clkevt(d);
 	void __iomem		*regs = tcd->regs;
 
+<<<<<<< HEAD:drivers/clocksource/timer-atmel-tcb.c
 	writel(0xff, regs + ATMEL_TC_REG(2, IDR));
 	writel(ATMEL_TC_CLKDIS, regs + ATMEL_TC_REG(2, CCR));
+=======
+	__raw_writel(0xff, regs + ATMEL_TC_REG(2, IDR));
+	__raw_writel(ATMEL_TC_CLKDIS, regs + ATMEL_TC_REG(2, CCR));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/clocksource/tcb_clksrc.c
 	if (!clockevent_state_detached(d))
 		clk_disable(tcd->clk);
 

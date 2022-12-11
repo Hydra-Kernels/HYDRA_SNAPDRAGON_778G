@@ -78,9 +78,12 @@ extern unsigned int omap3_do_wfi_sz;
 /* ... and its pointer from SRAM after copy */
 extern void (*omap3_do_wfi_sram)(void);
 
+<<<<<<< HEAD
 extern struct am33xx_pm_sram_addr am33xx_pm_sram;
 extern struct am33xx_pm_sram_addr am43xx_pm_sram;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern void omap3_save_scratchpad_contents(void);
 
 #define PM_RTA_ERRATUM_i608		(1 << 0)

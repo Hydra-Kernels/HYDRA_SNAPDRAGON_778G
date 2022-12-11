@@ -322,10 +322,24 @@ int mlx4_en_DUMP_ETH_STATS(struct mlx4_en_dev *mdev, u8 port, u8 reset)
 	stats->rx_dropped = be32_to_cpu(mlx4_en_stats->RDROP) +
 			    sw_rx_dropped;
 	stats->rx_length_errors = be32_to_cpu(mlx4_en_stats->RdropLength);
+<<<<<<< HEAD
+=======
+	stats->rx_over_errors = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	stats->rx_crc_errors = be32_to_cpu(mlx4_en_stats->RCRC);
 	stats->rx_fifo_errors = be32_to_cpu(mlx4_en_stats->RdropOvflw);
+<<<<<<< HEAD
 	stats->tx_dropped = be32_to_cpu(mlx4_en_stats->TDROP) +
 			    sw_tx_dropped;
+=======
+	stats->rx_missed_errors = 0;
+	stats->tx_aborted_errors = 0;
+	stats->tx_carrier_errors = 0;
+	stats->tx_fifo_errors = 0;
+	stats->tx_heartbeat_errors = 0;
+	stats->tx_window_errors = 0;
+	stats->tx_dropped = be32_to_cpu(mlx4_en_stats->TDROP);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* RX stats */
 	priv->pkstats.rx_multicast_packets = stats->multicast;

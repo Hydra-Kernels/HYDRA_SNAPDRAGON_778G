@@ -145,7 +145,11 @@ static int usbfs_increase_memory_usage(u64 amount)
 {
 	u64 lim;
 
+<<<<<<< HEAD
 	lim = READ_ONCE(usbfs_memory_mb);
+=======
+	lim = ACCESS_ONCE(usbfs_memory_mb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	lim <<= 20;
 
 	atomic64_add(amount, &usbfs_memory_usage);
@@ -482,11 +486,19 @@ static void snoop_urb(struct usb_device *udev,
 
 	if (userurb) {		/* Async */
 		if (when == SUBMIT)
+<<<<<<< HEAD
 			dev_info(&udev->dev, "userurb %px, ep%d %s-%s, "
 					"length %u\n",
 					userurb, ep, t, d, length);
 		else
 			dev_info(&udev->dev, "userurb %px, ep%d %s-%s, "
+=======
+			dev_info(&udev->dev, "userurb %pK, ep%d %s-%s, "
+					"length %u\n",
+					userurb, ep, t, d, length);
+		else
+			dev_info(&udev->dev, "userurb %pK, ep%d %s-%s, "
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					"actual_length %u status %d\n",
 					userurb, ep, t, d, length,
 					timeout_or_status);
@@ -628,7 +640,11 @@ static void async_completed(struct urb *urb)
 		cancel_bulk_urbs(ps, as->bulk_addr);
 
 	wake_up(&ps->wait);
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&ps->lock, flags);
+=======
+	spin_unlock(&ps->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (signr) {
 		kill_pid_usb_asyncio(signr, errno, addr, pid, cred);
@@ -1518,9 +1534,12 @@ static int proc_do_submiturb(struct usb_dev_state *ps, struct usbdevfs_urb *uurb
 	int number_of_packets = 0;
 	unsigned int stream_id = 0;
 	void *buf;
+<<<<<<< HEAD
 	bool is_in;
 	bool allow_short = false;
 	bool allow_zero = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long mask =	USBDEVFS_URB_SHORT_NOT_OK |
 				USBDEVFS_URB_BULK_CONTINUATION |
 				USBDEVFS_URB_NO_FSBR |

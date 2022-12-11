@@ -34,8 +34,14 @@
 	interrupts-extended = <&intc 94 &omap3_pmx_core 0x136>;
 	pinctrl-0 = <&mmc3_pins &mmc3_core2_pins>;
 	pinctrl-names = "default";
+<<<<<<< HEAD
 	vmmc-supply = <&wl12xx_vmmc>;
 	non-removable;
+=======
+	pinctrl-0 = <&mmc1_pins &mmc1_cd>;
+	cd-gpios = <&gpio4 31 GPIO_ACTIVE_LOW>;		/* gpio127 */
+	vmmc-supply = <&vmmc1>;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bus-width = <4>;
 	cap-power-off-card;
 	#address-cells = <1>;

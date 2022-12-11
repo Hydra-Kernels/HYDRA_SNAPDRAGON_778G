@@ -789,8 +789,12 @@ static int twl4030_usb_remove(struct platform_device *pdev)
 	if (cable_present(twl->linkstat))
 		pm_runtime_put_noidle(twl->dev);
 	pm_runtime_mark_last_busy(twl->dev);
+<<<<<<< HEAD:drivers/phy/ti/phy-twl4030-usb.c
 	pm_runtime_dont_use_autosuspend(&pdev->dev);
 	pm_runtime_put_sync(twl->dev);
+=======
+	pm_runtime_put_sync_suspend(twl->dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/phy/phy-twl4030-usb.c
 	pm_runtime_disable(twl->dev);
 
 	/* autogate 60MHz ULPI clock,

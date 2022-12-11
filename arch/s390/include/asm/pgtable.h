@@ -858,6 +858,213 @@ static inline pmd_t pmd_clear_soft_dirty(pmd_t pmd)
 	return pmd;
 }
 
+<<<<<<< HEAD
+=======
+static inline pgste_t pgste_get_lock(pte_t *ptep)
+{
+	unsigned long new = 0;
+#ifdef CONFIG_PGSTE
+	unsigned long old;
+
+	preempt_disable();
+	asm(
+		"	lg	%0,%2\n"
+		"0:	lgr	%1,%0\n"
+		"	nihh	%0,0xff7f\n"	/* clear PCL bit in old */
+		"	oihh	%1,0x0080\n"	/* set PCL bit in new */
+		"	csg	%0,%1,%2\n"
+		"	jl	0b\n"
+		: "=&d" (old), "=&d" (new), "=Q" (ptep[PTRS_PER_PTE])
+		: "Q" (ptep[PTRS_PER_PTE]) : "cc", "memory");
+#endif
+	return __pgste(new);
+}
+
+static inline void pgste_set_unlock(pte_t *ptep, pgste_t pgste)
+{
+#ifdef CONFIG_PGSTE
+	asm(
+		"	nihh	%1,0xff7f\n"	/* clear PCL bit */
+		"	stg	%1,%0\n"
+		: "=Q" (ptep[PTRS_PER_PTE])
+		: "d" (pgste_val(pgste)), "Q" (ptep[PTRS_PER_PTE])
+		: "cc", "memory");
+	preempt_enable();
+#endif
+}
+
+static inline pgste_t pgste_get(pte_t *ptep)
+{
+	unsigned long pgste = 0;
+#ifdef CONFIG_PGSTE
+	pgste = *(unsigned long *)(ptep + PTRS_PER_PTE);
+#endif
+	return __pgste(pgste);
+}
+
+static inline void pgste_set(pte_t *ptep, pgste_t pgste)
+{
+#ifdef CONFIG_PGSTE
+	*(pgste_t *)(ptep + PTRS_PER_PTE) = pgste;
+#endif
+}
+
+static inline pgste_t pgste_update_all(pte_t *ptep, pgste_t pgste,
+				       struct mm_struct *mm)
+{
+#ifdef CONFIG_PGSTE
+	unsigned long address, bits, skey;
+
+	if (!mm_use_skey(mm) || pte_val(*ptep) & _PAGE_INVALID)
+		return pgste;
+	address = pte_val(*ptep) & PAGE_MASK;
+	skey = (unsigned long) page_get_storage_key(address);
+	bits = skey & (_PAGE_CHANGED | _PAGE_REFERENCED);
+	/* Transfer page changed & referenced bit to guest bits in pgste */
+	pgste_val(pgste) |= bits << 48;		/* GR bit & GC bit */
+	/* Copy page access key and fetch protection bit to pgste */
+	pgste_val(pgste) &= ~(PGSTE_ACC_BITS | PGSTE_FP_BIT);
+	pgste_val(pgste) |= (skey & (_PAGE_ACC_BITS | _PAGE_FP_BIT)) << 56;
+#endif
+	return pgste;
+
+}
+
+static inline void pgste_set_key(pte_t *ptep, pgste_t pgste, pte_t entry,
+				 struct mm_struct *mm)
+{
+#ifdef CONFIG_PGSTE
+	unsigned long address;
+	unsigned long nkey;
+
+	if (!mm_use_skey(mm) || pte_val(entry) & _PAGE_INVALID)
+		return;
+	VM_BUG_ON(!(pte_val(*ptep) & _PAGE_INVALID));
+	address = pte_val(entry) & PAGE_MASK;
+	/*
+	 * Set page access key and fetch protection bit from pgste.
+	 * The guest C/R information is still in the PGSTE, set real
+	 * key C/R to 0.
+	 */
+	nkey = (pgste_val(pgste) & (PGSTE_ACC_BITS | PGSTE_FP_BIT)) >> 56;
+	nkey |= (pgste_val(pgste) & (PGSTE_GR_BIT | PGSTE_GC_BIT)) >> 48;
+	page_set_storage_key(address, nkey, 0);
+#endif
+}
+
+static inline pgste_t pgste_set_pte(pte_t *ptep, pgste_t pgste, pte_t entry)
+{
+	if ((pte_val(entry) & _PAGE_PRESENT) &&
+	    (pte_val(entry) & _PAGE_WRITE) &&
+	    !(pte_val(entry) & _PAGE_INVALID)) {
+		if (!MACHINE_HAS_ESOP) {
+			/*
+			 * Without enhanced suppression-on-protection force
+			 * the dirty bit on for all writable ptes.
+			 */
+			pte_val(entry) |= _PAGE_DIRTY;
+			pte_val(entry) &= ~_PAGE_PROTECT;
+		}
+		if (!(pte_val(entry) & _PAGE_PROTECT))
+			/* This pte allows write access, set user-dirty */
+			pgste_val(pgste) |= PGSTE_UC_BIT;
+	}
+	*ptep = entry;
+	return pgste;
+}
+
+/**
+ * struct gmap_struct - guest address space
+ * @crst_list: list of all crst tables used in the guest address space
+ * @mm: pointer to the parent mm_struct
+ * @guest_to_host: radix tree with guest to host address translation
+ * @host_to_guest: radix tree with pointer to segment table entries
+ * @guest_table_lock: spinlock to protect all entries in the guest page table
+ * @table: pointer to the page directory
+ * @asce: address space control element for gmap page table
+ * @pfault_enabled: defines if pfaults are applicable for the guest
+ */
+struct gmap {
+	struct list_head list;
+	struct list_head crst_list;
+	struct mm_struct *mm;
+	struct radix_tree_root guest_to_host;
+	struct radix_tree_root host_to_guest;
+	spinlock_t guest_table_lock;
+	unsigned long *table;
+	unsigned long asce;
+	unsigned long asce_end;
+	void *private;
+	bool pfault_enabled;
+};
+
+/**
+ * struct gmap_notifier - notify function block for page invalidation
+ * @notifier_call: address of callback function
+ */
+struct gmap_notifier {
+	struct list_head list;
+	void (*notifier_call)(struct gmap *gmap, unsigned long gaddr);
+};
+
+struct gmap *gmap_alloc(struct mm_struct *mm, unsigned long limit);
+void gmap_free(struct gmap *gmap);
+void gmap_enable(struct gmap *gmap);
+void gmap_disable(struct gmap *gmap);
+int gmap_map_segment(struct gmap *gmap, unsigned long from,
+		     unsigned long to, unsigned long len);
+int gmap_unmap_segment(struct gmap *gmap, unsigned long to, unsigned long len);
+unsigned long __gmap_translate(struct gmap *, unsigned long gaddr);
+unsigned long gmap_translate(struct gmap *, unsigned long gaddr);
+int __gmap_link(struct gmap *gmap, unsigned long gaddr, unsigned long vmaddr);
+int gmap_fault(struct gmap *, unsigned long gaddr, unsigned int fault_flags);
+void gmap_discard(struct gmap *, unsigned long from, unsigned long to);
+void __gmap_zap(struct gmap *, unsigned long gaddr);
+bool gmap_test_and_clear_dirty(unsigned long address, struct gmap *);
+
+
+void gmap_register_ipte_notifier(struct gmap_notifier *);
+void gmap_unregister_ipte_notifier(struct gmap_notifier *);
+int gmap_ipte_notify(struct gmap *, unsigned long start, unsigned long len);
+void gmap_do_ipte_notify(struct mm_struct *, unsigned long addr, pte_t *);
+
+static inline pgste_t pgste_ipte_notify(struct mm_struct *mm,
+					unsigned long addr,
+					pte_t *ptep, pgste_t pgste)
+{
+#ifdef CONFIG_PGSTE
+	if (pgste_val(pgste) & PGSTE_IN_BIT) {
+		pgste_val(pgste) &= ~PGSTE_IN_BIT;
+		gmap_do_ipte_notify(mm, addr, ptep);
+	}
+#endif
+	return pgste;
+}
+
+/*
+ * Certain architectures need to do special things when PTEs
+ * within a page table are directly modified.  Thus, the following
+ * hook is made available.
+ */
+static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+			      pte_t *ptep, pte_t entry)
+{
+	pgste_t pgste;
+
+	if (pte_present(entry))
+		pte_val(entry) &= ~_PAGE_UNUSED;
+	if (mm_has_pgste(mm)) {
+		pgste = pgste_get_lock(ptep);
+		pgste_val(pgste) &= ~_PGSTE_GPS_ZERO;
+		pgste_set_key(ptep, pgste, entry, mm);
+		pgste = pgste_set_pte(ptep, pgste, entry);
+		pgste_set_unlock(ptep, pgste);
+	} else {
+		*ptep = entry;
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * query functions pte_write/pte_dirty/pte_young only work if
  * pte_present() is true. Undefined behaviour if not..

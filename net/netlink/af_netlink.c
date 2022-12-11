@@ -58,7 +58,10 @@
 #include <asm/cacheflush.h>
 #include <linux/hash.h>
 #include <linux/genetlink.h>
+<<<<<<< HEAD
 #include <linux/net_namespace.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/nospec.h>
 
 #include <net/net_namespace.h>
@@ -716,10 +719,14 @@ static void deferred_put_nlk_sk(struct rcu_head *head)
 	struct netlink_sock *nlk = container_of(head, struct netlink_sock, rcu);
 	struct sock *sk = &nlk->sk;
 
+<<<<<<< HEAD
 	kfree(nlk->groups);
 	nlk->groups = NULL;
 
 	if (!refcount_dec_and_test(&sk->sk_refcnt))
+=======
+	if (!atomic_dec_and_test(&sk->sk_refcnt))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 
 	if (nlk->cb_running && nlk->cb.done) {
@@ -1000,7 +1007,13 @@ static int netlink_bind(struct socket *sock, struct sockaddr *addr,
 			return err;
 	}
 
+<<<<<<< HEAD
 	if (nlk->ngroups < BITS_PER_LONG)
+=======
+	if (nlk->ngroups == 0)
+		groups = 0;
+	else if (nlk->ngroups < 8*sizeof(groups))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		groups &= (1UL << nlk->ngroups) - 1;
 
 	bound = nlk->bound;
@@ -1347,6 +1360,17 @@ retry:
 }
 EXPORT_SYMBOL(netlink_unicast);
 
+<<<<<<< HEAD
+=======
+struct sk_buff *__netlink_alloc_skb(struct sock *ssk, unsigned int size,
+				    unsigned int ldiff, u32 dst_portid,
+				    gfp_t gfp_mask)
+{
+	return alloc_skb(size, gfp_mask);
+}
+EXPORT_SYMBOL_GPL(__netlink_alloc_skb);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int netlink_has_listeners(struct sock *sk, unsigned int group)
 {
 	int res = 0;
@@ -2218,9 +2242,15 @@ static int netlink_dump(struct sock *sk)
 
 	if (alloc_min_size < nlk->max_recvmsg_len) {
 		alloc_size = nlk->max_recvmsg_len;
+<<<<<<< HEAD
 		skb = alloc_skb(alloc_size,
 				(GFP_KERNEL & ~__GFP_DIRECT_RECLAIM) |
 				__GFP_NOWARN | __GFP_NORETRY);
+=======
+		skb = netlink_alloc_skb(sk, alloc_size, nlk->portid,
+					(GFP_KERNEL & ~__GFP_DIRECT_RECLAIM) |
+					__GFP_NOWARN | __GFP_NORETRY);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	if (!skb) {
 		alloc_size = alloc_min_size;
@@ -2242,11 +2272,16 @@ static int netlink_dump(struct sock *sk)
 	skb_reserve(skb, skb_tailroom(skb) - alloc_size);
 	netlink_skb_set_owner_r(skb, sk);
 
+<<<<<<< HEAD
 	if (nlk->dump_done_errno > 0) {
 		cb->extack = &extack;
 		nlk->dump_done_errno = cb->dump(skb, cb);
 		cb->extack = NULL;
 	}
+=======
+	if (nlk->dump_done_errno > 0)
+		nlk->dump_done_errno = cb->dump(skb, cb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (nlk->dump_done_errno > 0 ||
 	    skb_tailroom(skb) < nlmsg_total_size(sizeof(nlk->dump_done_errno))) {
@@ -2260,8 +2295,12 @@ static int netlink_dump(struct sock *sk)
 	}
 
 	nlh = nlmsg_put_answer(skb, cb, NLMSG_DONE,
+<<<<<<< HEAD
 			       sizeof(nlk->dump_done_errno),
 			       NLM_F_MULTI | cb->answer_flags);
+=======
+			       sizeof(nlk->dump_done_errno), NLM_F_MULTI);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (WARN_ON(!nlh))
 		goto errout_skb;
 
@@ -2269,12 +2308,15 @@ static int netlink_dump(struct sock *sk)
 
 	memcpy(nlmsg_data(nlh), &nlk->dump_done_errno,
 	       sizeof(nlk->dump_done_errno));
+<<<<<<< HEAD
 
 	if (extack._msg && nlk->flags & NETLINK_F_EXT_ACK) {
 		nlh->nlmsg_flags |= NLM_F_ACK_TLVS;
 		if (!nla_put_string(skb, NLMSGERR_ATTR_MSG, extack._msg))
 			nlmsg_end(skb, nlh);
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (sk_filter(sk, skb))
 		kfree_skb(skb);
@@ -2307,7 +2349,11 @@ int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 	struct sock *sk;
 	int ret;
 
+<<<<<<< HEAD
 	refcount_inc(&skb->users);
+=======
+	atomic_inc(&skb->users);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sk = netlink_lookup(sock_net(ssk), ssk->sk_protocol, NETLINK_CB(skb).portid);
 	if (sk == NULL) {
@@ -2330,6 +2376,7 @@ int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 
 	cb = &nlk->cb;
 	memset(cb, 0, sizeof(*cb));
+	cb->start = control->start;
 	cb->dump = control->dump;
 	cb->done = control->done;
 	cb->nlh = nlh;
@@ -2351,6 +2398,9 @@ int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 	nlk->dump_done_errno = INT_MAX;
 
 	mutex_unlock(nlk->cb_mutex);
+
+	if (cb->start)
+		cb->start(cb);
 
 	ret = netlink_dump(sk);
 
@@ -2674,7 +2724,11 @@ static const struct proto_ops netlink_ops = {
 	.accept =	sock_no_accept,
 	.getname =	netlink_getname,
 	.poll =		datagram_poll,
+<<<<<<< HEAD
 	.ioctl =	netlink_ioctl,
+=======
+	.ioctl =	sock_no_ioctl,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.listen =	sock_no_listen,
 	.shutdown =	sock_no_shutdown,
 	.setsockopt =	netlink_setsockopt,

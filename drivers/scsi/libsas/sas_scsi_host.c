@@ -606,8 +606,13 @@ static void sas_eh_handle_sas_errors(struct Scsi_Host *shost, struct list_head *
 			sas_eh_finish_cmd(cmd);
 			continue;
 		case TASK_IS_ABORTED:
+<<<<<<< HEAD
 			pr_notice("%s: task 0x%p is aborted\n",
 				  __func__, task);
+=======
+			SAS_DPRINTK("%s: task 0x%p is aborted\n",
+				    __func__, task);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			sas_eh_finish_cmd(cmd);
 			continue;
 		case TASK_IS_AT_LU:
@@ -615,9 +620,16 @@ static void sas_eh_handle_sas_errors(struct Scsi_Host *shost, struct list_head *
  reset:
 			tmf_resp = sas_recover_lu(task->dev, cmd);
 			if (tmf_resp == TMF_RESP_FUNC_COMPLETE) {
+<<<<<<< HEAD
 				pr_notice("dev %016llx LU %llx is recovered\n",
 					  SAS_ADDR(task->dev),
 					  cmd->device->lun);
+=======
+				SAS_DPRINTK("dev %016llx LU %llx is "
+					    "recovered\n",
+					    SAS_ADDR(task->dev),
+					    cmd->device->lun);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				sas_eh_finish_cmd(cmd);
 				sas_scsi_clear_queue_lu(work_q, cmd);
 				goto Again;

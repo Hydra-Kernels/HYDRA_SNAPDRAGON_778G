@@ -54,7 +54,11 @@ static void toshiba_wmi_notify(u32 value, void *context)
 	kfree(response.pointer);
 }
 
+<<<<<<< HEAD
 static const struct dmi_system_id toshiba_wmi_dmi_table[] __initconst = {
+=======
+static struct dmi_system_id toshiba_wmi_dmi_table[] __initdata = {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{
 		.ident = "Toshiba laptop",
 		.matches = {
@@ -97,6 +101,11 @@ static int __init toshiba_wmi_input_setup(void)
 
  err_remove_notifier:
 	wmi_remove_notify_handler(WMI_EVENT_GUID);
+<<<<<<< HEAD
+=======
+ err_free_keymap:
+	sparse_keymap_free(toshiba_wmi_input_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  err_free_dev:
 	input_free_device(toshiba_wmi_input_dev);
 	return err;
@@ -105,6 +114,10 @@ static int __init toshiba_wmi_input_setup(void)
 static void toshiba_wmi_input_destroy(void)
 {
 	wmi_remove_notify_handler(WMI_EVENT_GUID);
+<<<<<<< HEAD
+=======
+	sparse_keymap_free(toshiba_wmi_input_dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	input_unregister_device(toshiba_wmi_input_dev);
 }
 

@@ -1718,12 +1718,21 @@ static int iwl_pcie_enqueue_hcmd(struct iwl_trans *trans,
 		     le16_to_cpu(out_cmd->hdr.sequence),
 		     cmd_size, txq->write_ptr, idx, trans_pcie->cmd_queue);
 
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/pcie/tx.c
 	/* start the TFD with the minimum copy bytes */
 	tb0_size = min_t(int, copy_size, IWL_FIRST_TB_SIZE);
 	memcpy(&txq->first_tb_bufs[idx], &out_cmd->hdr, tb0_size);
 	iwl_pcie_txq_build_tfd(trans, txq,
 			       iwl_pcie_get_first_tb_dma(txq, idx),
 			       tb0_size, true);
+=======
+	/* start the TFD with the scratchbuf */
+	scratch_size = min_t(int, copy_size, IWL_HCMD_SCRATCHBUF_SIZE);
+	memcpy(&txq->scratchbufs[idx], &out_cmd->hdr, scratch_size);
+	iwl_pcie_txq_build_tfd(trans, txq,
+			       iwl_pcie_get_scratchbuf_dma(txq, idx),
+			       scratch_size, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/pcie/tx.c
 
 	/* map first command fragment, if any remains */
 	if (copy_size > tb0_size) {

@@ -72,7 +72,11 @@ transport_lookup_cmd_lun(struct se_cmd *se_cmd, u64 unpacked_lun)
 			goto out_unlock;
 		}
 
+<<<<<<< HEAD
 		se_cmd->se_lun = se_lun;
+=======
+		se_cmd->se_lun = rcu_dereference(deve->se_lun);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		se_cmd->pr_res_key = deve->pr_res_key;
 		se_cmd->orig_fe_lun = unpacked_lun;
 		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
@@ -791,6 +795,10 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
 
 	xcopy_lun = &dev->xcopy_lun;
 	rcu_assign_pointer(xcopy_lun->lun_se_dev, dev);
+<<<<<<< HEAD
+=======
+	init_completion(&xcopy_lun->lun_ref_comp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	init_completion(&xcopy_lun->lun_shutdown_comp);
 	INIT_LIST_HEAD(&xcopy_lun->lun_deve_list);
 	INIT_LIST_HEAD(&xcopy_lun->lun_dev_link);
@@ -829,7 +837,10 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
 	attrib->unmap_granularity = q->limits.discard_granularity / block_size;
 	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
 								block_size;
+<<<<<<< HEAD
 	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 EXPORT_SYMBOL(target_configure_unmap_from_queue);
@@ -853,6 +864,7 @@ sector_t target_to_linux_sector(struct se_device *dev, sector_t lb)
 }
 EXPORT_SYMBOL(target_to_linux_sector);
 
+<<<<<<< HEAD
 struct devices_idr_iter {
 	struct config_item *prev_item;
 	int (*fn)(struct se_device *dev, void *data);
@@ -910,6 +922,8 @@ int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
 	return ret;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int target_configure_device(struct se_device *dev)
 {
 	struct se_hba *hba = dev->se_hba;

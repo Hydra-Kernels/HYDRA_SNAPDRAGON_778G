@@ -25,8 +25,11 @@
 #include <asm/alternative.h>
 #include <asm/insn.h>
 #include <asm/debugreg.h>
+<<<<<<< HEAD
 #include <asm/set_memory.h>
 #include <asm/sections.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/nospec-branch.h>
 
 #include "common.h"
@@ -180,8 +183,13 @@ static int copy_optimized_instructions(u8 *dest, u8 *src, u8 *real)
 	int len = 0, ret;
 
 	while (len < RELATIVEJUMP_SIZE) {
+<<<<<<< HEAD
 		ret = __copy_instruction(dest + len, src + len, real + len, &insn);
 		if (!ret || !can_boost(&insn, src + len))
+=======
+		ret = __copy_instruction(dest + len, src + len);
+		if (!ret || !can_boost(dest + len, src + len))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EINVAL;
 		len += ret;
 	}
@@ -380,6 +388,20 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op,
 		goto err;
 	}
 
+<<<<<<< HEAD
+=======
+	buf = (u8 *)op->optinsn.insn;
+	set_memory_rw((unsigned long)buf & PAGE_MASK, 1);
+
+	/* Copy instructions into the out-of-line buffer */
+	ret = copy_optimized_instructions(buf + TMPL_END_IDX, op->kp.addr);
+	if (ret < 0) {
+		__arch_remove_optimized_kprobe(op, 0);
+		return ret;
+	}
+	op->optinsn.size = ret;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Copy arch-dep-instance from template */
 	memcpy(buf, optprobe_template_entry, TMPL_END_IDX);
 
@@ -403,6 +425,7 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op,
 			   (u8 *)op->kp.addr + op->optinsn.size);
 	len += RELATIVEJUMP_SIZE;
 
+<<<<<<< HEAD
 	/* We have to use text_poke() for instruction buffer because it is RO */
 	text_poke(slot, buf, len);
 	ret = 0;
@@ -413,6 +436,14 @@ out:
 err:
 	__arch_remove_optimized_kprobe(op, 0);
 	goto out;
+=======
+	set_memory_ro((unsigned long)buf & PAGE_MASK, 1);
+
+	flush_icache_range((unsigned long) buf,
+			   (unsigned long) buf + TMPL_END_IDX +
+			   op->optinsn.size + RELATIVEJUMP_SIZE);
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

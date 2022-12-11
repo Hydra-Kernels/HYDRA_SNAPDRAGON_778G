@@ -750,6 +750,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
 	ld	r15,PACATOC(r13)
 	ld	r14,interrupt_base_book3e@got(r15)
 	ld	r15,__end_interrupts@got(r15)
+<<<<<<< HEAD
+=======
+#else
+	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cmpld	cr0,r10,r14
 	cmpld	cr1,r10,r15
 #else
@@ -822,6 +829,13 @@ kernel_dbg_exc:
 	ld	r15,PACATOC(r13)
 	ld	r14,interrupt_base_book3e@got(r15)
 	ld	r15,__end_interrupts@got(r15)
+<<<<<<< HEAD
+=======
+#else
+	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	cmpld	cr0,r10,r14
 	cmpld	cr1,r10,r15
 #else

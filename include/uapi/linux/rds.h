@@ -37,7 +37,10 @@
 
 #include <linux/types.h>
 #include <linux/socket.h>		/* For __kernel_sockaddr_storage. */
+<<<<<<< HEAD
 #include <linux/in6.h>			/* For struct in6_addr. */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define RDS_IB_ABI_VERSION		0x301
 
@@ -155,6 +158,7 @@ struct rds_info_connection {
 	__be32		faddr;
 	__u8		transport[TRANSNAMSIZ];		/* null term ascii */
 	__u8		flags;
+<<<<<<< HEAD
 	__u8		tos;
 } __attribute__((packed));
 
@@ -165,6 +169,8 @@ struct rds6_info_connection {
 	struct in6_addr	faddr;
 	__u8		transport[TRANSNAMSIZ];		/* null term ascii */
 	__u8		flags;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __attribute__((packed));
 
 #define RDS_INFO_MESSAGE_FLAG_ACK               0x01
@@ -178,6 +184,7 @@ struct rds_info_message {
 	__be16		lport;
 	__be16		fport;
 	__u8		flags;
+<<<<<<< HEAD
 	__u8		tos;
 } __attribute__((packed));
 
@@ -190,6 +197,8 @@ struct rds6_info_message {
 	__be16		fport;
 	__u8		flags;
 	__u8		tos;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __attribute__((packed));
 
 struct rds_info_socket {
@@ -200,6 +209,7 @@ struct rds_info_socket {
 	__be16		connected_port;
 	__u32		rcvbuf;
 	__u64		inum;
+<<<<<<< HEAD
 } __attribute__((packed));
 
 struct rds6_info_socket {
@@ -210,6 +220,8 @@ struct rds6_info_socket {
 	__be16		connected_port;
 	__u32		rcvbuf;
 	__u64		inum;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __attribute__((packed));
 
 struct rds_info_tcp_socket {
@@ -222,6 +234,7 @@ struct rds_info_tcp_socket {
 	__u32           last_sent_nxt;
 	__u32           last_expected_una;
 	__u32           last_seen_una;
+<<<<<<< HEAD
 	__u8		tos;
 } __attribute__((packed));
 
@@ -235,6 +248,8 @@ struct rds6_info_tcp_socket {
 	__u32		last_sent_nxt;
 	__u32		last_expected_una;
 	__u32		last_seen_una;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __attribute__((packed));
 
 #define RDS_IB_GID_LEN	16
@@ -249,6 +264,7 @@ struct rds_info_rdma_connection {
 	__u32		max_send_sge;
 	__u32		rdma_mr_max;
 	__u32		rdma_mr_size;
+<<<<<<< HEAD
 	__u8		tos;
 	__u8		sl;
 	__u32		cache_allocs;
@@ -287,6 +303,8 @@ struct rds_cmsg_rx_trace {
 	__u8 rx_traces;
 	__u8 rx_trace_pos[RDS_MSG_RX_DGRAM_TRACE_MAX];
 	__u64 rx_trace[RDS_MSG_RX_DGRAM_TRACE_MAX];
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*

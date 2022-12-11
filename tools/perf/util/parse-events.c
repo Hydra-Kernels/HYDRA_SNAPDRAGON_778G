@@ -173,12 +173,20 @@ static int tp_event_has_id(const char *dir_path, struct dirent *evt_dir)
 	return 0;
 }
 
+<<<<<<< HEAD
 #define for_each_event(dir_path, evt_dir, evt_dirent)		\
+=======
+#define for_each_event(sys_dirent, evt_dir, evt_dirent)		\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while ((evt_dirent = readdir(evt_dir)) != NULL)		\
 		if (evt_dirent->d_type == DT_DIR &&		\
 		    (strcmp(evt_dirent->d_name, ".")) &&	\
 		    (strcmp(evt_dirent->d_name, "..")) &&	\
+<<<<<<< HEAD
 		    (!tp_event_has_id(dir_path, evt_dirent)))
+=======
+		    (!tp_event_has_id(sys_dirent, evt_dirent)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define MAX_EVENT_LENGTH 512
 
@@ -199,17 +207,30 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
 		return NULL;
 
 	for_each_subsystem(sys_dir, sys_dirent) {
+<<<<<<< HEAD
 		dir_path = get_events_file(sys_dirent->d_name);
 		if (!dir_path)
 			continue;
+=======
+
+		snprintf(dir_path, MAXPATHLEN, "%s/%s", tracing_events_path,
+			 sys_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		evt_dir = opendir(dir_path);
 		if (!evt_dir)
 			goto next;
 
+<<<<<<< HEAD
 		for_each_event(dir_path, evt_dir, evt_dirent) {
 
 			scnprintf(evt_path, MAXPATHLEN, "%s/%s/id", dir_path,
 				  evt_dirent->d_name);
+=======
+		for_each_event(sys_dirent, evt_dir, evt_dirent) {
+
+			snprintf(evt_path, MAXPATHLEN, "%s/%s/id", dir_path,
+				 evt_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			fd = open(evt_path, O_RDONLY);
 			if (fd < 0)
 				continue;
@@ -334,10 +355,15 @@ __add_event(struct list_head *list, int *idx,
 		return NULL;
 
 	(*idx)++;
+<<<<<<< HEAD
 	evsel->core.cpus   = perf_cpu_map__get(cpus);
 	evsel->core.own_cpus = perf_cpu_map__get(cpus);
 	evsel->core.system_wide = pmu ? pmu->is_uncore : false;
 	evsel->auto_merge_stats = auto_merge_stats;
+=======
+	evsel->cpus     = cpu_map__get(cpus);
+	evsel->own_cpus = cpu_map__get(cpus);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (name)
 		evsel->name = strdup(name);
@@ -2216,14 +2242,23 @@ restart:
 		    !strglobmatch(sys_dirent->d_name, subsys_glob))
 			continue;
 
+<<<<<<< HEAD
 		dir_path = get_events_file(sys_dirent->d_name);
 		if (!dir_path)
 			continue;
+=======
+		snprintf(dir_path, MAXPATHLEN, "%s/%s", tracing_events_path,
+			 sys_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		evt_dir = opendir(dir_path);
 		if (!evt_dir)
 			goto next;
 
+<<<<<<< HEAD
 		for_each_event(dir_path, evt_dir, evt_dirent) {
+=======
+		for_each_event(sys_dirent, evt_dir, evt_dirent) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if (event_glob != NULL &&
 			    !strglobmatch(evt_dirent->d_name, event_glob))
 				continue;
@@ -2300,14 +2335,24 @@ int is_valid_tracepoint(const char *event_string)
 		return 0;
 
 	for_each_subsystem(sys_dir, sys_dirent) {
+<<<<<<< HEAD
 		dir_path = get_events_file(sys_dirent->d_name);
 		if (!dir_path)
 			continue;
+=======
+
+		snprintf(dir_path, MAXPATHLEN, "%s/%s", tracing_events_path,
+			 sys_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		evt_dir = opendir(dir_path);
 		if (!evt_dir)
 			goto next;
 
+<<<<<<< HEAD
 		for_each_event(dir_path, evt_dir, evt_dirent) {
+=======
+		for_each_event(sys_dirent, evt_dir, evt_dirent) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			snprintf(evt_path, MAXPATHLEN, "%s:%s",
 				 sys_dirent->d_name, evt_dirent->d_name);
 			if (!strcmp(evt_path, event_string)) {

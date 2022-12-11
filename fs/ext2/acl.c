@@ -219,6 +219,7 @@ int
 ext2_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 {
 	int error;
+<<<<<<< HEAD
 	int update_mode = 0;
 	umode_t mode = inode->i_mode;
 
@@ -235,6 +236,17 @@ ext2_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 		mark_inode_dirty(inode);
 	}
 	return error;
+=======
+
+	if (type == ACL_TYPE_ACCESS && acl) {
+		error = posix_acl_update_mode(inode, &inode->i_mode, &acl);
+		if (error)
+			return error;
+		inode->i_ctime = CURRENT_TIME_SEC;
+		mark_inode_dirty(inode);
+	}
+	return __ext2_set_acl(inode, acl, type);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

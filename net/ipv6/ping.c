@@ -22,6 +22,38 @@
 #include <linux/proc_fs.h>
 #include <net/ping.h>
 
+<<<<<<< HEAD
+=======
+struct proto pingv6_prot = {
+	.name =		"PINGv6",
+	.owner =	THIS_MODULE,
+	.init =		ping_init_sock,
+	.close =	ping_close,
+	.connect =	ip6_datagram_connect_v6_only,
+	.disconnect =	udp_disconnect,
+	.setsockopt =	ipv6_setsockopt,
+	.getsockopt =	ipv6_getsockopt,
+	.sendmsg =	ping_v6_sendmsg,
+	.recvmsg =	ping_recvmsg,
+	.bind =		ping_bind,
+	.backlog_rcv =	ping_queue_rcv_skb,
+	.hash =		ping_hash,
+	.unhash =	ping_unhash,
+	.get_port =	ping_get_port,
+	.obj_size =	sizeof(struct raw6_sock),
+};
+EXPORT_SYMBOL_GPL(pingv6_prot);
+
+static struct inet_protosw pingv6_protosw = {
+	.type =      SOCK_DGRAM,
+	.protocol =  IPPROTO_ICMPV6,
+	.prot =      &pingv6_prot,
+	.ops =       &inet6_sockraw_ops,
+	.flags =     INET_PROTOSW_REUSE,
+};
+
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Compatibility glue so we can support IPv6 when it's compiled as a module */
 static int dummy_ipv6_recv_error(struct sock *sk, struct msghdr *msg, int len,
 				 int *addr_len)
@@ -121,6 +153,15 @@ static int ping_v6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 		return PTR_ERR(dst);
 	rt = (struct rt6_info *) dst;
 
+<<<<<<< HEAD
+=======
+	np = inet6_sk(sk);
+	if (!np) {
+		err = -EBADF;
+		goto dst_err_out;
+	}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!fl6.flowi6_oif && ipv6_addr_is_multicast(&fl6.daddr))
 		fl6.flowi6_oif = np->mcast_oif;
 	else if (!fl6.flowi6_oif)
@@ -152,6 +193,10 @@ static int ping_v6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 	}
 	release_sock(sk);
 
+<<<<<<< HEAD
+=======
+dst_err_out:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dst_release(dst);
 
 	if (err)

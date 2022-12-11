@@ -214,9 +214,13 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt,
 	max_P = tb[TCA_RED_MAX_P] ? nla_get_u32(tb[TCA_RED_MAX_P]) : 0;
 
 	ctl = nla_data(tb[TCA_RED_PARMS]);
+<<<<<<< HEAD
 	stab = nla_data(tb[TCA_RED_STAB]);
 	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog,
 			      ctl->Scell_log, stab))
+=======
+	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (ctl->limit > 0) {
@@ -233,8 +237,14 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt,
 	q->flags = ctl->flags;
 	q->limit = ctl->limit;
 	if (child) {
+<<<<<<< HEAD
 		qdisc_tree_flush_backlog(q->qdisc);
 		old_child = q->qdisc;
+=======
+		qdisc_tree_reduce_backlog(q->qdisc, q->qdisc->q.qlen,
+					  q->qdisc->qstats.backlog);
+		qdisc_destroy(q->qdisc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		q->qdisc = child;
 	}
 
@@ -391,8 +401,11 @@ static int red_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
 		new = &noop_qdisc;
 
 	*old = qdisc_replace(sch, new, &q->qdisc);
+<<<<<<< HEAD
 
 	red_graft_offload(sch, new, *old, extack);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 

@@ -6,6 +6,7 @@ sbindir ?= /usr/sbin
 libexecdir ?= /usr/libexec
 sharedstatedir ?= /var/lib
 
+<<<<<<< HEAD
 ifeq ($(srctree),)
 srctree := $(patsubst %/,%,$(dir $(CURDIR)))
 srctree := $(patsubst %/,%,$(dir $(srctree)))
@@ -44,6 +45,13 @@ $(HV_FCOPY_DAEMON_IN): FORCE
 	$(Q)$(MAKE) $(build)=hv_fcopy_daemon
 $(OUTPUT)hv_fcopy_daemon: $(HV_FCOPY_DAEMON_IN)
 	$(QUIET_LINK)$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+=======
+CFLAGS += -D__EXPORTED_HEADERS__ -I../../include/uapi -I../../include
+
+all: hv_kvp_daemon hv_vss_daemon hv_fcopy_daemon
+%: %.c
+	$(CC) $(CFLAGS) -o $@ $^
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 clean:
 	rm -f $(ALL_PROGRAMS)

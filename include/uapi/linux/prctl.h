@@ -198,6 +198,7 @@ struct prctl_mm_map {
 # define PR_CAP_AMBIENT_LOWER		3
 # define PR_CAP_AMBIENT_CLEAR_ALL	4
 
+<<<<<<< HEAD
 /* arm64 Scalable Vector Extension controls */
 /* Flag values must be kept in sync with ptrace NT_ARM_SVE interface */
 #define PR_SVE_SET_VL			50	/* set task vector length */
@@ -207,18 +208,24 @@ struct prctl_mm_map {
 # define PR_SVE_VL_LEN_MASK		0xffff
 # define PR_SVE_VL_INHERIT		(1 << 17) /* inherit across exec */
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Per task speculation control */
 #define PR_GET_SPECULATION_CTRL		52
 #define PR_SET_SPECULATION_CTRL		53
 /* Speculation control variants */
 # define PR_SPEC_STORE_BYPASS		0
+<<<<<<< HEAD
 # define PR_SPEC_INDIRECT_BRANCH	1
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Return and control values for PR_SET/GET_SPECULATION_CTRL */
 # define PR_SPEC_NOT_AFFECTED		0
 # define PR_SPEC_PRCTL			(1UL << 0)
 # define PR_SPEC_ENABLE			(1UL << 1)
 # define PR_SPEC_DISABLE		(1UL << 2)
 # define PR_SPEC_FORCE_DISABLE		(1UL << 3)
+<<<<<<< HEAD
 # define PR_SPEC_DISABLE_NOEXEC		(1UL << 4)
 
 /* Reset arm64 pointer authentication keys */
@@ -236,5 +243,7 @@ struct prctl_mm_map {
 
 #define PR_SET_VMA		0x53564d41
 # define PR_SET_VMA_ANON_NAME		0
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* _LINUX_PRCTL_H */

@@ -228,6 +228,15 @@ static int fintek_8250_rs485_config(struct uart_port *port,
 		config |= RXW4C_IRA;
 	}
 
+<<<<<<< HEAD
+=======
+	if ((!!(rs485->flags & SER_RS485_RTS_ON_SEND)) ==
+			(!!(rs485->flags & SER_RS485_RTS_AFTER_SEND)))
+		rs485->flags &= ~SER_RS485_ENABLED;
+	else
+		config |= RS485_URA;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (rs485->flags & SER_RS485_RTS_ON_SEND)
 		config |= RTS_INVERT;
 

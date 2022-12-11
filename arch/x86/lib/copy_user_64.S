@@ -364,6 +364,7 @@ ENTRY(__copy_user_nocache)
 	movl %ecx,%edx
 .L_fixup_handle_tail:
 	sfence
+<<<<<<< HEAD
 	jmp .Lcopy_user_handle_tail
 	.previous
 
@@ -389,5 +390,32 @@ ENTRY(__copy_user_nocache)
 	_ASM_EXTABLE_UA(31b, .L_fixup_4b_copy)
 	_ASM_EXTABLE_UA(40b, .L_fixup_1b_copy)
 	_ASM_EXTABLE_UA(41b, .L_fixup_1b_copy)
+=======
+	jmp copy_user_handle_tail
+	.previous
+
+	_ASM_EXTABLE(1b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(2b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(3b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(4b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(5b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(6b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(7b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(8b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(9b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(10b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(11b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(12b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(13b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(14b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(15b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(16b,.L_fixup_4x8b_copy)
+	_ASM_EXTABLE(20b,.L_fixup_8b_copy)
+	_ASM_EXTABLE(21b,.L_fixup_8b_copy)
+	_ASM_EXTABLE(30b,.L_fixup_4b_copy)
+	_ASM_EXTABLE(31b,.L_fixup_4b_copy)
+	_ASM_EXTABLE(40b,.L_fixup_1b_copy)
+	_ASM_EXTABLE(41b,.L_fixup_1b_copy)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 ENDPROC(__copy_user_nocache)
 EXPORT_SYMBOL(__copy_user_nocache)

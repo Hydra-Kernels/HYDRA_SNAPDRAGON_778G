@@ -114,12 +114,15 @@ extern int smb2_unlock_range(struct cifsFileInfo *cfile,
 			     struct file_lock *flock, const unsigned int xid);
 extern int smb2_push_mandatory_locks(struct cifsFileInfo *cfile);
 extern void smb2_reconnect_server(struct work_struct *work);
+<<<<<<< HEAD
 extern int smb3_crypto_aead_allocate(struct TCP_Server_Info *server);
 extern unsigned long smb_rqst_len(struct TCP_Server_Info *server,
 				  struct smb_rqst *rqst);
 extern void smb2_set_next_command(struct cifs_tcon *tcon,
 				  struct smb_rqst *rqst);
 extern void smb2_set_related(struct smb_rqst *rqst);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * SMB2 Worker functions - most of protocol specific implementation details
@@ -191,6 +194,17 @@ extern int SMB2_echo(struct TCP_Server_Info *server);
 extern int SMB2_query_directory(const unsigned int xid, struct cifs_tcon *tcon,
 				u64 persistent_fid, u64 volatile_fid, int index,
 				struct cifs_search_info *srch_inf);
+<<<<<<< HEAD
+=======
+extern int SMB2_rename(const unsigned int xid, struct cifs_tcon *tcon,
+		       u64 persistent_fid, u64 volatile_fid,
+		       __le16 *target_file);
+extern int SMB2_rmdir(const unsigned int xid, struct cifs_tcon *tcon,
+		      u64 persistent_fid, u64 volatile_fid);
+extern int SMB2_set_hardlink(const unsigned int xid, struct cifs_tcon *tcon,
+			     u64 persistent_fid, u64 volatile_fid,
+			     __le16 *target_file);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern int SMB2_set_eof(const unsigned int xid, struct cifs_tcon *tcon,
 			u64 persistent_fid, u64 volatile_fid, u32 pid,
 			__le64 *eof);
@@ -210,9 +224,12 @@ extern int SMB2_set_compression(const unsigned int xid, struct cifs_tcon *tcon,
 extern int SMB2_oplock_break(const unsigned int xid, struct cifs_tcon *tcon,
 			     const u64 persistent_fid, const u64 volatile_fid,
 			     const __u8 oplock_level);
+<<<<<<< HEAD
 extern int smb2_handle_cancelled_close(struct cifs_tcon *tcon,
 				       __u64 persistent_fid,
 				       __u64 volatile_fid);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 extern int smb2_handle_cancelled_mid(char *buffer,
 					struct TCP_Server_Info *server);
 void smb2_cancelled_close_fid(struct work_struct *work);

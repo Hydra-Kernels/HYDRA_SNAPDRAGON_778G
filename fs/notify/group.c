@@ -35,9 +35,15 @@ static void fsnotify_final_destroy_group(struct fsnotify_group *group)
  */
 void fsnotify_group_stop_queueing(struct fsnotify_group *group)
 {
+<<<<<<< HEAD
 	spin_lock(&group->notification_lock);
 	group->shutdown = true;
 	spin_unlock(&group->notification_lock);
+=======
+	mutex_lock(&group->notification_mutex);
+	group->shutdown = true;
+	mutex_unlock(&group->notification_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -55,6 +61,12 @@ void fsnotify_destroy_group(struct fsnotify_group *group)
 	 * of fsnotify_destroy_group() to see the same behavior.
 	 */
 	fsnotify_group_stop_queueing(group);
+<<<<<<< HEAD
+=======
+
+	/* clear all inode marks for this group */
+	fsnotify_clear_marks_by_group(group);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Clear all marks for this group and queue them for destruction */
 	fsnotify_clear_marks_by_group(group, FSNOTIFY_OBJ_ALL_TYPES_MASK);

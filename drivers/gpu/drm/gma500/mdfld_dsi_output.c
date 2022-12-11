@@ -392,6 +392,11 @@ static struct drm_encoder *mdfld_dsi_connector_best_encoder(
 /*DSI connector funcs*/
 static const struct drm_connector_funcs mdfld_dsi_connector_funcs = {
 	.dpms = drm_helper_connector_dpms,
+<<<<<<< HEAD
+=======
+	.save = mdfld_dsi_connector_save,
+	.restore = mdfld_dsi_connector_restore,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.detect = mdfld_dsi_connector_detect,
 	.fill_modes = drm_helper_probe_single_connector_modes,
 	.set_property = mdfld_dsi_connector_set_property,

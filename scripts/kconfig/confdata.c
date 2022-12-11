@@ -846,7 +846,11 @@ int conf_write(const char *name)
 	struct symbol *sym;
 	struct menu *menu;
 	const char *str;
+<<<<<<< HEAD
 	char tmpname[PATH_MAX + 1], oldname[PATH_MAX + 1];
+=======
+	char dirname[PATH_MAX+1], tmpname[PATH_MAX+22], newname[PATH_MAX+8];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	char *env;
 	int i;
 	bool need_newline = false;

@@ -126,9 +126,21 @@ const struct btrfs_raid_attr btrfs_raid_array[BTRFS_NR_RAID_TYPES] = {
 	},
 };
 
+<<<<<<< HEAD
 const char *btrfs_bg_type_to_raid_name(u64 flags)
 {
 	const int index = btrfs_bg_flags_to_raid_index(flags);
+=======
+const u64 btrfs_raid_group[BTRFS_NR_RAID_TYPES] = {
+	[BTRFS_RAID_RAID10] = BTRFS_BLOCK_GROUP_RAID10,
+	[BTRFS_RAID_RAID1]  = BTRFS_BLOCK_GROUP_RAID1,
+	[BTRFS_RAID_DUP]    = BTRFS_BLOCK_GROUP_DUP,
+	[BTRFS_RAID_RAID0]  = BTRFS_BLOCK_GROUP_RAID0,
+	[BTRFS_RAID_SINGLE] = 0,
+	[BTRFS_RAID_RAID5]  = BTRFS_BLOCK_GROUP_RAID5,
+	[BTRFS_RAID_RAID6]  = BTRFS_BLOCK_GROUP_RAID6,
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (index >= BTRFS_NR_RAID_TYPES)
 		return NULL;
@@ -721,7 +733,55 @@ static bool device_path_matched(const char *path, struct btrfs_device *device)
 	found = strcmp(rcu_str_deref(device->name), path);
 	rcu_read_unlock();
 
+<<<<<<< HEAD
 	return found == 0;
+=======
+	list_for_each_entry(fs_devs, &fs_uuids, list) {
+		int del = 1;
+
+		if (fs_devs->opened)
+			continue;
+		if (fs_devs->seeding)
+			continue;
+
+		list_for_each_entry(dev, &fs_devs->devices, dev_list) {
+
+			if (dev == cur_dev)
+				continue;
+			if (!dev->name)
+				continue;
+
+			/*
+			 * Todo: This won't be enough. What if the same device
+			 * comes back (with new uuid and) with its mapper path?
+			 * But for now, this does help as mostly an admin will
+			 * either use mapper or non mapper path throughout.
+			 */
+			rcu_read_lock();
+			del = strcmp(rcu_str_deref(dev->name),
+						rcu_str_deref(cur_dev->name));
+			rcu_read_unlock();
+			if (!del)
+				break;
+		}
+
+		if (!del) {
+			/* delete the stale device */
+			if (fs_devs->num_devices == 1) {
+				btrfs_sysfs_remove_fsid(fs_devs);
+				list_del(&fs_devs->list);
+				free_fs_devices(fs_devs);
+				break;
+			} else {
+				fs_devs->num_devices--;
+				list_del(&dev->dev_list);
+				rcu_string_free(dev->name);
+				kfree(dev);
+			}
+			break;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -1626,6 +1686,15 @@ static int find_free_dev_extent_start(struct btrfs_device *device,
 	int ret;
 	int slot;
 	struct extent_buffer *l;
+	u64 min_search_start;
+
+	/*
+	 * We don't want to overwrite the superblock on the drive nor any area
+	 * used by the boot loader (grub for example), so we make sure to start
+	 * at an offset of at least 1MB.
+	 */
+	min_search_start = max(root->fs_info->alloc_start, 1024ull * 1024);
+	search_start = max(search_start, min_search_start);
 
 	/*
 	 * We don't want to overwrite the superblock on the drive nor any area
@@ -1770,7 +1839,12 @@ int find_free_dev_extent(struct btrfs_device *device, u64 num_bytes,
 			 u64 *start, u64 *len)
 {
 	/* FIXME use last free of some kind */
+<<<<<<< HEAD
 	return find_free_dev_extent_start(device, num_bytes, 0, start, len);
+=======
+	return find_free_dev_extent_start(trans->transaction, device,
+					  num_bytes, 0, start, len);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int btrfs_free_dev_extent(struct btrfs_trans_handle *trans,
@@ -7186,13 +7260,19 @@ int btrfs_read_sys_array(struct btrfs_fs_info *fs_info)
 
 			num_stripes = btrfs_chunk_num_stripes(sb, chunk);
 			if (!num_stripes) {
+<<<<<<< HEAD
 				btrfs_err(fs_info,
 					"invalid number of stripes %u in sys_array at offset %u",
+=======
+				printk(KERN_ERR
+	    "BTRFS: invalid number of stripes %u in sys_array at offset %u\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					num_stripes, cur_offset);
 				ret = -EIO;
 				break;
 			}
 
+<<<<<<< HEAD
 			type = btrfs_chunk_type(sb, chunk);
 			if ((type & BTRFS_BLOCK_GROUP_SYSTEM) == 0) {
 				btrfs_err(fs_info,
@@ -7202,6 +7282,8 @@ int btrfs_read_sys_array(struct btrfs_fs_info *fs_info)
 				break;
 			}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			len = btrfs_chunk_item_size(num_stripes);
 			if (cur_offset + len > array_size)
 				goto out_short_read;

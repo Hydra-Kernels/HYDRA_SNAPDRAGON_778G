@@ -48,7 +48,10 @@ struct tiadc_dma {
 
 struct tiadc_device {
 	struct ti_tscadc_dev *mfd_tscadc;
+<<<<<<< HEAD
 	struct tiadc_dma dma;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct mutex fifo1_lock; /* to protect fifo access */
 	int channels;
 	int total_ch_enabled;
@@ -526,7 +529,11 @@ static int tiadc_read_raw(struct iio_dev *indio_dev,
 	}
 	am335x_tsc_se_adc_done(adc_dev->mfd_tscadc);
 
+<<<<<<< HEAD
 	if (!found)
+=======
+	if (found == false)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret =  -EBUSY;
 
 err_unlock:

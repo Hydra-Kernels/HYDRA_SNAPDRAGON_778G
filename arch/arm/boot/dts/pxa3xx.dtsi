@@ -143,7 +143,10 @@
 			reg = <0x43100000 90>;
 			interrupts = <45>;
 			clocks = <&clks CLK_NAND>;
+<<<<<<< HEAD
 			clock-names = "core";
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dmas = <&pdma 97 3>;
 			dma-names = "data";
 			#address-cells = <1>;

@@ -365,7 +365,11 @@ static void jz4740_mmc_set_irq_enabled(struct jz4740_mmc_host *host,
 	else
 		host->irq_mask |= irq;
 
+<<<<<<< HEAD
 	jz4740_mmc_write_irq_mask(host, host->irq_mask);
+=======
+	writew(host->irq_mask, host->base + JZ_REG_MMC_IMASK);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock_irqrestore(&host->lock, flags);
 }
 

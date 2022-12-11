@@ -115,6 +115,19 @@ static void ccid2_change_l_seq_window(struct sock *sk, u64 val)
 }
 
 static void dccp_tasklet_schedule(struct sock *sk)
+<<<<<<< HEAD
+=======
+{
+	struct tasklet_struct *t = &dccp_sk(sk)->dccps_xmitlet;
+
+	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
+		sock_hold(sk);
+		__tasklet_schedule(t);
+	}
+}
+
+static void ccid2_hc_tx_rto_expire(unsigned long data)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct tasklet_struct *t = &dccp_sk(sk)->dccps_xmitlet;
 

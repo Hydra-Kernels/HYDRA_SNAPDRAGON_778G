@@ -1187,6 +1187,13 @@ static struct snd_soc_dai_link byt_rt5640_dais[] = {
 	[MERR_DPCM_AUDIO] = {
 		.name = "Baytrail Audio Port",
 		.stream_name = "Baytrail Audio",
+<<<<<<< HEAD
+=======
+		.cpu_dai_name = "media-cpu-dai",
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.codec_name = "snd-soc-dummy",
+		.platform_name = "sst-mfld-platform",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		.nonatomic = true,
 		.dynamic = 1,
 		.dpcm_playback = 1,

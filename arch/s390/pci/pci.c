@@ -401,6 +401,7 @@ static struct pci_ops pci_root_ops = {
 	.write = pci_write,
 };
 
+<<<<<<< HEAD
 #ifdef CONFIG_PCI_IOV
 static struct resource iov_res = {
 	.name	= "PCI IOV res",
@@ -409,6 +410,147 @@ static struct resource iov_res = {
 	.flags	= IORESOURCE_MEM,
 };
 #endif
+=======
+static void zpci_irq_handler(struct airq_struct *airq)
+{
+	unsigned long si, ai;
+	struct airq_iv *aibv;
+	int irqs_on = 0;
+
+	inc_irq_stat(IRQIO_PCI);
+	for (si = 0;;) {
+		/* Scan adapter summary indicator bit vector */
+		si = airq_iv_scan(zpci_aisb_iv, si, airq_iv_end(zpci_aisb_iv));
+		if (si == -1UL) {
+			if (irqs_on++)
+				/* End of second scan with interrupts on. */
+				break;
+			/* First scan complete, reenable interrupts. */
+			if (zpci_set_irq_ctrl(SIC_IRQ_MODE_SINGLE, NULL, PCI_ISC))
+				break;
+			si = 0;
+			continue;
+		}
+
+		/* Scan the adapter interrupt vector for this device. */
+		aibv = zpci_aibv[si];
+		for (ai = 0;;) {
+			ai = airq_iv_scan(aibv, ai, airq_iv_end(aibv));
+			if (ai == -1UL)
+				break;
+			inc_irq_stat(IRQIO_MSI);
+			airq_iv_lock(aibv, ai);
+			generic_handle_irq(airq_iv_get_data(aibv, ai));
+			airq_iv_unlock(aibv, ai);
+		}
+	}
+}
+
+int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+{
+	struct zpci_dev *zdev = to_zpci(pdev);
+	unsigned int hwirq, msi_vecs;
+	unsigned long aisb;
+	struct msi_desc *msi;
+	struct msi_msg msg;
+	int rc, irq;
+
+	if (type == PCI_CAP_ID_MSI && nvec > 1)
+		return 1;
+	msi_vecs = min_t(unsigned int, nvec, zdev->max_msi);
+
+	/* Allocate adapter summary indicator bit */
+	rc = -EIO;
+	aisb = airq_iv_alloc_bit(zpci_aisb_iv);
+	if (aisb == -1UL)
+		goto out;
+	zdev->aisb = aisb;
+
+	/* Create adapter interrupt vector */
+	rc = -ENOMEM;
+	zdev->aibv = airq_iv_create(msi_vecs, AIRQ_IV_DATA | AIRQ_IV_BITLOCK);
+	if (!zdev->aibv)
+		goto out_si;
+
+	/* Wire up shortcut pointer */
+	zpci_aibv[aisb] = zdev->aibv;
+
+	/* Request MSI interrupts */
+	hwirq = 0;
+	for_each_pci_msi_entry(msi, pdev) {
+		rc = -EIO;
+		irq = irq_alloc_desc(0);	/* Alloc irq on node 0 */
+		if (irq < 0)
+			goto out_msi;
+		rc = irq_set_msi_desc(irq, msi);
+		if (rc)
+			goto out_msi;
+		irq_set_chip_and_handler(irq, &zpci_irq_chip,
+					 handle_simple_irq);
+		msg.data = hwirq;
+		msg.address_lo = zdev->msi_addr & 0xffffffff;
+		msg.address_hi = zdev->msi_addr >> 32;
+		pci_write_msi_msg(irq, &msg);
+		airq_iv_set_data(zdev->aibv, hwirq, irq);
+		hwirq++;
+	}
+
+	/* Enable adapter interrupts */
+	rc = zpci_set_airq(zdev);
+	if (rc)
+		goto out_msi;
+
+	return (msi_vecs == nvec) ? 0 : msi_vecs;
+
+out_msi:
+	for_each_pci_msi_entry(msi, pdev) {
+		if (hwirq-- == 0)
+			break;
+		irq_set_msi_desc(msi->irq, NULL);
+		irq_free_desc(msi->irq);
+		msi->msg.address_lo = 0;
+		msi->msg.address_hi = 0;
+		msi->msg.data = 0;
+		msi->irq = 0;
+	}
+	zpci_aibv[aisb] = NULL;
+	airq_iv_release(zdev->aibv);
+out_si:
+	airq_iv_free_bit(zpci_aisb_iv, aisb);
+out:
+	return rc;
+}
+
+void arch_teardown_msi_irqs(struct pci_dev *pdev)
+{
+	struct zpci_dev *zdev = to_zpci(pdev);
+	struct msi_desc *msi;
+	int rc;
+
+	/* Disable adapter interrupts */
+	rc = zpci_clear_airq(zdev);
+	if (rc)
+		return;
+
+	/* Release MSI interrupts */
+	for_each_pci_msi_entry(msi, pdev) {
+		if (msi->msi_attrib.is_msix)
+			__pci_msix_desc_mask_irq(msi, 1);
+		else
+			__pci_msi_desc_mask_irq(msi, 1, 1);
+		irq_set_msi_desc(msi->irq, NULL);
+		irq_free_desc(msi->irq);
+		msi->msg.address_lo = 0;
+		msi->msg.address_hi = 0;
+		msi->msg.data = 0;
+		msi->irq = 0;
+	}
+
+	zpci_aibv[zdev->aisb] = NULL;
+	airq_iv_release(zdev->aibv);
+	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static void zpci_map_resources(struct pci_dev *pdev)
 {
@@ -821,6 +963,14 @@ static int zpci_mem_init(void)
 {
 	BUILD_BUG_ON(!is_power_of_2(__alignof__(struct zpci_fmb)) ||
 		     __alignof__(struct zpci_fmb) < sizeof(struct zpci_fmb));
+<<<<<<< HEAD
+=======
+
+	zdev_fmb_cache = kmem_cache_create("PCI_FMB_cache", sizeof(struct zpci_fmb),
+					   __alignof__(struct zpci_fmb), 0, NULL);
+	if (!zdev_fmb_cache)
+		goto error_zdev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	zdev_fmb_cache = kmem_cache_create("PCI_FMB_cache", sizeof(struct zpci_fmb),
 					   __alignof__(struct zpci_fmb), 0, NULL);

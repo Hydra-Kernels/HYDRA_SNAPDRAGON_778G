@@ -5334,7 +5334,11 @@ static void process_adv_report(struct hci_dev *hdev, u8 type, bdaddr_t *bdaddr,
 	 */
 	conn = check_pending_le_conn(hdev, bdaddr, bdaddr_type, type,
 								direct_addr);
+<<<<<<< HEAD
 	if (!ext_adv && conn && type == LE_ADV_IND && len <= HCI_MAX_AD_LENGTH) {
+=======
+	if (conn && type == LE_ADV_IND) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Store report for later inclusion by
 		 * mgmt_device_connected
 		 */

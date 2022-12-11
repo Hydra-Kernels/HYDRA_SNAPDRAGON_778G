@@ -224,7 +224,10 @@
 	.set		noreorder
 	bne		t1, a0, 1b
 	 EX(sb, a1, -1(a0), .Lsmall_fixup\@)
+<<<<<<< HEAD
 	.set		reorder
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 2:	move		a2, zero
 	jr		ra			/* done */
@@ -270,6 +273,10 @@
 	andi		a2, STORMASK
 	LONG_L		t0, THREAD_BUADDR(t0)
 	LONG_ADDU	a2, a0
+<<<<<<< HEAD
+=======
+	jr		ra
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	LONG_SUBU	a2, t0
 	jr		ra
 
@@ -285,6 +292,15 @@
 	PTR_SUBU	a2, t1, a0
 	PTR_ADDIU	a2, 1
 	jr		ra
+<<<<<<< HEAD
+=======
+	 nop
+
+.Lsmall_fixup\@:
+	PTR_SUBU	a2, t1, a0
+	jr		ra
+	 PTR_ADDIU	a2, 1
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	.endm
 

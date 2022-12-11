@@ -397,10 +397,15 @@ static int tcp_v6_err(struct sk_buff *skb, struct inet6_skb_parm *opt,
 	}
 	seq = ntohl(th->seq);
 	fatal = icmpv6_err_convert(type, code, &err);
+<<<<<<< HEAD
 	if (sk->sk_state == TCP_NEW_SYN_RECV) {
 		tcp_req_err(sk, seq, fatal);
 		return 0;
 	}
+=======
+	if (sk->sk_state == TCP_NEW_SYN_RECV)
+		return tcp_req_err(sk, seq, fatal);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	bh_lock_sock(sk);
 	if (sock_owned_by_user(sk) && type != ICMPV6_PKT_TOOBIG)
@@ -525,11 +530,16 @@ static int tcp_v6_send_synack(const struct sock *sk, struct dst_entry *dst,
 			fl6->flowlabel = ip6_flowlabel(ipv6_hdr(ireq->pktopts));
 
 		rcu_read_lock();
+<<<<<<< HEAD
 		opt = ireq->ipv6_opt;
 		if (!opt)
 			opt = rcu_dereference(np->opt);
 		err = ip6_xmit(sk, skb, fl6, skb->mark ? : sk->sk_mark, opt,
 			       np->tclass, sk->sk_priority);
+=======
+		err = ip6_xmit(sk, skb, fl6, rcu_dereference(np->opt),
+			       np->tclass);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rcu_read_unlock();
 		err = net_xmit_eval(err);
 	}
@@ -1067,10 +1077,16 @@ static void tcp_v6_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
 			tcp_rsk(req)->snt_isn + 1 : tcp_sk(sk)->snd_nxt,
 			tcp_rsk(req)->rcv_nxt,
 			req->rsk_rcv_wnd >> inet_rsk(req)->rcv_wscale,
+<<<<<<< HEAD
 			tcp_time_stamp_raw() + tcp_rsk(req)->ts_off,
 			req->ts_recent, sk->sk_bound_dev_if,
 			tcp_v6_md5_do_lookup(sk, &ipv6_hdr(skb)->saddr),
 			0, 0, sk->sk_priority);
+=======
+			tcp_time_stamp, req->ts_recent, sk->sk_bound_dev_if,
+			tcp_v6_md5_do_lookup(sk, &ipv6_hdr(skb)->saddr),
+			0, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 
@@ -1361,6 +1377,12 @@ static int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
 	if (skb->protocol == htons(ETH_P_IP))
 		return tcp_v4_do_rcv(sk, skb);
 
+<<<<<<< HEAD
+=======
+	if (tcp_filter(sk, skb))
+		goto discard;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 *	socket locking is here for SMP purposes as backlog rcv
 	 *	is currently called with bh processing disabled.
@@ -1496,7 +1518,11 @@ static void tcp_v6_fill_cb(struct sk_buff *skb, const struct ipv6hdr *hdr,
 			skb->tstamp || skb_hwtstamps(skb)->hwtstamp;
 }
 
+<<<<<<< HEAD
 INDIRECT_CALLABLE_SCOPE int tcp_v6_rcv(struct sk_buff *skb)
+=======
+static int tcp_v6_rcv(struct sk_buff *skb)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct sk_buff *skb_to_free;
 	int sdif = inet6_sdif(skb);
@@ -1544,7 +1570,10 @@ process:
 
 	if (sk->sk_state == TCP_NEW_SYN_RECV) {
 		struct request_sock *req = inet_reqsk(sk);
+<<<<<<< HEAD
 		bool req_stolen = false;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct sock *nsk;
 
 		sk = req->rsk_listener;
@@ -1562,6 +1591,7 @@ process:
 			goto lookup;
 		}
 		sock_hold(sk);
+<<<<<<< HEAD
 		refcounted = true;
 		nsk = NULL;
 		if (!tcp_filter(sk, skb)) {
@@ -1582,6 +1612,11 @@ process:
 				sock_put(sk);
 				goto lookup;
 			}
+=======
+		nsk = tcp_check_req(sk, skb, req, false);
+		if (!nsk) {
+			reqsk_put(req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto discard_and_relse;
 		}
 		if (nsk == sk) {
@@ -1610,7 +1645,10 @@ process:
 		goto discard_and_relse;
 	th = (const struct tcphdr *)skb->data;
 	hdr = ipv6_hdr(skb);
+<<<<<<< HEAD
 	tcp_v6_fill_cb(skb, hdr, th);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	skb->dev = NULL;
 
@@ -1895,7 +1933,11 @@ static void get_tcp6_sock(struct seq_file *seq, struct sock *sp, int i)
 	srcp  = ntohs(inet->inet_sport);
 
 	if (icsk->icsk_pending == ICSK_TIME_RETRANS ||
+<<<<<<< HEAD
 	    icsk->icsk_pending == ICSK_TIME_REO_TIMEOUT ||
+=======
+	    icsk->icsk_pending == ICSK_TIME_EARLY_RETRANS ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    icsk->icsk_pending == ICSK_TIME_LOSS_PROBE) {
 		timer_active	= 1;
 		timer_expires	= icsk->icsk_timeout;

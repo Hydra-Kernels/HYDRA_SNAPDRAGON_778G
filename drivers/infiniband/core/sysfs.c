@@ -1352,7 +1352,16 @@ int ib_setup_port_attrs(struct ib_core_device *coredev)
 	return 0;
 
 err_put:
+<<<<<<< HEAD
 	ib_free_port_attrs(coredev);
+=======
+	free_port_list_attributes(device);
+
+err_unregister:
+	device_del(class_dev);
+
+err:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

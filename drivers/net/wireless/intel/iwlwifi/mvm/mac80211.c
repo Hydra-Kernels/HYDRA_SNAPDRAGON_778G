@@ -956,13 +956,21 @@ static int iwl_mvm_mac_ampdu_action(struct ieee80211_hw *hw,
 {
 	struct iwl_mvm *mvm = IWL_MAC80211_GET_MVM(hw);
 	int ret;
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
+=======
+	bool tx_agg_ref = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/mvm/mac80211.c
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;
 	u16 *ssn = &params->ssn;
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
 	u16 buf_size = params->buf_size;
 	bool amsdu = params->amsdu;
 	u16 timeout = params->timeout;
+=======
+	u8 buf_size = params->buf_size;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/mvm/mac80211.c
 
 	IWL_DEBUG_HT(mvm, "A-MPDU action on addr %pM tid %d: action %d\n",
 		     sta->addr, tid, action);
@@ -1200,6 +1208,14 @@ void __iwl_mvm_mac_stop(struct iwl_mvm *mvm)
 	iwl_mvm_async_handlers_purge(mvm);
 	/* async_handlers_list is empty and will stay empty: HW is stopped */
 
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
+=======
+	/* the fw is stopped, the aux sta is dead: clean up driver state */
+	iwl_mvm_del_aux_sta(mvm);
+
+	iwl_free_fw_paging(mvm);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/mvm/mac80211.c
 	/*
 	 * Clear IN_HW_RESTART and HW_RESTART_REQUESTED flag when stopping the
 	 * hw (as restart_complete() won't be called in this case) and mac80211
@@ -4769,10 +4785,16 @@ static void iwl_mvm_mac_sta_statistics(struct ieee80211_hw *hw,
 	struct iwl_mvm_vif *mvmvif = iwl_mvm_vif_from_mac80211(vif);
 	struct iwl_mvm_sta *mvmsta = iwl_mvm_sta_from_mac80211(sta);
 
+<<<<<<< HEAD:drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c
 	if (mvmsta->avg_energy) {
 		sinfo->signal_avg = mvmsta->avg_energy;
 		sinfo->filled |= BIT_ULL(NL80211_STA_INFO_SIGNAL_AVG);
 	}
+=======
+	if (!fw_has_capa(&mvm->fw->ucode_capa,
+			 IWL_UCODE_TLV_CAPA_RADIO_BEACON_STATS))
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/iwlwifi/mvm/mac80211.c
 
 	/* if beacon filtering isn't on mac80211 does it anyway */
 	if (!(vif->driver_flags & IEEE80211_VIF_BEACON_FILTER))

@@ -47,7 +47,11 @@ static inline void tsb_context_switch_ctx(struct mm_struct *mm,
 #else
 			     NULL
 #endif
+<<<<<<< HEAD
 			     , __pa(&mm->context.tsb_descr[MM_TSB_BASE]),
+=======
+			     , __pa(&mm->context.tsb_descr[0]),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			     ctx);
 }
 
@@ -138,6 +142,7 @@ static inline void switch_mm(struct mm_struct *old_mm, struct mm_struct *mm, str
 
 #define deactivate_mm(tsk,mm)	do { } while (0)
 #define activate_mm(active_mm, mm) switch_mm(active_mm, mm, NULL)
+<<<<<<< HEAD
 
 #define  __HAVE_ARCH_START_CONTEXT_SWITCH
 static inline void arch_start_context_switch(struct task_struct *prev)
@@ -187,6 +192,8 @@ static inline void finish_arch_post_lock_switch(void)
 	}
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* !(__ASSEMBLY__) */
 
 #endif /* !(__SPARC64_MMU_CONTEXT_H) */

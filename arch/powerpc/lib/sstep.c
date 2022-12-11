@@ -1208,7 +1208,10 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
 	case 19:
 		switch ((instr >> 1) & 0x3ff) {
 		case 0:		/* mcrf */
+<<<<<<< HEAD
 			op->type = COMPUTE + SETCC;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			rd = 7 - ((instr >> 23) & 0x7);
 			ra = 7 - ((instr >> 18) & 0x7);
 			rd *= 4;
@@ -1542,6 +1545,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
 #endif
 
 		case 19:	/* mfcr */
+<<<<<<< HEAD
 			imm = 0xffffffffUL;
 			if ((instr >> 20) & 1) {
 				imm = 0xf0000000UL;
@@ -1553,6 +1557,24 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
 			}
 			op->val = regs->ccr & imm;
 			goto compute_done;
+=======
+			if ((instr >> 20) & 1) {
+				imm = 0xf0000000UL;
+				for (sh = 0; sh < 8; ++sh) {
+					if (instr & (0x80000 >> sh)) {
+						regs->gpr[rd] = regs->ccr & imm;
+						break;
+					}
+					imm >>= 4;
+				}
+
+				goto instr_done;
+			}
+
+			regs->gpr[rd] = regs->ccr;
+			regs->gpr[rd] &= 0xffffffffUL;
+			goto instr_done;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		case 144:	/* mtcrf */
 			op->type = COMPUTE + SETCC;
@@ -3126,6 +3148,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
 		goto instr_done;
 	}
 
+<<<<<<< HEAD
 	switch (type) {
 	case CACHEOP:
 		ea = truncate_if_32bit(regs->msr, op.ea);
@@ -3134,13 +3157,45 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
 		switch (op.type & CACHEOP_MASK) {
 		case DCBST:
 			__cacheop_user_asmx(ea, err, "dcbst");
+=======
+	case LARX:
+		if (op.ea & (size - 1))
+			break;		/* can't handle misaligned */
+		err = -EFAULT;
+		if (!address_ok(regs, op.ea, size))
+			goto ldst_done;
+		err = 0;
+		switch (size) {
+		case 4:
+			__get_user_asmx(val, op.ea, err, "lwarx");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		case DCBF:
 			__cacheop_user_asmx(ea, err, "dcbf");
 			break;
+<<<<<<< HEAD
 		case DCBTST:
 			if (op.reg == 0)
 				prefetchw((void *) ea);
+=======
+		default:
+			return 0;
+		}
+		if (!err)
+			regs->gpr[op.reg] = val;
+		goto ldst_done;
+
+	case STCX:
+		if (op.ea & (size - 1))
+			break;		/* can't handle misaligned */
+		err = -EFAULT;
+		if (!address_ok(regs, op.ea, size))
+			goto ldst_done;
+		err = 0;
+		switch (size) {
+		case 4:
+			__put_user_asmx(op.val, op.ea, err, "stwcx.", cr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		case DCBT:
 			if (op.reg == 0)
@@ -3153,9 +3208,109 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
 			err = emulate_dcbz(ea, regs);
 			break;
 		}
+<<<<<<< HEAD
 		if (err) {
 			regs->dar = ea;
 			return 0;
+=======
+		if (!err)
+			regs->ccr = (regs->ccr & 0x0fffffff) |
+				(cr & 0xe0000000) |
+				((regs->xer >> 3) & 0x10000000);
+		goto ldst_done;
+
+	case LOAD:
+		err = read_mem(&regs->gpr[op.reg], op.ea, size, regs);
+		if (!err) {
+			if (op.type & SIGNEXT)
+				do_signext(&regs->gpr[op.reg], size);
+			if (op.type & BYTEREV)
+				do_byterev(&regs->gpr[op.reg], size);
+		}
+		goto ldst_done;
+
+#ifdef CONFIG_PPC_FPU
+	case LOAD_FP:
+		if (size == 4)
+			err = do_fp_load(op.reg, do_lfs, op.ea, size, regs);
+		else
+			err = do_fp_load(op.reg, do_lfd, op.ea, size, regs);
+		goto ldst_done;
+#endif
+#ifdef CONFIG_ALTIVEC
+	case LOAD_VMX:
+		err = do_vec_load(op.reg, do_lvx, op.ea & ~0xfUL, regs);
+		goto ldst_done;
+#endif
+#ifdef CONFIG_VSX
+	case LOAD_VSX:
+		err = do_vsx_load(op.reg, do_lxvd2x, op.ea, regs);
+		goto ldst_done;
+#endif
+	case LOAD_MULTI:
+		if (regs->msr & MSR_LE)
+			return 0;
+		rd = op.reg;
+		for (i = 0; i < size; i += 4) {
+			nb = size - i;
+			if (nb > 4)
+				nb = 4;
+			err = read_mem(&regs->gpr[rd], op.ea, nb, regs);
+			if (err)
+				return 0;
+			if (nb < 4)	/* left-justify last bytes */
+				regs->gpr[rd] <<= 32 - 8 * nb;
+			op.ea += 4;
+			++rd;
+		}
+		goto instr_done;
+
+	case STORE:
+		if ((op.type & UPDATE) && size == sizeof(long) &&
+		    op.reg == 1 && op.update_reg == 1 &&
+		    !(regs->msr & MSR_PR) &&
+		    op.ea >= regs->gpr[1] - STACK_INT_FRAME_SIZE) {
+			err = handle_stack_update(op.ea, regs);
+			goto ldst_done;
+		}
+		err = write_mem(op.val, op.ea, size, regs);
+		goto ldst_done;
+
+#ifdef CONFIG_PPC_FPU
+	case STORE_FP:
+		if (size == 4)
+			err = do_fp_store(op.reg, do_stfs, op.ea, size, regs);
+		else
+			err = do_fp_store(op.reg, do_stfd, op.ea, size, regs);
+		goto ldst_done;
+#endif
+#ifdef CONFIG_ALTIVEC
+	case STORE_VMX:
+		err = do_vec_store(op.reg, do_stvx, op.ea & ~0xfUL, regs);
+		goto ldst_done;
+#endif
+#ifdef CONFIG_VSX
+	case STORE_VSX:
+		err = do_vsx_store(op.reg, do_stxvd2x, op.ea, regs);
+		goto ldst_done;
+#endif
+	case STORE_MULTI:
+		if (regs->msr & MSR_LE)
+			return 0;
+		rd = op.reg;
+		for (i = 0; i < size; i += 4) {
+			val = regs->gpr[rd];
+			nb = size - i;
+			if (nb > 4)
+				nb = 4;
+			else
+				val >>= 32 - 8 * nb;
+			err = write_mem(val, op.ea, nb, regs);
+			if (err)
+				return 0;
+			op.ea += 4;
+			++rd;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		goto instr_done;
 

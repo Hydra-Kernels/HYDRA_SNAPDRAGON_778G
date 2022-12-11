@@ -232,6 +232,21 @@ static int ocfs2_set_acl(handle_t *handle,
 	switch (type) {
 	case ACL_TYPE_ACCESS:
 		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_ACCESS;
+<<<<<<< HEAD
+=======
+		if (acl) {
+			umode_t mode;
+
+			ret = posix_acl_update_mode(inode, &mode, &acl);
+			if (ret)
+				return ret;
+
+			ret = ocfs2_acl_set_mode(inode, di_bh,
+						 handle, mode);
+			if (ret)
+				return ret;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	case ACL_TYPE_DEFAULT:
 		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_DEFAULT;
@@ -299,10 +314,13 @@ struct posix_acl *ocfs2_iop_get_acl(struct inode *inode, int type)
 	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
 		return NULL;
 
+<<<<<<< HEAD
 	had_lock = ocfs2_inode_lock_tracker(inode, &di_bh, 0, &oh);
 	if (had_lock < 0)
 		return ERR_PTR(had_lock);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	down_read(&OCFS2_I(inode)->ip_xattr_sem);
 	acl = ocfs2_get_acl_nolock(inode, type, di_bh);
 	up_read(&OCFS2_I(inode)->ip_xattr_sem);
@@ -327,8 +345,13 @@ int ocfs2_acl_chmod(struct inode *inode, struct buffer_head *bh)
 	down_read(&OCFS2_I(inode)->ip_xattr_sem);
 	acl = ocfs2_get_acl_nolock(inode, ACL_TYPE_ACCESS, bh);
 	up_read(&OCFS2_I(inode)->ip_xattr_sem);
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(acl))
 		return PTR_ERR_OR_ZERO(acl);
+=======
+	if (IS_ERR(acl) || !acl)
+		return PTR_ERR(acl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = __posix_acl_chmod(&acl, GFP_KERNEL, inode->i_mode);
 	if (ret)
 		return ret;

@@ -45,6 +45,7 @@ static inline unsigned long pgd_entry_type(struct mm_struct *mm)
 	return _REGION1_ENTRY_EMPTY;
 }
 
+<<<<<<< HEAD
 int crst_table_upgrade(struct mm_struct *mm, unsigned long limit);
 void crst_table_downgrade(struct mm_struct *);
 
@@ -62,6 +63,10 @@ static inline void p4d_free(struct mm_struct *mm, p4d_t *p4d)
 	if (!mm_p4d_folded(mm))
 		crst_table_free(mm, (unsigned long *) p4d);
 }
+=======
+int crst_table_upgrade(struct mm_struct *);
+void crst_table_downgrade(struct mm_struct *);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long address)
 {
@@ -120,7 +125,11 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 
 	if (!table)
 		return NULL;
+<<<<<<< HEAD
 	if (mm->context.asce_limit == _REGION3_SIZE) {
+=======
+	if (mm->context.asce_limit == (1UL << 31)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Forking a compat process with 2 page table levels */
 		if (!pgtable_pmd_page_ctor(virt_to_page(table))) {
 			crst_table_free(mm, table);
@@ -132,7 +141,11 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 
 static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
+<<<<<<< HEAD
 	if (mm->context.asce_limit == _REGION3_SIZE)
+=======
+	if (mm->context.asce_limit == (1UL << 31))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pgtable_pmd_page_dtor(virt_to_page(pgd));
 	crst_table_free(mm, (unsigned long *) pgd);
 }

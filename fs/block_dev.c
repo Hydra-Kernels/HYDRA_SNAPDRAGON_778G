@@ -1454,6 +1454,12 @@ int revalidate_disk(struct gendisk *disk)
 
 	if (disk->fops->revalidate_disk)
 		ret = disk->fops->revalidate_disk(disk);
+<<<<<<< HEAD
+=======
+	bdev = bdget_disk(disk, 0);
+	if (!bdev)
+		return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Hidden disks don't have associated bdev so there's no point in

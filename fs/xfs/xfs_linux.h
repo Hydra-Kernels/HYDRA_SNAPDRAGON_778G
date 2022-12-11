@@ -254,7 +254,10 @@ int xfs_rw_bdev(struct block_device *bdev, sector_t sector, unsigned int count,
 #define XFS_IS_REALTIME_INODE(ip)			\
 	(((ip)->i_d.di_flags & XFS_DIFLAG_REALTIME) &&	\
 	 (ip)->i_mount->m_rtdev_targp)
+<<<<<<< HEAD
 #define XFS_IS_REALTIME_MOUNT(mp) ((mp)->m_rtdev_targp ? 1 : 0)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else
 #define XFS_IS_REALTIME_INODE(ip) (0)
 #define XFS_IS_REALTIME_MOUNT(mp) (0)

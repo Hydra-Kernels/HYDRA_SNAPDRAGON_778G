@@ -1056,7 +1056,11 @@ int cxlflash_disk_virtual_open(struct scsi_device *sdev, void *arg)
 	virt->last_lba = last_lba;
 	virt->rsrc_handle = rsrc_handle;
 
+<<<<<<< HEAD
 	if (get_num_ports(lli->port_sel) > 1)
+=======
+	if (lli->port_sel == BOTH_PORTS)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		virt->hdr.return_flags |= DK_CXLFLASH_ALL_PORTS_ACTIVE;
 out:
 	if (likely(ctxi))

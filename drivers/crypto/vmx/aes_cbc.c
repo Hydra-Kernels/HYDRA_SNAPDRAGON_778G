@@ -109,6 +109,7 @@ static int p8_aes_cbc_encrypt(struct skcipher_request *req)
 	return p8_aes_cbc_crypt(req, 1);
 }
 
+<<<<<<< HEAD
 static int p8_aes_cbc_decrypt(struct skcipher_request *req)
 {
 	return p8_aes_cbc_crypt(req, 0);
@@ -130,4 +131,26 @@ struct skcipher_alg p8_aes_cbc_alg = {
 	.min_keysize = AES_MIN_KEY_SIZE,
 	.max_keysize = AES_MAX_KEY_SIZE,
 	.ivsize = AES_BLOCK_SIZE,
+=======
+struct crypto_alg p8_aes_cbc_alg = {
+	.cra_name = "cbc(aes)",
+	.cra_driver_name = "p8_aes_cbc",
+	.cra_module = THIS_MODULE,
+	.cra_priority = 2000,
+	.cra_type = &crypto_blkcipher_type,
+	.cra_flags = CRYPTO_ALG_TYPE_BLKCIPHER | CRYPTO_ALG_NEED_FALLBACK,
+	.cra_alignmask = 0,
+	.cra_blocksize = AES_BLOCK_SIZE,
+	.cra_ctxsize = sizeof(struct p8_aes_cbc_ctx),
+	.cra_init = p8_aes_cbc_init,
+	.cra_exit = p8_aes_cbc_exit,
+	.cra_blkcipher = {
+			  .ivsize = AES_BLOCK_SIZE,
+			  .min_keysize = AES_MIN_KEY_SIZE,
+			  .max_keysize = AES_MAX_KEY_SIZE,
+			  .setkey = p8_aes_cbc_setkey,
+			  .encrypt = p8_aes_cbc_encrypt,
+			  .decrypt = p8_aes_cbc_decrypt,
+	},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };

@@ -131,8 +131,16 @@ static int crypto_gcm_setkey(struct crypto_aead *aead, const u8 *key,
 	skcipher_request_set_crypt(&data->req, data->sg, data->sg,
 				   sizeof(data->hash), data->iv);
 
+<<<<<<< HEAD
 	err = crypto_wait_req(crypto_skcipher_encrypt(&data->req),
 							&data->wait);
+=======
+	err = crypto_ablkcipher_encrypt(&data->req);
+	if (err == -EINPROGRESS || err == -EBUSY) {
+		wait_for_completion(&data->result.completion);
+		err = data->result.err;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (err)
 		goto out;

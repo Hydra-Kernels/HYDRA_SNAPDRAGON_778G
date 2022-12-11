@@ -84,11 +84,22 @@ xfs_attr_shortform_list(xfs_attr_list_context_t *context)
 	    (XFS_ISRESET_CURSOR(cursor) &&
 	     (dp->i_afp->if_bytes + sf->hdr.count * 16) < context->bufsize)) {
 		for (i = 0, sfe = &sf->list[0]; i < sf->hdr.count; i++) {
+<<<<<<< HEAD
 			context->put_listent(context,
 					     sfe->flags,
 					     sfe->nameval,
 					     (int)sfe->namelen,
 					     (int)sfe->valuelen);
+=======
+			error = context->put_listent(context,
+					   sfe->flags,
+					   sfe->nameval,
+					   (int)sfe->namelen,
+					   (int)sfe->valuelen,
+					   &sfe->nameval[sfe->namelen]);
+			if (error)
+				return error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			/*
 			 * Either search callback finished early or
 			 * didn't fit it all in the buffer after all.
@@ -174,11 +185,24 @@ xfs_attr_shortform_list(xfs_attr_list_context_t *context)
 			cursor->hashval = sbp->hash;
 			cursor->offset = 0;
 		}
+<<<<<<< HEAD
 		context->put_listent(context,
 				     sbp->flags,
 				     sbp->name,
 				     sbp->namelen,
 				     sbp->valuelen);
+=======
+		error = context->put_listent(context,
+					sbp->flags,
+					sbp->name,
+					sbp->namelen,
+					sbp->valuelen,
+					&sbp->name[sbp->namelen]);
+		if (error) {
+			kmem_free(sbuf);
+			return error;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (context->seen_enough)
 			break;
 		cursor->offset++;
@@ -451,10 +475,47 @@ xfs_attr3_leaf_list_int(
 		} else {
 			xfs_attr_leaf_name_remote_t *name_rmt;
 
+<<<<<<< HEAD
 			name_rmt = xfs_attr3_leaf_name_remote(leaf, i);
 			name = name_rmt->name;
 			namelen = name_rmt->namelen;
 			valuelen = be32_to_cpu(name_rmt->valuelen);
+=======
+			int valuelen = be32_to_cpu(name_rmt->valuelen);
+
+			if (context->put_value) {
+				xfs_da_args_t args;
+
+				memset((char *)&args, 0, sizeof(args));
+				args.geo = context->dp->i_mount->m_attr_geo;
+				args.dp = context->dp;
+				args.whichfork = XFS_ATTR_FORK;
+				args.valuelen = valuelen;
+				args.rmtvaluelen = valuelen;
+				args.value = kmem_alloc(valuelen, KM_SLEEP | KM_NOFS);
+				args.rmtblkno = be32_to_cpu(name_rmt->valueblk);
+				args.rmtblkcnt = xfs_attr3_rmt_blocks(
+							args.dp->i_mount, valuelen);
+				retval = xfs_attr_rmtval_get(&args);
+				if (!retval)
+					retval = context->put_listent(context,
+							entry->flags,
+							name_rmt->name,
+							(int)name_rmt->namelen,
+							valuelen,
+							args.value);
+				kmem_free(args.value);
+			} else {
+				retval = context->put_listent(context,
+						entry->flags,
+						name_rmt->name,
+						(int)name_rmt->namelen,
+						valuelen,
+						NULL);
+			}
+			if (retval)
+				return retval;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		context->put_listent(context, entry->flags,
@@ -574,7 +635,11 @@ xfs_attr_put_listent(
 		trace_xfs_attr_list_full(context);
 		alist->al_more = 1;
 		context->seen_enough = 1;
+<<<<<<< HEAD
 		return;
+=======
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	aep = (attrlist_ent_t *)&context->alist[context->firstu];

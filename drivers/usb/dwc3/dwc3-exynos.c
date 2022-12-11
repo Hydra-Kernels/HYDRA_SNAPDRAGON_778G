@@ -66,12 +66,37 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, exynos);
 
+<<<<<<< HEAD
 	for (i = 0; i < exynos->num_clks; i++) {
 		exynos->clks[i] = devm_clk_get(dev, exynos->clk_names[i]);
 		if (IS_ERR(exynos->clks[i])) {
 			dev_err(dev, "failed to get clock: %s\n",
 				exynos->clk_names[i]);
 			return PTR_ERR(exynos->clks[i]);
+=======
+	exynos->dev	= dev;
+
+	exynos->clk = devm_clk_get(dev, "usbdrd30");
+	if (IS_ERR(exynos->clk)) {
+		dev_err(dev, "couldn't get clock\n");
+		return -EINVAL;
+	}
+	clk_prepare_enable(exynos->clk);
+
+	exynos->susp_clk = devm_clk_get(dev, "usbdrd30_susp_clk");
+	if (IS_ERR(exynos->susp_clk)) {
+		dev_info(dev, "no suspend clk specified\n");
+		exynos->susp_clk = NULL;
+	}
+	clk_prepare_enable(exynos->susp_clk);
+
+	if (of_device_is_compatible(node, "samsung,exynos7-dwusb3")) {
+		exynos->axius_clk = devm_clk_get(dev, "usbdrd30_axius_clk");
+		if (IS_ERR(exynos->axius_clk)) {
+			dev_err(dev, "no AXI UpScaler clk specified\n");
+			ret = -ENODEV;
+			goto axius_clk_err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -109,24 +134,46 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 		goto vdd10_err;
 	}
 
+	ret = dwc3_exynos_register_phys(exynos);
+	if (ret) {
+		dev_err(dev, "couldn't register PHYs\n");
+		goto err4;
+	}
+
 	if (node) {
 		ret = of_platform_populate(node, NULL, NULL, dev);
 		if (ret) {
 			dev_err(dev, "failed to add dwc3 core\n");
+<<<<<<< HEAD
 			goto populate_err;
+=======
+			goto err5;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	} else {
 		dev_err(dev, "no device node, failed to add dwc3 core\n");
 		ret = -ENODEV;
+<<<<<<< HEAD
 		goto populate_err;
+=======
+		goto err5;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
 
+<<<<<<< HEAD
 populate_err:
+=======
+err5:
+	platform_device_unregister(exynos->usb2_phy);
+	platform_device_unregister(exynos->usb3_phy);
+err4:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	regulator_disable(exynos->vdd10);
 vdd10_err:
 	regulator_disable(exynos->vdd33);
+<<<<<<< HEAD
 vdd33_err:
 	for (i = exynos->num_clks - 1; i >= 0; i--)
 		clk_disable_unprepare(exynos->clks[i]);
@@ -134,6 +181,13 @@ vdd33_err:
 	if (exynos->suspend_clk_idx >= 0)
 		clk_disable_unprepare(exynos->clks[exynos->suspend_clk_idx]);
 
+=======
+err2:
+	clk_disable_unprepare(exynos->axius_clk);
+axius_clk_err:
+	clk_disable_unprepare(exynos->susp_clk);
+	clk_disable_unprepare(exynos->clk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 

@@ -546,8 +546,13 @@ relevant attribute files are ``usb2_hardware_lpm`` and ``usb3_hardware_lpm``.
 		can write y/Y/1 or n/N/0 to the file to	enable/disable
 		USB2 hardware LPM manually. This is for	test purpose mainly.
 
+<<<<<<< HEAD:Documentation/driver-api/usb/power-management.rst
 	``power/usb3_hardware_lpm_u1``
 	``power/usb3_hardware_lpm_u2``
+=======
+	power/usb3_hardware_lpm_u1
+	power/usb3_hardware_lpm_u2
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:Documentation/usb/power-management.txt
 
 		When a USB 3.0 lpm-capable device is plugged in to a
 		xHCI host which supports link PM, it will check if U1

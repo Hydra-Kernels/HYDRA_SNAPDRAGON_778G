@@ -703,7 +703,27 @@ u64 nd_region_interleave_set_altcookie(struct nd_region *nd_region)
 	return 0;
 }
 
+<<<<<<< HEAD
 void nd_mapping_free_labels(struct nd_mapping *nd_mapping)
+=======
+u64 nd_region_interleave_set_altcookie(struct nd_region *nd_region)
+{
+	struct nd_interleave_set *nd_set = nd_region->nd_set;
+
+	if (nd_set)
+		return nd_set->altcookie;
+	return 0;
+}
+
+/*
+ * Upon successful probe/remove, take/release a reference on the
+ * associated interleave set (if present), and plant new btt + namespace
+ * seeds.  Also, on the removal of a BLK region, notify the provider to
+ * disable the region.
+ */
+static void nd_region_notify_driver_action(struct nvdimm_bus *nvdimm_bus,
+		struct device *dev, bool probe)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct nd_label_ent *label_ent, *e;
 

@@ -124,7 +124,11 @@ int __init early_init_dt_scan_opal(unsigned long node,
 
 	if (of_flat_dt_is_compatible(node, "ibm,opal-v3")) {
 		powerpc_firmware_features |= FW_FEATURE_OPAL;
+<<<<<<< HEAD
 		pr_debug("OPAL detected !\n");
+=======
+		pr_info("OPAL detected !\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else {
 		panic("OPAL != V3 detected, no longer supported.\n");
 	}
@@ -369,12 +373,48 @@ static int __opal_put_chars(uint32_t vtermno, const char *data, int total_len, b
 	if (!opal.entry)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	if (atomic)
 		spin_lock_irqsave(&opal_write_lock, flags);
 	rc = opal_console_write_buffer_space(vtermno, &olen);
 	if (rc || be64_to_cpu(olen) < total_len) {
 		/* Closed -> drop characters */
 		if (rc)
+=======
+	/* We want put_chars to be atomic to avoid mangling of hvsi
+	 * packets. To do that, we first test for room and return
+	 * -EAGAIN if there isn't enough.
+	 *
+	 * Unfortunately, opal_console_write_buffer_space() doesn't
+	 * appear to work on opal v1, so we just assume there is
+	 * enough room and be done with it
+	 */
+	spin_lock_irqsave(&opal_write_lock, flags);
+	rc = opal_console_write_buffer_space(vtermno, &olen);
+	len = be64_to_cpu(olen);
+	if (rc || len < total_len) {
+		spin_unlock_irqrestore(&opal_write_lock, flags);
+		/* Closed -> drop characters */
+		if (rc)
+			return total_len;
+		opal_poll_events(NULL);
+		return -EAGAIN;
+	}
+
+	/* We still try to handle partial completions, though they
+	 * should no longer happen.
+	 */
+	rc = OPAL_BUSY;
+	while(total_len > 0 && (rc == OPAL_BUSY ||
+				rc == OPAL_BUSY_EVENT || rc == OPAL_SUCCESS)) {
+		olen = cpu_to_be64(total_len);
+		rc = opal_console_write(vtermno, &olen, data);
+		len = be64_to_cpu(olen);
+
+		/* Closed or other error drop */
+		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
+		    rc != OPAL_BUSY_EVENT) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			written = total_len;
 		else
 			written = -EAGAIN;
@@ -1001,6 +1041,9 @@ static int __init opal_init(void)
 
 	/* Initialise OPAL Power control interface */
 	opal_power_control_init();
+
+	/* Initialise OPAL kmsg dumper for flushing console on panic */
+	opal_kmsg_init();
 
 	return 0;
 }

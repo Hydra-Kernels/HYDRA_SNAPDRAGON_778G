@@ -41,7 +41,11 @@ u32 hw_read_otgsc(struct ci_hdrc *ci, u32 mask)
 		else
 			val &= ~OTGSC_BSVIS;
 
+<<<<<<< HEAD
 		if (cable->connected)
+=======
+		if (cable->state)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			val |= OTGSC_BSV;
 		else
 			val &= ~OTGSC_BSV;
@@ -59,10 +63,17 @@ u32 hw_read_otgsc(struct ci_hdrc *ci, u32 mask)
 		else
 			val &= ~OTGSC_IDIS;
 
+<<<<<<< HEAD
 		if (cable->connected)
 			val &= ~OTGSC_ID; /* host */
 		else
 			val |= OTGSC_ID; /* device */
+=======
+		if (cable->state)
+			val |= OTGSC_ID;
+		else
+			val &= ~OTGSC_ID;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (cable->enabled)
 			val |= OTGSC_IDIE;
@@ -83,7 +94,11 @@ void hw_write_otgsc(struct ci_hdrc *ci, u32 mask, u32 data)
 	struct ci_hdrc_cable *cable;
 
 	cable = &ci->platdata->vbus_extcon;
+<<<<<<< HEAD
 	if (!IS_ERR(cable->edev) || ci->role_switch) {
+=======
+	if (!IS_ERR(cable->edev)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (data & mask & OTGSC_BSVIS)
 			cable->changed = false;
 
@@ -97,7 +112,11 @@ void hw_write_otgsc(struct ci_hdrc *ci, u32 mask, u32 data)
 	}
 
 	cable = &ci->platdata->id_extcon;
+<<<<<<< HEAD
 	if (!IS_ERR(cable->edev) || ci->role_switch) {
+=======
+	if (!IS_ERR(cable->edev)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (data & mask & OTGSC_IDIS)
 			cable->changed = false;
 

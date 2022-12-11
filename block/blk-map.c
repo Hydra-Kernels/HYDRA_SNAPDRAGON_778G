@@ -130,12 +130,20 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
 	if (!iter_is_iovec(iter))
 		goto fail;
 
+<<<<<<< HEAD
 	if (map_data)
 		copy = true;
 	else if (iov_iter_alignment(iter) & align)
 		copy = true;
 	else if (queue_virt_boundary(q))
 		copy = queue_virt_boundary(q) & iov_iter_gap_alignment(iter);
+=======
+	if (!iter_is_iovec(iter))
+		return -EINVAL;
+
+	iov_for_each(iov, i, *iter) {
+		unsigned long uaddr = (unsigned long) iov.iov_base;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	i = *iter;
 	do {

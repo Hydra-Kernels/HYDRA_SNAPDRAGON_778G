@@ -16,8 +16,12 @@
 #define LVDCR0_LVMD_MASK		(0xf << 8)
 #define LVDCR0_LVMD_SHIFT		8
 #define LVDCR0_PLLON			(1 << 4)
+<<<<<<< HEAD
 #define LVDCR0_PWD			(1 << 2)		/* Gen3 only */
 #define LVDCR0_BEN			(1 << 2)		/* Gen2 only */
+=======
+#define LVDCR0_BEN			(1 << 2)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define LVDCR0_LVEN			(1 << 1)
 #define LVDCR0_LVRES			(1 << 0)
 

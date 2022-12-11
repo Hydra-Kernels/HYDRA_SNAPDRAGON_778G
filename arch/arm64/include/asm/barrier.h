@@ -82,33 +82,54 @@ static inline unsigned long array_index_mask_nospec(unsigned long idx,
 
 #define __smp_store_release(p, v)					\
 do {									\
+<<<<<<< HEAD
 	typeof(p) __p = (p);						\
 	union { typeof(*p) __val; char __c[1]; } __u =			\
 		{ .__val = (__force typeof(*p)) (v) };			\
+=======
+	union { typeof(*p) __val; char __c[1]; } __u =			\
+		{ .__val = (__force typeof(*p)) (v) }; 			\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	compiletime_assert_atomic_type(*p);				\
 	kasan_check_write(__p, sizeof(*p));				\
 	switch (sizeof(*p)) {						\
 	case 1:								\
 		asm volatile ("stlrb %w1, %0"				\
+<<<<<<< HEAD
 				: "=Q" (*__p)				\
+=======
+				: "=Q" (*p)				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				: "r" (*(__u8 *)__u.__c)		\
 				: "memory");				\
 		break;							\
 	case 2:								\
 		asm volatile ("stlrh %w1, %0"				\
+<<<<<<< HEAD
 				: "=Q" (*__p)				\
+=======
+				: "=Q" (*p)				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				: "r" (*(__u16 *)__u.__c)		\
 				: "memory");				\
 		break;							\
 	case 4:								\
 		asm volatile ("stlr %w1, %0"				\
+<<<<<<< HEAD
 				: "=Q" (*__p)				\
+=======
+				: "=Q" (*p)				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				: "r" (*(__u32 *)__u.__c)		\
 				: "memory");				\
 		break;							\
 	case 8:								\
 		asm volatile ("stlr %1, %0"				\
+<<<<<<< HEAD
 				: "=Q" (*__p)				\
+=======
+				: "=Q" (*p)				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				: "r" (*(__u64 *)__u.__c)		\
 				: "memory");				\
 		break;							\

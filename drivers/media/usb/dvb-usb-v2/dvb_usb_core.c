@@ -1016,12 +1016,15 @@ void dvb_usbv2_disconnect(struct usb_interface *intf)
 
 	dvb_usbv2_exit(d);
 
+<<<<<<< HEAD
 	if (d->props->disconnect)
 		d->props->disconnect(d);
 
 	kfree(d->priv);
 	kfree(d);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pr_info("%s: '%s:%s' successfully deinitialized and disconnected\n",
 		KBUILD_MODNAME, drvname, devname);
 	kfree(devname);

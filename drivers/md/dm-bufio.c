@@ -932,6 +932,36 @@ static void __write_dirty_buffers_async(struct dm_bufio_client *c, int no_wait,
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * Get writeback threshold and buffer limit for a given client.
+ */
+static void __get_memory_limit(struct dm_bufio_client *c,
+			       unsigned long *threshold_buffers,
+			       unsigned long *limit_buffers)
+{
+	unsigned long buffers;
+
+	if (unlikely(ACCESS_ONCE(dm_bufio_cache_size) != dm_bufio_cache_size_latch)) {
+		if (mutex_trylock(&dm_bufio_clients_lock)) {
+			__cache_size_refresh();
+			mutex_unlock(&dm_bufio_clients_lock);
+		}
+	}
+
+	buffers = dm_bufio_cache_size_per_client >>
+		  (c->sectors_per_block_bits + SECTOR_SHIFT);
+
+	if (buffers < c->minimum_buffers)
+		buffers = c->minimum_buffers;
+
+	*limit_buffers = buffers;
+	*threshold_buffers = mult_frac(buffers,
+				       DM_BUFIO_WRITEBACK_PERCENT, 100);
+}
+
+/*
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * Check if we're over watermark.
  * If we are over threshold_buffers, start freeing buffers.
  * If we're over "limit_buffers", block until we get under the limit.
@@ -1551,12 +1581,17 @@ static bool __try_evict_buffer(struct dm_buffer *b, gfp_t gfp)
 
 static unsigned long get_retain_buffers(struct dm_bufio_client *c)
 {
+<<<<<<< HEAD
 	unsigned long retain_bytes = READ_ONCE(dm_bufio_retain_bytes);
 	if (likely(c->sectors_per_block_bits >= 0))
 		retain_bytes >>= c->sectors_per_block_bits + SECTOR_SHIFT;
 	else
 		retain_bytes /= c->block_size;
 	return retain_bytes;
+=======
+        unsigned long retain_bytes = ACCESS_ONCE(dm_bufio_retain_bytes);
+        return retain_bytes >> (c->sectors_per_block_bits + SECTOR_SHIFT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static unsigned long __scan(struct dm_bufio_client *c, unsigned long nr_to_scan,
@@ -1938,7 +1973,14 @@ static int __init dm_bufio_init(void)
 	dm_bufio_allocated_vmalloc = 0;
 	dm_bufio_current_allocated = 0;
 
+<<<<<<< HEAD
 	mem = (__u64)mult_frac(totalram_pages() - totalhigh_pages(),
+=======
+	memset(&dm_bufio_caches, 0, sizeof dm_bufio_caches);
+	memset(&dm_bufio_cache_names, 0, sizeof dm_bufio_cache_names);
+
+	mem = (__u64)mult_frac(totalram_pages - totalhigh_pages,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			       DM_BUFIO_MEMORY_PERCENT, 100) << PAGE_SHIFT;
 
 	if (mem > ULONG_MAX)

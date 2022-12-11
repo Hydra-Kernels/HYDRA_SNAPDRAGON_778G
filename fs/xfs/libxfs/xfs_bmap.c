@@ -1968,6 +1968,22 @@ xfs_bmap_add_extent_delay_real(
 			if (error)
 				goto done;
 		}
+<<<<<<< HEAD
+=======
+		temp = xfs_bmap_worst_indlen(bma->ip, temp);
+		temp2 = xfs_bmap_worst_indlen(bma->ip, temp2);
+		diff = (int)(temp + temp2 -
+			     (startblockval(PREV.br_startblock) -
+			      (bma->cur ?
+			       bma->cur->bc_private.b.allocated : 0)));
+		if (diff > 0) {
+			error = xfs_mod_fdblocks(bma->ip->i_mount,
+						 -((int64_t)diff), false);
+			ASSERT(!error);
+			if (error)
+				goto done;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		da_new = startblockval(PREV.br_startblock) +
 			 startblockval(RIGHT.br_startblock);
@@ -2003,12 +2019,23 @@ xfs_bmap_add_extent_delay_real(
 			goto done;
 	}
 
+<<<<<<< HEAD
 	if (da_new != da_old)
 		xfs_mod_delalloc(mp, (int64_t)da_new - da_old);
 
 	if (bma->cur) {
 		da_new += bma->cur->bc_private.b.allocated;
 		bma->cur->bc_private.b.allocated = 0;
+=======
+	/* adjust for changes in reserved delayed indirect blocks */
+	if (da_old || da_new) {
+		temp = da_new;
+		if (bma->cur)
+			temp += bma->cur->bc_private.b.allocated;
+		if (temp < da_old)
+			xfs_mod_fdblocks(bma->ip->i_mount,
+					(int64_t)(da_old - temp), false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* adjust for changes in reserved delayed indirect blocks */
@@ -2394,6 +2421,10 @@ xfs_bmap_add_extent_unwritten_real(
 			if (error)
 				goto done;
 			XFS_WANT_CORRUPTED_GOTO(mp, i == 0, done);
+<<<<<<< HEAD
+=======
+			cur->bc_rec.b.br_state = new->br_state;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			if ((error = xfs_btree_insert(cur, &i)))
 				goto done;
 			XFS_WANT_CORRUPTED_GOTO(mp, i == 1, done);

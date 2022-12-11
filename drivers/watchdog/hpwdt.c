@@ -132,6 +132,7 @@ static int hpwdt_settimeout(struct watchdog_device *wdd, unsigned int val)
 }
 
 #ifdef CONFIG_HPWDT_NMI_DECODING
+<<<<<<< HEAD
 static int hpwdt_set_pretimeout(struct watchdog_device *wdd, unsigned int req)
 {
 	unsigned int val = 0;
@@ -155,6 +156,8 @@ static int hpwdt_set_pretimeout(struct watchdog_device *wdd, unsigned int req)
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int hpwdt_my_nmi(void)
 {
 	return ioread8(hpwdt_nmistat) & 0x6;
@@ -165,10 +168,40 @@ static int hpwdt_my_nmi(void)
  */
 static int hpwdt_pretimeout(unsigned int ulReason, struct pt_regs *regs)
 {
+<<<<<<< HEAD
 	unsigned int mynmi = hpwdt_my_nmi();
 	static char panic_msg[] =
 		"00: An NMI occurred. Depending on your system the reason "
 		"for the NMI is logged in any one of the following resources:\n"
+=======
+	unsigned long rom_pl;
+	static int die_nmi_called;
+
+	if (!hpwdt_nmi_decoding)
+		goto out;
+
+	if ((ulReason == NMI_UNKNOWN) && !hpwdt_my_nmi())
+		return NMI_DONE;
+
+	spin_lock_irqsave(&rom_lock, rom_pl);
+	if (!die_nmi_called && !is_icru && !is_uefi)
+		asminline_call(&cmn_regs, cru_rom_addr);
+	die_nmi_called = 1;
+	spin_unlock_irqrestore(&rom_lock, rom_pl);
+
+	if (allow_kdump)
+		hpwdt_stop();
+
+	if (!is_icru && !is_uefi) {
+		if (cmn_regs.u1.ral == 0) {
+			panic("An NMI occurred, "
+				"but unable to determine source.\n");
+		}
+	}
+	panic("An NMI occurred. Depending on your system the reason "
+		"for the NMI is logged in any one of the following "
+		"resources:\n"
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		"1. Integrated Management Log (IML)\n"
 		"2. OA Syslog\n"
 		"3. OA Forward Progress Log\n"
@@ -235,6 +268,48 @@ static struct watchdog_device hpwdt_dev = {
  *	Init & Exit
  */
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_HPWDT_NMI_DECODING
+#ifdef CONFIG_X86_LOCAL_APIC
+static void hpwdt_check_nmi_decoding(struct pci_dev *dev)
+{
+	/*
+	 * If nmi_watchdog is turned off then we can turn on
+	 * our nmi decoding capability.
+	 */
+	hpwdt_nmi_decoding = 1;
+}
+#else
+static void hpwdt_check_nmi_decoding(struct pci_dev *dev)
+{
+	dev_warn(&dev->dev, "NMI decoding is disabled. "
+		"Your kernel does not support a NMI Watchdog.\n");
+}
+#endif /* CONFIG_X86_LOCAL_APIC */
+
+/*
+ *	dmi_find_icru
+ *
+ *	Routine Description:
+ *	This function checks whether or not we are on an iCRU-based server.
+ *	This check is independent of architecture and needs to be made for
+ *	any ProLiant system.
+ */
+static void dmi_find_icru(const struct dmi_header *dm, void *dummy)
+{
+	struct smbios_proliant_info *smbios_proliant_ptr;
+
+	if (dm->type == SMBIOS_ICRU_INFORMATION) {
+		smbios_proliant_ptr = (struct smbios_proliant_info *) dm;
+		if (smbios_proliant_ptr->misc_features & 0x01)
+			is_icru = 1;
+		if (smbios_proliant_ptr->misc_features & 0x1400)
+			is_uefi = 1;
+	}
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int hpwdt_init_nmi_decoding(struct pci_dev *dev)
 {
 #ifdef CONFIG_HPWDT_NMI_DECODING

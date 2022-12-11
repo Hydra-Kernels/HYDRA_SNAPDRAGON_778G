@@ -1513,15 +1513,23 @@ static int __net_init nfnl_queue_net_init(struct net *net)
 
 static void __net_exit nfnl_queue_net_exit(struct net *net)
 {
+<<<<<<< HEAD
 	struct nfnl_queue_net *q = nfnl_queue_pernet(net);
 	unsigned int i;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	nf_unregister_queue_handler(net);
 #ifdef CONFIG_PROC_FS
 	remove_proc_entry("nfnetlink_queue", net->nf.proc_netfilter);
 #endif
 	for (i = 0; i < INSTANCE_BUCKETS; i++)
 		WARN_ON_ONCE(!hlist_empty(&q->instance_table[i]));
+}
+
+static void nfnl_queue_net_exit_batch(struct list_head *net_exit_list)
+{
+	synchronize_rcu();
 }
 
 static void nfnl_queue_net_exit_batch(struct list_head *net_exit_list)
@@ -1554,12 +1562,16 @@ static int __init nfnetlink_queue_init(void)
 		goto cleanup_netlink_notifier;
 	}
 
+<<<<<<< HEAD
 	status = register_netdevice_notifier(&nfqnl_dev_notifier);
 	if (status < 0) {
 		pr_err("failed to register netdevice notifier\n");
 		goto cleanup_netlink_subsys;
 	}
 
+=======
+	register_netdevice_notifier(&nfqnl_dev_notifier);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return status;
 
 cleanup_netlink_subsys:

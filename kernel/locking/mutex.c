@@ -824,6 +824,7 @@ __ww_mutex_check_kill(struct mutex *lock, struct mutex_waiter *waiter,
 	if (ctx->acquired == 0)
 		return 0;
 
+<<<<<<< HEAD
 	if (!ctx->is_wait_die) {
 		if (ctx->wounded)
 			return __ww_mutex_kill(lock, ctx);
@@ -926,6 +927,15 @@ __ww_mutex_add_waiter(struct mutex_waiter *waiter,
 		 */
 		smp_mb();
 		__ww_mutex_wound(lock, ww_ctx, ww->ctx);
+=======
+	if (ctx->stamp - hold_ctx->stamp <= LONG_MAX &&
+	    (ctx->stamp != hold_ctx->stamp || ctx > hold_ctx)) {
+#ifdef CONFIG_DEBUG_MUTEXES
+		DEBUG_LOCKS_WARN_ON(ctx->contending_lock);
+		ctx->contending_lock = ww;
+#endif
+		return -EDEADLK;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -943,6 +953,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 	struct ww_mutex *ww;
 	int ret;
 
+<<<<<<< HEAD
 	if (!use_ww_ctx)
 		ww_ctx = NULL;
 
@@ -964,6 +975,12 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		 */
 		if (ww_ctx->acquired == 0)
 			ww_ctx->wounded = 0;
+=======
+	if (use_ww_ctx) {
+		struct ww_mutex *ww = container_of(lock, struct ww_mutex, base);
+		if (unlikely(ww_ctx == READ_ONCE(ww->ctx)))
+			return -EALREADY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	preempt_disable();
@@ -1232,11 +1249,16 @@ EXPORT_SYMBOL_GPL(ww_mutex_lock_interruptible);
  */
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip)
 {
+<<<<<<< HEAD
 	struct task_struct *next = NULL;
 	DEFINE_WAKE_Q(wake_q);
 	unsigned long owner;
 
 	mutex_release(&lock->dep_map, 1, ip);
+=======
+	unsigned long flags;
+	WAKE_Q(wake_q);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Release the lock before (potentially) taking the spinlock such that
@@ -1280,11 +1302,20 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 		next = waiter->task;
 
 		debug_mutex_wake_waiter(lock, waiter);
+<<<<<<< HEAD
 		wake_q_add(&wake_q, next);
 	}
 
 	if (owner & MUTEX_FLAG_HANDOFF)
 		__mutex_handoff(lock, next);
+=======
+		wake_q_add(&wake_q, waiter->task);
+	}
+
+	spin_unlock_mutex(&lock->wait_lock, flags);
+	wake_up_q(&wake_q);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_unlock(&lock->wait_lock);
 

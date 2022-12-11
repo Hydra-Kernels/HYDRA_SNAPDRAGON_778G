@@ -296,6 +296,7 @@ struct f2fs_dir_entry *f2fs_find_target_dentry(const struct f2fs_dentry_ptr *d,
 
 		de = &d->dentry[bit_pos];
 
+<<<<<<< HEAD
 		if (unlikely(!de->name_len)) {
 			bit_pos++;
 			continue;
@@ -304,8 +305,31 @@ struct f2fs_dir_entry *f2fs_find_target_dentry(const struct f2fs_dentry_ptr *d,
 		if (de->hash_code == fname->hash &&
 		    f2fs_match_name(d->inode, fname, d->filename[bit_pos],
 				    le16_to_cpu(de->name_len)))
-			goto found;
+=======
+		if (de->hash_code != namehash)
+			goto not_match;
 
+		de_name.name = d->filename[bit_pos];
+		de_name.len = le16_to_cpu(de->name_len);
+
+#ifdef CONFIG_F2FS_FS_ENCRYPTION
+		if (unlikely(!name->name)) {
+			if (fname->usr_fname->name[0] == '_') {
+				if (de_name.len > 32 &&
+					!memcmp(de_name.name + ((de_name.len - 17) & ~15),
+						fname->crypto_buf.name + 8, 16))
+					goto found;
+				goto not_match;
+			}
+			name->name = fname->crypto_buf.name;
+			name->len = fname->crypto_buf.len;
+		}
+#endif
+		if (de_name.len == name->len &&
+				!memcmp(de_name.name, name->name, name->len))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+			goto found;
+not_match:
 		if (max_slots && max_len > *max_slots)
 			*max_slots = max_len;
 		max_len = 0;
@@ -332,6 +356,14 @@ static struct f2fs_dir_entry *find_in_level(struct inode *dir,
 	struct f2fs_dir_entry *de = NULL;
 	bool room = false;
 	int max_slots;
+<<<<<<< HEAD
+=======
+	f2fs_hash_t namehash;
+
+	namehash = f2fs_dentry_hash(&name, fname);
+
+	f2fs_bug_on(F2FS_I_SB(dir), level > MAX_DIR_HASH_DEPTH);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	nbucket = dir_buckets(level, F2FS_I(dir)->i_dir_level);
 	nblock = bucket_blocks(level);
@@ -705,7 +737,12 @@ int f2fs_add_regular_entry(struct inode *dir, const struct f2fs_filename *fname,
 	int slots, err = 0;
 
 	level = 0;
+<<<<<<< HEAD
 	slots = GET_DENTRY_SLOTS(fname->disk_name.len);
+=======
+	slots = GET_DENTRY_SLOTS(new_name.len);
+	dentry_hash = f2fs_dentry_hash(&new_name, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	current_depth = F2FS_I(dir)->i_current_depth;
 	if (F2FS_I(dir)->chash == fname->hash) {

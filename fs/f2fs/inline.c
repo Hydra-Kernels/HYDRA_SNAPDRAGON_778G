@@ -348,7 +348,11 @@ struct f2fs_dir_entry *f2fs_find_in_inline_dir(struct inode *dir,
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	inline_dentry = inline_data_addr(dir, ipage);
+=======
+	namehash = f2fs_dentry_hash(&name, fname);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	make_dentry_ptr_inline(dir, &d, inline_dentry);
 	de = f2fs_find_target_dentry(&d, fname, NULL);
@@ -648,8 +652,14 @@ int f2fs_add_inline_entry(struct inode *dir, const struct f2fs_filename *fname,
 
 	f2fs_wait_on_page_writeback(ipage, NODE, true, true);
 
+<<<<<<< HEAD
 	f2fs_update_dentry(ino, mode, &d, &fname->disk_name, fname->hash,
 			   bit_pos);
+=======
+	name_hash = f2fs_dentry_hash(name, NULL);
+	make_dentry_ptr(NULL, &d, (void *)dentry_blk, 2);
+	f2fs_update_dentry(ino, mode, &d, name, name_hash, bit_pos);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	set_page_dirty(ipage);
 

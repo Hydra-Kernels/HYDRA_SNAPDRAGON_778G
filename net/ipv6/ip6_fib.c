@@ -189,7 +189,11 @@ static struct fib6_node *node_alloc(struct net *net)
 	return fn;
 }
 
+<<<<<<< HEAD
 static void node_free_immediate(struct net *net, struct fib6_node *fn)
+=======
+static void node_free_immediate(struct fib6_node *fn)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	kmem_cache_free(fib6_node_kmem, fn);
 	net->ipv6.rt6_stats->fib_nodes--;
@@ -202,10 +206,62 @@ static void node_free_rcu(struct rcu_head *head)
 	kmem_cache_free(fib6_node_kmem, fn);
 }
 
+<<<<<<< HEAD
 static void node_free(struct net *net, struct fib6_node *fn)
+=======
+static void node_free_rcu(struct rcu_head *head)
+{
+	struct fib6_node *fn = container_of(head, struct fib6_node, rcu);
+
+	kmem_cache_free(fib6_node_kmem, fn);
+}
+
+static void node_free(struct fib6_node *fn)
+{
+	call_rcu(&fn->rcu, node_free_rcu);
+}
+
+static void rt6_rcu_free(struct rt6_info *rt)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	call_rcu(&fn->rcu, node_free_rcu);
 	net->ipv6.rt6_stats->fib_nodes--;
+}
+
+static void fib6_free_table(struct fib6_table *table)
+{
+<<<<<<< HEAD
+	inetpeer_invalidate_tree(&table->tb6_peers);
+	kfree(table);
+=======
+	int cpu;
+
+	if (!non_pcpu_rt->rt6i_pcpu)
+		return;
+
+	for_each_possible_cpu(cpu) {
+		struct rt6_info **ppcpu_rt;
+		struct rt6_info *pcpu_rt;
+
+		ppcpu_rt = per_cpu_ptr(non_pcpu_rt->rt6i_pcpu, cpu);
+		pcpu_rt = *ppcpu_rt;
+		if (pcpu_rt) {
+			rt6_rcu_free(pcpu_rt);
+			*ppcpu_rt = NULL;
+		}
+	}
+
+	free_percpu(non_pcpu_rt->rt6i_pcpu);
+	non_pcpu_rt->rt6i_pcpu = NULL;
+}
+
+static void rt6_release(struct rt6_info *rt)
+{
+	if (atomic_dec_and_test(&rt->rt6i_ref)) {
+		rt6_free_pcpu(rt);
+		rt6_rcu_free(rt);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void fib6_free_table(struct fib6_table *table)
@@ -314,9 +370,15 @@ struct dst_entry *fib6_rule_lookup(struct net *net, struct flowi6 *fl6,
 {
 	struct rt6_info *rt;
 
+<<<<<<< HEAD
 	rt = lookup(net, net->ipv6.fib6_main_tbl, fl6, skb, flags);
 	if (rt->dst.error == -EAGAIN) {
 		ip6_rt_put_flags(rt, flags);
+=======
+	rt = lookup(net, net->ipv6.fib6_main_tbl, fl6, flags);
+	if (rt->dst.error == -EAGAIN) {
+		ip6_rt_put(rt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rt = net->ipv6.ip6_null_entry;
 		if (!(flags & RT6_LOOKUP_F_DST_NOREF))
 			dst_hold(&rt->dst);
@@ -826,9 +888,15 @@ insert_above:
 
 		if (!in || !ln) {
 			if (in)
+<<<<<<< HEAD
 				node_free_immediate(net, in);
 			if (ln)
 				node_free_immediate(net, ln);
+=======
+				node_free_immediate(in);
+			if (ln)
+				node_free_immediate(ln);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return ERR_PTR(-ENOMEM);
 		}
 
@@ -1057,9 +1125,15 @@ static int fib6_add_rt2node(struct fib6_node *fn, struct fib6_info *rt,
 			}
 
 			if (rt6_duplicate_nexthop(iter, rt)) {
+<<<<<<< HEAD
 				if (rt->fib6_nsiblings)
 					rt->fib6_nsiblings = 0;
 				if (!(iter->fib6_flags & RTF_EXPIRES))
+=======
+				if (rt->rt6i_nsiblings)
+					rt->rt6i_nsiblings = 0;
+				if (!(iter->rt6i_flags & RTF_EXPIRES))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					return -EEXIST;
 				if (!(rt->fib6_flags & RTF_EXPIRES))
 					fib6_clean_expires(iter);
@@ -1150,6 +1224,7 @@ next_iter:
 add:
 		nlflags |= NLM_F_CREATE;
 
+<<<<<<< HEAD
 		if (!info->skip_notify_kernel) {
 			err = call_fib6_entry_notifiers(info->nl_net,
 							FIB_EVENT_ENTRY_ADD,
@@ -1180,6 +1255,13 @@ add:
 		rcu_assign_pointer(*ins, rt);
 		if (!info->skip_notify)
 			inet6_rt_notify(RTM_NEWROUTE, rt, info, nlflags);
+=======
+		rt->dst.rt6_next = iter;
+		*ins = rt;
+		rcu_assign_pointer(rt->rt6i_node, fn);
+		atomic_inc(&rt->rt6i_ref);
+		inet6_rt_notify(RTM_NEWROUTE, rt, info, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		info->nl_net->ipv6.rt6_stats->fib_rt_entries++;
 
 		if (!(fn->fn_flags & RTN_RTINFO)) {
@@ -1205,12 +1287,20 @@ add:
 				return err;
 		}
 
+<<<<<<< HEAD
 		fib6_info_hold(rt);
 		rcu_assign_pointer(rt->fib6_node, fn);
 		rt->fib6_next = iter->fib6_next;
 		rcu_assign_pointer(*ins, rt);
 		if (!info->skip_notify)
 			inet6_rt_notify(RTM_NEWROUTE, rt, info, NLM_F_REPLACE);
+=======
+		*ins = rt;
+		rcu_assign_pointer(rt->rt6i_node, fn);
+		rt->dst.rt6_next = iter->dst.rt6_next;
+		atomic_inc(&rt->rt6i_ref);
+		inet6_rt_notify(RTM_NEWROUTE, rt, info, NLM_F_REPLACE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!(fn->fn_flags & RTN_RTINFO)) {
 			info->nl_net->ipv6.rt6_stats->fib_route_nodes++;
 			fn->fn_flags |= RTN_RTINFO;
@@ -1218,9 +1308,15 @@ add:
 		nsiblings = iter->fib6_nsiblings;
 		iter->fib6_node = NULL;
 		fib6_purge_rt(iter, fn, info->nl_net);
+<<<<<<< HEAD
 		if (rcu_access_pointer(fn->rr_ptr) == iter)
 			fn->rr_ptr = NULL;
 		fib6_info_release(iter);
+=======
+		if (fn->rr_ptr == iter)
+			fn->rr_ptr = NULL;
+		rt6_release(iter);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (nsiblings) {
 			/* Replacing an ECMP route, remove all siblings */
@@ -1228,15 +1324,25 @@ add:
 			iter = rcu_dereference_protected(*ins,
 				    lockdep_is_held(&rt->fib6_table->tb6_lock));
 			while (iter) {
+<<<<<<< HEAD
 				if (iter->fib6_metric > rt->fib6_metric)
+=======
+				if (iter->rt6i_metric > rt->rt6i_metric)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					break;
 				if (rt6_qualify_for_ecmp(iter)) {
 					*ins = iter->fib6_next;
 					iter->fib6_node = NULL;
 					fib6_purge_rt(iter, fn, info->nl_net);
+<<<<<<< HEAD
 					if (rcu_access_pointer(fn->rr_ptr) == iter)
 						fn->rr_ptr = NULL;
 					fib6_info_release(iter);
+=======
+					if (fn->rr_ptr == iter)
+						fn->rr_ptr = NULL;
+					rt6_release(iter);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					nsiblings--;
 					info->nl_net->ipv6.rt6_stats->fib_rt_entries--;
 				} else {
@@ -1372,7 +1478,11 @@ int fib6_add(struct fib6_node *root, struct fib6_info *rt,
 				   root, and then (in failure) stale node
 				   in main tree.
 				 */
+<<<<<<< HEAD
 				node_free_immediate(info->nl_net, sfn);
+=======
+				node_free_immediate(sfn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				err = PTR_ERR(sn);
 				goto failure;
 			}
@@ -1450,6 +1560,7 @@ out:
 	return err;
 
 failure:
+<<<<<<< HEAD
 	/* fn->leaf could be NULL and fib6_repair_tree() needs to be called if:
 	 * 1. fn is an intermediate node and we failed to add the new
 	 * route to it in both subtree creation failure and fib6_add_rt2node()
@@ -1462,6 +1573,18 @@ failure:
 	     (fn->fn_flags & RTN_TL_ROOT &&
 	      !rcu_access_pointer(fn->leaf))))
 		fib6_repair_tree(info->nl_net, table, fn);
+=======
+	/* fn->leaf could be NULL if fn is an intermediate node and we
+	 * failed to add the new route to it in both subtree creation
+	 * failure and fib6_add_rt2node() failure case.
+	 * In both cases, fib6_repair_tree() should be called to fix
+	 * fn->leaf.
+	 */
+	if (fn && !(fn->fn_flags & (RTN_RTINFO|RTN_ROOT)))
+		fib6_repair_tree(info->nl_net, fn);
+	if (!(rt->dst.flags & DST_NOCACHE))
+		dst_free(&rt->dst);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 
@@ -1895,11 +2018,17 @@ static void fib6_del_route(struct fib6_table *table, struct fib6_node *fn,
 /* Need to own table->tb6_lock */
 int fib6_del(struct fib6_info *rt, struct nl_info *info)
 {
+	struct fib6_node *fn = rcu_dereference_protected(rt->rt6i_node,
+				    lockdep_is_held(&rt->rt6i_table->tb6_lock));
 	struct net *net = info->nl_net;
+<<<<<<< HEAD
 	struct fib6_info __rcu **rtp;
 	struct fib6_info __rcu **rtp_next;
 	struct fib6_table *table;
 	struct fib6_node *fn;
+=======
+	struct rt6_info **rtp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (rt == net->ipv6.fib6_null_entry)
 		return -ENOENT;
@@ -2087,7 +2216,11 @@ static int fib6_clean_node(struct fib6_walker *w)
 #if RT6_DEBUG >= 2
 				pr_debug("%s: del failed: rt=%p@%p err=%d\n",
 					 __func__, rt,
+<<<<<<< HEAD
 					 rcu_access_pointer(rt->fib6_node),
+=======
+					 rcu_access_pointer(rt->rt6i_node),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					 res);
 #endif
 				continue;
@@ -2312,6 +2445,10 @@ static void fib6_net_exit(struct net *net)
 {
 	unsigned int i;
 
+<<<<<<< HEAD
+=======
+	rt6_ifdown(net, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	del_timer_sync(&net->ipv6.ip6_fib_timer);
 
 	for (i = 0; i < FIB6_TABLE_HASHSZ; i++) {

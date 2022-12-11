@@ -46,6 +46,16 @@ asmlinkage void ret_from_fork(void) asm ("ret_from_fork");
 
 extern void kernel_thread_starter(void);
 
+<<<<<<< HEAD
+=======
+/*
+ * Free current thread data structures etc..
+ */
+void exit_thread(void)
+{
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void flush_thread(void)
 {
 }
@@ -61,8 +71,14 @@ void arch_setup_new_exec(void)
 
 void arch_release_task_struct(struct task_struct *tsk)
 {
+<<<<<<< HEAD
 	runtime_instr_release(tsk);
 	guarded_storage_release(tsk);
+=======
+	/* Free either the floating-point or the vector register save area */
+	kfree(tsk->thread.fpu.regs);
+	runtime_instr_release(tsk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)

@@ -214,7 +214,11 @@ static int raw_enable_errfilter(struct net *net, struct net_device *dev,
 	int err = 0;
 
 	if (err_mask)
+<<<<<<< HEAD
 		err = can_rx_register(net, dev, 0, err_mask | CAN_ERR_FLAG,
+=======
+		err = can_rx_register(dev, 0, err_mask | CAN_ERR_FLAG,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				      raw_rcv, sk, "raw", sk);
 
 	return err;

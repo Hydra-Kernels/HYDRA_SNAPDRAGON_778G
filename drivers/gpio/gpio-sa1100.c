@@ -202,10 +202,15 @@ static struct irq_chip sa1100_gpio_irq_chip = {
 static int sa1100_gpio_irqdomain_map(struct irq_domain *d,
 		unsigned int irq, irq_hw_number_t hwirq)
 {
+<<<<<<< HEAD
 	struct sa1100_gpio_chip *sgc = d->host_data;
 
 	irq_set_chip_data(irq, sgc);
 	irq_set_chip_and_handler(irq, &sa1100_gpio_irq_chip, handle_edge_irq);
+=======
+	irq_set_chip_and_handler(irq, &sa1100_gpio_irq_chip,
+				 handle_edge_irq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	irq_set_probe(irq);
 
 	return 0;

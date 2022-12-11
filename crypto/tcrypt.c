@@ -124,9 +124,12 @@ static void sg_init_aead(struct scatterlist *sg, char *xbuf[XBUFSIZE],
 	}
 
 	sg_init_table(sg, np + 1);
+<<<<<<< HEAD
 
 	sg_set_buf(&sg[0], assoc, aad_size);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (rem)
 		np--;
 	for (k = 0; k < np; k++)
@@ -134,6 +137,7 @@ static void sg_init_aead(struct scatterlist *sg, char *xbuf[XBUFSIZE],
 
 	if (rem)
 		sg_set_buf(&sg[k + 1], xbuf[k], rem);
+<<<<<<< HEAD
 }
 
 static inline int do_one_aead_op(struct aead_request *req, int ret)
@@ -513,6 +517,8 @@ out:
 		       (cycles + 4) / 8, blen);
 
 	return ret;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void test_aead_speed(const char *algo, int enc, unsigned int secs,
@@ -626,13 +632,27 @@ static void test_aead_speed(const char *algo, int enc, unsigned int secs,
 				goto out;
 			}
 
+<<<<<<< HEAD
 			sg_init_aead(sg, xbuf, *b_size + (enc ? 0 : authsize),
 				     assoc, aad_size);
+=======
+			sg_init_aead(sg, xbuf,
+				    *b_size + (enc ? 0 : authsize));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			sg_init_aead(sgout, xoutbuf,
 				     *b_size + (enc ? authsize : 0), assoc,
 				     aad_size);
 
+<<<<<<< HEAD
+=======
+			sg_set_buf(&sg[0], assoc, aad_size);
+			sg_set_buf(&sgout[0], assoc, aad_size);
+
+			aead_request_set_crypt(req, sg, sgout,
+					       *b_size + (enc ? 0 : authsize),
+					       iv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			aead_request_set_ad(req, aad_size);
 
 			if (!enc) {

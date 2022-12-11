@@ -398,10 +398,16 @@ static int xhci_stop_device(struct xhci_hcd *xhci, int slot_id, int suspend)
 	if (!virt_dev)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	trace_xhci_stop_device(virt_dev);
 
 	cmd = xhci_alloc_command(xhci, true, GFP_NOIO);
 	if (!cmd)
+=======
+	cmd = xhci_alloc_command(xhci, false, true, GFP_NOIO);
+	if (!cmd) {
+		xhci_dbg(xhci, "Couldn't allocate command structure.\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -ENOMEM;
 
 	spin_lock_irqsave(&xhci->lock, flags);
@@ -1048,7 +1054,117 @@ static u32 xhci_get_port_status(struct usb_hcd *hcd,
 	if ((raw_port_status & PORT_RC))
 		status |= USB_PORT_STAT_C_RESET << 16;
 
+<<<<<<< HEAD
 	/* common wPortStatus bits */
+=======
+	if (hcd->speed < HCD_USB3) {
+		if ((raw_port_status & PORT_PLS_MASK) == XDEV_U3
+				&& (raw_port_status & PORT_POWER))
+			status |= USB_PORT_STAT_SUSPEND;
+	}
+	if ((raw_port_status & PORT_PLS_MASK) == XDEV_RESUME &&
+		!DEV_SUPERSPEED_ANY(raw_port_status)) {
+		if ((raw_port_status & PORT_RESET) ||
+				!(raw_port_status & PORT_PE))
+			return 0xffffffff;
+		/* did port event handler already start resume timing? */
+		if (!bus_state->resume_done[wIndex]) {
+			/* If not, maybe we are in a host initated resume? */
+			if (test_bit(wIndex, &bus_state->resuming_ports)) {
+				/* Host initated resume doesn't time the resume
+				 * signalling using resume_done[].
+				 * It manually sets RESUME state, sleeps 20ms
+				 * and sets U0 state. This should probably be
+				 * changed, but not right now.
+				 */
+			} else {
+				/* port resume was discovered now and here,
+				 * start resume timing
+				 */
+				unsigned long timeout = jiffies +
+					msecs_to_jiffies(USB_RESUME_TIMEOUT);
+
+				set_bit(wIndex, &bus_state->resuming_ports);
+				bus_state->resume_done[wIndex] = timeout;
+				mod_timer(&hcd->rh_timer, timeout);
+			}
+		/* Has resume been signalled for USB_RESUME_TIME yet? */
+		} else if (time_after_eq(jiffies,
+					 bus_state->resume_done[wIndex])) {
+			int time_left;
+
+			xhci_dbg(xhci, "Resume USB2 port %d\n",
+					wIndex + 1);
+			bus_state->resume_done[wIndex] = 0;
+			clear_bit(wIndex, &bus_state->resuming_ports);
+
+			set_bit(wIndex, &bus_state->rexit_ports);
+
+			xhci_test_and_clear_bit(xhci, port_array, wIndex,
+						PORT_PLC);
+			xhci_set_link_state(xhci, port_array, wIndex,
+					XDEV_U0);
+
+			spin_unlock_irqrestore(&xhci->lock, flags);
+			time_left = wait_for_completion_timeout(
+					&bus_state->rexit_done[wIndex],
+					msecs_to_jiffies(
+						XHCI_MAX_REXIT_TIMEOUT));
+			spin_lock_irqsave(&xhci->lock, flags);
+
+			if (time_left) {
+				slot_id = xhci_find_slot_id_by_port(hcd,
+						xhci, wIndex + 1);
+				if (!slot_id) {
+					xhci_dbg(xhci, "slot_id is zero\n");
+					return 0xffffffff;
+				}
+				xhci_ring_device(xhci, slot_id);
+			} else {
+				int port_status = readl(port_array[wIndex]);
+				xhci_warn(xhci, "Port resume took longer than %i msec, port status = 0x%x\n",
+						XHCI_MAX_REXIT_TIMEOUT,
+						port_status);
+				status |= USB_PORT_STAT_SUSPEND;
+				clear_bit(wIndex, &bus_state->rexit_ports);
+			}
+
+			bus_state->port_c_suspend |= 1 << wIndex;
+			bus_state->suspended_ports &= ~(1 << wIndex);
+		} else {
+			/*
+			 * The resume has been signaling for less than
+			 * USB_RESUME_TIME. Report the port status as SUSPEND,
+			 * let the usbcore check port status again and clear
+			 * resume signaling later.
+			 */
+			status |= USB_PORT_STAT_SUSPEND;
+		}
+	}
+	/*
+	 * Clear stale usb2 resume signalling variables in case port changed
+	 * state during resume signalling. For example on error
+	 */
+	if ((bus_state->resume_done[wIndex] ||
+	     test_bit(wIndex, &bus_state->resuming_ports)) &&
+	    (raw_port_status & PORT_PLS_MASK) != XDEV_U3 &&
+	    (raw_port_status & PORT_PLS_MASK) != XDEV_RESUME) {
+		bus_state->resume_done[wIndex] = 0;
+		clear_bit(wIndex, &bus_state->resuming_ports);
+	}
+
+
+	if ((raw_port_status & PORT_PLS_MASK) == XDEV_U0 &&
+	    (raw_port_status & PORT_POWER)) {
+		if (bus_state->suspended_ports & (1 << wIndex)) {
+			bus_state->suspended_ports &= ~(1 << wIndex);
+			if (hcd->speed < HCD_USB3)
+				bus_state->port_c_suspend |= 1 << wIndex;
+		}
+		bus_state->resume_done[wIndex] = 0;
+		clear_bit(wIndex, &bus_state->resuming_ports);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (raw_port_status & PORT_CONNECT) {
 		status |= USB_PORT_STAT_CONNECTION;
 		status |= xhci_port_speed(raw_port_status);
@@ -1611,7 +1727,11 @@ int xhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 				xhci_set_link_state(xhci, ports[wIndex],
 						    XDEV_RESUME);
 				spin_unlock_irqrestore(&xhci->lock, flags);
+<<<<<<< HEAD
 				usleep_range(21000, 21500);
+=======
+				msleep(USB_RESUME_TIMEOUT);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				spin_lock_irqsave(&xhci->lock, flags);
 				xhci_set_link_state(xhci, ports[wIndex],
 							XDEV_U0);
@@ -1870,11 +1990,20 @@ retry:
  * warm reset a USB3 device stuck in polling or compliance mode after resume.
  * See Intel 100/c230 series PCH specification update Doc #332692-006 Errata #8
  */
+<<<<<<< HEAD
 static bool xhci_port_missing_cas_quirk(struct xhci_port *port)
 {
 	u32 portsc;
 
 	portsc = readl(port->addr);
+=======
+static bool xhci_port_missing_cas_quirk(int port_index,
+					     __le32 __iomem **port_array)
+{
+	u32 portsc;
+
+	portsc = readl(port_array[port_index]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* if any of these are set we are not stuck */
 	if (portsc & (PORT_CONNECT | PORT_CAS))
@@ -1887,9 +2016,15 @@ static bool xhci_port_missing_cas_quirk(struct xhci_port *port)
 	/* clear wakeup/change bits, and do a warm port reset */
 	portsc &= ~(PORT_RWC_BITS | PORT_CEC | PORT_WAKE_BITS);
 	portsc |= PORT_WR;
+<<<<<<< HEAD
 	writel(portsc, port->addr);
 	/* flush write */
 	readl(port->addr);
+=======
+	writel(portsc, port_array[port_index]);
+	/* flush write */
+	readl(port_array[port_index]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return true;
 }
 
@@ -1935,6 +2070,7 @@ int xhci_bus_resume(struct usb_hcd *hcd)
 	while (port_index--) {
 		portsc = readl(ports[port_index]->addr);
 
+<<<<<<< HEAD
 		/* warm reset CAS limited ports stuck in polling/compliance */
 		if ((xhci->quirks & XHCI_MISSING_CAS) &&
 		    (hcd->speed >= HCD_USB3) &&
@@ -1959,12 +2095,35 @@ int xhci_bus_resume(struct usb_hcd *hcd)
 				clear_bit(port_index,
 					  &bus_state->bus_suspended);
 				break;
+=======
+		temp = readl(port_array[port_index]);
+
+		/* warm reset CAS limited ports stuck in polling/compliance */
+		if ((xhci->quirks & XHCI_MISSING_CAS) &&
+		    (hcd->speed >= HCD_USB3) &&
+		    xhci_port_missing_cas_quirk(port_index, port_array)) {
+			xhci_dbg(xhci, "reset stuck port %d\n", port_index);
+			continue;
+		}
+		if (DEV_SUPERSPEED_ANY(temp))
+			temp &= ~(PORT_RWC_BITS | PORT_CEC | PORT_WAKE_BITS);
+		else
+			temp &= ~(PORT_RWC_BITS | PORT_WAKE_BITS);
+		if (test_bit(port_index, &bus_state->bus_suspended) &&
+		    (temp & PORT_PLS_MASK)) {
+			set_bit(port_index, &port_was_suspended);
+			if (!DEV_SUPERSPEED_ANY(temp)) {
+				xhci_set_link_state(xhci, port_array,
+						port_index, XDEV_RESUME);
+				need_usb2_u3_exit = true;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		/* disable wake for all ports, write new link state if needed */
 		portsc &= ~(PORT_RWC_BITS | PORT_CEC | PORT_WAKE_BITS);
 		writel(portsc, ports[port_index]->addr);
 	}
 
+<<<<<<< HEAD
 	/* USB2 specific resume signaling delay and U0 link state transition */
 	if (hcd->speed < HCD_USB3) {
 		if (bus_state->bus_suspended) {
@@ -1979,6 +2138,12 @@ int xhci_bus_resume(struct usb_hcd *hcd)
 						PORT_PLC);
 			xhci_set_link_state(xhci, ports[port_index], XDEV_U0);
 		}
+=======
+	if (need_usb2_u3_exit) {
+		spin_unlock_irqrestore(&xhci->lock, flags);
+		msleep(USB_RESUME_TIMEOUT);
+		spin_lock_irqsave(&xhci->lock, flags);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* poll for U0 link state complete, both USB2 and USB3 */

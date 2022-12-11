@@ -20,8 +20,13 @@
 #define __iowmb()		do { } while (0)
 #endif
 
+<<<<<<< HEAD
 extern void __iomem *ioremap(phys_addr_t paddr, unsigned long size);
 extern void __iomem *ioremap_prot(phys_addr_t paddr, unsigned long size,
+=======
+extern void __iomem *ioremap(unsigned long physaddr, unsigned long size);
+extern void __iomem *ioremap_prot(phys_addr_t offset, unsigned long size,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				  unsigned long flags);
 static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
 {
@@ -160,6 +165,7 @@ static inline void __raw_writel(u32 w, volatile void __iomem *addr)
 
 }
 
+<<<<<<< HEAD
 #define __raw_writesx(t,f)						\
 static inline void __raw_writes##f(volatile void __iomem *addr, 	\
 				   const void *ptr, unsigned int count)	\
@@ -189,6 +195,8 @@ __raw_writesx(16, w)
 #define __raw_writesl __raw_writesl
 __raw_writesx(32, l)
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * MMIO can also get buffered/optimized in micro-arch, so barriers needed
  * Based on ARM model for the typical use case

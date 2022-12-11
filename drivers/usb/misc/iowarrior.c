@@ -787,6 +787,7 @@ static int iowarrior_probe(struct usb_interface *interface,
 		goto error;
 	}
 
+<<<<<<< HEAD
 	if ((dev->product_id == USB_DEVICE_ID_CODEMERCS_IOW56) ||
 	    (dev->product_id == USB_DEVICE_ID_CODEMERCS_IOW56AM) ||
 	    (dev->product_id == USB_DEVICE_ID_CODEMERCS_IOW28) ||
@@ -797,6 +798,18 @@ static int iowarrior_probe(struct usb_interface *interface,
 		if (res) {
 			dev_err(&interface->dev, "no interrupt-out endpoint found\n");
 			retval = res;
+=======
+	if (!dev->int_in_endpoint) {
+		dev_err(&interface->dev, "no interrupt-in endpoint found\n");
+		retval = -ENODEV;
+		goto error;
+	}
+
+	if (dev->product_id == USB_DEVICE_ID_CODEMERCS_IOW56) {
+		if (!dev->int_out_endpoint) {
+			dev_err(&interface->dev, "no interrupt-out endpoint found\n");
+			retval = -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto error;
 		}
 	}

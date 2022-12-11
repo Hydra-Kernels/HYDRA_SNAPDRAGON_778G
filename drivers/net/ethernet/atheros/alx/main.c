@@ -85,6 +85,7 @@ static int alx_refill_rx_ring(struct alx_priv *alx, gfp_t gfp)
 	while (!cur_buf->skb && next != rxq->read_idx) {
 		struct alx_rfd *rfd = &rxq->rfd[cur];
 
+<<<<<<< HEAD
 		/*
 		 * When DMA RX address is set to something like
 		 * 0x....fc0, it will be very likely to cause DMA
@@ -94,10 +95,16 @@ static int alx_refill_rx_ring(struct alx_priv *alx, gfp_t gfp)
 		 * longer space, and offset the address whenever
 		 * 0x....fc0 is detected.
 		 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		skb = __netdev_alloc_skb(alx->dev, alx->rxbuf_size + 64, gfp);
 		if (!skb)
 			break;
 
+<<<<<<< HEAD
+=======
+		/* Workround for the HW RX DMA overflow issue */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (((unsigned long)skb->data & 0xfff) == 0xfc0)
 			skb_reserve(skb, 64);
 

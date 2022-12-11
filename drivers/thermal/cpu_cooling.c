@@ -118,8 +118,93 @@ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
 }
 
 /**
+<<<<<<< HEAD
  * update_freq_table() - Update the freq table with power numbers
  * @cpufreq_cdev:	the cpufreq cooling device in which to update the table
+=======
+ * cpufreq_cooling_get_level - for a given cpu, return the cooling level.
+ * @cpu: cpu for which the level is required
+ * @freq: the frequency of interest
+ *
+ * This function will match the cooling level corresponding to the
+ * requested @freq and return it.
+ *
+ * Return: The matched cooling level on success or THERMAL_CSTATE_INVALID
+ * otherwise.
+ */
+unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+{
+	struct cpufreq_cooling_device *cpufreq_dev;
+
+	mutex_lock(&cooling_list_lock);
+	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
+			unsigned long level = get_level(cpufreq_dev, freq);
+
+			mutex_unlock(&cooling_list_lock);
+			return level;
+		}
+	}
+	mutex_unlock(&cooling_list_lock);
+
+	pr_err("%s: cpu:%d not part of any cooling device\n", __func__, cpu);
+	return THERMAL_CSTATE_INVALID;
+}
+EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
+
+/**
+ * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
+ * @nb:	struct notifier_block * with callback info.
+ * @event: value showing cpufreq event for which this function invoked.
+ * @data: callback-specific data
+ *
+ * Callback to hijack the notification on cpufreq policy transition.
+ * Every time there is a change in policy, we will intercept and
+ * update the cpufreq policy with thermal constraints.
+ *
+ * Return: 0 (success)
+ */
+static int cpufreq_thermal_notifier(struct notifier_block *nb,
+				    unsigned long event, void *data)
+{
+	struct cpufreq_policy *policy = data;
+	unsigned long clipped_freq;
+	struct cpufreq_cooling_device *cpufreq_dev;
+
+	if (event != CPUFREQ_ADJUST)
+		return NOTIFY_DONE;
+
+	mutex_lock(&cooling_list_lock);
+	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+		if (!cpumask_test_cpu(policy->cpu, &cpufreq_dev->allowed_cpus))
+			continue;
+
+		/*
+		 * policy->max is the maximum allowed frequency defined by user
+		 * and clipped_freq is the maximum that thermal constraints
+		 * allow.
+		 *
+		 * If clipped_freq is lower than policy->max, then we need to
+		 * readjust policy->max.
+		 *
+		 * But, if clipped_freq is greater than policy->max, we don't
+		 * need to do anything.
+		 */
+		clipped_freq = cpufreq_dev->clipped_freq;
+
+		if (policy->max > clipped_freq)
+			cpufreq_verify_within_limits(policy, 0, clipped_freq);
+		break;
+	}
+	mutex_unlock(&cooling_list_lock);
+
+	return NOTIFY_OK;
+}
+
+/**
+ * build_dyn_power_table() - create a dynamic power to frequency table
+ * @cpufreq_device:	the cpufreq cooling device in which to store the table
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * @capacitance: dynamic power coefficient for these cpus
  *
  * Update the freq table with power numbers.  This table will be used in
@@ -221,12 +306,20 @@ static u32 cpu_power_to_freq(struct cpufreq_cooling_device *cpufreq_cdev,
  * get_load() - get load for a cpu since last updated
  * @cpufreq_cdev:	&struct cpufreq_cooling_device for this cpu
  * @cpu:	cpu number
+<<<<<<< HEAD
  * @cpu_idx:	index of the cpu in time_in_idle*
+=======
+ * @cpu_idx:	index of the cpu in cpufreq_device->allowed_cpus
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Return: The average load of cpu @cpu in percentage since this
  * function was last called.
  */
+<<<<<<< HEAD
 static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
+=======
+static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		    int cpu_idx)
 {
 	u32 load;
@@ -234,16 +327,26 @@ static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
 	struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu_idx];
 
 	now_idle = get_cpu_idle_time(cpu, &now, 0);
+<<<<<<< HEAD
 	delta_idle = now_idle - idle_time->time;
 	delta_time = now - idle_time->timestamp;
+=======
+	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu_idx];
+	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu_idx];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (delta_time <= delta_idle)
 		load = 0;
 	else
 		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
 
+<<<<<<< HEAD
 	idle_time->time = now_idle;
 	idle_time->timestamp = now;
+=======
+	cpufreq_device->time_in_idle[cpu_idx] = now_idle;
+	cpufreq_device->time_in_idle_timestamp[cpu_idx] = now;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return load;
 }
@@ -384,7 +487,11 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
 		u32 load;
 
 		if (cpu_online(cpu))
+<<<<<<< HEAD
 			load = get_load(cpufreq_cdev, cpu, i);
+=======
+			load = get_load(cpufreq_device, cpu, i);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		else
 			load = 0;
 
@@ -591,9 +698,12 @@ __cpufreq_cooling_register(struct device_node *np,
 	}
 	cpufreq_cdev->id = policy->cpu;
 
+<<<<<<< HEAD
 	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
 		 cpufreq_cdev->id);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Fill freq-table in descending order of frequencies */
 	for (i = 0, freq = -1; i <= cpufreq_cdev->max_level; i++) {
 		freq = find_next_max(policy->freq_table, freq);
@@ -606,12 +716,25 @@ __cpufreq_cooling_register(struct device_node *np,
 			pr_debug("%s: freq:%u KHz\n", __func__, freq);
 	}
 
+<<<<<<< HEAD
 	if (capacitance) {
 		ret = update_freq_table(cpufreq_cdev, capacitance);
 		if (ret) {
 			cdev = ERR_PTR(ret);
 			goto remove_ida;
 		}
+=======
+	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
+		 cpufreq_dev->id);
+
+	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
+						      &cpufreq_cooling_ops);
+	if (IS_ERR(cool_dev))
+		goto remove_idr;
+
+	cpufreq_dev->clipped_freq = cpufreq_dev->freq_table[0];
+	cpufreq_dev->cool_dev = cool_dev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		cooling_ops = &cpufreq_power_cooling_ops;
 	} else {

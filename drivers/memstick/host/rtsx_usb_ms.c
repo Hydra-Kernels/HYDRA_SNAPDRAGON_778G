@@ -533,7 +533,11 @@ static void rtsx_usb_ms_handle_req(struct work_struct *work)
 						host->req->error);
 			}
 		} while (!rc);
+<<<<<<< HEAD
 		pm_runtime_put_sync(ms_dev(host));
+=======
+		pm_runtime_put(ms_dev(host));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 }
@@ -626,7 +630,11 @@ static int rtsx_usb_ms_set_param(struct memstick_host *msh,
 	}
 out:
 	mutex_unlock(&ucr->dev_mutex);
+<<<<<<< HEAD
 	pm_runtime_put_sync(ms_dev(host));
+=======
+	pm_runtime_put(ms_dev(host));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* power-on delay */
 	if (param == MEMSTICK_POWER && value == MEMSTICK_POWER_ON) {
@@ -721,8 +729,14 @@ static void rtsx_usb_ms_poll_card(struct work_struct *work)
 	int err;
 	u8 val;
 
+<<<<<<< HEAD
 	if (host->eject || host->power_mode != MEMSTICK_POWER_ON)
 		return;
+=======
+	for (;;) {
+		pm_runtime_get_sync(ms_dev(host));
+		mutex_lock(&ucr->dev_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pm_runtime_get_sync(ms_dev(host));
 	mutex_lock(&ucr->dev_mutex);
@@ -731,7 +745,22 @@ static void rtsx_usb_ms_poll_card(struct work_struct *work)
 	err = rtsx_usb_read_register(ucr, CARD_INT_PEND, &val);
 	if (err) {
 		mutex_unlock(&ucr->dev_mutex);
+<<<<<<< HEAD
 		goto poll_again;
+=======
+
+		if (val & MS_INT) {
+			dev_dbg(ms_dev(host), "MS slot change detected\n");
+			memstick_detect_change(host->msh);
+		}
+
+poll_again:
+		pm_runtime_put(ms_dev(host));
+		if (host->eject)
+			break;
+
+		msleep(1000);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Clear the pending */

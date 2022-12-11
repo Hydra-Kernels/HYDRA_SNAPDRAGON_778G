@@ -811,6 +811,7 @@ static void __init imx6q_clocks_init(struct device_node *ccm_node)
 	if (clk_on_imx6dl())
 		hws[IMX6DL_CLK_I2C4]  = imx_clk_hw_gate2("i2c4",          "ipg_per",           base + 0x6c, 8);
 	else
+<<<<<<< HEAD
 		hws[IMX6Q_CLK_ECSPI5] = imx_clk_hw_gate2("ecspi5",        "ecspi_root",        base + 0x6c, 8);
 	hws[IMX6QDL_CLK_ENET]         = imx_clk_hw_gate2("enet",          "ipg",               base + 0x6c, 10);
 	hws[IMX6QDL_CLK_EPIT1]        = imx_clk_hw_gate2("epit1",         "ipg",               base + 0x6c, 12);
@@ -847,6 +848,43 @@ static void __init imx6q_clocks_init(struct device_node *ccm_node)
 	hws[IMX6QDL_CLK_MIPI_CORE_CFG] = imx_clk_hw_gate2_shared("mipi_core_cfg", "video_27m", base + 0x74, 16, &share_count_mipi_core_cfg);
 	hws[IMX6QDL_CLK_MIPI_IPG]     = imx_clk_hw_gate2_shared("mipi_ipg", "ipg",             base + 0x74, 16, &share_count_mipi_core_cfg);
 
+=======
+		clk[IMX6Q_CLK_ECSPI5] = imx_clk_gate2("ecspi5",        "ecspi_root",        base + 0x6c, 8);
+	clk[IMX6QDL_CLK_ENET]         = imx_clk_gate2("enet",          "ipg",               base + 0x6c, 10);
+	clk[IMX6QDL_CLK_ESAI_EXTAL]   = imx_clk_gate2_shared("esai_extal",   "esai_podf",   base + 0x6c, 16, &share_count_esai);
+	clk[IMX6QDL_CLK_ESAI_IPG]     = imx_clk_gate2_shared("esai_ipg",   "ahb",           base + 0x6c, 16, &share_count_esai);
+	clk[IMX6QDL_CLK_ESAI_MEM]     = imx_clk_gate2_shared("esai_mem", "ahb",             base + 0x6c, 16, &share_count_esai);
+	clk[IMX6QDL_CLK_GPT_IPG]      = imx_clk_gate2("gpt_ipg",       "ipg",               base + 0x6c, 20);
+	clk[IMX6QDL_CLK_GPT_IPG_PER]  = imx_clk_gate2("gpt_ipg_per",   "ipg_per",           base + 0x6c, 22);
+	if (clk_on_imx6dl())
+		/*
+		 * The multiplexer and divider of imx6q clock gpu3d_shader get
+		 * redefined/reused as gpu2d_core_sel and gpu2d_core_podf on imx6dl.
+		 */
+		clk[IMX6QDL_CLK_GPU2D_CORE] = imx_clk_gate2("gpu2d_core", "gpu3d_shader", base + 0x6c, 24);
+	else
+		clk[IMX6QDL_CLK_GPU2D_CORE] = imx_clk_gate2("gpu2d_core", "gpu2d_core_podf", base + 0x6c, 24);
+	clk[IMX6QDL_CLK_GPU3D_CORE]   = imx_clk_gate2("gpu3d_core",    "gpu3d_core_podf",   base + 0x6c, 26);
+	clk[IMX6QDL_CLK_HDMI_IAHB]    = imx_clk_gate2("hdmi_iahb",     "ahb",               base + 0x70, 0);
+	clk[IMX6QDL_CLK_HDMI_ISFR]    = imx_clk_gate2("hdmi_isfr",     "mipi_core_cfg",     base + 0x70, 4);
+	clk[IMX6QDL_CLK_I2C1]         = imx_clk_gate2("i2c1",          "ipg_per",           base + 0x70, 6);
+	clk[IMX6QDL_CLK_I2C2]         = imx_clk_gate2("i2c2",          "ipg_per",           base + 0x70, 8);
+	clk[IMX6QDL_CLK_I2C3]         = imx_clk_gate2("i2c3",          "ipg_per",           base + 0x70, 10);
+	clk[IMX6QDL_CLK_IIM]          = imx_clk_gate2("iim",           "ipg",               base + 0x70, 12);
+	clk[IMX6QDL_CLK_ENFC]         = imx_clk_gate2("enfc",          "enfc_podf",         base + 0x70, 14);
+	clk[IMX6QDL_CLK_VDOA]         = imx_clk_gate2("vdoa",          "vdo_axi",           base + 0x70, 26);
+	clk[IMX6QDL_CLK_IPU1]         = imx_clk_gate2("ipu1",          "ipu1_podf",         base + 0x74, 0);
+	clk[IMX6QDL_CLK_IPU1_DI0]     = imx_clk_gate2("ipu1_di0",      "ipu1_di0_sel",      base + 0x74, 2);
+	clk[IMX6QDL_CLK_IPU1_DI1]     = imx_clk_gate2("ipu1_di1",      "ipu1_di1_sel",      base + 0x74, 4);
+	clk[IMX6QDL_CLK_IPU2]         = imx_clk_gate2("ipu2",          "ipu2_podf",         base + 0x74, 6);
+	clk[IMX6QDL_CLK_IPU2_DI0]     = imx_clk_gate2("ipu2_di0",      "ipu2_di0_sel",      base + 0x74, 8);
+	clk[IMX6QDL_CLK_LDB_DI0]      = imx_clk_gate2("ldb_di0",       "ldb_di0_podf",      base + 0x74, 12);
+	clk[IMX6QDL_CLK_LDB_DI1]      = imx_clk_gate2("ldb_di1",       "ldb_di1_podf",      base + 0x74, 14);
+	clk[IMX6QDL_CLK_IPU2_DI1]     = imx_clk_gate2("ipu2_di1",      "ipu2_di1_sel",      base + 0x74, 10);
+	clk[IMX6QDL_CLK_HSI_TX]       = imx_clk_gate2_shared("hsi_tx", "hsi_tx_podf",       base + 0x74, 16, &share_count_mipi_core_cfg);
+	clk[IMX6QDL_CLK_MIPI_CORE_CFG] = imx_clk_gate2_shared("mipi_core_cfg", "video_27m", base + 0x74, 16, &share_count_mipi_core_cfg);
+	clk[IMX6QDL_CLK_MIPI_IPG]     = imx_clk_gate2_shared("mipi_ipg", "ipg",             base + 0x74, 16, &share_count_mipi_core_cfg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (clk_on_imx6dl())
 		/*
 		 * The multiplexer and divider of the imx6q clock gpu2d get
@@ -982,6 +1020,24 @@ static void __init imx6q_clocks_init(struct device_node *ccm_node)
 		int index = uart_clk_ids[i];
 
 		uart_clks[i] = &hws[index]->clk;
+	}
+
+	/*
+	 * Initialize the GPU clock muxes, so that the maximum specified clock
+	 * rates for the respective SoC are not exceeded.
+	 */
+	if (clk_on_imx6dl()) {
+		clk_set_parent(clk[IMX6QDL_CLK_GPU3D_CORE_SEL],
+			       clk[IMX6QDL_CLK_PLL2_PFD1_594M]);
+		clk_set_parent(clk[IMX6QDL_CLK_GPU2D_CORE_SEL],
+			       clk[IMX6QDL_CLK_PLL2_PFD1_594M]);
+	} else if (clk_on_imx6q()) {
+		clk_set_parent(clk[IMX6QDL_CLK_GPU3D_CORE_SEL],
+			       clk[IMX6QDL_CLK_MMDC_CH0_AXI]);
+		clk_set_parent(clk[IMX6QDL_CLK_GPU3D_SHADER_SEL],
+			       clk[IMX6QDL_CLK_PLL2_PFD1_594M]);
+		clk_set_parent(clk[IMX6QDL_CLK_GPU2D_CORE_SEL],
+			       clk[IMX6QDL_CLK_PLL3_USB_OTG]);
 	}
 
 	imx_register_uart_clocks(uart_clks);

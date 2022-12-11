@@ -25,6 +25,7 @@
 #define BO_PINNED   0x2000
 
 static struct msm_gem_submit *submit_create(struct drm_device *dev,
+<<<<<<< HEAD
 		struct msm_gpu *gpu, struct msm_gem_address_space *aspace,
 		struct msm_gpu_submitqueue *queue, uint32_t nr_bos,
 		uint32_t nr_cmds)
@@ -32,6 +33,15 @@ static struct msm_gem_submit *submit_create(struct drm_device *dev,
 	struct msm_gem_submit *submit;
 	uint64_t sz = struct_size(submit, bos, nr_bos) +
 				  ((u64)nr_cmds * sizeof(submit->cmd[0]));
+=======
+		struct msm_gpu *gpu, uint32_t nr)
+{
+	struct msm_gem_submit *submit;
+	uint64_t sz = sizeof(*submit) + ((u64)nr * sizeof(submit->bos[0]));
+
+	if (sz > SIZE_MAX)
+		return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (sz > SIZE_MAX)
 		return NULL;
@@ -59,6 +69,7 @@ static struct msm_gem_submit *submit_create(struct drm_device *dev,
 	return submit;
 }
 
+<<<<<<< HEAD
 void msm_gem_submit_free(struct msm_gem_submit *submit)
 {
 	dma_fence_put(submit->fence);
@@ -67,6 +78,14 @@ void msm_gem_submit_free(struct msm_gem_submit *submit)
 	msm_submitqueue_put(submit->queue);
 
 	kfree(submit);
+=======
+static inline unsigned long __must_check
+copy_from_user_inatomic(void *to, const void __user *from, unsigned long n)
+{
+	if (access_ok(VERIFY_READ, from, n))
+		return __copy_from_user_inatomic(to, from, n);
+	return -EFAULT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int submit_lookup_objects(struct msm_gem_submit *submit,
@@ -75,11 +94,18 @@ static int submit_lookup_objects(struct msm_gem_submit *submit,
 	unsigned i;
 	int ret = 0;
 
+<<<<<<< HEAD
+=======
+	spin_lock(&file->table_lock);
+	pagefault_disable();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for (i = 0; i < args->nr_bos; i++) {
 		struct drm_msm_gem_submit_bo submit_bo;
 		void __user *userptr =
 			u64_to_user_ptr(args->bos + (i * sizeof(submit_bo)));
 
+<<<<<<< HEAD
 		/* make sure we don't have garbage flags, in case we hit
 		 * error path before flags is initialized:
 		 */
@@ -96,6 +122,21 @@ static int submit_lookup_objects(struct msm_gem_submit *submit,
 
 		if ((submit_bo.flags & ~MSM_SUBMIT_BO_FLAGS) ||
 			!(submit_bo.flags & MANDATORY_FLAGS)) {
+=======
+		ret = copy_from_user_inatomic(&submit_bo, userptr, sizeof(submit_bo));
+		if (unlikely(ret)) {
+			pagefault_enable();
+			spin_unlock(&file->table_lock);
+			ret = copy_from_user(&submit_bo, userptr, sizeof(submit_bo));
+			if (ret)
+				goto out;
+			spin_lock(&file->table_lock);
+			pagefault_disable();
+		}
+
+		if ((submit_bo.flags & ~MSM_SUBMIT_BO_FLAGS) ||
+			!(submit_bo.flags & MSM_SUBMIT_BO_FLAGS)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			DRM_ERROR("invalid flags: %x\n", submit_bo.flags);
 			ret = -EINVAL;
 			i = 0;
@@ -141,6 +182,10 @@ static int submit_lookup_objects(struct msm_gem_submit *submit,
 	}
 
 out_unlock:
+<<<<<<< HEAD
+=======
+	pagefault_enable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	spin_unlock(&file->table_lock);
 
 out:

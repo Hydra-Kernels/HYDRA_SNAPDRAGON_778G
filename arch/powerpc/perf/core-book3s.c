@@ -474,7 +474,12 @@ static void power_pmu_bhrb_read(struct perf_event *event, struct cpu_hw_events *
 			 * exporting it to userspace (avoid exposure of regions
 			 * where we could have speculative execution)
 			 */
+<<<<<<< HEAD
 			if (is_kernel_addr(addr) && perf_allow_kernel(&event->attr) != 0)
+=======
+			if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN) &&
+				is_kernel_addr(addr))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				continue;
 
 			/* Branches are read most recent first (ie. mfbhrb 0 is
@@ -1448,7 +1453,11 @@ static int collect_events(struct perf_event *group, int max_count,
 		flags[n] = group->hw.event_base;
 		events[n++] = group->hw.config;
 	}
+<<<<<<< HEAD
 	for_each_sibling_event(event, group) {
+=======
+	list_for_each_entry(event, &group->sibling_list, group_entry) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (event->pmu->task_ctx_nr == perf_hw_context &&
 		    event->state != PERF_EVENT_STATE_OFF) {
 			if (n >= max_count)

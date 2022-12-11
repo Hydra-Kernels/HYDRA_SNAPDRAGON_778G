@@ -146,6 +146,7 @@ static int mid_pb_probe(struct platform_device *pdev)
 
 	input_set_capability(input, EV_KEY, KEY_POWER);
 
+<<<<<<< HEAD
 	ddata = devm_kmemdup(&pdev->dev, (void *)id->driver_data,
 			     sizeof(*ddata), GFP_KERNEL);
 	if (!ddata)
@@ -159,6 +160,14 @@ static int mid_pb_probe(struct platform_device *pdev)
 		error = ddata->setup(ddata);
 		if (error)
 			return error;
+=======
+	error = request_threaded_irq(irq, NULL, mfld_pb_isr, IRQF_ONESHOT,
+				     DRIVER_NAME, input);
+	if (error) {
+		dev_err(&pdev->dev, "Unable to request irq %d for mfld power"
+				"button\n", irq);
+		goto err_free_input;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	error = devm_request_threaded_irq(&pdev->dev, irq, NULL, mid_pb_isr,

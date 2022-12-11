@@ -822,7 +822,11 @@ int __chsc_do_secm(struct channel_subsystem *css, int enable)
 		u32 : 4;
 		u32 fmt : 4;
 		u32 : 16;
+<<<<<<< HEAD
 	} *secm_area;
+=======
+	} __attribute__ ((packed)) *secm_area;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned long flags;
 	int ret, ccode;
 
@@ -1001,7 +1005,11 @@ int chsc_get_channel_measurement_chars(struct channel_path *chp)
 	chp->cmg = -1;
 
 	if (!css_chsc_characteristics.scmc || !css_chsc_characteristics.secm)
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	spin_lock_irqsave(&chsc_page_lock, flags);
 	memset(chsc_page, 0, PAGE_SIZE);

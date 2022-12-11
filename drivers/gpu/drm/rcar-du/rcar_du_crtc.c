@@ -290,11 +290,18 @@ static void rcar_du_crtc_set_display_timing(struct rcar_du_crtc *rcrtc)
 	rcar_du_crtc_write(rcrtc, rcrtc->index % 2 ? OTAR13 : OTAR02, 0);
 
 	/* Signal polarities */
+<<<<<<< HEAD
 	dsmr = ((mode->flags & DRM_MODE_FLAG_PVSYNC) ? DSMR_VSL : 0)
 	     | ((mode->flags & DRM_MODE_FLAG_PHSYNC) ? DSMR_HSL : 0)
 	     | ((mode->flags & DRM_MODE_FLAG_INTERLACE) ? DSMR_ODEV : 0)
 	     | DSMR_DIPM_DISP | DSMR_CSPM;
 	rcar_du_crtc_write(rcrtc, DSMR, dsmr);
+=======
+	value = ((mode->flags & DRM_MODE_FLAG_PVSYNC) ? DSMR_VSL : 0)
+	      | ((mode->flags & DRM_MODE_FLAG_PHSYNC) ? DSMR_HSL : 0)
+	      | DSMR_DIPM_DE | DSMR_CSPM;
+	rcar_du_crtc_write(rcrtc, DSMR, value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Display timings */
 	rcar_du_crtc_write(rcrtc, HDSR, mode->htotal - mode->hsync_start - 19);
@@ -425,7 +432,11 @@ static void rcar_du_crtc_update_planes(struct rcar_du_crtc *rcrtc)
  * Page Flip
  */
 
+<<<<<<< HEAD
 void rcar_du_crtc_finish_page_flip(struct rcar_du_crtc *rcrtc)
+=======
+static void rcar_du_crtc_finish_page_flip(struct rcar_du_crtc *rcrtc)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct drm_pending_vblank_event *event;
 	struct drm_device *dev = rcrtc->crtc.dev;
@@ -590,12 +601,44 @@ static void rcar_du_crtc_disable_planes(struct rcar_du_crtc *rcrtc)
 	drm_crtc_vblank_put(crtc);
 }
 
+static void rcar_du_crtc_disable_planes(struct rcar_du_crtc *rcrtc)
+{
+	struct rcar_du_device *rcdu = rcrtc->group->dev;
+	struct drm_crtc *crtc = &rcrtc->crtc;
+	u32 status;
+	/* Make sure vblank interrupts are enabled. */
+	drm_crtc_vblank_get(crtc);
+	/*
+	 * Disable planes and calculate how many vertical blanking interrupts we
+	 * have to wait for. If a vertical blanking interrupt has been triggered
+	 * but not processed yet, we don't know whether it occurred before or
+	 * after the planes got disabled. We thus have to wait for two vblank
+	 * interrupts in that case.
+	 */
+	spin_lock_irq(&rcrtc->vblank_lock);
+	rcar_du_group_write(rcrtc->group, rcrtc->index % 2 ? DS2PR : DS1PR, 0);
+	status = rcar_du_crtc_read(rcrtc, DSSR);
+	rcrtc->vblank_count = status & DSSR_VBK ? 2 : 1;
+	spin_unlock_irq(&rcrtc->vblank_lock);
+	if (!wait_event_timeout(rcrtc->vblank_wait, rcrtc->vblank_count == 0,
+	                        msecs_to_jiffies(100)))
+		dev_warn(rcdu->dev, "vertical blanking timeout\n");
+	drm_crtc_vblank_put(crtc);
+}
+
 static void rcar_du_crtc_stop(struct rcar_du_crtc *rcrtc)
 {
 	struct drm_crtc *crtc = &rcrtc->crtc;
 
+<<<<<<< HEAD
 	/*
 	 * Disable all planes and wait for the change to take effect. This is
+=======
+	if (!rcrtc->started)
+		return;
+
+	/* Disable all planes and wait for the change to take effect. This is
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * required as the plane enable registers are updated on vblank, and no
 	 * vblank will occur once the CRTC is stopped. Disabling planes when
 	 * starting the CRTC thus wouldn't be enough as it would start scanning
@@ -1108,11 +1151,16 @@ static irqreturn_t rcar_du_crtc_irq(int irq, void *arg)
 	spin_unlock(&rcrtc->vblank_lock);
 
 	if (status & DSSR_VBK) {
+<<<<<<< HEAD
 		if (rcdu->info->gen < 3) {
 			drm_crtc_handle_vblank(&rcrtc->crtc);
 			rcar_du_crtc_finish_page_flip(rcrtc);
 		}
 
+=======
+		drm_handle_vblank(rcrtc->crtc.dev, rcrtc->index);
+		rcar_du_crtc_finish_page_flip(rcrtc);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = IRQ_HANDLED;
 	}
 

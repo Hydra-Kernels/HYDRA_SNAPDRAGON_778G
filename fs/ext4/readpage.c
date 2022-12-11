@@ -415,6 +415,15 @@ int ext4_mpage_readpages(struct address_space *mapping,
 		if (bio == NULL) {
 			struct bio_post_read_ctx *ctx;
 
+<<<<<<< HEAD
+=======
+			if (ext4_encrypted_inode(inode) &&
+			    S_ISREG(inode->i_mode)) {
+				ctx = ext4_get_crypto_ctx(inode, GFP_NOFS);
+				if (IS_ERR(ctx))
+					goto set_error_page;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			bio = bio_alloc(GFP_KERNEL,
 				min_t(int, nr_pages, BIO_MAX_PAGES));
 			if (!bio)

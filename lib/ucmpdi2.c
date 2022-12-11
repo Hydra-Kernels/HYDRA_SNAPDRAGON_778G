@@ -5,6 +5,11 @@
 #include <linux/module.h>
 #include <linux/libgcc.h>
 
+<<<<<<< HEAD:lib/ucmpdi2.c
+=======
+#include "libgcc.h"
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/mips/lib/ucmpdi2.c
 word_type notrace __ucmpdi2(unsigned long long a, unsigned long long b)
 {
 	const DWunion au = {.ll = a};

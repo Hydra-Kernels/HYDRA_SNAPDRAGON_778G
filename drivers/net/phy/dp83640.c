@@ -905,6 +905,7 @@ static void decode_txts(struct dp83640_private *dp83640,
 	struct sk_buff *skb;
 	u8 overflow;
 	u64 ns;
+	u8 overflow;
 
 	/* We must already have the skb that triggered this. */
 again:
@@ -923,11 +924,14 @@ again:
 		}
 		return;
 	}
+<<<<<<< HEAD
 	skb_info = (struct dp83640_skb_info *)skb->cb;
 	if (time_after(jiffies, skb_info->tmo)) {
 		kfree_skb(skb);
 		goto again;
 	}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ns = phy2txts(phy_txts);
 	memset(&shhwtstamps, 0, sizeof(shhwtstamps));
@@ -1474,8 +1478,6 @@ static bool dp83640_rxtstamp(struct phy_device *phydev,
 		skb_info->tmo = jiffies + SKB_TIMESTAMP_TIMEOUT;
 		skb_queue_tail(&dp83640->rx_queue, skb);
 		schedule_delayed_work(&dp83640->ts_work, SKB_TIMESTAMP_TIMEOUT);
-	} else {
-		netif_rx_ni(skb);
 	}
 
 	return true;

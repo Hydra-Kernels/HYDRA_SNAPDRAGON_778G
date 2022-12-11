@@ -16,11 +16,17 @@
 	GEN_BR_THUNK %r1
 	GEN_BR_THUNK %r14
 
+	GEN_BR_THUNK %r1
+	GEN_BR_THUNK %r14
+
 	.section .kprobes.text, "ax"
 
 ENTRY(ftrace_stub)
 	BR_EX	%r14
+<<<<<<< HEAD
 ENDPROC(ftrace_stub)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define STACK_FRAME_SIZE  (STACK_FRAME_OVERHEAD + __PT_SIZE)
 #define STACK_PTREGS	  (STACK_FRAME_OVERHEAD)
@@ -35,8 +41,11 @@ ENDPROC(ftrace_stub)
 
 ENTRY(_mcount)
 	BR_EX	%r14
+<<<<<<< HEAD
 ENDPROC(_mcount)
 EXPORT_SYMBOL(_mcount)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 ENTRY(ftrace_caller)
 	.globl	ftrace_regs_caller
@@ -89,7 +98,10 @@ ftrace_graph_caller_end:
 	lg	%r1,(STACK_PTREGS_PSW+8)(%r15)
 	lmg	%r2,%r15,(STACK_PTREGS_GPRS+2*8)(%r15)
 	BR_EX	%r1
+<<<<<<< HEAD
 ENDPROC(ftrace_caller)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 
@@ -103,6 +115,9 @@ ENTRY(return_to_handler)
 	lgr	%r14,%r2
 	lmg	%r2,%r5,32(%r15)
 	BR_EX	%r14
+<<<<<<< HEAD
 ENDPROC(return_to_handler)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif

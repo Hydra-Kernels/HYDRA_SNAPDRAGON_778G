@@ -376,9 +376,18 @@ int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	err = rtc_valid_tm(&alarm->time);
 
 done:
+<<<<<<< HEAD
 	if (err)
 		dev_warn(&rtc->dev, "invalid alarm value: %ptR\n",
 			 &alarm->time);
+=======
+	if (err) {
+		dev_warn(&rtc->dev, "invalid alarm value: %d-%d-%d %d:%d:%d\n",
+			alarm->time.tm_year + 1900, alarm->time.tm_mon + 1,
+			alarm->time.tm_mday, alarm->time.tm_hour, alarm->time.tm_min,
+			alarm->time.tm_sec);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return err;
 }
@@ -812,13 +821,20 @@ static int rtc_timer_enqueue(struct rtc_device *rtc, struct rtc_timer *timer)
 
 	/* Skip over expired timers */
 	while (next) {
+<<<<<<< HEAD
 		if (next->expires >= now)
+=======
+		if (next->expires.tv64 >= now.tv64)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		next = timerqueue_iterate_next(next);
 	}
 
 	timerqueue_add(&rtc->timerqueue, &timer->node);
+<<<<<<< HEAD
 	trace_rtc_timer_enqueue(timer);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!next || ktime_before(timer->node.expires, next->expires)) {
 		struct rtc_wkalrm alarm;
 		int err;

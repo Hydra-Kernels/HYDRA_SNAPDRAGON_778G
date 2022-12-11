@@ -19,8 +19,13 @@ struct vdso_image {
 	long sym_vvar_start;  /* Negative offset to the vvar area */
 
 	long sym_vvar_page;
+<<<<<<< HEAD
 	long sym_pvclock_page;
 	long sym_hvclock_page;
+=======
+	long sym_hpet_page;
+	long sym_pvclock_page;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	long sym_VDSO32_NOTE_MASK;
 	long sym___kernel_sigreturn;
 	long sym___kernel_rt_sigreturn;

@@ -25,6 +25,7 @@
  *          Alex Deucher
  *          Jerome Glisse
  */
+<<<<<<< HEAD
 
 /**
  * DOC: Interrupt Handling
@@ -45,6 +46,10 @@
 #include <linux/irq.h>
 #include <linux/pci.h>
 
+=======
+#include <linux/irq.h>
+#include <drm/drmP.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_irq.h>
 #include <drm/drm_vblank.h>

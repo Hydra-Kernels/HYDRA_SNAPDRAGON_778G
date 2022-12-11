@@ -60,10 +60,20 @@
 #define TIPC_MEDIA_TYPE_IB	2
 #define TIPC_MEDIA_TYPE_UDP	3
 
+<<<<<<< HEAD
 /* Minimum bearer MTU */
 #define TIPC_MIN_BEARER_MTU	(MAX_H_SIZE + INT_H_SIZE)
 
 /* Identifiers for distinguishing between broadcast/multicast and replicast
+=======
+/* minimum bearer MTU */
+#define TIPC_MIN_BEARER_MTU	(MAX_H_SIZE + INT_H_SIZE)
+
+/**
+ * struct tipc_node_map - set of node identifiers
+ * @count: # of nodes in set
+ * @map: bitmap of node identifiers that are in the set
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 #define TIPC_BROADCAST_SUPPORT  1
 #define TIPC_REPLICAST_SUPPORT  2
@@ -241,6 +251,15 @@ static inline void tipc_loopback_trace(struct net *net,
 {
 	if (unlikely(dev_nit_active(net->loopback_dev)))
 		tipc_clone_to_loopback(net, pkts);
+}
+
+/* check if device MTU is too low for tipc headers */
+static inline bool tipc_mtu_bad(struct net_device *dev, unsigned int reserve)
+{
+	if (dev->mtu >= TIPC_MIN_BEARER_MTU + reserve)
+		return false;
+	netdev_warn(dev, "MTU too low for tipc bearer\n");
+	return true;
 }
 
 /* check if device MTU is too low for tipc headers */

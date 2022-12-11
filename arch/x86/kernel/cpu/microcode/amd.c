@@ -404,6 +404,9 @@ static int __apply_microcode_amd(struct microcode_amd *mc)
 	return 0;
 }
 
+static enum ucode_state
+load_microcode_amd(bool save, u8 family, const u8 *data, size_t size);
+
 /*
  * Early load occurs before we can vmalloc(). So we look for the microcode
  * patch container file in initrd, traverse equivalent cpu table, look for a
@@ -561,7 +564,25 @@ int __init save_microcode_in_initrd_amd(unsigned int cpuid_1_eax)
 	if (ret > UCODE_UPDATED)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	return 0;
+=======
+	eax   = cpuid_eax(0x00000001);
+	eax   = ((eax >> 8) & 0xf) + ((eax >> 20) & 0xff);
+
+	ret = load_microcode_amd(true, eax, container, container_size);
+	if (ret != UCODE_OK)
+		retval = -EINVAL;
+
+	/*
+	 * This will be freed any msec now, stash patches for the current
+	 * family and switch to patch cache for cpu hotplug, etc later.
+	 */
+	container = NULL;
+	container_size = 0;
+
+	return retval;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void reload_ucode_amd(void)
@@ -666,7 +687,109 @@ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
 	return 0;
 }
 
+<<<<<<< HEAD
 static enum ucode_state apply_microcode_amd(int cpu)
+=======
+static unsigned int verify_patch_size(u8 family, u32 patch_size,
+				      unsigned int size)
+{
+	u32 max_size;
+
+#define F1XH_MPB_MAX_SIZE 2048
+#define F14H_MPB_MAX_SIZE 1824
+#define F15H_MPB_MAX_SIZE 4096
+#define F16H_MPB_MAX_SIZE 3458
+#define F17H_MPB_MAX_SIZE 3200
+
+	switch (family) {
+	case 0x14:
+		max_size = F14H_MPB_MAX_SIZE;
+		break;
+	case 0x15:
+		max_size = F15H_MPB_MAX_SIZE;
+		break;
+	case 0x16:
+		max_size = F16H_MPB_MAX_SIZE;
+		break;
+	case 0x17:
+		max_size = F17H_MPB_MAX_SIZE;
+		break;
+	default:
+		max_size = F1XH_MPB_MAX_SIZE;
+		break;
+	}
+
+	if (patch_size > min_t(u32, size, max_size)) {
+		pr_err("patch size mismatch\n");
+		return 0;
+	}
+
+	return patch_size;
+}
+
+/*
+ * Those patch levels cannot be updated to newer ones and thus should be final.
+ */
+static u32 final_levels[] = {
+	0x01000098,
+	0x0100009f,
+	0x010000af,
+	0, /* T-101 terminator */
+};
+
+/*
+ * Check the current patch level on this CPU.
+ *
+ * @rev: Use it to return the patch level. It is set to 0 in the case of
+ * error.
+ *
+ * Returns:
+ *  - true: if update should stop
+ *  - false: otherwise
+ */
+bool check_current_patch_level(u32 *rev, bool early)
+{
+	u32 lvl, dummy, i;
+	bool ret = false;
+	u32 *levels;
+
+	native_rdmsr(MSR_AMD64_PATCH_LEVEL, lvl, dummy);
+
+	if (IS_ENABLED(CONFIG_X86_32) && early)
+		levels = (u32 *)__pa_nodebug(&final_levels);
+	else
+		levels = final_levels;
+
+	for (i = 0; levels[i]; i++) {
+		if (lvl == levels[i]) {
+			lvl = 0;
+			ret = true;
+			break;
+		}
+	}
+
+	if (rev)
+		*rev = lvl;
+
+	return ret;
+}
+
+int __apply_microcode_amd(struct microcode_amd *mc_amd)
+{
+	u32 rev, dummy;
+
+	native_wrmsrl(MSR_AMD64_PATCH_LOADER, (u64)(long)&mc_amd->hdr.data_code);
+
+	/* verify patch application was successful */
+	native_rdmsr(MSR_AMD64_PATCH_LEVEL, rev, dummy);
+	if (rev != mc_amd->hdr.patch_id)
+		return -1;
+
+	return 0;
+}
+
+int apply_microcode_amd(int cpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct cpuinfo_x86 *c = &cpu_data(cpu);
 	struct microcode_amd *mc_amd;
@@ -846,7 +969,20 @@ load_microcode_amd(bool save, u8 family, const u8 *data, size_t size)
 	ret = __load_microcode_amd(family, data, size);
 	if (ret != UCODE_OK) {
 		cleanup();
+<<<<<<< HEAD
 		return ret;
+=======
+
+#ifdef CONFIG_X86_32
+	/* save BSP's matching patch for early load */
+	if (save) {
+		struct ucode_patch *p = find_patch(0);
+		if (p) {
+			memset(amd_ucode_patch, 0, PATCH_MAX_SIZE);
+			memcpy(amd_ucode_patch, p->data, min_t(u32, ksize(p->data),
+							       PATCH_MAX_SIZE));
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	p = find_patch(0);

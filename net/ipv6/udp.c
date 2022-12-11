@@ -276,7 +276,10 @@ int udpv6_recvmsg(struct sock *sk, struct msghdr *msg, size_t len,
 	unsigned int ulen, copied;
 	int off, err, peeking = flags & MSG_PEEK;
 	int is_udplite = IS_UDPLITE(sk);
+<<<<<<< HEAD
 	struct udp_mib __percpu *mib;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool checksum_valid = false;
 	int is_udp4;
 
@@ -308,14 +311,20 @@ try_again:
 	 * coverage checksum (UDP-Lite), do it before the copy.
 	 */
 
+<<<<<<< HEAD
 	if (copied < ulen || peeking ||
 	    (is_udplite && UDP_SKB_CB(skb)->partial_cov)) {
 		checksum_valid = udp_skb_csum_unnecessary(skb) ||
 				!__udp_lib_checksum_complete(skb);
+=======
+	if (copied < ulen || UDP_SKB_CB(skb)->partial_cov) {
+		checksum_valid = !udp_lib_checksum_complete(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!checksum_valid)
 			goto csum_copy_err;
 	}
 
+<<<<<<< HEAD
 	if (checksum_valid || udp_skb_csum_unnecessary(skb)) {
 		if (udp_skb_is_linear(skb))
 			err = copy_linear_skb(skb, copied, off, &msg->msg_iter);
@@ -323,6 +332,13 @@ try_again:
 			err = skb_copy_datagram_msg(skb, off, msg, copied);
 	} else {
 		err = skb_copy_and_csum_datagram_msg(skb, off, msg);
+=======
+	if (checksum_valid || skb_csum_unnecessary(skb))
+		err = skb_copy_datagram_msg(skb, sizeof(struct udphdr),
+					    msg, copied);
+	else {
+		err = skb_copy_and_csum_datagram_msg(skb, sizeof(struct udphdr), msg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err == -EINVAL)
 			goto csum_copy_err;
 	}
@@ -371,7 +387,11 @@ try_again:
 
 	if (is_udp4) {
 		if (inet->cmsg_flags)
+<<<<<<< HEAD
 			ip_cmsg_recv_offset(msg, sk, skb,
+=======
+			ip_cmsg_recv_offset(msg, skb,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					    sizeof(struct udphdr), off);
 	} else {
 		if (np->rxopt.all)
@@ -623,7 +643,11 @@ static int udpv6_queue_rcv_one_skb(struct sock *sk, struct sk_buff *skb)
 		 */
 
 		/* if we're overly short, let UDP handle it */
+<<<<<<< HEAD
 		encap_rcv = READ_ONCE(up->encap_rcv);
+=======
+		encap_rcv = ACCESS_ONCE(up->encap_rcv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (encap_rcv) {
 			int ret;
 
@@ -805,9 +829,16 @@ start_lookup:
 		if (udpv6_queue_rcv_skb(first, skb) > 0)
 			consume_skb(skb);
 	} else {
+<<<<<<< HEAD
 		kfree_skb(skb);
 		__UDP6_INC_STATS(net, UDP_MIB_IGNOREDMULTI,
 				 proto == IPPROTO_UDPLITE);
+=======
+		if (!inner_flushed)
+			UDP6_INC_STATS_BH(net, UDP_MIB_IGNOREDMULTI,
+					  proto == IPPROTO_UDPLITE);
+		consume_skb(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }
@@ -911,9 +942,32 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 	/* Unicast */
 	sk = __udp6_lib_lookup_skb(skb, uh->source, uh->dest, udptable);
 	if (sk) {
+<<<<<<< HEAD
 		if (!uh->check && !udp_sk(sk)->no_check6_rx)
 			goto report_csum_error;
 		return udp6_unicast_rcv_skb(sk, skb, uh);
+=======
+		int ret;
+
+		if (!uh->check && !udp_sk(sk)->no_check6_rx) {
+			sock_put(sk);
+			udp6_csum_zero_error(skb);
+			goto csum_error;
+		}
+
+		if (inet_get_convert_csum(sk) && uh->check && !IS_UDPLITE(sk))
+			skb_checksum_try_convert(skb, IPPROTO_UDP, uh->check,
+						 ip6_compute_pseudo);
+
+		ret = udpv6_queue_rcv_skb(sk, skb);
+		sock_put(sk);
+
+		/* a return value > 0 means to resubmit the input */
+		if (ret > 0)
+			return ret;
+
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (!uh->check)

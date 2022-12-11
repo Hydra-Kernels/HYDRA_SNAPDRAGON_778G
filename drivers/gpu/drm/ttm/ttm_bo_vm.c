@@ -68,11 +68,19 @@ static vm_fault_t ttm_bo_vm_fault_idle(struct ttm_buffer_object *bo,
 		if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
 			goto out_unlock;
 
+<<<<<<< HEAD
 		ttm_bo_get(bo);
 		up_read(&vmf->vma->vm_mm->mmap_sem);
 		(void) dma_fence_wait(bo->moving, true);
 		dma_resv_unlock(bo->base.resv);
 		ttm_bo_put(bo);
+=======
+		ttm_bo_reference(bo);
+		up_read(&vma->vm_mm->mmap_sem);
+		(void) ttm_bo_wait(bo, false, true, false);
+		ttm_bo_unreserve(bo);
+		ttm_bo_unref(&bo);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out_unlock;
 	}
 
@@ -134,10 +142,17 @@ static vm_fault_t ttm_bo_vm_fault(struct vm_fault *vmf)
 	if (unlikely(!dma_resv_trylock(bo->base.resv))) {
 		if (vmf->flags & FAULT_FLAG_ALLOW_RETRY) {
 			if (!(vmf->flags & FAULT_FLAG_RETRY_NOWAIT)) {
+<<<<<<< HEAD
 				ttm_bo_get(bo);
 				up_read(&vmf->vma->vm_mm->mmap_sem);
 				(void) ttm_bo_wait_unreserved(bo);
 				ttm_bo_put(bo);
+=======
+				ttm_bo_reference(bo);
+				up_read(&vma->vm_mm->mmap_sem);
+				(void) ttm_bo_wait_unreserved(bo);
+				ttm_bo_unref(&bo);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 
 			return VM_FAULT_RETRY;
@@ -190,10 +205,19 @@ static vm_fault_t ttm_bo_vm_fault(struct vm_fault *vmf)
 	 */
 	ret = ttm_bo_vm_fault_idle(bo, vmf);
 	if (unlikely(ret != 0)) {
+<<<<<<< HEAD
 		if (ret == VM_FAULT_RETRY &&
 		    !(vmf->flags & FAULT_FLAG_RETRY_NOWAIT)) {
 			/* The BO has already been unreserved. */
 			return ret;
+=======
+		retval = ret;
+
+		if (retval == VM_FAULT_RETRY &&
+		    !(vmf->flags & FAULT_FLAG_RETRY_NOWAIT)) {
+			/* The BO has already been unreserved. */
+			return retval;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		goto out_unlock;

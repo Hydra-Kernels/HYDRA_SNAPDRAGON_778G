@@ -21,6 +21,7 @@ struct dwc3;
 
 /* DEPCFG parameter 1 */
 #define DWC3_DEPCFG_INT_NUM(n)		(((n) & 0x1f) << 0)
+<<<<<<< HEAD
 #define DWC3_DEPCFG_XFER_COMPLETE_EN	BIT(8)
 #define DWC3_DEPCFG_XFER_IN_PROGRESS_EN	BIT(9)
 #define DWC3_DEPCFG_XFER_NOT_READY_EN	BIT(10)
@@ -31,6 +32,18 @@ struct dwc3;
 #define DWC3_DEPCFG_EP_NUMBER(n)	(((n) & 0x1f) << 25)
 #define DWC3_DEPCFG_BULK_BASED		BIT(30)
 #define DWC3_DEPCFG_FIFO_BASED		BIT(31)
+=======
+#define DWC3_DEPCFG_XFER_COMPLETE_EN	(1 << 8)
+#define DWC3_DEPCFG_XFER_IN_PROGRESS_EN	(1 << 9)
+#define DWC3_DEPCFG_XFER_NOT_READY_EN	(1 << 10)
+#define DWC3_DEPCFG_FIFO_ERROR_EN	(1 << 11)
+#define DWC3_DEPCFG_STREAM_EVENT_EN	(1 << 13)
+#define DWC3_DEPCFG_BINTERVAL_M1(n)	(((n) & 0xff) << 16)
+#define DWC3_DEPCFG_STREAM_CAPABLE	(1 << 24)
+#define DWC3_DEPCFG_EP_NUMBER(n)	(((n) & 0x1f) << 25)
+#define DWC3_DEPCFG_BULK_BASED		(1 << 30)
+#define DWC3_DEPCFG_FIFO_BASED		(1 << 31)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* DEPCFG parameter 0 */
 #define DWC3_DEPCFG_EP_TYPE(n)		(((n) & 0x3) << 1)

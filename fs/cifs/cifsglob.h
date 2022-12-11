@@ -268,9 +268,14 @@ struct smb_version_operations {
 	int (*check_message)(char *, unsigned int, struct TCP_Server_Info *);
 	bool (*is_oplock_break)(char *, struct TCP_Server_Info *);
 	int (*handle_cancelled_mid)(char *, struct TCP_Server_Info *);
+<<<<<<< HEAD
 	void (*downgrade_oplock)(struct TCP_Server_Info *server,
 				 struct cifsInodeInfo *cinode, __u32 oplock,
 				 unsigned int epoch, bool *purge_cache);
+=======
+	void (*downgrade_oplock)(struct TCP_Server_Info *,
+					struct cifsInodeInfo *, bool);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* process transaction2 response */
 	bool (*check_trans2)(struct mid_q_entry *, struct TCP_Server_Info *,
 			     char *, int);
@@ -395,9 +400,15 @@ struct smb_version_operations {
 	int (*close_dir)(const unsigned int, struct cifs_tcon *,
 			 struct cifs_fid *);
 	/* calculate a size of SMB message */
+<<<<<<< HEAD
 	unsigned int (*calc_smb_size)(void *buf, struct TCP_Server_Info *ptcpi);
 	/* check for STATUS_PENDING and process the response if yes */
 	bool (*is_status_pending)(char *buf, struct TCP_Server_Info *server);
+=======
+	unsigned int (*calc_smb_size)(void *);
+	/* check for STATUS_PENDING and process it in a positive case */
+	bool (*is_status_pending)(char *, struct TCP_Server_Info *, int);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* check for STATUS_NETWORK_SESSION_EXPIRED */
 	bool (*is_session_expired)(char *);
 	/* send oplock break response */
@@ -751,6 +762,7 @@ struct TCP_Server_Info {
 #endif /* STATS2 */
 	unsigned int	max_read;
 	unsigned int	max_write;
+<<<<<<< HEAD
 	unsigned int	min_offload;
 	__le16	compress_algorithm;
 	__le16	cipher_type;
@@ -773,6 +785,11 @@ struct TCP_Server_Info {
 struct cifs_credits {
 	unsigned int value;
 	unsigned int instance;
+=======
+	struct delayed_work reconnect; /* reconnect workqueue job */
+	struct mutex reconnect_mutex; /* prevent simultaneous reconnects */
+#endif /* CONFIG_CIFS_SMB2 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static inline unsigned int
@@ -1031,8 +1048,11 @@ struct cifs_tcon {
 	struct list_head tcon_list;
 	int tc_count;
 	struct list_head rlist; /* reconnect list */
+<<<<<<< HEAD
 	atomic_t num_local_opens;  /* num of all opens including disconnected */
 	atomic_t num_remote_opens; /* num of all network opens on server */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct list_head openFileList;
 	spinlock_t open_file_lock; /* protects list above */
 	struct cifs_ses *ses;	/* pointer to session associated with */
@@ -1075,6 +1095,10 @@ struct cifs_tcon {
 	__u64    bytes_read;
 	__u64    bytes_written;
 	spinlock_t stat_lock;  /* protects the two fields above */
+<<<<<<< HEAD
+=======
+#endif /* CONFIG_CIFS_STATS */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	FILE_SYSTEM_DEVICE_INFO fsDevInfo;
 	FILE_SYSTEM_ATTRIBUTE_INFO fsAttrInfo; /* ok if fs name truncated */
 	FILE_SYSTEM_UNIX_INFO fsUnixInfo;
@@ -1095,7 +1119,12 @@ struct cifs_tcon {
 	bool need_reopen_files:1; /* need to reopen tcon file handles */
 	bool use_resilient:1; /* use resilient instead of durable handles */
 	bool use_persistent:1; /* use persistent instead of durable handles */
+<<<<<<< HEAD
 	bool no_lease:1;    /* Do not request leases on files or directories */
+=======
+#ifdef CONFIG_CIFS_SMB2
+	bool print:1;		/* set if connection to printer share */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	__le32 capabilities;
 	__u32 share_flags;
 	__u32 maximal_access;
@@ -1262,8 +1291,11 @@ struct cifsFileInfo {
 	unsigned int f_flags;
 	bool invalidHandle:1;	/* file closed via session abend */
 	bool oplock_break_cancelled:1;
+<<<<<<< HEAD
 	unsigned int oplock_epoch; /* epoch from the lease break */
 	__u32 oplock_level; /* oplock/lease level from the lease break */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int count;
 	spinlock_t file_info_lock; /* protects four flag/count fields above */
 	struct mutex fh_mutex; /* prevents reopen race after dead ses*/
@@ -1561,6 +1593,12 @@ struct close_cancelled_open {
 	struct work_struct      work;
 };
 
+struct close_cancelled_open {
+	struct cifs_fid         fid;
+	struct cifs_tcon        *tcon;
+	struct work_struct      work;
+};
+
 /*	Make code in transport.c a little cleaner by moving
 	update of optional stats into function below */
 #ifdef CONFIG_CIFS_STATS2
@@ -1720,7 +1758,10 @@ static inline bool is_retryable_error(int error)
 
 /* Flags */
 #define   MID_WAIT_CANCELLED	 1 /* Cancelled while waiting for response */
+<<<<<<< HEAD
 #define   MID_DELETED            2 /* Mid has been dequeued/deleted */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Types of response buffer returned from SendReceive2 */
 #define   CIFS_NO_BUFFER        0    /* Response buffer not returned */
@@ -1813,12 +1854,18 @@ require use of the stronger protocol */
  *  GlobalMid_Lock protects:
  *	list operations on pending_mid_q and oplockQ
  *      updates to XID counters, multiplex id  and SMB sequence numbers
+<<<<<<< HEAD
  *      list operations on global DnotifyReqList
  *      updates to ses->status
  *  tcp_ses_lock protects:
  *	list operations on tcp and SMB session lists
  *  tcon->open_file_lock protects the list of open files hanging off the tcon
  *  inode->open_file_lock protects the openFileList hanging off the inode
+=======
+ *  tcp_ses_lock protects:
+ *	list operations on tcp and SMB session lists
+ *  tcon->open_file_lock protects the list of open files hanging off the tcon
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *  cfile->file_info_lock protects counters and fields in cifs file struct
  *  f_owner.lock protects certain per file struct operations
  *  mapping->page_lock protects certain per page operations
@@ -1895,6 +1942,7 @@ GLOBAL_EXTERN atomic_t smBufAllocCount;
 GLOBAL_EXTERN atomic_t midCount;
 
 /* Misc globals */
+<<<<<<< HEAD
 extern bool enable_oplocks; /* enable or disable oplocks */
 extern bool lookupCacheEnabled;
 extern unsigned int global_secflags;	/* if on, session setup sent
@@ -1906,6 +1954,18 @@ extern unsigned int cifs_min_rcv;    /* min size of big ntwrk buf pool */
 extern unsigned int cifs_min_small;  /* min size of small buf pool */
 extern unsigned int cifs_max_pending; /* MAX requests at once to server*/
 extern bool disable_legacy_dialects;  /* forbid vers=1.0 and vers=2.0 mounts */
+=======
+GLOBAL_EXTERN bool enable_oplocks; /* enable or disable oplocks */
+GLOBAL_EXTERN bool lookupCacheEnabled;
+GLOBAL_EXTERN unsigned int global_secflags;	/* if on, session setup sent
+				with more secure ntlmssp2 challenge/resp */
+GLOBAL_EXTERN unsigned int sign_CIFS_PDUs;  /* enable smb packet signing */
+GLOBAL_EXTERN bool linuxExtEnabled;/*enable Linux/Unix CIFS extensions*/
+GLOBAL_EXTERN unsigned int CIFSMaxBufSize;  /* max size not including hdr */
+GLOBAL_EXTERN unsigned int cifs_min_rcv;    /* min size of big ntwrk buf pool */
+GLOBAL_EXTERN unsigned int cifs_min_small;  /* min size of small buf pool */
+GLOBAL_EXTERN unsigned int cifs_max_pending; /* MAX requests at once to server*/
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 GLOBAL_EXTERN struct rb_root uidtree;
 GLOBAL_EXTERN struct rb_root gidtree;

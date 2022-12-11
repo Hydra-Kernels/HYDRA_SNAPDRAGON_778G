@@ -46,7 +46,10 @@ endif
 redirect_openssl	= 2>&1
 quiet_redirect_openssl	= 2>&1
 silent_redirect_openssl = 2>/dev/null
+<<<<<<< HEAD
 openssl_available       = $(shell openssl help 2>/dev/null && echo yes)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 # We do it this way rather than having a boolean option for enabling an
 # external private key, because 'make randconfig' might enable such a

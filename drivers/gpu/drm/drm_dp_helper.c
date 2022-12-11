@@ -196,8 +196,13 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
 			      unsigned int offset, void *buffer, size_t size)
 {
 	struct drm_dp_aux_msg msg;
+<<<<<<< HEAD
 	unsigned int retry, native_reply;
 	int err = 0, ret = 0;
+=======
+	unsigned int retry;
+	int err = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memset(&msg, 0, sizeof(msg));
 	msg.address = offset;
@@ -214,13 +219,24 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
 	 * sufficient, bump to 32 which makes Dell 4k monitors happier.
 	 */
 	for (retry = 0; retry < 32; retry++) {
+<<<<<<< HEAD
 		if (ret != 0 && ret != -ETIMEDOUT) {
 			usleep_range(AUX_RETRY_INTERVAL,
 				     AUX_RETRY_INTERVAL + 100);
+=======
+
+		err = aux->transfer(aux, &msg);
+		if (err < 0) {
+			if (err == -EBUSY)
+				continue;
+
+			goto unlock;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		ret = aux->transfer(aux, &msg);
 
+<<<<<<< HEAD
 		if (ret >= 0) {
 			native_reply = msg.reply & DP_AUX_NATIVE_REPLY_MASK;
 			if (native_reply == DP_AUX_NATIVE_REPLY_ACK) {
@@ -230,6 +246,21 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
 				ret = -EPROTO;
 			} else
 				ret = -EIO;
+=======
+		switch (msg.reply & DP_AUX_NATIVE_REPLY_MASK) {
+		case DP_AUX_NATIVE_REPLY_ACK:
+			if (err < size)
+				err = -EPROTO;
+			goto unlock;
+
+		case DP_AUX_NATIVE_REPLY_NACK:
+			err = -EIO;
+			goto unlock;
+
+		case DP_AUX_NATIVE_REPLY_DEFER:
+			usleep_range(AUX_RETRY_INTERVAL, AUX_RETRY_INTERVAL + 100);
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/*
@@ -241,12 +272,21 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
 			err = ret;
 	}
 
+<<<<<<< HEAD
 	DRM_DEBUG_KMS("Too many retries, giving up. First error: %d\n", err);
 	ret = err;
 
 unlock:
 	mutex_unlock(&aux->hw_mutex);
 	return ret;
+=======
+	DRM_DEBUG_KMS("too many retries, giving up\n");
+	err = -EIO;
+
+unlock:
+	mutex_unlock(&aux->hw_mutex);
+	return err;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -980,6 +1020,8 @@ static int drm_dp_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 
 	memset(&msg, 0, sizeof(msg));
 
+	mutex_lock(&aux->hw_mutex);
+
 	for (i = 0; i < num; i++) {
 		msg.address = msgs[i].addr;
 		drm_dp_i2c_msg_set_request(&msg, &msgs[i]);
@@ -1033,6 +1075,8 @@ static int drm_dp_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 	msg.buffer = NULL;
 	msg.size = 0;
 	(void)drm_dp_i2c_do_msg(aux, &msg);
+
+	mutex_unlock(&aux->hw_mutex);
 
 	return err;
 }

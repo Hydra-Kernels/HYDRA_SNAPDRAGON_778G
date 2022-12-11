@@ -1522,11 +1522,14 @@ struct irq_domain *pci_msi_create_irq_domain(struct fwnode_handle *fwnode,
 		pci_msi_domain_update_chip_ops(info);
 
 	info->flags |= MSI_FLAG_ACTIVATE_EARLY;
+<<<<<<< HEAD
 	if (IS_ENABLED(CONFIG_GENERIC_IRQ_RESERVATION_MODE))
 		info->flags |= MSI_FLAG_MUST_REACTIVATE;
 
 	/* PCI-MSI is oneshot-safe */
 	info->chip->flags |= IRQCHIP_ONESHOT_SAFE;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	domain = msi_create_irq_domain(fwnode, info, parent);
 	if (!domain)

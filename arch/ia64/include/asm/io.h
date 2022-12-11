@@ -266,7 +266,11 @@ static inline void __iomem * ioremap_cache (unsigned long phys_addr, unsigned lo
 #define ioremap_nocache ioremap_nocache
 #define ioremap_cache ioremap_cache
 #define ioremap_uc ioremap_nocache
+<<<<<<< HEAD
 #define iounmap iounmap
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * String version of IO memory access ops:

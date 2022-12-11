@@ -486,6 +486,7 @@ int intel_lpss_suspend(struct device *dev)
 	for (i = 0; i < LPSS_PRIV_REG_COUNT; i++)
 		lpss->priv_ctx[i] = readl(lpss->priv + i * 4);
 
+<<<<<<< HEAD
 	/*
 	 * If the device type is not UART, then put the controller into
 	 * reset. UART cannot be put into reset since S3/S0ix fail when
@@ -494,6 +495,8 @@ int intel_lpss_suspend(struct device *dev)
 	if (lpss->type != LPSS_DEV_UART)
 		writel(0, lpss->priv + LPSS_PRIV_RESETS);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 EXPORT_SYMBOL_GPL(intel_lpss_suspend);

@@ -29,10 +29,63 @@ int intel_svm_init(struct intel_iommu *iommu)
 			!cap_fl1gp_support(iommu->cap))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (cpu_feature_enabled(X86_FEATURE_LA57) &&
 			!cap_5lp_support(iommu->cap))
 		return -EINVAL;
 
+=======
+	/* Start at 2 because it's defined as 2^(1+PSS) */
+	iommu->pasid_max = 2 << ecap_pss(iommu->ecap);
+
+	/* Eventually I'm promised we will get a multi-level PASID table
+	 * and it won't have to be physically contiguous. Until then,
+	 * limit the size because 8MiB contiguous allocations can be hard
+	 * to come by. The limit of 0x20000, which is 1MiB for each of
+	 * the PASID and PASID-state tables, is somewhat arbitrary. */
+	if (iommu->pasid_max > 0x20000)
+		iommu->pasid_max = 0x20000;
+
+	order = get_order(sizeof(struct pasid_entry) * iommu->pasid_max);
+	pages = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+	if (!pages) {
+		pr_warn("IOMMU: %s: Failed to allocate PASID table\n",
+			iommu->name);
+		return -ENOMEM;
+	}
+	iommu->pasid_table = page_address(pages);
+	pr_info("%s: Allocated order %d PASID table.\n", iommu->name, order);
+
+	if (ecap_dis(iommu->ecap)) {
+		/* Just making it explicit... */
+		BUILD_BUG_ON(sizeof(struct pasid_entry) != sizeof(struct pasid_state_entry));
+		pages = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+		if (pages)
+			iommu->pasid_state_table = page_address(pages);
+		else
+			pr_warn("IOMMU: %s: Failed to allocate PASID state table\n",
+				iommu->name);
+	}
+
+	idr_init(&iommu->pasid_idr);
+
+	return 0;
+}
+
+int intel_svm_free_pasid_tables(struct intel_iommu *iommu)
+{
+	int order = get_order(sizeof(struct pasid_entry) * iommu->pasid_max);
+
+	if (iommu->pasid_table) {
+		free_pages((unsigned long)iommu->pasid_table, order);
+		iommu->pasid_table = NULL;
+	}
+	if (iommu->pasid_state_table) {
+		free_pages((unsigned long)iommu->pasid_state_table, order);
+		iommu->pasid_state_table = NULL;
+	}
+	idr_destroy(&iommu->pasid_idr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 
@@ -208,10 +261,20 @@ static void intel_mm_release(struct mmu_notifier *mn, struct mm_struct *mm)
 	 * page) so that we end up taking a fault that the hardware really
 	 * *has* to handle gracefully without affecting other processes.
 	 */
+<<<<<<< HEAD
 	rcu_read_lock();
 	list_for_each_entry_rcu(sdev, &svm->devs, list) {
 		intel_pasid_tear_down_entry(svm->iommu, sdev->dev, svm->pasid);
 		intel_flush_svm_range_dev(svm, sdev, 0, -1, 0);
+=======
+	svm->iommu->pasid_table[svm->pasid].val = 0;
+	wmb();
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(sdev, &svm->devs, list) {
+		intel_flush_pasid_dev(svm, sdev, svm->pasid);
+		intel_flush_svm_range_dev(svm, sdev, 0, -1, 0, !svm->mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	rcu_read_unlock();
 
@@ -329,8 +392,13 @@ int intel_svm_bind_mm(struct device *dev, int *pasid, int flags, struct svm_dev_
 		}
 		svm->iommu = iommu;
 
+<<<<<<< HEAD
 		if (pasid_max > intel_pasid_max_id)
 			pasid_max = intel_pasid_max_id;
+=======
+		if (pasid_max > iommu->pasid_max)
+			pasid_max = iommu->pasid_max;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Do not use PASID 0 in caching mode (virtualised IOMMU) */
 		ret = intel_pasid_alloc_id(svm,
@@ -356,6 +424,7 @@ int intel_svm_bind_mm(struct device *dev, int *pasid, int flags, struct svm_dev_
 				kfree(sdev);
 				goto out;
 			}
+<<<<<<< HEAD
 		}
 
 		spin_lock(&iommu->lock);
@@ -389,6 +458,23 @@ int intel_svm_bind_mm(struct device *dev, int *pasid, int flags, struct svm_dev_
 			kfree(sdev);
 			goto out;
 		}
+=======
+			iommu->pasid_table[svm->pasid].val = (u64)__pa(mm->pgd) | 1;
+		} else
+			iommu->pasid_table[svm->pasid].val = (u64)__pa(init_mm.pgd) | 1 | (1ULL << 11);
+		wmb();
+		/* In caching mode, we still have to flush with PASID 0 when
+		 * a PASID table entry becomes present. Not entirely clear
+		 * *why* that would be the case — surely we could just issue
+		 * a flush with the PASID value that we've changed? The PASID
+		 * is the index into the table, after all. It's not like domain
+		 * IDs in the case of the equivalent context-entry change in
+		 * caching mode. And for that matter it's not entirely clear why
+		 * a VMM would be in the business of caching the PASID table
+		 * anyway. Surely that can be left entirely to the guest? */
+		if (cap_caching_mode(iommu->cap))
+			intel_flush_pasid_dev(svm, sdev, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	list_add_rcu(&sdev->list, &svm->devs);
 
@@ -437,12 +523,20 @@ int intel_svm_unbind_mm(struct device *dev, int pasid)
 				kfree_rcu(sdev, rcu);
 
 				if (list_empty(&svm->devs)) {
+<<<<<<< HEAD
 					intel_pasid_free_id(svm->pasid);
 					if (svm->mm)
 						mmu_notifier_unregister(&svm->notifier, svm->mm);
 
 					list_del(&svm->list);
 
+=======
+
+					idr_remove(&svm->iommu->pasid_idr, svm->pasid);
+					if (svm->mm)
+						mmu_notifier_unregister(&svm->notifier, svm->mm);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					/* We mandate that no page faults may be outstanding
 					 * for the PASID when intel_svm_unbind_mm() is called.
 					 * If that is not obeyed, subtle errors will happen.
@@ -601,6 +695,7 @@ static irqreturn_t prq_event_thread(int irq, void *d)
 		 * any faults on kernel addresses. */
 		if (!svm->mm)
 			goto bad_req;
+<<<<<<< HEAD
 
 		/* If address is not canonical, return invalid response */
 		if (!is_canonical_address(address))
@@ -610,6 +705,11 @@ static irqreturn_t prq_event_thread(int irq, void *d)
 		if (!mmget_not_zero(svm->mm))
 			goto bad_req;
 
+=======
+		/* If the mm is already defunct, don't handle faults. */
+		if (!atomic_inc_not_zero(&svm->mm->mm_users))
+			goto bad_req;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		down_read(&svm->mm->mmap_sem);
 		vma = find_extend_vma(svm->mm, address);
 		if (!vma || address < vma->vm_start)

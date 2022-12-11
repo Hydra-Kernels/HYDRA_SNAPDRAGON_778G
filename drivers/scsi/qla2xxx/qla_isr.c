@@ -2882,6 +2882,7 @@ qla2x00_error_entry(scsi_qla_host_t *vha, struct rsp_que *rsp, sts_entry_t *pkt)
 	if (pkt->entry_status & RF_BUSY)
 		res = DID_BUS_BUSY << 16;
 
+<<<<<<< HEAD
 	if ((pkt->handle & ~QLA_TGT_HANDLE_MASK) == QLA_TGT_SKIP_HANDLE)
 		return 0;
 
@@ -2906,6 +2907,16 @@ qla2x00_error_entry(scsi_qla_host_t *vha, struct rsp_que *rsp, sts_entry_t *pkt)
 	case CTIO_TYPE7:
 	case CTIO_CRC2:
 		return 1;
+=======
+	if (pkt->entry_type == NOTIFY_ACK_TYPE &&
+	    pkt->handle == QLA_TGT_SKIP_HANDLE)
+		return;
+
+	sp = qla2x00_get_sp_from_handle(vha, func, req, pkt);
+	if (sp) {
+		sp->done(ha, sp, res);
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 fatal:
 	ql_log(ql_log_warn, vha, 0x5030,
@@ -3477,6 +3488,7 @@ qla24xx_enable_msix(struct qla_hw_data *ha, struct rsp_que *rsp)
 		    ha->msix_count, ret);
 		goto msix_out;
 	} else if (ret < ha->msix_count) {
+<<<<<<< HEAD
 		ql_log(ql_log_info, vha, 0x00c6,
 		    "MSI-X: Using %d vectors\n", ret);
 		ha->msix_count = ret;
@@ -3499,6 +3511,17 @@ qla24xx_enable_msix(struct qla_hw_data *ha, struct rsp_que *rsp)
 	ha->msix_entries = kcalloc(ha->msix_count,
 				   sizeof(struct qla_msix_entry),
 				   GFP_KERNEL);
+=======
+		ql_log(ql_log_warn, vha, 0x00c6,
+		    "MSI-X: Failed to enable support "
+		    "-- %d/%d\n Retry with %d vectors.\n",
+		    ha->msix_count, ret, ret);
+		ha->msix_count = ret;
+		ha->max_rsp_queues = ha->msix_count - 1;
+	}
+	ha->msix_entries = kzalloc(sizeof(struct qla_msix_entry) *
+				ha->msix_count, GFP_KERNEL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!ha->msix_entries) {
 		ql_log(ql_log_fatal, vha, 0x00c8,
 		    "Failed to allocate memory for ha->msix_entries.\n");

@@ -130,6 +130,11 @@ static int ip_rt_min_advmss __read_mostly	= 256;
 
 static int ip_rt_gc_timeout __read_mostly	= RT_GC_TIMEOUT;
 
+<<<<<<< HEAD
+=======
+static int ip_min_valid_pmtu __read_mostly	= IPV4_MIN_MTU;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  *	Interface to generic destination cache.
  */
@@ -655,9 +660,14 @@ static void fill_route_from_fnhe(struct rtable *rt, struct fib_nh_exception *fnh
 	}
 }
 
+<<<<<<< HEAD
 static void update_or_create_fnhe(struct fib_nh_common *nhc, __be32 daddr,
 				  __be32 gw, u32 pmtu, bool lock,
 				  unsigned long expires)
+=======
+static void update_or_create_fnhe(struct fib_nh *nh, __be32 daddr, __be32 gw,
+				  u32 pmtu, bool lock, unsigned long expires)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct fnhe_hash_bucket *hash;
 	struct fib_nh_exception *fnhe;
@@ -666,7 +676,11 @@ static void update_or_create_fnhe(struct fib_nh_common *nhc, __be32 daddr,
 	unsigned int i;
 	int depth;
 
+<<<<<<< HEAD
 	genid = fnhe_genid(dev_net(nhc->nhc_dev));
+=======
+	genid = fnhe_genid(dev_net(nh->nh_dev));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	hval = fnhe_hashfun(daddr);
 
 	spin_lock_bh(&fnhe_lock);
@@ -715,6 +729,7 @@ static void update_or_create_fnhe(struct fib_nh_common *nhc, __be32 daddr,
 			fnhe_remove_oldest(hash);
 			depth--;
 		}
+<<<<<<< HEAD
 
 		fnhe = kzalloc(sizeof(*fnhe), GFP_ATOMIC);
 		if (!fnhe)
@@ -722,14 +737,20 @@ static void update_or_create_fnhe(struct fib_nh_common *nhc, __be32 daddr,
 
 		fnhe->fnhe_next = hash->chain;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		fnhe->fnhe_genid = genid;
 		fnhe->fnhe_daddr = daddr;
 		fnhe->fnhe_gw = gw;
 		fnhe->fnhe_pmtu = pmtu;
 		fnhe->fnhe_mtu_locked = lock;
+<<<<<<< HEAD
 		fnhe->fnhe_expires = max(1UL, expires);
 
 		rcu_assign_pointer(hash->chain, fnhe);
+=======
+		fnhe->fnhe_expires = expires;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* Exception created; mark the cached routes for the nexthop
 		 * stale, so anyone caching it rechecks if this exception
@@ -809,9 +830,13 @@ static void __ip_do_redirect(struct rtable *rt, struct sk_buff *skb, struct flow
 			if (fib_lookup(net, fl4, &res, 0) == 0) {
 				struct fib_nh_common *nhc;
 
+<<<<<<< HEAD
 				fib_select_path(net, &res, fl4, skb);
 				nhc = FIB_RES_NHC(res);
 				update_or_create_fnhe(nhc, fl4->daddr, new_gw,
+=======
+				update_or_create_fnhe(nh, fl4->daddr, new_gw,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 						0, false,
 						jiffies + ip_rt_gc_timeout);
 			}
@@ -1049,7 +1074,11 @@ static void __ip_rt_update_pmtu(struct rtable *rt, struct flowi4 *fl4, u32 mtu)
 
 	if (mtu < ip_rt_min_pmtu) {
 		lock = true;
+<<<<<<< HEAD
 		mtu = min(old_mtu, ip_rt_min_pmtu);
+=======
+		mtu = ip_rt_min_pmtu;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (rt->rt_pmtu == mtu && !lock &&
@@ -1060,9 +1089,13 @@ static void __ip_rt_update_pmtu(struct rtable *rt, struct flowi4 *fl4, u32 mtu)
 	if (fib_lookup(net, fl4, &res, 0) == 0) {
 		struct fib_nh_common *nhc;
 
+<<<<<<< HEAD
 		fib_select_path(net, &res, fl4, NULL);
 		nhc = FIB_RES_NHC(res);
 		update_or_create_fnhe(nhc, fl4->daddr, 0, mtu, lock,
+=======
+		update_or_create_fnhe(nh, fl4->daddr, 0, mtu, lock,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				      jiffies + ip_rt_mtu_expires);
 	}
 	rcu_read_unlock();
@@ -1541,6 +1574,15 @@ void rt_add_uncached_list(struct rtable *rt)
 
 void rt_del_uncached_list(struct rtable *rt)
 {
+<<<<<<< HEAD
+=======
+	struct dst_metrics *p = (struct dst_metrics *)DST_METRICS_PTR(dst);
+	struct rtable *rt = (struct rtable *) dst;
+
+	if (p != &dst_default_metrics && atomic_dec_and_test(&p->refcnt))
+		kfree(p);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!list_empty(&rt->rt_uncached)) {
 		struct uncached_list *ul = rt->rt_uncached_list;
 
@@ -1605,9 +1647,17 @@ static void rt_set_nexthop(struct rtable *rt, __be32 daddr,
 			else
 				rt->rt_gw6 = nhc->nhc_gw.ipv6;
 		}
+<<<<<<< HEAD
 
 		ip_dst_init_metrics(&rt->dst, fi->fib_metrics);
 
+=======
+		dst_init_metrics(&rt->dst, fi->fib_metrics->metrics, true);
+		if (fi->fib_metrics != &dst_default_metrics) {
+			rt->dst._metrics |= DST_METRICS_REFCOUNTED;
+			atomic_inc(&fi->fib_metrics->refcnt);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_IP_ROUTE_CLASSID
 		if (nhc->nhc_family == AF_INET) {
 			struct fib_nh *nh;
@@ -1663,6 +1713,10 @@ struct rtable *rt_dst_alloc(struct net_device *dev,
 		rt->rt_iif = 0;
 		rt->rt_pmtu = 0;
 		rt->rt_mtu_locked = 0;
+<<<<<<< HEAD
+=======
+		rt->rt_gateway = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		rt->rt_uses_gateway = 0;
 		rt->rt_gw_family = 0;
 		rt->rt_gw4 = 0;
@@ -1805,6 +1859,36 @@ static void ip_handle_martian_source(struct net_device *dev,
 #endif
 }
 
+static void ip_del_fnhe(struct fib_nh *nh, __be32 daddr)
+{
+	struct fnhe_hash_bucket *hash;
+	struct fib_nh_exception *fnhe, __rcu **fnhe_p;
+	u32 hval = fnhe_hashfun(daddr);
+
+	spin_lock_bh(&fnhe_lock);
+
+	hash = rcu_dereference_protected(nh->nh_exceptions,
+					 lockdep_is_held(&fnhe_lock));
+	hash += hval;
+
+	fnhe_p = &hash->chain;
+	fnhe = rcu_dereference_protected(*fnhe_p, lockdep_is_held(&fnhe_lock));
+	while (fnhe) {
+		if (fnhe->fnhe_daddr == daddr) {
+			rcu_assign_pointer(*fnhe_p, rcu_dereference_protected(
+				fnhe->fnhe_next, lockdep_is_held(&fnhe_lock)));
+			fnhe_flush_routes(fnhe);
+			kfree_rcu(fnhe, rcu);
+			break;
+		}
+		fnhe_p = &fnhe->fnhe_next;
+		fnhe = rcu_dereference_protected(fnhe->fnhe_next,
+						 lockdep_is_held(&fnhe_lock));
+	}
+
+	spin_unlock_bh(&fnhe_lock);
+}
+
 /* called in rcu_read_lock() section */
 static int __mkroute_input(struct sk_buff *skb,
 			   const struct fib_result *res,
@@ -1864,10 +1948,25 @@ static int __mkroute_input(struct sk_buff *skb,
 
 	fnhe = find_exception(nhc, daddr);
 	if (do_cache) {
-		if (fnhe)
+		if (fnhe) {
 			rth = rcu_dereference(fnhe->fnhe_rth_input);
+<<<<<<< HEAD
 		else
 			rth = rcu_dereference(nhc->nhc_rth_input);
+=======
+			if (rth && rth->dst.expires &&
+			    time_after(jiffies, rth->dst.expires)) {
+				ip_del_fnhe(&FIB_RES_NH(*res), daddr);
+				fnhe = NULL;
+			} else {
+				goto rt_cache;
+			}
+		}
+
+		rth = rcu_dereference(FIB_RES_NH(*res).nh_rth_input);
+
+rt_cache:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (rt_cache_valid(rth)) {
 			skb_dst_set_noref(skb, &rth->dst);
 			goto out;
@@ -2398,7 +2497,11 @@ static struct rtable *__mkroute_output(const struct fib_result *res,
 		 * the loopback interface and the IP_PKTINFO ipi_ifindex will
 		 * be set to the loopback interface as well.
 		 */
+<<<<<<< HEAD
 		do_cache = false;
+=======
+		fi = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	fnhe = NULL;
@@ -2407,6 +2510,7 @@ static struct rtable *__mkroute_output(const struct fib_result *res,
 		struct fib_nh_common *nhc = FIB_RES_NHC(*res);
 		struct rtable __rcu **prth;
 
+<<<<<<< HEAD
 		fnhe = find_exception(nhc, fl4->daddr);
 		if (!do_cache)
 			goto add;
@@ -2421,9 +2525,38 @@ static struct rtable *__mkroute_output(const struct fib_result *res,
 				goto add;
 			}
 			prth = raw_cpu_ptr(nhc->nhc_pcpu_rth_output);
+=======
+		fnhe = find_exception(nh, fl4->daddr);
+		if (fnhe) {
+			prth = &fnhe->fnhe_rth_output;
+			rth = rcu_dereference(*prth);
+			if (rth && rth->dst.expires &&
+			    time_after(jiffies, rth->dst.expires)) {
+				ip_del_fnhe(nh, fl4->daddr);
+				fnhe = NULL;
+			} else {
+				goto rt_cache;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
+
+		if (unlikely(fl4->flowi4_flags &
+			     FLOWI_FLAG_KNOWN_NH &&
+			     !(nh->nh_gw &&
+			       nh->nh_scope == RT_SCOPE_LINK))) {
+			do_cache = false;
+			goto add;
+		}
+		prth = raw_cpu_ptr(nh->nh_pcpu_rth_output);
 		rth = rcu_dereference(*prth);
+<<<<<<< HEAD
 		if (rt_cache_valid(rth) && dst_hold_safe(&rth->dst))
+=======
+
+rt_cache:
+		if (rt_cache_valid(rth)) {
+			dst_hold(&rth->dst);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return rth;
 	}
 
@@ -2781,7 +2914,11 @@ static int rt_fill_info(struct net *net, __be32 dst, __be32 src,
 	r->rtm_family	 = AF_INET;
 	r->rtm_dst_len	= 32;
 	r->rtm_src_len	= 0;
+<<<<<<< HEAD
 	r->rtm_tos	= fl4 ? fl4->flowi4_tos : 0;
+=======
+	r->rtm_tos	= fl4->flowi4_tos;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	r->rtm_table	= table_id < 256 ? table_id : RT_TABLE_COMPAT;
 	if (nla_put_u32(skb, RTA_TABLE, table_id))
 		goto nla_put_failure;
@@ -2864,6 +3001,7 @@ static int rt_fill_info(struct net *net, __be32 dst, __be32 src,
 
 		if (rt_is_input_route(rt)) {
 #ifdef CONFIG_IP_MROUTE
+<<<<<<< HEAD
 			if (ipv4_is_multicast(dst) &&
 			    !ipv4_is_local_multicast(dst) &&
 			    IPV4_DEVCONF_ALL(net, MC_FORWARDING)) {
@@ -2872,6 +3010,16 @@ static int rt_fill_info(struct net *net, __be32 dst, __be32 src,
 							 r, portid);
 
 				if (err <= 0) {
+=======
+		if (ipv4_is_multicast(dst) && !ipv4_is_local_multicast(dst) &&
+		    IPV4_DEVCONF_ALL(net, MC_FORWARDING)) {
+			int err = ipmr_get_route(net, skb,
+						 fl4->saddr, fl4->daddr,
+						 r, nowait, portid);
+
+			if (err <= 0) {
+				if (!nowait) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					if (err == 0)
 						return 0;
 					goto nla_put_failure;
@@ -2997,9 +3145,15 @@ static struct sk_buff *inet_rtm_getroute_build_skb(__be32 src, __be32 dst,
 	iph->ihl = 0x5;
 	skb_set_transport_header(skb, skb->len);
 
+<<<<<<< HEAD
 	switch (iph->protocol) {
 	case IPPROTO_UDP: {
 		struct udphdr *udph;
+=======
+	/* Bugfix: need to give ip_route_input enough of an IP header to not gag. */
+	ip_hdr(skb)->protocol = IPPROTO_UDP;
+	skb_reserve(skb, MAX_HEADER + sizeof(struct iphdr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		udph = skb_put_zero(skb, sizeof(struct udphdr));
 		udph->source = sport;

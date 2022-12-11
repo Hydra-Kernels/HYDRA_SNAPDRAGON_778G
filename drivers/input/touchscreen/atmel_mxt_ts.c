@@ -3451,8 +3451,97 @@ static int mxt_check_dt(struct device_node *np)
 }
 #endif
 
+<<<<<<< HEAD
 static int mxt_get_dt_coords(struct device *dev, char *name,
 				struct mxt_data *data)
+=======
+#ifdef CONFIG_ACPI
+
+struct mxt_acpi_platform_data {
+	const char *hid;
+	struct mxt_platform_data pdata;
+};
+
+static unsigned int samus_touchpad_buttons[] = {
+	KEY_RESERVED,
+	KEY_RESERVED,
+	KEY_RESERVED,
+	BTN_LEFT
+};
+
+static struct mxt_acpi_platform_data samus_platform_data[] = {
+	{
+		/* Touchpad */
+		.hid	= "ATML0000",
+		.pdata	= {
+			.t19_num_keys	= ARRAY_SIZE(samus_touchpad_buttons),
+			.t19_keymap	= samus_touchpad_buttons,
+		},
+	},
+	{
+		/* Touchscreen */
+		.hid	= "ATML0001",
+	},
+	{ }
+};
+
+static unsigned int chromebook_tp_buttons[] = {
+	KEY_RESERVED,
+	KEY_RESERVED,
+	KEY_RESERVED,
+	KEY_RESERVED,
+	KEY_RESERVED,
+	BTN_LEFT
+};
+
+static struct mxt_acpi_platform_data chromebook_platform_data[] = {
+	{
+		/* Touchpad */
+		.hid	= "ATML0000",
+		.pdata	= {
+			.t19_num_keys	= ARRAY_SIZE(chromebook_tp_buttons),
+			.t19_keymap	= chromebook_tp_buttons,
+		},
+	},
+	{
+		/* Touchscreen */
+		.hid	= "ATML0001",
+	},
+	{ }
+};
+
+static const struct dmi_system_id mxt_dmi_table[] = {
+	{
+		/* 2015 Google Pixel */
+		.ident = "Chromebook Pixel 2",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "GOOGLE"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "Samus"),
+		},
+		.driver_data = samus_platform_data,
+	},
+	{
+		/* Samsung Chromebook Pro */
+		.ident = "Samsung Chromebook Pro",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "Google"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "Caroline"),
+		},
+		.driver_data = samus_platform_data,
+	},
+	{
+		/* Other Google Chromebooks */
+		.ident = "Chromebook",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "GOOGLE"),
+		},
+		.driver_data = chromebook_platform_data,
+	},
+	{ }
+};
+
+static const struct mxt_platform_data *mxt_parse_acpi(struct i2c_client *client)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	u32 coords[MXT_COORDS_ARR_SIZE];
 	struct property *prop;

@@ -220,7 +220,10 @@ struct backing_dev_info {
 	wait_queue_head_t wb_waitq;
 
 	struct device *dev;
+<<<<<<< HEAD
 	char dev_name[64];
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct device *owner;
 
 	struct timer_list laptop_mode_wb_timer;

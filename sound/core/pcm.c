@@ -1123,7 +1123,12 @@ static int snd_pcm_dev_disconnect(struct snd_device *device)
 
 	pcm_call_notify(pcm, n_disconnect);
 	for (cidx = 0; cidx < 2; cidx++) {
+<<<<<<< HEAD
 		snd_unregister_device(&pcm->streams[cidx].dev);
+=======
+		if (!pcm->internal)
+			snd_unregister_device(&pcm->streams[cidx].dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		free_chmap(&pcm->streams[cidx]);
 	}
 	mutex_unlock(&pcm->open_mutex);

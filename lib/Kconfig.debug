@@ -230,8 +230,12 @@ config DEBUG_INFO_REDUCED
 
 config DEBUG_INFO_SPLIT
 	bool "Produce split debuginfo in .dwo files"
+<<<<<<< HEAD
 	depends on DEBUG_INFO
 	depends on $(cc-option,-gsplit-dwarf)
+=======
+	depends on DEBUG_INFO && !FRV
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  Generate debug info into separate .dwo files. This significantly
 	  reduces the build directory size for builds with DEBUG_INFO,
@@ -287,8 +291,12 @@ config FRAME_WARN
 	int "Warn for stack frames larger than (needs gcc 4.4)"
 	range 0 8192
 	default 2048 if GCC_PLUGIN_LATENT_ENTROPY
+<<<<<<< HEAD
 	default 1280 if (!64BIT && PARISC)
 	default 1024 if (!64BIT && !PARISC)
+=======
+	default 1024 if !64BIT
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default 2048 if 64BIT
 	help
 	  Tell gcc to warn at build time for stack frames larger than this.

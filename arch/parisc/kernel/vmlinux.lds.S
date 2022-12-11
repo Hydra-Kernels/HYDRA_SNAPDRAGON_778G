@@ -129,10 +129,13 @@ SECTIONS
 
 	RO_DATA_SECTION(8)
 
+<<<<<<< HEAD
 	/* RO because of BUILDTIME_EXTABLE_SORT */
 	EXCEPTION_TABLE(8)
 	NOTES
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* unwind info */
 	.PARISC.unwind : {
 		__start___unwind = .;

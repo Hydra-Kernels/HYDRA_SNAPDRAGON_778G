@@ -7,6 +7,12 @@
 #include <linux/cpu.h>
 #include <linux/irq.h>
 
+<<<<<<< HEAD
+=======
+#include <asm/cpufeature.h>
+#include <asm/irqdomain.h>
+#include <asm/fixmap.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/hpet.h>
 #include <asm/time.h>
 
@@ -350,7 +356,21 @@ static int hpet_clkevt_set_state_shutdown(struct clock_event_device *evt)
 
 static int hpet_clkevt_legacy_resume(struct clock_event_device *evt)
 {
+<<<<<<< HEAD
 	hpet_enable_legacy_int();
+=======
+	if (!timer) {
+		hpet_enable_legacy_int();
+	} else {
+		struct hpet_dev *hdev = EVT_TO_HPET_DEV(evt);
+
+		irq_domain_deactivate_irq(irq_get_irq_data(hdev->irq));
+		irq_domain_activate_irq(irq_get_irq_data(hdev->irq));
+		disable_hardirq(hdev->irq);
+		irq_set_affinity(hdev->irq, cpumask_of(hdev->cpu));
+		enable_irq(hdev->irq);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	hpet_print_config();
 	return 0;
 }

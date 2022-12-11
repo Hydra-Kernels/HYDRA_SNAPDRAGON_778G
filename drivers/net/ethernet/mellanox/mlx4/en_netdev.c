@@ -2567,7 +2567,14 @@ static int mlx4_en_set_vf_mac(struct net_device *dev, int queue, u8 *mac)
 	struct mlx4_en_priv *en_priv = netdev_priv(dev);
 	struct mlx4_en_dev *mdev = en_priv->mdev;
 
+<<<<<<< HEAD
 	return mlx4_set_vf_mac(mdev->dev, en_priv->port, queue, mac);
+=======
+	if (is_multicast_ether_addr(mac))
+		return -EINVAL;
+
+	return mlx4_set_vf_mac(mdev->dev, en_priv->port, queue, mac_u64);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int mlx4_en_set_vf_vlan(struct net_device *dev, int vf, u16 vlan, u8 qos,
@@ -2660,6 +2667,13 @@ out:
 		en_err(priv, "failed setting L2 tunnel configuration ret %d\n", ret);
 		return;
 	}
+<<<<<<< HEAD
+=======
+
+	/* set offloads */
+	priv->dev->hw_enc_features |= NETIF_F_IP_CSUM | NETIF_F_RXCSUM |
+				      NETIF_F_TSO | NETIF_F_GSO_UDP_TUNNEL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void mlx4_en_del_vxlan_offloads(struct work_struct *work)
@@ -2667,6 +2681,13 @@ static void mlx4_en_del_vxlan_offloads(struct work_struct *work)
 	int ret;
 	struct mlx4_en_priv *priv = container_of(work, struct mlx4_en_priv,
 						 vxlan_del_task);
+<<<<<<< HEAD
+=======
+	/* unset offloads */
+	priv->dev->hw_enc_features &= ~(NETIF_F_IP_CSUM | NETIF_F_RXCSUM |
+				      NETIF_F_TSO | NETIF_F_GSO_UDP_TUNNEL);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = mlx4_SET_PORT_VXLAN(priv->mdev->dev, priv->port,
 				  VXLAN_STEER_BY_OUTER_MAC, 0);
 	if (ret)
@@ -3500,9 +3521,16 @@ int mlx4_en_init_netdev(struct mlx4_en_dev *mdev, int port,
 		priv->rss_hash_fn = ETH_RSS_HASH_TOP;
 	}
 
+<<<<<<< HEAD
 	/* MTU range: 68 - hw-specific max */
 	dev->min_mtu = ETH_MIN_MTU;
 	dev->max_mtu = priv->max_mtu;
+=======
+	if (mdev->dev->caps.tunnel_offload_mode == MLX4_TUNNEL_OFFLOAD_MODE_VXLAN) {
+		dev->hw_features |= NETIF_F_GSO_UDP_TUNNEL;
+		dev->features    |= NETIF_F_GSO_UDP_TUNNEL;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mdev->pndev[port] = dev;
 	mdev->upper[port] = NULL;

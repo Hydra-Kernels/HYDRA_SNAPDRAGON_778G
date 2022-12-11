@@ -946,11 +946,16 @@ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp)
 
 	if (hdr_arg.minorversion == 0) {
 		cps.clp = nfs4_find_client_ident(SVC_NET(rqstp), hdr_arg.cb_ident);
+<<<<<<< HEAD
 		if (!cps.clp || !check_gss_callback_principal(cps.clp, rqstp)) {
 			if (cps.clp)
 				nfs_put_client(cps.clp);
 			goto out_invalidcred;
 		}
+=======
+		if (!cps.clp || !check_gss_callback_principal(cps.clp, rqstp))
+			goto out_invalidcred;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	cps.minorversion = hdr_arg.minorversion;
@@ -983,7 +988,11 @@ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp)
 
 out_invalidcred:
 	pr_warn_ratelimited("NFS: NFSv4 callback contains invalid cred\n");
+<<<<<<< HEAD
 	return svc_return_autherr(rqstp, rpc_autherr_badcred);
+=======
+	return rpc_autherr_badcred;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

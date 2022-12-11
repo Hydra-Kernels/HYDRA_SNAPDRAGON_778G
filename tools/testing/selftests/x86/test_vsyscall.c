@@ -18,7 +18,10 @@
 #include <sched.h>
 #include <stdbool.h>
 #include <setjmp.h>
+<<<<<<< HEAD
 #include <sys/uio.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef __x86_64__
 # define VSYS(x) (x)
@@ -34,9 +37,12 @@
 # endif
 #endif
 
+<<<<<<< HEAD
 /* max length of lines in /proc/self/maps - anything longer is skipped here */
 #define MAPS_LINE_LEN 128
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void sethandler(int sig, void (*handler)(int, siginfo_t *, void *),
 		       int flags)
 {
@@ -50,21 +56,36 @@ static void sethandler(int sig, void (*handler)(int, siginfo_t *, void *),
 }
 
 /* vsyscalls and vDSO */
+<<<<<<< HEAD
 bool vsyscall_map_r = false, vsyscall_map_x = false;
 
 typedef long (*gtod_t)(struct timeval *tv, struct timezone *tz);
 const gtod_t vgtod = (gtod_t)VSYS(0xffffffffff600000);
+=======
+bool should_read_vsyscall = false;
+
+typedef long (*gtod_t)(struct timeval *tv, struct timezone *tz);
+gtod_t vgtod = (gtod_t)VSYS(0xffffffffff600000);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 gtod_t vdso_gtod;
 
 typedef int (*vgettime_t)(clockid_t, struct timespec *);
 vgettime_t vdso_gettime;
 
 typedef long (*time_func_t)(time_t *t);
+<<<<<<< HEAD
 const time_func_t vtime = (time_func_t)VSYS(0xffffffffff600400);
 time_func_t vdso_time;
 
 typedef long (*getcpu_t)(unsigned *, unsigned *, void *);
 const getcpu_t vgetcpu = (getcpu_t)VSYS(0xffffffffff600800);
+=======
+time_func_t vtime = (time_func_t)VSYS(0xffffffffff600400);
+time_func_t vdso_time;
+
+typedef long (*getcpu_t)(unsigned *, unsigned *, void *);
+getcpu_t vgetcpu = (getcpu_t)VSYS(0xffffffffff600800);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 getcpu_t vdso_getcpu;
 
 static void init_vdso(void)
@@ -102,12 +123,17 @@ static int init_vsys(void)
 #ifdef __x86_64__
 	int nerrs = 0;
 	FILE *maps;
+<<<<<<< HEAD
 	char line[MAPS_LINE_LEN];
+=======
+	char line[128];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bool found = false;
 
 	maps = fopen("/proc/self/maps", "r");
 	if (!maps) {
 		printf("[WARN]\tCould not open /proc/self/maps -- assuming vsyscall is r-x\n");
+<<<<<<< HEAD
 		vsyscall_map_r = true;
 		return 0;
 	}
@@ -118,6 +144,16 @@ static int init_vsys(void)
 		char name[MAPS_LINE_LEN];
 
 		/* sscanf() is safe here as strlen(name) >= strlen(line) */
+=======
+		should_read_vsyscall = true;
+		return 0;
+	}
+
+	while (fgets(line, sizeof(line), maps)) {
+		char r, x;
+		void *start, *end;
+		char name[128];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (sscanf(line, "%p-%p %c-%cp %*x %*x:%*x %*u %s",
 			   &start, &end, &r, &x, name) != 5)
 			continue;
@@ -134,8 +170,17 @@ static int init_vsys(void)
 		}
 
 		printf("\tvsyscall permissions are %c-%c\n", r, x);
+<<<<<<< HEAD
 		vsyscall_map_r = (r == 'r');
 		vsyscall_map_x = (x == 'x');
+=======
+		should_read_vsyscall = (r == 'r');
+		if (x != 'x') {
+			vgtod = NULL;
+			vtime = NULL;
+			vgetcpu = NULL;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		found = true;
 		break;
@@ -145,8 +190,15 @@ static int init_vsys(void)
 
 	if (!found) {
 		printf("\tno vsyscall map in /proc/self/maps\n");
+<<<<<<< HEAD
 		vsyscall_map_r = false;
 		vsyscall_map_x = false;
+=======
+		should_read_vsyscall = false;
+		vgtod = NULL;
+		vtime = NULL;
+		vgetcpu = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return nerrs;
@@ -178,6 +230,7 @@ static inline long sys_getcpu(unsigned * cpu, unsigned * node,
 }
 
 static jmp_buf jmpbuf;
+<<<<<<< HEAD
 static volatile unsigned long segv_err;
 
 static void sigsegv(int sig, siginfo_t *info, void *ctx_void)
@@ -185,6 +238,11 @@ static void sigsegv(int sig, siginfo_t *info, void *ctx_void)
 	ucontext_t *ctx = (ucontext_t *)ctx_void;
 
 	segv_err =  ctx->uc_mcontext.gregs[REG_ERR];
+=======
+
+static void sigsegv(int sig, siginfo_t *info, void *ctx_void)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	siglongjmp(jmpbuf, 1);
 }
 
@@ -210,7 +268,11 @@ static int check_gtod(const struct timeval *tv_sys1,
 	}
 
 	d1 = tv_diff(tv_other, tv_sys1);
+<<<<<<< HEAD
 	d2 = tv_diff(tv_sys2, tv_other); 
+=======
+	d2 = tv_diff(tv_sys2, tv_other);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	printf("\t%s time offsets: %lf %lf\n", which, d1, d2);
 
 	if (d1 < 0 || d2 < 0) {
@@ -237,7 +299,11 @@ static int test_gtod(void)
 		err(1, "syscall gettimeofday");
 	if (vdso_gtod)
 		ret_vdso = vdso_gtod(&tv_vdso, &tz_vdso);
+<<<<<<< HEAD
 	if (vsyscall_map_x)
+=======
+	if (vgtod)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret_vsys = vgtod(&tv_vsys, &tz_vsys);
 	if (sys_gtod(&tv_sys2, &tz_sys) != 0)
 		err(1, "syscall gettimeofday");
@@ -251,7 +317,11 @@ static int test_gtod(void)
 		}
 	}
 
+<<<<<<< HEAD
 	if (vsyscall_map_x) {
+=======
+	if (vgtod) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret_vsys == 0) {
 			nerrs += check_gtod(&tv_sys1, &tv_sys2, &tz_sys, "vsyscall", &tv_vsys, &tz_vsys);
 		} else {
@@ -272,7 +342,11 @@ static int test_time(void) {
 	t_sys1 = sys_time(&t2_sys1);
 	if (vdso_time)
 		t_vdso = vdso_time(&t2_vdso);
+<<<<<<< HEAD
 	if (vsyscall_map_x)
+=======
+	if (vtime)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		t_vsys = vtime(&t2_vsys);
 	t_sys2 = sys_time(&t2_sys2);
 	if (t_sys1 < 0 || t_sys1 != t2_sys1 || t_sys2 < 0 || t_sys2 != t2_sys2) {
@@ -293,7 +367,11 @@ static int test_time(void) {
 		}
 	}
 
+<<<<<<< HEAD
 	if (vsyscall_map_x) {
+=======
+	if (vtime) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (t_vsys < 0 || t_vsys != t2_vsys) {
 			printf("[FAIL]\tvsyscall failed (ret:%ld output:%ld)\n", t_vsys, t2_vsys);
 			nerrs++;
@@ -329,7 +407,11 @@ static int test_getcpu(int cpu)
 	ret_sys = sys_getcpu(&cpu_sys, &node_sys, 0);
 	if (vdso_getcpu)
 		ret_vdso = vdso_getcpu(&cpu_vdso, &node_vdso, 0);
+<<<<<<< HEAD
 	if (vsyscall_map_x)
+=======
+	if (vgetcpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret_vsys = vgetcpu(&cpu_vsys, &node_vsys, 0);
 
 	if (ret_sys == 0) {
@@ -368,7 +450,11 @@ static int test_getcpu(int cpu)
 		}
 	}
 
+<<<<<<< HEAD
 	if (vsyscall_map_x) {
+=======
+	if (vgetcpu) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret_vsys) {
 			printf("[FAIL]\tvsyscall getcpu() failed\n");
 			nerrs++;
@@ -409,6 +495,7 @@ static int test_vsys_r(void)
 		can_read = false;
 	}
 
+<<<<<<< HEAD
 	if (can_read && !vsyscall_map_r) {
 		printf("[FAIL]\tWe have read access, but we shouldn't\n");
 		return 1;
@@ -420,12 +507,23 @@ static int test_vsys_r(void)
 	} else {
 		printf("[OK]\tWe do not have read access: #PF(0x%lx)\n",
 		       segv_err);
+=======
+	if (can_read && !should_read_vsyscall) {
+		printf("[FAIL]\tWe have read access, but we shouldn't\n");
+		return 1;
+	} else if (!can_read && should_read_vsyscall) {
+		printf("[FAIL]\tWe don't have read access, but we should\n");
+		return 1;
+	} else {
+		printf("[OK]\tgot expected result\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 #endif
 
 	return 0;
 }
 
+<<<<<<< HEAD
 static int test_vsys_x(void)
 {
 #ifdef __x86_64__
@@ -491,6 +589,8 @@ static int test_process_vm_readv(void)
 
 	return 0;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef __x86_64__
 #define X86_EFLAGS_TF (1UL << 8)
@@ -517,15 +617,26 @@ static void sigtrap(int sig, siginfo_t *info, void *ctx_void)
 		num_vsyscall_traps++;
 }
 
+<<<<<<< HEAD
 static int test_emulation(void)
+=======
+static int test_native_vsyscall(void)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	time_t tmp;
 	bool is_native;
 
+<<<<<<< HEAD
 	if (!vsyscall_map_x)
 		return 0;
 
 	printf("[RUN]\tchecking that vsyscalls are emulated\n");
+=======
+	if (!vtime)
+		return 0;
+
+	printf("[RUN]\tchecking for native vsyscall\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sethandler(SIGTRAP, sigtrap, 0);
 	set_eflags(get_eflags() | X86_EFLAGS_TF);
 	vtime(&tmp);
@@ -541,12 +652,20 @@ static int test_emulation(void)
 	 */
 	is_native = (num_vsyscall_traps > 1);
 
+<<<<<<< HEAD
 	printf("[%s]\tvsyscalls are %s (%d instructions in vsyscall page)\n",
 	       (is_native ? "FAIL" : "OK"),
 	       (is_native ? "native" : "emulated"),
 	       (int)num_vsyscall_traps);
 
 	return is_native;
+=======
+	printf("\tvsyscalls are %s (%d instructions in vsyscall page)\n",
+	       (is_native ? "native" : "emulated"),
+	       (int)num_vsyscall_traps);
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #endif
 
@@ -564,12 +683,18 @@ int main(int argc, char **argv)
 
 	sethandler(SIGSEGV, sigsegv, 0);
 	nerrs += test_vsys_r();
+<<<<<<< HEAD
 	nerrs += test_vsys_x();
 
 	nerrs += test_process_vm_readv();
 
 #ifdef __x86_64__
 	nerrs += test_emulation();
+=======
+
+#ifdef __x86_64__
+	nerrs += test_native_vsyscall();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 	return nerrs ? 1 : 0;

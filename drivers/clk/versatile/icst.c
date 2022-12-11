@@ -14,7 +14,11 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <asm/div64.h>
+<<<<<<< HEAD:drivers/clk/versatile/icst.c
 #include "icst.h"
+=======
+#include <asm/hardware/icst.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/arm/common/icst.c
 
 /*
  * Divisors for each OD setting.

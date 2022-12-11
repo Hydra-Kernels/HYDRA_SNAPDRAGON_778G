@@ -27,7 +27,10 @@
 
 #include <linux/linkage.h>
 #include <asm/inst.h>
+<<<<<<< HEAD
 #include <asm/frame.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/nospec-branch.h>
 
 /*
@@ -2761,7 +2764,11 @@ ENTRY(aesni_xts_encrypt)
 	pxor INC, STATE4
 	movdqu IV, 0x30(OUTP)
 
+<<<<<<< HEAD
 	call _aesni_enc4
+=======
+	CALL_NOSPEC %r11
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	movdqu 0x00(OUTP), INC
 	pxor INC, STATE1
@@ -2788,7 +2795,28 @@ ENTRY(aesni_xts_encrypt)
 
 	movups IV, (IVP)
 
+<<<<<<< HEAD
 	FRAME_END
+=======
+	CALL_NOSPEC %r11
+
+	movdqu 0x40(OUTP), INC
+	pxor INC, STATE1
+	movdqu STATE1, 0x40(OUTP)
+
+	movdqu 0x50(OUTP), INC
+	pxor INC, STATE2
+	movdqu STATE2, 0x50(OUTP)
+
+	movdqu 0x60(OUTP), INC
+	pxor INC, STATE3
+	movdqu STATE3, 0x60(OUTP)
+
+	movdqu 0x70(OUTP), INC
+	pxor INC, STATE4
+	movdqu STATE4, 0x70(OUTP)
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret
 ENDPROC(aesni_xts_encrypt)
 

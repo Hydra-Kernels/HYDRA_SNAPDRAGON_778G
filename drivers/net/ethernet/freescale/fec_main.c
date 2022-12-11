@@ -3777,6 +3777,13 @@ fec_drv_remove(struct platform_device *pdev)
 	fec_enet_mii_remove(fep);
 	if (fep->reg_phy)
 		regulator_disable(fep->reg_phy);
+<<<<<<< HEAD
+=======
+	pm_runtime_put(&pdev->dev);
+	pm_runtime_disable(&pdev->dev);
+	of_node_put(fep->phy_node);
+	free_netdev(ndev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (of_phy_is_fixed_link(np))
 		of_phy_deregister_fixed_link(np);

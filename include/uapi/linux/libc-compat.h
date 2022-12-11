@@ -173,6 +173,7 @@
 #else /* !defined(__GLIBC__) */
 
 /* Definitions for if.h */
+<<<<<<< HEAD
 #ifndef __UAPI_DEF_IF_IFCONF
 #define __UAPI_DEF_IF_IFCONF 1
 #endif
@@ -193,6 +194,16 @@
 #ifndef __UAPI_DEF_IF_NET_DEVICE_FLAGS_LOWER_UP_DORMANT_ECHO
 #define __UAPI_DEF_IF_NET_DEVICE_FLAGS_LOWER_UP_DORMANT_ECHO 1
 #endif
+=======
+#define __UAPI_DEF_IF_IFCONF 1
+#define __UAPI_DEF_IF_IFMAP 1
+#define __UAPI_DEF_IF_IFNAMSIZ 1
+#define __UAPI_DEF_IF_IFREQ 1
+/* Everything up to IFF_DYNAMIC, matches net/if.h until glibc 2.23 */
+#define __UAPI_DEF_IF_NET_DEVICE_FLAGS 1
+/* For the future if glibc adds IFF_LOWER_UP, IFF_DORMANT and IFF_ECHO */
+#define __UAPI_DEF_IF_NET_DEVICE_FLAGS_LOWER_UP_DORMANT_ECHO 1
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Definitions for in.h */
 #ifndef __UAPI_DEF_IN_ADDR

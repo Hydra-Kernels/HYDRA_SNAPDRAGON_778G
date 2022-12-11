@@ -67,8 +67,14 @@ static int tegra_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 			    int duty_ns, int period_ns)
 {
 	struct tegra_pwm_chip *pc = to_tegra_pwm_chip(chip);
+<<<<<<< HEAD
 	unsigned long long c = duty_ns, hz;
 	unsigned long rate;
+=======
+	unsigned long long c;
+	unsigned long rate, hz;
+	unsigned long long ns100 = NSEC_PER_SEC;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32 val = 0;
 	int err;
 
@@ -86,11 +92,20 @@ static int tegra_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	 * Compute the prescaler value for which (1 << PWM_DUTY_WIDTH)
 	 * cycles at the PWM clock rate will take period_ns nanoseconds.
 	 */
+<<<<<<< HEAD
 	rate = pc->clk_rate >> PWM_DUTY_WIDTH;
 
 	/* Consider precision in PWM_SCALE_WIDTH rate calculation */
 	hz = DIV_ROUND_CLOSEST_ULL(100ULL * NSEC_PER_SEC, period_ns);
 	rate = DIV_ROUND_CLOSEST_ULL(100ULL * rate, hz);
+=======
+	rate = clk_get_rate(pc->clk) >> PWM_DUTY_WIDTH;
+
+	/* Consider precision in PWM_SCALE_WIDTH rate calculation */
+	ns100 *= 100;
+	hz = DIV_ROUND_CLOSEST_ULL(ns100, period_ns);
+	rate = DIV_ROUND_CLOSEST(rate * 100, hz);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Since the actual PWM divider is the register's frequency divider

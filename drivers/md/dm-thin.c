@@ -1442,6 +1442,7 @@ static void set_pool_mode(struct pool *pool, enum pool_mode new_mode);
 
 static void requeue_bios(struct pool *pool);
 
+<<<<<<< HEAD
 static bool is_read_only_pool_mode(enum pool_mode mode)
 {
 	return (mode == PM_OUT_OF_METADATA_SPACE || mode == PM_READ_ONLY);
@@ -1471,6 +1472,9 @@ static void check_for_metadata_space(struct pool *pool)
 }
 
 static void check_for_data_space(struct pool *pool)
+=======
+static void check_for_space(struct pool *pool)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int r;
 	dm_block_t nr_free;

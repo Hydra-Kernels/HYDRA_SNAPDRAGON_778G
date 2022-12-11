@@ -92,21 +92,34 @@
 				STA_ENTRY						\
 				__field(u16, tid)					\
 				__field(u16, ssn)					\
+<<<<<<< HEAD
 				__field(u16, buf_size)					\
 				__field(bool, amsdu)					\
 				__field(u16, timeout)					\
 				__field(u16, action)
+=======
+				__field(u8, buf_size)					\
+				__field(bool, amsdu)					\
+				__field(u16, timeout)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define AMPDU_ACTION_ASSIGN	STA_NAMED_ASSIGN(params->sta);				\
 				__entry->tid = params->tid;				\
 				__entry->ssn = params->ssn;				\
 				__entry->buf_size = params->buf_size;			\
 				__entry->amsdu = params->amsdu;				\
+<<<<<<< HEAD
 				__entry->timeout = params->timeout;			\
 				__entry->action = params->action;
 #define AMPDU_ACTION_PR_FMT	STA_PR_FMT " tid %d, ssn %d, buf_size %u, amsdu %d, timeout %d action %d"
 #define AMPDU_ACTION_PR_ARG	STA_PR_ARG, __entry->tid, __entry->ssn,			\
 				__entry->buf_size, __entry->amsdu, __entry->timeout,	\
 				__entry->action
+=======
+				__entry->timeout = params->timeout;
+#define AMPDU_ACTION_PR_FMT	STA_PR_FMT " tid %d, ssn %d, buf_size %u, amsdu %d, timeout %d"
+#define AMPDU_ACTION_PR_ARG	STA_PR_ARG, __entry->tid, __entry->ssn,			\
+				__entry->buf_size, __entry->amsdu, __entry->timeout
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * Tracing for driver callbacks.

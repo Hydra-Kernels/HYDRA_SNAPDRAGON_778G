@@ -4,8 +4,11 @@
 
 #include <linux/export.h>
 
+<<<<<<< HEAD:lib/cmpdi2.c
 #include <linux/libgcc.h>
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/mips/lib/cmpdi2.c
 word_type notrace __cmpdi2(long long a, long long b)
 {
 	const DWunion au = {

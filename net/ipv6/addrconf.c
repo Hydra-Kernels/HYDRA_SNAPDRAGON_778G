@@ -652,6 +652,10 @@ static int inet6_netconf_get_devconf(struct sk_buff *in_skb,
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
+=======
+	err = -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!tb[NETCONFA_IFINDEX])
 		return -EINVAL;
 
@@ -1106,6 +1110,7 @@ ipv6_add_addr(struct inet6_dev *idev, struct ifa6_config *cfg,
 	spin_lock_init(&ifa->lock);
 	INIT_DELAYED_WORK(&ifa->dad_work, addrconf_dad_work);
 	INIT_HLIST_NODE(&ifa->addr_lst);
+<<<<<<< HEAD
 	ifa->scope = cfg->scope;
 	ifa->prefix_len = cfg->plen;
 	ifa->rt_priority = cfg->rt_priority;
@@ -1115,6 +1120,16 @@ ipv6_add_addr(struct inet6_dev *idev, struct ifa6_config *cfg,
 		ifa->flags |= IFA_F_TENTATIVE;
 	ifa->valid_lft = cfg->valid_lft;
 	ifa->prefered_lft = cfg->preferred_lft;
+=======
+	ifa->scope = scope;
+	ifa->prefix_len = pfxlen;
+	ifa->flags = flags;
+	/* No need to add the TENTATIVE flag for addresses with NODAD */
+	if (!(flags & IFA_F_NODAD))
+		ifa->flags |= IFA_F_TENTATIVE;
+	ifa->valid_lft = valid_lft;
+	ifa->prefered_lft = prefered_lft;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ifa->cstamp = ifa->tstamp = jiffies;
 	ifa->tokenized = false;
 
@@ -2022,9 +2037,12 @@ struct inet6_ifaddr *ipv6_get_ifaddr(struct net *net, const struct in6_addr *add
 
 static void addrconf_dad_stop(struct inet6_ifaddr *ifp, int dad_failed)
 {
+<<<<<<< HEAD
 	if (dad_failed)
 		ifp->flags |= IFA_F_DADFAILED;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ifp->flags&IFA_F_TEMPORARY) {
 		struct inet6_ifaddr *ifpub;
 		spin_lock_bh(&ifp->lock);
@@ -2043,7 +2061,11 @@ static void addrconf_dad_stop(struct inet6_ifaddr *ifp, int dad_failed)
 		addrconf_del_dad_work(ifp);
 		ifp->flags |= IFA_F_TENTATIVE;
 		if (dad_failed)
+<<<<<<< HEAD
 			ifp->flags &= ~IFA_F_OPTIMISTIC;
+=======
+			ifp->flags |= IFA_F_DADFAILED;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		spin_unlock_bh(&ifp->lock);
 		if (dad_failed)
 			ipv6_ifa_notify(0, ifp);
@@ -3190,6 +3212,48 @@ static void init_loopback(struct net_device *dev)
 	}
 
 	add_addr(idev, &in6addr_loopback, 128, IFA_HOST);
+<<<<<<< HEAD
+=======
+
+	/* Add routes to other interface's IPv6 addresses */
+	for_each_netdev(dev_net(dev), sp_dev) {
+		if (!strcmp(sp_dev->name, dev->name))
+			continue;
+
+		idev = __in6_dev_get(sp_dev);
+		if (!idev)
+			continue;
+
+		read_lock_bh(&idev->lock);
+		list_for_each_entry(sp_ifa, &idev->addr_list, if_list) {
+
+			if (sp_ifa->flags & (IFA_F_DADFAILED | IFA_F_TENTATIVE))
+				continue;
+
+			if (sp_ifa->rt) {
+				/* This dst has been added to garbage list when
+				 * lo device down, release this obsolete dst and
+				 * reallocate a new router for ifa.
+				 */
+				if (!atomic_read(&sp_ifa->rt->rt6i_ref)) {
+					ip6_rt_put(sp_ifa->rt);
+					sp_ifa->rt = NULL;
+				} else {
+					continue;
+				}
+			}
+
+			sp_rt = addrconf_dst_alloc(idev, &sp_ifa->addr, false);
+
+			/* Failure cases are ignored */
+			if (!IS_ERR(sp_rt)) {
+				sp_ifa->rt = sp_rt;
+				ip6_ins_rt(sp_rt);
+			}
+		}
+		read_unlock_bh(&idev->lock);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void addrconf_add_linklocal(struct inet6_dev *idev,
@@ -3586,7 +3650,11 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
 				break;
 			}
 
+<<<<<<< HEAD
 			if (!IS_ERR_OR_NULL(idev)) {
+=======
+			if (idev) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				if (idev->if_flags & IF_READY) {
 					/* device is already configured -
 					 * but resend MLD reports, we might
@@ -3594,10 +3662,13 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
 					 * multicast snooping switches
 					 */
 					ipv6_mc_up(idev);
+<<<<<<< HEAD
 					change_info = ptr;
 					if (change_info->flags_changed & IFF_NOARP)
 						addrconf_dad_run(idev, true);
 					rt6_sync_up(dev, RTNH_F_LINKDOWN);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					break;
 				}
 				idev->if_flags |= IF_READY;
@@ -3966,8 +4037,12 @@ static void addrconf_dad_begin(struct inet6_ifaddr *ifp)
 {
 	struct inet6_dev *idev = ifp->idev;
 	struct net_device *dev = idev->dev;
+<<<<<<< HEAD
 	bool bump_id, notify = false;
 	struct net *net;
+=======
+	bool notify = false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	addrconf_join_solict(dev, &ifp->addr);
 
@@ -6034,6 +6109,7 @@ static void __ipv6_ifa_notify(int event, struct inet6_ifaddr *ifp)
 		 * host route, so nothing to insert. That will be fixed when
 		 * the device is brought up.
 		 */
+<<<<<<< HEAD
 		if (ifp->rt && !rcu_access_pointer(ifp->rt->fib6_node)) {
 			ip6_ins_rt(net, ifp->rt);
 		} else if (!ifp->rt && (ifp->idev->dev->flags & IFF_UP)) {
@@ -6041,6 +6117,10 @@ static void __ipv6_ifa_notify(int event, struct inet6_ifaddr *ifp)
 				&ifp->addr, ifp->idev->dev->name);
 		}
 
+=======
+		if (!rcu_access_pointer(ifp->rt->rt6i_node))
+			ip6_ins_rt(ifp->rt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ifp->idev->cnf.forwarding)
 			addrconf_join_anycast(ifp);
 		if (!ipv6_addr_any(&ifp->peer_addr))

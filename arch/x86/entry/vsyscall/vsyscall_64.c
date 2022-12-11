@@ -50,6 +50,7 @@ static enum { EMULATE, XONLY, NONE } vsyscall_mode __ro_after_init =
 #else
 	EMULATE;
 #endif
+unsigned long vsyscall_pgprot = __PAGE_KERNEL_VSYSCALL;
 
 static int __init vsyscall_setup(char *str)
 {
@@ -69,6 +70,11 @@ static int __init vsyscall_setup(char *str)
 	return -EINVAL;
 }
 early_param("vsyscall", vsyscall_setup);
+
+bool vsyscall_enabled(void)
+{
+	return vsyscall_mode != NONE;
+}
 
 static void warn_bad_vsyscall(const char *level, struct pt_regs *regs,
 			      const char *message)
@@ -378,6 +384,7 @@ void __init map_vsyscall(void)
 	extern char __vsyscall_page;
 	unsigned long physaddr_vsyscall = __pa_symbol(&__vsyscall_page);
 
+<<<<<<< HEAD
 	/*
 	 * For full emulation, the page needs to exist for real.  In
 	 * execute-only mode, there is no PTE at all backing the vsyscall
@@ -391,6 +398,13 @@ void __init map_vsyscall(void)
 
 	if (vsyscall_mode == XONLY)
 		gate_vma.vm_flags = VM_EXEC;
+=======
+	if (vsyscall_mode != NATIVE)
+		vsyscall_pgprot = __PAGE_KERNEL_VVAR;
+	if (vsyscall_mode != NONE)
+		__set_fixmap(VSYSCALL_PAGE, physaddr_vsyscall,
+			     __pgprot(vsyscall_pgprot));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	BUILD_BUG_ON((unsigned long)__fix_to_virt(VSYSCALL_PAGE) !=
 		     (unsigned long)VSYSCALL_ADDR);

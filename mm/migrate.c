@@ -45,8 +45,11 @@
 #include <linux/balloon_compaction.h>
 #include <linux/mmu_notifier.h>
 #include <linux/page_idle.h>
+<<<<<<< HEAD
 #include <linux/page_owner.h>
 #include <linux/sched/mm.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/ptrace.h>
 
 #include <asm/tlbflush.h>
@@ -651,6 +654,7 @@ void migrate_page_states(struct page *newpage, struct page *page)
 
 	mem_cgroup_migrate(page, newpage);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(migrate_page_states);
 
 void migrate_page_copy(struct page *newpage, struct page *page)
@@ -662,6 +666,8 @@ void migrate_page_copy(struct page *newpage, struct page *page)
 
 	migrate_page_states(newpage, page);
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 EXPORT_SYMBOL(migrate_page_copy);
 
 /************************************************************
@@ -1208,6 +1214,7 @@ out:
 		 * restored.
 		 */
 		list_del(&page->lru);
+<<<<<<< HEAD
 
 		/*
 		 * Compaction can migrate also non-LRU pages which are
@@ -1217,6 +1224,23 @@ out:
 		if (likely(!__PageMovable(page)))
 			mod_node_page_state(page_pgdat(page), NR_ISOLATED_ANON +
 					page_is_file_cache(page), -hpage_nr_pages(page));
+=======
+		dec_zone_page_state(page, NR_ISOLATED_ANON +
+				page_is_file_cache(page));
+		/* Soft-offlined page shouldn't go through lru cache list */
+		if (reason == MR_MEMORY_FAILURE && rc == MIGRATEPAGE_SUCCESS) {
+			/*
+			 * With this release, we free successfully migrated
+			 * page and set PG_HWPoison on just freed page
+			 * intentionally. Although it's rather weird, it's how
+			 * HWPoison flag works at the moment.
+			 */
+			put_page(page);
+			if (!test_set_page_hwpoison(page))
+				num_poisoned_pages_inc();
+		} else
+			putback_lru_page(page);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/*

@@ -301,8 +301,13 @@ static int arch_build_bp_info(struct perf_event *bp,
 		 * breakpoints, then we'll have to check for kprobe-blacklisted
 		 * addresses anywhere in the range.
 		 */
+<<<<<<< HEAD
 		hw->mask = attr->bp_len - 1;
 		hw->len = X86_BREAKPOINT_LEN_1;
+=======
+		info->mask = bp->attr.bp_len - 1;
+		info->len = X86_BREAKPOINT_LEN_1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;

@@ -339,7 +339,11 @@ int r8712_update_attrib(struct _adapter *padapter, _pkt *pkt,
 	if (check_fwstate(pmlmepriv, WIFI_MP_STATE))
 		pattrib->priority =
 		    (le32_to_cpu(txdesc.txdw1) >> QSEL_SHT) & 0x1f;
+<<<<<<< HEAD
 	return 0;
+=======
+	return _SUCCESS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int xmitframe_addmic(struct _adapter *padapter,

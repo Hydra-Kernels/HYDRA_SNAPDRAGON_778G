@@ -53,6 +53,8 @@ static struct resource s3c64xx_iis0_resource[] = {
 
 static struct s3c_audio_pdata i2s0_pdata = {
 	.cfg_gpio = s3c64xx_i2s_cfg_gpio,
+	.dma_playback = DMACH_I2S0_OUT,
+	.dma_capture = DMACH_I2S0_IN,
 };
 
 struct platform_device s3c64xx_device_iis0 = {
@@ -72,6 +74,11 @@ static struct resource s3c64xx_iis1_resource[] = {
 
 static struct s3c_audio_pdata i2s1_pdata = {
 	.cfg_gpio = s3c64xx_i2s_cfg_gpio,
+<<<<<<< HEAD
+=======
+	.dma_playback = DMACH_I2S1_OUT,
+	.dma_capture = DMACH_I2S1_IN,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct platform_device s3c64xx_device_iis1 = {
@@ -91,6 +98,8 @@ static struct resource s3c64xx_iisv4_resource[] = {
 
 static struct s3c_audio_pdata i2sv4_pdata = {
 	.cfg_gpio = s3c64xx_i2s_cfg_gpio,
+	.dma_playback = DMACH_HSI_I2SV40_TX,
+	.dma_capture = DMACH_HSI_I2SV40_RX,
 	.type = {
 		.quirks = QUIRK_PRI_6CHAN,
 	},
@@ -137,6 +146,8 @@ static struct resource s3c64xx_pcm0_resource[] = {
 
 static struct s3c_audio_pdata s3c_pcm0_pdata = {
 	.cfg_gpio = s3c64xx_pcm_cfg_gpio,
+	.dma_capture = DMACH_PCM0_RX,
+	.dma_playback = DMACH_PCM0_TX,
 };
 
 struct platform_device s3c64xx_device_pcm0 = {
@@ -156,6 +167,8 @@ static struct resource s3c64xx_pcm1_resource[] = {
 
 static struct s3c_audio_pdata s3c_pcm1_pdata = {
 	.cfg_gpio = s3c64xx_pcm_cfg_gpio,
+	.dma_playback = DMACH_PCM1_TX,
+	.dma_capture = DMACH_PCM1_RX,
 };
 
 struct platform_device s3c64xx_device_pcm1 = {
@@ -187,6 +200,12 @@ static struct resource s3c64xx_ac97_resource[] = {
 };
 
 static struct s3c_audio_pdata s3c_ac97_pdata = {
+<<<<<<< HEAD
+=======
+	.dma_playback = DMACH_AC97_PCMOUT,
+	.dma_capture = DMACH_AC97_PCMIN,
+	.dma_capture_mic = DMACH_AC97_MICIN,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static u64 s3c64xx_ac97_dmamask = DMA_BIT_MASK(32);

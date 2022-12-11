@@ -1331,6 +1331,17 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
 		return error;
 	}
 
+<<<<<<< HEAD
+=======
+	error = scsi_dh_add_device(sdev);
+	if (error)
+		/*
+		 * device_handler is optional, so any error can be ignored
+		 */
+		sdev_printk(KERN_INFO, sdev,
+				"failed to add device handler: %d\n", error);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	device_enable_async_suspend(&sdev->sdev_dev);
 	error = device_add(&sdev->sdev_dev);
 	if (error) {
@@ -1505,6 +1516,7 @@ restart:
 	spin_lock_irqsave(shost->host_lock, flags);
 	list_for_each_entry(starget, &shost->__targets, siblings) {
 		if (starget->state == STARGET_DEL ||
+<<<<<<< HEAD
 		    starget->state == STARGET_REMOVE ||
 		    starget->state == STARGET_CREATED_REMOVE)
 			continue;
@@ -1514,6 +1526,13 @@ restart:
 				starget->state = STARGET_CREATED_REMOVE;
 			else
 				starget->state = STARGET_REMOVE;
+=======
+		    starget->state == STARGET_REMOVE)
+			continue;
+		if (starget->dev.parent == dev || &starget->dev == dev) {
+			kref_get(&starget->reap_ref);
+			starget->state = STARGET_REMOVE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			spin_unlock_irqrestore(shost->host_lock, flags);
 			__scsi_remove_target(starget);
 			scsi_target_reap(starget);

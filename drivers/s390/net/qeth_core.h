@@ -650,16 +650,20 @@ struct qeth_cmd_buffer {
 	int rc;
 };
 
+<<<<<<< HEAD
 static inline void qeth_get_cmd(struct qeth_cmd_buffer *iob)
 {
 	refcount_inc(&iob->ref_count);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline struct qeth_ipa_cmd *__ipa_cmd(struct qeth_cmd_buffer *iob)
 {
 	return (struct qeth_ipa_cmd *)(iob->data + IPA_PDU_HEADER_SIZE);
 }
 
+<<<<<<< HEAD
 static inline struct ccw1 *__ccw_from_cmd(struct qeth_cmd_buffer *iob)
 {
 	return (struct ccw1 *)(iob->data + ALIGN(iob->length, 8));
@@ -669,6 +673,23 @@ static inline bool qeth_trylock_channel(struct qeth_channel *channel)
 {
 	return atomic_cmpxchg(&channel->irq_pending, 0, 1) == 0;
 }
+=======
+/**
+ * definition of a qeth channel, used for read and write
+ */
+struct qeth_channel {
+	enum qeth_channel_states state;
+	struct ccw1 ccw;
+	spinlock_t iob_lock;
+	wait_queue_head_t wait_q;
+	struct ccw_device *ccwdev;
+/*command buffer for control data*/
+	struct qeth_cmd_buffer iob[QETH_CMD_BUFFER_NO];
+	atomic_t irq_pending;
+	int io_buf_no;
+	int buf_no;
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  *  OSA card related definitions
@@ -764,7 +785,13 @@ struct qeth_osn_info {
 
 struct qeth_discipline {
 	const struct device_type *devtype;
+<<<<<<< HEAD
 	int (*process_rx_buffer)(struct qeth_card *card, int budget, int *done);
+=======
+	void (*start_poll)(struct ccw_device *, int, unsigned long);
+	qdio_handler_t *input_handler;
+	qdio_handler_t *output_handler;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int (*recover)(void *ptr);
 	int (*setup) (struct ccwgroup_device *);
 	void (*remove) (struct ccwgroup_device *);
@@ -1010,6 +1037,10 @@ extern const struct attribute_group *qeth_osn_attr_groups[];
 extern const struct attribute_group qeth_device_attr_group;
 extern const struct attribute_group qeth_device_blkt_group;
 extern const struct device_type qeth_generic_devtype;
+<<<<<<< HEAD
+=======
+extern struct workqueue_struct *qeth_wq;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 const char *qeth_get_cardname_short(struct qeth_card *);
 int qeth_realloc_buffer_pool(struct qeth_card *, int);

@@ -92,7 +92,12 @@ slow:
 		return ERR_PTR(-ENOMEM);
 	}
 	d_instantiate(dentry, inode);
+<<<<<<< HEAD
 	dentry->d_fsdata = (void *)ns->ops;
+=======
+	dentry->d_flags |= DCACHE_RCUACCESS;
+	dentry->d_fsdata = (void *)ns_ops;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	d = atomic_long_cmpxchg(&ns->stashed, 0, (unsigned long)dentry);
 	if (d) {
 		d_delete(dentry);	/* make sure ->d_prune() does nothing */

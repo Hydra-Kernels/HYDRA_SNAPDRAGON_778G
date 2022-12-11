@@ -996,10 +996,51 @@ struct ath10k {
 	/* contains the firmware images used with ATH10K_FIRMWARE_MODE_NORMAL */
 	struct ath10k_fw_components normal_mode_fw;
 
+<<<<<<< HEAD
 	/* READ-ONLY images of the running firmware, which can be either
 	 * normal or UTF. Do not modify, release etc!
 	 */
 	const struct ath10k_fw_components *running_fw;
+=======
+		/* Some of chip expects fragment descriptor to be continuous
+		 * memory for any TX operation. Set continuous_frag_desc flag
+		 * for the hardware which have such requirement.
+		 */
+		bool continuous_frag_desc;
+
+		u32 channel_counters_freq_hz;
+
+		/* Mgmt tx descriptors threshold for limiting probe response
+		 * frames.
+		 */
+		u32 max_probe_resp_desc_thres;
+
+		struct ath10k_hw_params_fw {
+			const char *dir;
+			const char *fw;
+			const char *otp;
+			const char *board;
+			size_t board_size;
+			size_t board_ext_size;
+		} fw;
+
+		/* Number of bytes used for alignment in rx_hdr_status */
+		int decap_align_bytes;
+
+	} hw_params;
+
+	const struct firmware *board;
+	const void *board_data;
+	size_t board_len;
+
+	const struct firmware *otp;
+	const void *otp_data;
+	size_t otp_len;
+
+	const struct firmware *firmware;
+	const void *firmware_data;
+	size_t firmware_len;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	const struct firmware *pre_cal_file;
 	const struct firmware *cal_file;

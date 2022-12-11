@@ -2556,7 +2556,10 @@ xfs_agi_write_verify(
 
 const struct xfs_buf_ops xfs_agi_buf_ops = {
 	.name = "xfs_agi",
+<<<<<<< HEAD
 	.magic = { cpu_to_be32(XFS_AGI_MAGIC), cpu_to_be32(XFS_AGI_MAGIC) },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	.verify_read = xfs_agi_read_verify,
 	.verify_write = xfs_agi_write_verify,
 	.verify_struct = xfs_agi_verify,

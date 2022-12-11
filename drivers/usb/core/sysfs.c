@@ -618,11 +618,16 @@ static ssize_t usb3_hardware_lpm_u2_show(struct device *dev,
 {
 	struct usb_device *udev = to_usb_device(dev);
 	const char *p;
+<<<<<<< HEAD
 	int rc;
 
 	rc = usb_lock_device_interruptible(udev);
 	if (rc < 0)
 		return -EINTR;
+=======
+
+	usb_lock_device(udev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (udev->usb3_lpm_u2_enabled)
 		p = "enabled";
@@ -678,8 +683,12 @@ static int add_power_attributes(struct device *dev)
 		if (udev->usb2_hw_lpm_capable == 1)
 			rc = sysfs_merge_group(&dev->kobj,
 					&usb2_hardware_lpm_attr_group);
+<<<<<<< HEAD
 		if ((udev->speed == USB_SPEED_SUPER ||
 		     udev->speed == USB_SPEED_SUPER_PLUS) &&
+=======
+		if (udev->speed == USB_SPEED_SUPER &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				udev->lpm_capable == 1)
 			rc = sysfs_merge_group(&dev->kobj,
 					&usb3_hardware_lpm_attr_group);

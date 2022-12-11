@@ -4580,6 +4580,7 @@ xfs_btree_simple_query_range(
 		if (error || !stat)
 			break;
 
+<<<<<<< HEAD
 		/* Skip if high_key(rec) < low_key. */
 		if (firstrec) {
 			cur->bc_ops->init_high_key_from_rec(&rec_key, recp);
@@ -4588,6 +4589,13 @@ xfs_btree_simple_query_range(
 					&rec_key);
 			if (diff > 0)
 				goto advloop;
+=======
+			ptr = xfs_btree_ptr_addr(cur, 1, block);
+			xfs_btree_readahead_ptr(cur, ptr, 1);
+
+			/* save for the next iteration of the loop */
+			xfs_btree_copy_ptrs(cur, &lptr, ptr, 1);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		/* Stop if high_key < low_key(rec). */

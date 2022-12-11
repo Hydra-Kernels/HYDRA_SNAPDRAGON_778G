@@ -264,7 +264,11 @@ static const struct pci_device_id intel_gpio_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x08f7),
 		.driver_data = (kernel_ulong_t)&gpio_cloverview_core,
 	},
+<<<<<<< HEAD
 	{ }
+=======
+	{ 0 }
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 static void intel_mid_irq_handler(struct irq_desc *desc)

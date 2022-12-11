@@ -152,11 +152,15 @@ DEFINE_EVENT(timer_class, timer_cancel,
 		{ HRTIMER_MODE_ABS,		"ABS"		},	\
 		{ HRTIMER_MODE_REL,		"REL"		},	\
 		{ HRTIMER_MODE_ABS_PINNED,	"ABS|PINNED"	},	\
+<<<<<<< HEAD
 		{ HRTIMER_MODE_REL_PINNED,	"REL|PINNED"	},	\
 		{ HRTIMER_MODE_ABS_SOFT,	"ABS|SOFT"	},	\
 		{ HRTIMER_MODE_REL_SOFT,	"REL|SOFT"	},	\
 		{ HRTIMER_MODE_ABS_PINNED_SOFT,	"ABS|PINNED|SOFT" },	\
 		{ HRTIMER_MODE_REL_PINNED_SOFT,	"REL|PINNED|SOFT" })
+=======
+		{ HRTIMER_MODE_REL_PINNED,	"REL|PINNED"	})
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * hrtimer_init - called when the hrtimer is initialized

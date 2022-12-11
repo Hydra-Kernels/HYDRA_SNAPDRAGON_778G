@@ -18,6 +18,9 @@ generic-y += preempt.h
 generic-y += seccomp.h
 generic-y += serial.h
 generic-y += trace_clock.h
+<<<<<<< HEAD
 
 generated-y += mach-types.h
 generated-y += unistd-nr.h
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

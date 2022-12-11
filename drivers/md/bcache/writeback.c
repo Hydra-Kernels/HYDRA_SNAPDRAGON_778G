@@ -30,6 +30,7 @@ static void update_gc_after_writeback(struct cache_set *c)
 static uint64_t __calc_target_rate(struct cached_dev *dc)
 {
 	struct cache_set *c = dc->disk.c;
+<<<<<<< HEAD
 
 	/*
 	 * This is the size of the cache, minus the amount used for
@@ -48,6 +49,10 @@ static uint64_t __calc_target_rate(struct cached_dev *dc)
 		div64_u64(bdev_sectors(dc->bdev) << WRITEBACK_SHARE_SHIFT,
 				c->cached_dev_sectors);
 
+=======
+	uint64_t cache_sectors = c->nbuckets * c->sb.bucket_size -
+				bcache_flash_devs_sectors_dirty(c);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	uint64_t cache_dirty_target =
 		div_u64(cache_sectors * dc->writeback_percent, 100);
 
@@ -331,6 +336,7 @@ static void write_dirty(struct closure *cl)
 		/* Not our turn to write; wait for a write to complete */
 		closure_wait(&dc->writeback_ordering_wait, cl);
 
+<<<<<<< HEAD
 		if (atomic_read(&dc->writeback_sequence_next) == io->sequence) {
 			/*
 			 * Edge case-- it happened in indeterminate order
@@ -365,6 +371,8 @@ static void write_dirty(struct closure *cl)
 	atomic_set(&dc->writeback_sequence_next, next_sequence);
 	closure_wake_up(&dc->writeback_ordering_wait);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	continue_at(cl, write_dirty_finish, io->dc->writeback_write_wq);
 }
 
@@ -559,9 +567,13 @@ void bcache_dev_sectors_dirty_add(struct cache_set *c, unsigned int inode,
 
 static bool dirty_pred(struct keybuf *buf, struct bkey *k)
 {
+<<<<<<< HEAD
 	struct cached_dev *dc = container_of(buf,
 					     struct cached_dev,
 					     writeback_keys);
+=======
+	struct cached_dev *dc = container_of(buf, struct cached_dev, writeback_keys);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	BUG_ON(KEY_INODE(k) != dc->disk.id);
 
@@ -678,10 +690,16 @@ static int bch_writeback_thread(void *arg)
 		    (!atomic_read(&dc->has_dirty) || !dc->writeback_running)) {
 			up_write(&dc->writeback_lock);
 
+<<<<<<< HEAD
 			if (kthread_should_stop() ||
 			    test_bit(CACHE_SET_IO_DISABLE, &c->flags)) {
 				set_current_state(TASK_RUNNING);
 				break;
+=======
+			if (kthread_should_stop()) {
+				set_current_state(TASK_RUNNING);
+				return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 
 			schedule();
@@ -702,6 +720,7 @@ static int bch_writeback_thread(void *arg)
 			 * data on cache. BCACHE_DEV_DETACHING flag is set in
 			 * bch_cached_dev_detach().
 			 */
+<<<<<<< HEAD
 			if (test_bit(BCACHE_DEV_DETACHING, &dc->disk.flags)) {
 				up_write(&dc->writeback_lock);
 				break;
@@ -723,6 +742,10 @@ static int bch_writeback_thread(void *arg)
 				c->gc_after_writeback &= ~BCH_DO_AUTO_GC;
 				force_wake_up_gc(c);
 			}
+=======
+			if (test_bit(BCACHE_DEV_DETACHING, &dc->disk.flags))
+				break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		up_write(&dc->writeback_lock);
@@ -792,6 +815,7 @@ void bch_sectors_dirty_init(struct bcache_device *d)
 
 	bch_btree_op_init(&op.op, -1);
 	op.inode = d->id;
+<<<<<<< HEAD
 	op.count = 0;
 	op.start = KEY(op.inode, 0, 0);
 
@@ -806,6 +830,13 @@ void bch_sectors_dirty_init(struct bcache_device *d)
 			break;
 		}
 	} while (ret == -EAGAIN);
+=======
+
+	bch_btree_map_keys(&op.op, d->c, &KEY(op.inode, 0, 0),
+			   sectors_dirty_init_fn, 0);
+
+	d->sectors_dirty_last = bcache_dev_sectors_dirty(d);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 void bch_cached_dev_writeback_init(struct cached_dev *dc)
@@ -836,7 +867,10 @@ int bch_cached_dev_writeback_start(struct cached_dev *dc)
 	if (!dc->writeback_write_wq)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	cached_dev_get(dc);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	dc->writeback_thread = kthread_create(bch_writeback_thread, dc,
 					      "bcache_writeback");
 	if (IS_ERR(dc->writeback_thread)) {

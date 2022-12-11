@@ -45,7 +45,13 @@
 #define KVM_PRIVATE_MEM_SLOTS 3
 #define KVM_MEM_SLOTS_NUM (KVM_USER_MEM_SLOTS + KVM_PRIVATE_MEM_SLOTS)
 
+<<<<<<< HEAD
 #define KVM_HALT_POLL_NS_DEFAULT 200000
+=======
+#define KVM_PIO_PAGE_OFFSET 1
+#define KVM_COALESCED_MMIO_PAGE_OFFSET 2
+#define KVM_HALT_POLL_NS_DEFAULT 400000
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define KVM_IRQCHIP_NUM_PINS  KVM_IOAPIC_NUM_PINS
 
@@ -1347,12 +1353,26 @@ extern u64 kvm_mce_cap_supported;
 #define EMULTYPE_NO_DECODE	    (1 << 0)
 #define EMULTYPE_TRAP_UD	    (1 << 1)
 #define EMULTYPE_SKIP		    (1 << 2)
+<<<<<<< HEAD
 #define EMULTYPE_ALLOW_RETRY	    (1 << 3)
 #define EMULTYPE_TRAP_UD_FORCED	    (1 << 4)
 #define EMULTYPE_VMWARE_GP	    (1 << 5)
 int kvm_emulate_instruction(struct kvm_vcpu *vcpu, int emulation_type);
 int kvm_emulate_instruction_from_buffer(struct kvm_vcpu *vcpu,
 					void *insn, int insn_len);
+=======
+#define EMULTYPE_RETRY		    (1 << 3)
+#define EMULTYPE_NO_REEXECUTE	    (1 << 4)
+int x86_emulate_instruction(struct kvm_vcpu *vcpu, unsigned long cr2,
+			    int emulation_type, void *insn, int insn_len);
+
+static inline int emulate_instruction(struct kvm_vcpu *vcpu,
+			int emulation_type)
+{
+	return x86_emulate_instruction(vcpu, 0,
+			emulation_type | EMULTYPE_NO_REEXECUTE, NULL, 0);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 void kvm_enable_efer_bits(u64);
 bool kvm_valid_efer(struct kvm_vcpu *vcpu, u64 efer);

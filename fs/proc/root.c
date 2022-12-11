@@ -168,12 +168,26 @@ static void proc_fs_context_free(struct fs_context *fc)
 	kfree(ctx);
 }
 
+<<<<<<< HEAD
 static const struct fs_context_operations proc_fs_context_ops = {
 	.free		= proc_fs_context_free,
 	.parse_param	= proc_parse_param,
 	.get_tree	= proc_get_tree,
 	.reconfigure	= proc_reconfigure,
 };
+=======
+	/*
+	 * procfs isn't actually a stacking filesystem; however, there is
+	 * too much magic going on inside it to permit stacking things on
+	 * top of it
+	 */
+	sb->s_stack_depth = FILESYSTEM_MAX_STACK_DEPTH;
+
+	if (!proc_parse_options(options, ns)) {
+		deactivate_locked_super(sb);
+		return ERR_PTR(-EINVAL);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int proc_init_fs_context(struct fs_context *fc)
 {

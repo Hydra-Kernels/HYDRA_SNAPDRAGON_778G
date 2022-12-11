@@ -518,6 +518,7 @@ static int __init amd_uncore_init(void)
 		return -ENODEV;
 
 	if (!boot_cpu_has(X86_FEATURE_TOPOEXT))
+<<<<<<< HEAD:arch/x86/events/amd/uncore.c
 		return -ENODEV;
 
 	if (boot_cpu_data.x86 == 0x17 || boot_cpu_data.x86 == 0x18) {
@@ -547,6 +548,10 @@ static int __init amd_uncore_init(void)
 	amd_nb_pmu.attr_groups	= amd_uncore_attr_groups_df;
 	amd_llc_pmu.attr_groups = amd_uncore_attr_groups_l3;
 
+=======
+		goto fail_nodev;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_amd_uncore.c
 	if (boot_cpu_has(X86_FEATURE_PERFCTR_NB)) {
 		amd_uncore_nb = alloc_percpu(struct amd_uncore *);
 		if (!amd_uncore_nb) {
@@ -563,9 +568,15 @@ static int __init amd_uncore_init(void)
 		ret = 0;
 	}
 
+<<<<<<< HEAD:arch/x86/events/amd/uncore.c
 	if (boot_cpu_has(X86_FEATURE_PERFCTR_LLC)) {
 		amd_uncore_llc = alloc_percpu(struct amd_uncore *);
 		if (!amd_uncore_llc) {
+=======
+	if (boot_cpu_has(X86_FEATURE_PERFCTR_L2)) {
+		amd_uncore_l2 = alloc_percpu(struct amd_uncore *);
+		if (!amd_uncore_l2) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_amd_uncore.c
 			ret = -ENOMEM;
 			goto fail_llc;
 		}
@@ -598,11 +609,29 @@ static int __init amd_uncore_init(void)
 		goto fail_start;
 	return 0;
 
+<<<<<<< HEAD:arch/x86/events/amd/uncore.c
 fail_start:
 	cpuhp_remove_state(CPUHP_AP_PERF_X86_AMD_UNCORE_STARTING);
 fail_prep:
 	cpuhp_remove_state(CPUHP_PERF_X86_AMD_UNCORE_PREP);
 fail_llc:
+=======
+
+fail_online:
+	for_each_online_cpu(cpu2) {
+		if (cpu2 == cpu)
+			break;
+		smp_call_function_single(cpu, cleanup_cpu_online, NULL, 1);
+	}
+	cpu_notifier_register_done();
+
+	/* amd_uncore_nb/l2 should have been freed by cleanup_cpu_online */
+	amd_uncore_nb = amd_uncore_l2 = NULL;
+
+	if (boot_cpu_has(X86_FEATURE_PERFCTR_L2))
+		perf_pmu_unregister(&amd_l2_pmu);
+fail_l2:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/kernel/cpu/perf_event_amd_uncore.c
 	if (boot_cpu_has(X86_FEATURE_PERFCTR_NB))
 		perf_pmu_unregister(&amd_nb_pmu);
 	if (amd_uncore_llc)

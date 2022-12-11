@@ -866,8 +866,11 @@ static int ak8975_probe(struct i2c_client *client,
 	int err;
 	const char *name = NULL;
 	enum asahi_compass_chipset chipset = AK_MAX_TYPE;
+<<<<<<< HEAD
 	const struct ak8975_platform_data *pdata =
 		dev_get_platdata(&client->dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Grab and set up the supplied GPIO. */
 	if (pdata)

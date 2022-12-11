@@ -67,10 +67,15 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 
 	if (gate_offset >= 0) {
 		gate = kzalloc(sizeof(*gate), GFP_KERNEL);
+<<<<<<< HEAD
 		if (!gate) {
 			ret = -ENOMEM;
 			goto err_gate;
 		}
+=======
+		if (!gate)
+			goto err_gate;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		gate->flags = gate_flags;
 		gate->reg = base + gate_offset;
@@ -81,10 +86,15 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 
 	if (div_width > 0) {
 		div = kzalloc(sizeof(*div), GFP_KERNEL);
+<<<<<<< HEAD
 		if (!div) {
 			ret = -ENOMEM;
 			goto err_div;
 		}
+=======
+		if (!div)
+			goto err_div;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		div->flags = div_flags;
 		if (div_offset)
@@ -112,13 +122,20 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 	}
 
 	return clk;
+<<<<<<< HEAD
 err_composite:
 	kfree(div);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_div:
 	kfree(gate);
 err_gate:
 	kfree(mux);
+<<<<<<< HEAD
 	return ERR_PTR(ret);
+=======
+	return ERR_PTR(-ENOMEM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 struct rockchip_clk_frac {

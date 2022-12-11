@@ -4,6 +4,10 @@ menuconfig ARCH_SIRF
 	depends on ARCH_MULTI_V7
 	select ARCH_HAS_RESET_CONTROLLER
 	select RESET_CONTROLLER
+<<<<<<< HEAD
+=======
+	select ARCH_REQUIRE_GPIOLIB
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	select GENERIC_IRQ_CHIP
 	select GPIOLIB
 	select NO_IOPORT_MAP

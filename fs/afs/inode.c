@@ -116,7 +116,28 @@ static int afs_inode_init_from_status(struct afs_vnode *vnode, struct key *key,
 
 			set_bit(AFS_VNODE_MOUNTPOINT, &vnode->flags);
 
+<<<<<<< HEAD
 			inode->i_mode	= S_IFDIR | 0555;
+=======
+	set_nlink(inode, vnode->status.nlink);
+	inode->i_uid		= vnode->status.owner;
+	inode->i_gid            = vnode->status.group;
+	inode->i_size		= vnode->status.size;
+	inode->i_ctime.tv_sec	= vnode->status.mtime_client;
+	inode->i_ctime.tv_nsec	= 0;
+	inode->i_atime		= inode->i_mtime = inode->i_ctime;
+	inode->i_blocks		= 0;
+	inode->i_generation	= vnode->fid.unique;
+	inode->i_version	= vnode->status.data_version;
+	inode->i_mapping->a_ops	= &afs_fs_aops;
+
+	/* check to see whether a symbolic link is really a mountpoint */
+	if (vnode->status.type == AFS_FTYPE_SYMLINK) {
+		afs_mntpt_check_symlink(vnode, key);
+
+		if (test_bit(AFS_VNODE_MOUNTPOINT, &vnode->flags)) {
+			inode->i_mode	= S_IFDIR | vnode->status.mode;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			inode->i_op	= &afs_mntpt_inode_operations;
 			inode->i_fop	= &afs_mntpt_file_operations;
 			inode->i_mapping->a_ops	= &afs_fs_aops;
@@ -552,10 +573,30 @@ struct inode *afs_iget(struct super_block *sb, struct key *key,
 		if (ret < 0)
 			goto bad_inode;
 	} else {
+<<<<<<< HEAD
 		ret = afs_inode_init_from_status(vnode, key, cbi, parent_vnode,
 						 scb);
 		if (ret < 0)
 			goto bad_inode;
+=======
+		/* it's an inode we just created */
+		memcpy(&vnode->status, status, sizeof(vnode->status));
+
+		if (!cb) {
+			/* it's a symlink we just created (the fileserver
+			 * didn't give us a callback) */
+			vnode->cb_version = 0;
+			vnode->cb_expiry = 0;
+			vnode->cb_type = 0;
+			vnode->cb_expires = ktime_get_real_seconds();
+		} else {
+			vnode->cb_version = cb->version;
+			vnode->cb_expiry = cb->expiry;
+			vnode->cb_type = cb->type;
+			vnode->cb_expires = vnode->cb_expiry +
+				ktime_get_real_seconds();
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	afs_get_inode_cache(vnode);
@@ -676,9 +717,23 @@ int afs_validate(struct afs_vnode *vnode, struct key *key)
 	       vnode->fid.vid, vnode->fid.vnode, vnode->flags,
 	       key_serial(key));
 
+<<<<<<< HEAD
 	rcu_read_lock();
 	valid = afs_check_validity(vnode);
 	rcu_read_unlock();
+=======
+	if (vnode->cb_promised &&
+	    !test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags) &&
+	    !test_bit(AFS_VNODE_MODIFIED, &vnode->flags) &&
+	    !test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
+		if (vnode->cb_expires < ktime_get_real_seconds() + 10) {
+			_debug("callback expired");
+			set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
+		} else {
+			goto valid;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
 		clear_nlink(&vnode->vfs_inode);

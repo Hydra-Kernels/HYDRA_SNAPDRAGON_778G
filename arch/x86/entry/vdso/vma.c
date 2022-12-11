@@ -13,7 +13,10 @@
 #include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/cpu.h>
+<<<<<<< HEAD
 #include <linux/ptrace.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/pvclock.h>
 #include <asm/vgtod.h>
 #include <asm/proto.h>
@@ -22,7 +25,10 @@
 #include <asm/page.h>
 #include <asm/desc.h>
 #include <asm/cpufeature.h>
+<<<<<<< HEAD
 #include <clocksource/hyperv_timer.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #if defined(CONFIG_X86_64)
 unsigned int __read_mostly vdso64_enabled = 1;
@@ -254,6 +260,24 @@ int map_vdso_once(const struct vdso_image *image, unsigned long addr)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
+<<<<<<< HEAD
+=======
+	unsigned long addr, text_start;
+	int ret = 0;
+	static struct page *no_pages[] = {NULL};
+	static struct vm_special_mapping vvar_mapping = {
+		.name = "[vvar]",
+		.pages = no_pages,
+	};
+	struct pvclock_vsyscall_time_info *pvti;
+
+	if (calculate_addr) {
+		addr = vdso_addr(current->mm->start_stack,
+				 image->size - image->sym_vvar_start);
+	} else {
+		addr = 0;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	down_write(&mm->mmap_sem);
 	/*
@@ -270,6 +294,60 @@ int map_vdso_once(const struct vdso_image *image, unsigned long addr)
 			return -EEXIST;
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	vma = _install_special_mapping(mm,
+				       addr,
+				       -image->sym_vvar_start,
+				       VM_READ|VM_MAYREAD,
+				       &vvar_mapping);
+
+	if (IS_ERR(vma)) {
+		ret = PTR_ERR(vma);
+		goto up_fail;
+	}
+
+	if (image->sym_vvar_page)
+		ret = remap_pfn_range(vma,
+				      text_start + image->sym_vvar_page,
+				      __pa_symbol(&__vvar_page) >> PAGE_SHIFT,
+				      PAGE_SIZE,
+				      PAGE_READONLY);
+
+	if (ret)
+		goto up_fail;
+
+#ifdef CONFIG_HPET_TIMER
+	if (hpet_address && image->sym_hpet_page) {
+		ret = io_remap_pfn_range(vma,
+			text_start + image->sym_hpet_page,
+			hpet_address >> PAGE_SHIFT,
+			PAGE_SIZE,
+			pgprot_noncached(PAGE_READONLY));
+
+		if (ret)
+			goto up_fail;
+	}
+#endif
+
+	pvti = pvclock_pvti_cpu0_va();
+	if (pvti && image->sym_pvclock_page) {
+		ret = remap_pfn_range(vma,
+				      text_start + image->sym_pvclock_page,
+				      __pa(pvti) >> PAGE_SHIFT,
+				      PAGE_SIZE,
+				      PAGE_READONLY);
+
+		if (ret)
+			goto up_fail;
+	}
+
+up_fail:
+	if (ret)
+		current->mm->context.vdso = NULL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	up_write(&mm->mmap_sem);
 
 	return map_vdso(image, addr);
@@ -326,6 +404,49 @@ static __init int vdso_setup(char *s)
 	return 0;
 }
 __setup("vdso=", vdso_setup);
+<<<<<<< HEAD
+=======
+#endif
+
+#ifdef CONFIG_X86_64
+static void vgetcpu_cpu_init(void *arg)
+{
+	int cpu = smp_processor_id();
+	struct desc_struct d = { };
+	unsigned long node = 0;
+#ifdef CONFIG_NUMA
+	node = cpu_to_node(cpu);
+#endif
+	if (static_cpu_has(X86_FEATURE_RDTSCP))
+		write_rdtscp_aux((node << 12) | cpu);
+
+	/*
+	 * Store cpu number in limit so that it can be loaded
+	 * quickly in user space in vgetcpu. (12 bits for the CPU
+	 * and 8 bits for the node)
+	 */
+	d.limit0 = cpu | ((node & 0xf) << 12);
+	d.limit = node >> 4;
+	d.type = 5;		/* RO data, expand down, accessed */
+	d.dpl = 3;		/* Visible to user code */
+	d.s = 1;		/* Not a system segment */
+	d.p = 1;		/* Present */
+	d.d = 1;		/* 32-bit */
+
+	write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_PER_CPU, &d, DESCTYPE_S);
+}
+
+static int
+vgetcpu_cpu_notifier(struct notifier_block *n, unsigned long action, void *arg)
+{
+	long cpu = (long)arg;
+
+	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN)
+		smp_call_function_single(cpu, vgetcpu_cpu_init, NULL, 1);
+
+	return NOTIFY_DONE;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int __init init_vdso(void)
 {

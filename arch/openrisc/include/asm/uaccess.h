@@ -190,7 +190,11 @@ do {									\
 	case 2: __get_user_asm(x, ptr, retval, "l.lhz"); break;		\
 	case 4: __get_user_asm(x, ptr, retval, "l.lwz"); break;		\
 	case 8: __get_user_asm2(x, ptr, retval); break;			\
+<<<<<<< HEAD
 	default: (x) = (__typeof__(*(ptr)))__get_user_bad();		\
+=======
+	default: (x) = __get_user_bad();				\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}								\
 } while (0)
 
@@ -247,12 +251,28 @@ __copy_tofrom_user(void *to, const void *from, unsigned long size);
 static inline unsigned long
 raw_copy_from_user(void *to, const void __user *from, unsigned long size)
 {
+<<<<<<< HEAD
 	return __copy_tofrom_user(to, (__force const void *)from, size);
+=======
+	unsigned long res = n;
+
+	if (likely(access_ok(VERIFY_READ, from, n)))
+		res = __copy_tofrom_user(to, from, n);
+	if (unlikely(res))
+		memset(to + (n - res), 0, res);
+	return res;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 static inline unsigned long
 raw_copy_to_user(void *to, const void __user *from, unsigned long size)
 {
+<<<<<<< HEAD
 	return __copy_tofrom_user((__force void *)to, from, size);
+=======
+	if (likely(access_ok(VERIFY_WRITE, to, n)))
+		n = __copy_tofrom_user(to, from, n);
+	return n;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 #define INLINE_COPY_FROM_USER
 #define INLINE_COPY_TO_USER
@@ -262,7 +282,11 @@ extern unsigned long __clear_user(void *addr, unsigned long size);
 static inline __must_check unsigned long
 clear_user(void *addr, unsigned long size)
 {
+<<<<<<< HEAD
 	if (likely(access_ok(addr, size)))
+=======
+	if (likely(access_ok(VERIFY_WRITE, addr, size)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		size = __clear_user(addr, size);
 	return size;
 }

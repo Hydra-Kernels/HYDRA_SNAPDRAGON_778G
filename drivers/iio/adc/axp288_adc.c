@@ -19,6 +19,7 @@
 #include <linux/iio/machine.h>
 #include <linux/iio/driver.h>
 
+<<<<<<< HEAD
 /*
  * This mask enables all ADCs except for the battery temp-sensor (TS), that is
  * left as-is to avoid breaking charging on devices without a temp-sensor.
@@ -36,6 +37,9 @@
 #define AXP288_ADC_TS_CURRENT_ON_WHEN_CHARGING		(1 << 0)
 #define AXP288_ADC_TS_CURRENT_ON_ONDEMAND		(2 << 0)
 #define AXP288_ADC_TS_CURRENT_ON			(3 << 0)
+=======
+#define AXP288_ADC_EN_MASK		0xF1
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 enum axp288_adc_id {
 	AXP288_ADC_TS,
@@ -122,6 +126,7 @@ static int axp288_adc_read_channel(int *val, unsigned long address,
 	return IIO_VAL_INT;
 }
 
+<<<<<<< HEAD
 /*
  * The current-source used for the battery temp-sensor (TS) is shared
  * with the GPADC. For proper fuel-gauge and charger operation the TS
@@ -154,6 +159,8 @@ static int axp288_adc_set_ts(struct axp288_adc_info *info,
 	return 0;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int axp288_adc_read_raw(struct iio_dev *indio_dev,
 			struct iio_chan_spec const *chan,
 			int *val, int *val2, long mask)
@@ -164,6 +171,7 @@ static int axp288_adc_read_raw(struct iio_dev *indio_dev,
 	mutex_lock(&indio_dev->mlock);
 	switch (mask) {
 	case IIO_CHAN_INFO_RAW:
+<<<<<<< HEAD
 		if (axp288_adc_set_ts(info, AXP288_ADC_TS_CURRENT_ON_ONDEMAND,
 					chan->address)) {
 			dev_err(&indio_dev->dev, "GPADC mode\n");
@@ -174,6 +182,9 @@ static int axp288_adc_read_raw(struct iio_dev *indio_dev,
 		if (axp288_adc_set_ts(info, AXP288_ADC_TS_CURRENT_ON,
 						chan->address))
 			dev_err(&indio_dev->dev, "TS pin restore\n");
+=======
+		ret = axp288_adc_read_channel(val, chan->address, info->regmap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	default:
 		ret = -EINVAL;
@@ -183,6 +194,7 @@ static int axp288_adc_read_raw(struct iio_dev *indio_dev,
 	return ret;
 }
 
+<<<<<<< HEAD
 /*
  * We rely on the machine's firmware to correctly setup the TS pin bias current
  * at boot. This lists systems with broken fw where we need to set it ourselves.
@@ -240,6 +252,8 @@ static int axp288_adc_initialize(struct axp288_adc_info *info)
 				  AXP288_ADC_EN_MASK, AXP288_ADC_EN_MASK);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static const struct iio_info axp288_adc_iio_info = {
 	.read_raw = &axp288_adc_read_raw,
 };
@@ -265,7 +279,11 @@ static int axp288_adc_probe(struct platform_device *pdev)
 	 * Set ADC to enabled state at all time, including system suspend.
 	 * otherwise internal fuel gauge functionality may be affected.
 	 */
+<<<<<<< HEAD
 	ret = axp288_adc_initialize(info);
+=======
+	ret = regmap_write(info->regmap, AXP20X_ADC_EN1, AXP288_ADC_EN_MASK);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret) {
 		dev_err(&pdev->dev, "unable to enable ADC device\n");
 		return ret;

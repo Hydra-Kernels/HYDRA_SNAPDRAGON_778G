@@ -112,9 +112,18 @@ enum hrtimer_restart {
  * @base:	pointer to the timer base (per cpu and per clock)
  * @state:	state information (See bit values above)
  * @is_rel:	Set if the timer was armed relative
+<<<<<<< HEAD
  * @is_soft:	Set if hrtimer will be expired in soft interrupt context.
  * @is_hard:	Set if hrtimer will be expired in hard interrupt context
  *		even on RT.
+=======
+ * @start_pid:  timer statistics field to store the pid of the task which
+ *		started the timer
+ * @start_site:	timer statistics field to store the site where the timer
+ *		was started
+ * @start_comm: timer statistics field to store the name of the process which
+ *		started the timer
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * The hrtimer structure must be initialized by hrtimer_init()
  */
@@ -125,10 +134,18 @@ struct hrtimer {
 	struct hrtimer_clock_base	*base;
 	u8				state;
 	u8				is_rel;
+<<<<<<< HEAD
 	u8				is_soft;
 	u8				is_hard;
 
 	ANDROID_KABI_RESERVE(1);
+=======
+#ifdef CONFIG_TIMER_STATS
+	int				start_pid;
+	void				*start_site;
+	char				start_comm[16];
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /**
@@ -341,7 +358,11 @@ __hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now)
 	 * hrtimer_start_range_ns() to prevent short timeouts.
 	 */
 	if (IS_ENABLED(CONFIG_TIME_LOW_RES) && timer->is_rel)
+<<<<<<< HEAD
 		rem -= hrtimer_resolution;
+=======
+		rem.tv64 -= hrtimer_resolution;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return rem;
 }
 
@@ -352,6 +373,10 @@ hrtimer_expires_remaining_adjusted(const struct hrtimer *timer)
 						    timer->base->get_time());
 }
 
+<<<<<<< HEAD
+=======
+extern void clock_was_set(void);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_TIMERFD
 extern void timerfd_clock_was_set(void);
 #else

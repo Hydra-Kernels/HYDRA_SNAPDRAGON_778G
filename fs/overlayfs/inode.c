@@ -24,6 +24,19 @@ int ovl_setattr(struct dentry *dentry, struct iattr *attr)
 	if (err)
 		return err;
 
+	/*
+	 * Check for permissions before trying to copy-up.  This is redundant
+	 * since it will be rechecked later by ->setattr() on upper dentry.  But
+	 * without this, copy-up can be triggered by just about anybody.
+	 *
+	 * We don't initialize inode->size, which just means that
+	 * inode_newsize_ok() will always check against MAX_LFS_FILESIZE and not
+	 * check for a swapfile (which this won't be anyway).
+	 */
+	err = inode_change_ok(dentry->d_inode, attr);
+	if (err)
+		return err;
+
 	err = ovl_want_write(dentry);
 	if (err)
 		goto out;
@@ -48,6 +61,7 @@ int ovl_setattr(struct dentry *dentry, struct iattr *attr)
 
 		upperdentry = ovl_dentry_upper(dentry);
 
+<<<<<<< HEAD
 		if (attr->ia_valid & ATTR_SIZE) {
 			winode = d_inode(upperdentry);
 			err = get_write_access(winode);
@@ -68,6 +82,16 @@ int ovl_setattr(struct dentry *dentry, struct iattr *attr)
 
 		if (winode)
 			put_write_access(winode);
+=======
+		if (attr->ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID))
+			attr->ia_valid &= ~ATTR_MODE;
+
+		mutex_lock(&upperdentry->d_inode->i_mutex);
+		err = notify_change(upperdentry, attr, NULL);
+		if (!err)
+			ovl_copyattr(upperdentry->d_inode, dentry->d_inode);
+		mutex_unlock(&upperdentry->d_inode->i_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 out_drop_write:
 	ovl_drop_write(dentry);
@@ -324,8 +348,35 @@ bool ovl_is_private_xattr(const char *name)
 		       sizeof(OVL_XATTR_PREFIX) - 1) == 0;
 }
 
+<<<<<<< HEAD
 int ovl_xattr_set(struct dentry *dentry, struct inode *inode, const char *name,
 		  const void *value, size_t size, int flags)
+=======
+static int ovl_readlink(struct dentry *dentry, char __user *buf, int bufsiz)
+{
+	struct path realpath;
+	struct inode *realinode;
+
+	ovl_path_real(dentry, &realpath);
+	realinode = realpath.dentry->d_inode;
+
+	if (!realinode->i_op->readlink)
+		return -EINVAL;
+
+	touch_atime(&realpath);
+
+	return realinode->i_op->readlink(realpath.dentry, buf, bufsiz);
+}
+
+
+bool ovl_is_private_xattr(const char *name)
+{
+	return strncmp(name, OVL_XATTR_PRE_NAME, OVL_XATTR_PRE_LEN) == 0;
+}
+
+int ovl_setxattr(struct dentry *dentry, const char *name,
+		 const void *value, size_t size, int flags)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int err;
 	struct dentry *upperdentry = ovl_i_dentry_upper(inode);
@@ -396,13 +447,26 @@ static bool ovl_can_list(const char *s)
 	       ns_capable_noaudit(&init_user_ns, CAP_SYS_ADMIN);
 }
 
+static bool ovl_can_list(const char *s)
+{
+	/* List all non-trusted xatts */
+	if (strncmp(s, XATTR_TRUSTED_PREFIX, XATTR_TRUSTED_PREFIX_LEN) != 0)
+		return true;
+
+	/* Never list trusted.overlay, list other trusted for superuser only */
+	return !ovl_is_private_xattr(s) && capable(CAP_SYS_ADMIN);
+}
+
 ssize_t ovl_listxattr(struct dentry *dentry, char *list, size_t size)
 {
 	struct dentry *realdentry = ovl_dentry_real(dentry);
 	ssize_t res;
 	size_t len;
 	char *s;
+<<<<<<< HEAD
 	const struct cred *old_cred;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	old_cred = ovl_override_creds(dentry->d_sb);
 	res = vfs_listxattr(realdentry, list, size);
@@ -542,6 +606,7 @@ static inline void ovl_lockdep_annotate_inode_mutex_key(struct inode *inode)
 
 	int depth = inode->i_sb->s_stack_depth - 1;
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(depth < 0 || depth >= OVL_MAX_NESTING))
 		depth = 0;
 
@@ -575,6 +640,9 @@ static void ovl_fill_inode(struct inode *inode, umode_t mode, dev_t rdev,
 	} else {
 		inode->i_ino = get_next_ino();
 	}
+=======
+	inode->i_ino = get_next_ino();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	inode->i_mode = mode;
 	inode->i_flags |= S_NOCMTIME;
 #ifdef CONFIG_FS_POSIX_ACL
@@ -590,6 +658,11 @@ static void ovl_fill_inode(struct inode *inode, umode_t mode, dev_t rdev,
 		inode->i_mapping->a_ops = &ovl_aops;
 		break;
 
+<<<<<<< HEAD
+=======
+	mode &= S_IFMT;
+	switch (mode) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case S_IFDIR:
 		inode->i_op = &ovl_dir_inode_operations;
 		inode->i_fop = &ovl_dir_operations;

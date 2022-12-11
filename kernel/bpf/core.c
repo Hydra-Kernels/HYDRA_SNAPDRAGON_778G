@@ -517,6 +517,77 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
 	bpf_prog_kallsyms_del(fp);
 }
 
+static bool bpf_is_jmp_and_has_target(const struct bpf_insn *insn)
+{
+	return BPF_CLASS(insn->code) == BPF_JMP  &&
+	       /* Call and Exit are both special jumps with no
+		* target inside the BPF instruction image.
+		*/
+	       BPF_OP(insn->code) != BPF_CALL &&
+	       BPF_OP(insn->code) != BPF_EXIT;
+}
+
+static void bpf_adj_branches(struct bpf_prog *prog, u32 pos, u32 delta)
+{
+	struct bpf_insn *insn = prog->insnsi;
+	u32 i, insn_cnt = prog->len;
+
+	for (i = 0; i < insn_cnt; i++, insn++) {
+		if (!bpf_is_jmp_and_has_target(insn))
+			continue;
+
+		/* Adjust offset of jmps if we cross boundaries. */
+		if (i < pos && i + insn->off + 1 > pos)
+			insn->off += delta;
+		else if (i > pos + delta && i + insn->off + 1 <= pos + delta)
+			insn->off -= delta;
+	}
+}
+
+struct bpf_prog *bpf_patch_insn_single(struct bpf_prog *prog, u32 off,
+				       const struct bpf_insn *patch, u32 len)
+{
+	u32 insn_adj_cnt, insn_rest, insn_delta = len - 1;
+	struct bpf_prog *prog_adj;
+
+	/* Since our patchlet doesn't expand the image, we're done. */
+	if (insn_delta == 0) {
+		memcpy(prog->insnsi + off, patch, sizeof(*patch));
+		return prog;
+	}
+
+	insn_adj_cnt = prog->len + insn_delta;
+
+	/* Several new instructions need to be inserted. Make room
+	 * for them. Likely, there's no need for a new allocation as
+	 * last page could have large enough tailroom.
+	 */
+	prog_adj = bpf_prog_realloc(prog, bpf_prog_size(insn_adj_cnt),
+				    GFP_USER);
+	if (!prog_adj)
+		return NULL;
+
+	prog_adj->len = insn_adj_cnt;
+
+	/* Patching happens in 3 steps:
+	 *
+	 * 1) Move over tail of insnsi from next instruction onwards,
+	 *    so we can patch the single target insn with one or more
+	 *    new ones (patching is always from 1 to n insns, n > 0).
+	 * 2) Inject new instructions at the target location.
+	 * 3) Adjust branch offsets if necessary.
+	 */
+	insn_rest = insn_adj_cnt - off - len;
+
+	memmove(prog_adj->insnsi + off + len, prog_adj->insnsi + off + 1,
+		sizeof(*patch) * insn_rest);
+	memcpy(prog_adj->insnsi + off, patch, sizeof(*patch) * len);
+
+	bpf_adj_branches(prog_adj, off, insn_delta);
+
+	return prog_adj;
+}
+
 #ifdef CONFIG_BPF_JIT
 /* All BPF JIT sysctl knobs here. */
 int bpf_jit_enable   __read_mostly = IS_BUILTIN(CONFIG_BPF_JIT_ALWAYS_ON);
@@ -1142,6 +1213,7 @@ noinline u64 __bpf_call_base(u64 r1, u64 r2, u64 r3, u64 r4, u64 r5)
 }
 EXPORT_SYMBOL_GPL(__bpf_call_base);
 
+<<<<<<< HEAD
 /* All UAPI available opcodes. */
 #define BPF_INSN_MAP(INSN_2, INSN_3)		\
 	/* 32 bit ALU operations. */		\
@@ -1300,6 +1372,8 @@ bool bpf_opcode_in_insntable(u8 code)
 	return public_insntable[code];
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef CONFIG_BPF_JIT_ALWAYS_ON
 /**
  *	__bpf_prog_run - run eBPF program on a given context
@@ -1420,8 +1494,15 @@ select_insn:
 		DST = AX;
 		CONT;
 	ALU_MOD_X:
+<<<<<<< HEAD
 		AX = (u32) DST;
 		DST = do_div(AX, (u32) SRC);
+=======
+		if (unlikely((u32)SRC == 0))
+			return 0;
+		tmp = (u32) DST;
+		DST = do_div(tmp, (u32) SRC);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		CONT;
 	ALU64_MOD_K:
 		div64_u64_rem(DST, IMM, &AX);
@@ -1435,9 +1516,17 @@ select_insn:
 		DST = div64_u64(DST, SRC);
 		CONT;
 	ALU_DIV_X:
+<<<<<<< HEAD
 		AX = (u32) DST;
 		do_div(AX, (u32) SRC);
 		DST = (u32) AX;
+=======
+		if (unlikely((u32)SRC == 0))
+			return 0;
+		tmp = (u32) DST;
+		do_div(tmp, (u32) SRC);
+		DST = (u32) tmp;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		CONT;
 	ALU64_DIV_K:
 		DST = div64_u64(DST, IMM);
@@ -1613,6 +1702,7 @@ out:
 		return 0;
 }
 
+<<<<<<< HEAD
 #define PROG_NAME(stack_size) __bpf_prog_run##stack_size
 #define DEFINE_BPF_PROG_RUN(stack_size) \
 static unsigned int PROG_NAME(stack_size)(const void *ctx, const struct bpf_insn *insn) \
@@ -1692,6 +1782,11 @@ static unsigned int __bpf_prog_ret0_warn(const void *ctx,
 	 * is not working properly, so warn about it!
 	 */
 	WARN_ON_ONCE(1);
+=======
+#else
+static unsigned int __bpf_prog_ret0(void *ctx, const struct bpf_insn *insn)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 #endif
@@ -1757,6 +1852,7 @@ static void bpf_prog_select_func(struct bpf_prog *fp)
  */
 struct bpf_prog *bpf_prog_select_runtime(struct bpf_prog *fp, int *err)
 {
+<<<<<<< HEAD
 	/* In case of BPF to BPF calls, verifier did all the prep
 	 * work with regards to JITing, etc.
 	 */
@@ -1765,12 +1861,21 @@ struct bpf_prog *bpf_prog_select_runtime(struct bpf_prog *fp, int *err)
 
 	bpf_prog_select_func(fp);
 
+=======
+#ifndef CONFIG_BPF_JIT_ALWAYS_ON
+	fp->bpf_func = (void *) __bpf_prog_run;
+#else
+	fp->bpf_func = (void *) __bpf_prog_ret0;
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* eBPF JITs can rewrite the program in case constant
 	 * blinding is active. However, in case of error during
 	 * blinding, bpf_int_jit_compile() must always return a
 	 * valid program, which in this case would simply not
 	 * be JITed, but falls back to the interpreter.
 	 */
+<<<<<<< HEAD
 	if (!bpf_prog_is_dev_bound(fp->aux)) {
 		*err = bpf_prog_alloc_jited_linfo(fp);
 		if (*err)
@@ -1793,6 +1898,13 @@ struct bpf_prog *bpf_prog_select_runtime(struct bpf_prog *fp, int *err)
 	}
 
 finalize:
+=======
+	bpf_int_jit_compile(fp);
+#ifdef CONFIG_BPF_JIT_ALWAYS_ON
+	if (!fp->jited)
+		return -ENOTSUPP;
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bpf_prog_lock_ro(fp);
 
 	/* The tail call compatibility check can only be done at

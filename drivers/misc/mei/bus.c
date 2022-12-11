@@ -288,11 +288,28 @@ static void mei_cl_bus_rx_work(struct work_struct *work)
 static void mei_cl_bus_notif_work(struct work_struct *work)
 {
 	struct mei_cl_device *cldev;
+	struct mei_device *bus;
 
 	cldev = container_of(work, struct mei_cl_device, notif_work);
 
+<<<<<<< HEAD
 	if (cldev->notif_cb)
 		cldev->notif_cb(cldev);
+=======
+	bus = cldev->bus;
+
+	if (cldev->event_cb)
+		cldev->event_cb(cldev, cldev->events, cldev->event_context);
+
+	cldev->events = 0;
+
+	/* Prepare for the next read */
+	if (cldev->events_mask & BIT(MEI_CL_EVENT_RX)) {
+		mutex_lock(&bus->device_lock);
+		mei_cl_read_start(cldev->cl, 0, NULL);
+		mutex_unlock(&bus->device_lock);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -363,11 +380,29 @@ int mei_cldev_register_rx_cb(struct mei_cl_device *cldev, mei_cldev_cb_t rx_cb)
 	cldev->rx_cb = rx_cb;
 	INIT_WORK(&cldev->rx_work, mei_cl_bus_rx_work);
 
+<<<<<<< HEAD
 	mutex_lock(&bus->device_lock);
 	ret = mei_cl_read_start(cldev->cl, mei_cl_mtu(cldev->cl), NULL);
 	mutex_unlock(&bus->device_lock);
 	if (ret && ret != -EBUSY)
 		return ret;
+=======
+	if (cldev->events_mask & BIT(MEI_CL_EVENT_RX)) {
+		mutex_lock(&bus->device_lock);
+		ret = mei_cl_read_start(cldev->cl, 0, NULL);
+		mutex_unlock(&bus->device_lock);
+		if (ret && ret != -EBUSY)
+			return ret;
+	}
+
+	if (cldev->events_mask & BIT(MEI_CL_EVENT_NOTIF)) {
+		mutex_lock(&bus->device_lock);
+		ret = mei_cl_notify_request(cldev->cl, NULL, event_cb ? 1 : 0);
+		mutex_unlock(&bus->device_lock);
+		if (ret)
+			return ret;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -473,6 +508,7 @@ bool mei_cldev_enabled(struct mei_cl_device *cldev)
 EXPORT_SYMBOL_GPL(mei_cldev_enabled);
 
 /**
+<<<<<<< HEAD
  * mei_cl_bus_module_get - acquire module of the underlying
  *    hw driver.
  *
@@ -496,6 +532,8 @@ static void mei_cl_bus_module_put(struct mei_cl_device *cldev)
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * mei_cldev_enable - enable me client device
  *     create connection with me client
  *

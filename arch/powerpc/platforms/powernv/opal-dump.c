@@ -401,7 +401,11 @@ static irqreturn_t process_dump(int irq, void *data)
 	if (kobj) {
 		/* Drop reference added by kset_find_obj() */
 		kobject_put(kobj);
+<<<<<<< HEAD
 		return IRQ_HANDLED;
+=======
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	create_dump_obj(dump_id, dump_size, dump_type);

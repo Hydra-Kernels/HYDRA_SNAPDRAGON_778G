@@ -1118,6 +1118,21 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
 				__func__, rc);
 			return -EIO;
 		}
+<<<<<<< HEAD
+=======
+
+		bus = eeh_pe_bus_get(pe);
+		if (!bus) {
+			pr_err("%s: Cannot find PCI bus for PHB#%d-PE#%x\n",
+			       __func__, pe->phb->global_number, pe->addr);
+			return -EIO;
+		}
+		if (pci_is_root_bus(bus) ||
+			pci_is_root_bus(bus->parent))
+			ret = pnv_eeh_root_reset(hose, option);
+		else
+			ret = pnv_eeh_bridge_reset(bus->self, option);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (pe->type & EEH_PE_VF)

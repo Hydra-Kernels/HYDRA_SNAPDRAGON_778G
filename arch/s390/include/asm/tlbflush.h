@@ -71,7 +71,39 @@ static inline void __tlb_flush_mm(struct mm_struct *mm)
 		/* Global TLB flush */
 		__tlb_flush_global();
 	}
+<<<<<<< HEAD
 	atomic_dec(&mm->context.flush_count);
+=======
+	atomic_sub(0x10000, &mm->context.attach_count);
+	preempt_enable();
+}
+
+/*
+ * Flush TLB entries for a specific ASCE on all CPUs. Should never be used
+ * when more than one asce (e.g. gmap) ran on this mm.
+ */
+static inline void __tlb_flush_asce(struct mm_struct *mm, unsigned long asce)
+{
+	int active, count;
+
+	preempt_disable();
+	active = (mm == current->active_mm) ? 1 : 0;
+	count = atomic_add_return(0x10000, &mm->context.attach_count);
+	if (MACHINE_HAS_TLB_LC && (count & 0xffff) <= active &&
+	    cpumask_equal(mm_cpumask(mm), cpumask_of(smp_processor_id()))) {
+		__tlb_flush_idte_local(asce);
+	} else {
+		if (MACHINE_HAS_IDTE)
+			__tlb_flush_idte(asce);
+		else
+			__tlb_flush_global();
+		/* Reset TLB flush mask */
+		if (MACHINE_HAS_TLB_LC)
+			cpumask_copy(mm_cpumask(mm),
+				     &mm->context.cpu_attach_mask);
+	}
+	atomic_sub(0x10000, &mm->context.attach_count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	preempt_enable();
 }
 
@@ -82,6 +114,45 @@ static inline void __tlb_flush_kernel(void)
 	else
 		__tlb_flush_global();
 }
+<<<<<<< HEAD
+=======
+#else
+#define __tlb_flush_global()	__tlb_flush_local()
+#define __tlb_flush_full(mm)	__tlb_flush_local()
+
+/*
+ * Flush TLB entries for a specific ASCE on all CPUs.
+ */
+static inline void __tlb_flush_asce(struct mm_struct *mm, unsigned long asce)
+{
+	if (MACHINE_HAS_TLB_LC)
+		__tlb_flush_idte_local(asce);
+	else
+		__tlb_flush_local();
+}
+
+static inline void __tlb_flush_kernel(void)
+{
+	if (MACHINE_HAS_TLB_LC)
+		__tlb_flush_idte_local(init_mm.context.asce);
+	else
+		__tlb_flush_local();
+}
+#endif
+
+static inline void __tlb_flush_mm(struct mm_struct * mm)
+{
+	/*
+	 * If the machine has IDTE we prefer to do a per mm flush
+	 * on all cpus instead of doing a local flush if the mm
+	 * only ran on the local cpu.
+	 */
+	if (MACHINE_HAS_IDTE && list_empty(&mm->context.gmap_list))
+		__tlb_flush_asce(mm, mm->context.asce);
+	else
+		__tlb_flush_full(mm);
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline void __tlb_flush_mm_lazy(struct mm_struct * mm)
 {

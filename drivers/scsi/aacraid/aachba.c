@@ -3479,6 +3479,11 @@ static void aac_srb_callback(void *context, struct fib * fibptr)
 
 	BUG_ON(fibptr == NULL);
 
+<<<<<<< HEAD
+=======
+	dev = fibptr->dev;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	srbreply = (struct aac_srb_reply *) fib_data(fibptr);
 
 	scsicmd->sense_buffer[0] = '\0';  /* Initialize sense valid flag to false */

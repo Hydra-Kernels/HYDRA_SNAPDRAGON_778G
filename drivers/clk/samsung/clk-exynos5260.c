@@ -52,6 +52,7 @@ static const struct samsung_pll_rate_table pll2550_24mhz_tbl[] __initconst = {
 /*
  * Applicable for 2650 Type PLL for AUD_PLL.
  */
+<<<<<<< HEAD
 static const struct samsung_pll_rate_table pll2650_24mhz_tbl[] __initconst = {
 	PLL_36XX_RATE(24 * MHZ, 1600000000, 200, 3, 0, 0),
 	PLL_36XX_RATE(24 * MHZ, 1200000000, 100, 2, 0, 0),
@@ -71,6 +72,27 @@ static const struct samsung_pll_rate_table pll2650_24mhz_tbl[] __initconst = {
 	PLL_36XX_RATE(24 * MHZ, 133000000, 266, 3, 4, 0),
 	PLL_36XX_RATE(24 * MHZ, 100000000, 200, 3, 4, 0),
 	PLL_36XX_RATE(24 * MHZ, 66000000, 176, 2, 5, 0),
+=======
+static struct samsung_pll_rate_table pll2650_24mhz_tbl[] __initdata = {
+	PLL_36XX_RATE(1600000000, 200, 3, 0, 0),
+	PLL_36XX_RATE(1200000000, 100, 2, 0, 0),
+	PLL_36XX_RATE(1000000000, 250, 3, 1, 0),
+	PLL_36XX_RATE(800000000, 200, 3, 1, 0),
+	PLL_36XX_RATE(600000000, 100, 2, 1, 0),
+	PLL_36XX_RATE(532000000, 266, 3, 2, 0),
+	PLL_36XX_RATE(480000000, 160, 2, 2, 0),
+	PLL_36XX_RATE(432000000, 144, 2, 2, 0),
+	PLL_36XX_RATE(400000000, 200, 3, 2, 0),
+	PLL_36XX_RATE(394073128, 459, 7, 2, 49282),
+	PLL_36XX_RATE(333000000, 111, 2, 2, 0),
+	PLL_36XX_RATE(300000000, 100, 2, 2, 0),
+	PLL_36XX_RATE(266000000, 266, 3, 3, 0),
+	PLL_36XX_RATE(200000000, 200, 3, 3, 0),
+	PLL_36XX_RATE(166000000, 166, 3, 3, 0),
+	PLL_36XX_RATE(133000000, 266, 3, 4, 0),
+	PLL_36XX_RATE(100000000, 200, 3, 4, 0),
+	PLL_36XX_RATE(66000000, 176, 2, 5, 0),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /* CMU_AUD */

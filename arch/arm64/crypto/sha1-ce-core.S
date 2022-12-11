@@ -79,8 +79,13 @@ ENTRY(sha1_ce_transform)
 	loadrc		k3.4s, 0xca62c1d6, w6
 
 	/* load state */
+<<<<<<< HEAD
 	ld1		{dgav.4s}, [x19]
 	ldr		dgb, [x19, #16]
+=======
+	ld1		{dgav.4s}, [x0]
+	ldr		dgb, [x0, #16]
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* load sha1_ce_state::finalize */
 	ldr_l		w4, sha1_ce_offsetof_finalize, x4
@@ -156,8 +161,13 @@ CPU_LE(	rev32		v11.16b, v11.16b	)
 	b		2b
 
 	/* store new state */
+<<<<<<< HEAD
 4:	st1		{dgav.4s}, [x19]
 	str		dgb, [x19, #16]
 	frame_pop
+=======
+3:	st1		{dgav.4s}, [x0]
+	str		dgb, [x0, #16]
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret
 ENDPROC(sha1_ce_transform)

@@ -637,8 +637,14 @@ try_again:
 	 * try to init uhs card. sdio_read_cccr will take over this task
 	 * to make sure which speed mode should work.
 	 */
+<<<<<<< HEAD
 	if (rocr & ocr & R4_18V_PRESENT) {
 		err = mmc_set_uhs_voltage(host, ocr_card);
+=======
+	if (!powered_resume && (rocr & ocr & R4_18V_PRESENT)) {
+		err = mmc_set_signal_voltage(host, MMC_SIGNAL_VOLTAGE_180,
+					ocr_card);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err == -EAGAIN) {
 			mmc_sdio_resend_if_cond(host, card);
 			retries--;

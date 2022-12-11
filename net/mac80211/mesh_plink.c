@@ -532,6 +532,7 @@ mesh_sta_info_alloc(struct ieee80211_sub_if_data *sdata, u8 *addr,
 	if (sdata->u.mesh.user_mpm ||
 	    sdata->u.mesh.security & IEEE80211_MESH_SEC_AUTHED) {
 		if (mesh_peer_accepts_plinks(elems) &&
+<<<<<<< HEAD
 		    mesh_plink_availables(sdata)) {
 			int sig = 0;
 
@@ -543,6 +544,13 @@ mesh_sta_info_alloc(struct ieee80211_sub_if_data *sdata, u8 *addr,
 							   elems->total_len,
 							   sig, GFP_KERNEL);
 		}
+=======
+		    mesh_plink_availables(sdata))
+			cfg80211_notify_new_peer_candidate(sdata->dev, addr,
+							   elems->ie_start,
+							   elems->total_len,
+							   GFP_KERNEL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else
 		sta = __mesh_sta_info_alloc(sdata, addr);
 

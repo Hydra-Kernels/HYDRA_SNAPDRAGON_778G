@@ -887,7 +887,11 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 		rcu_read_lock();
 		ipc_lock_object(&msq->q_perm);
 
+<<<<<<< HEAD
 		ipc_rcu_putref(&msq->q_perm, msg_rcu_free);
+=======
+		ipc_rcu_putref(msq, msg_rcu_free);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* raced with RMID? */
 		if (!ipc_valid_object(&msq->q_perm)) {
 			err = -EIDRM;

@@ -385,7 +385,11 @@ static u32 kvm_mips_read_count_running(struct kvm_vcpu *vcpu, ktime_t now)
 {
 	struct mips_coproc *cop0 = vcpu->arch.cop0;
 	ktime_t expires, threshold;
+<<<<<<< HEAD
 	u32 count, compare;
+=======
+	uint32_t count, compare;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int running;
 
 	/* Calculate the biased and scaled guest CP0_Count */
@@ -396,7 +400,11 @@ static u32 kvm_mips_read_count_running(struct kvm_vcpu *vcpu, ktime_t now)
 	 * Find whether CP0_Count has reached the closest timer interrupt. If
 	 * not, we shouldn't inject it.
 	 */
+<<<<<<< HEAD
 	if ((s32)(count - compare) < 0)
+=======
+	if ((int32_t)(count - compare) < 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return count;
 
 	/*
@@ -518,6 +526,7 @@ static void kvm_mips_resume_hrtimer(struct kvm_vcpu *vcpu,
 }
 
 /**
+<<<<<<< HEAD
  * kvm_mips_restore_hrtimer() - Restore hrtimer after a gap, updating expiry.
  * @vcpu:	Virtual CPU.
  * @before:	Time before Count was saved, lower bound of drift calculation.
@@ -594,6 +603,8 @@ resume:
 }
 
 /**
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  * kvm_mips_write_count() - Modify the count and update timer.
  * @vcpu:	Virtual CPU.
  * @count:	Guest CP0_Count value to set.
@@ -693,15 +704,24 @@ int kvm_mips_set_count_hz(struct kvm_vcpu *vcpu, s64 count_hz)
  * If @ack, atomically acknowledge any pending timer interrupt, otherwise ensure
  * any pending timer interrupt is preserved.
  */
+<<<<<<< HEAD
 void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack)
+=======
+void kvm_mips_write_compare(struct kvm_vcpu *vcpu, uint32_t compare, bool ack)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct mips_coproc *cop0 = vcpu->arch.cop0;
 	int dc;
 	u32 old_compare = kvm_read_c0_guest_compare(cop0);
+<<<<<<< HEAD
 	s32 delta = compare - old_compare;
 	u32 cause;
 	ktime_t now = ktime_set(0, 0); /* silence bogus GCC warning */
 	u32 count;
+=======
+	ktime_t now;
+	uint32_t count;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* if unchanged, must just be an ack */
 	if (old_compare == compare) {
@@ -712,6 +732,7 @@ void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack)
 		return;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * If guest CP0_Compare moves forward, CP0_GTOffset should be adjusted
 	 * too to prevent guest CP0_Count hitting guest CP0_Compare.
@@ -727,6 +748,8 @@ void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack)
 		back_to_back_c0_hazard();
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* freeze_hrtimer() takes care of timer interrupts <= count */
 	dc = kvm_mips_count_disabled(vcpu);
 	if (!dc)
@@ -734,6 +757,7 @@ void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack)
 
 	if (ack)
 		kvm_mips_callbacks->dequeue_timer_int(vcpu);
+<<<<<<< HEAD
 	else if (IS_ENABLED(CONFIG_KVM_MIPS_VZ))
 		/*
 		 * With VZ, writing CP0_Compare acks (clears) CP0_Cause.TI, so
@@ -764,6 +788,14 @@ void kvm_mips_write_compare(struct kvm_vcpu *vcpu, u32 compare, bool ack)
 	 */
 	if (IS_ENABLED(CONFIG_KVM_MIPS_VZ) && delta <= 0)
 		write_c0_gtoffset(compare - read_c0_count());
+=======
+
+	kvm_write_c0_guest_compare(cop0, compare);
+
+	/* resume_hrtimer() takes care of timer interrupts > count */
+	if (!dc)
+		kvm_mips_resume_hrtimer(vcpu, now, count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1098,6 +1130,47 @@ static void kvm_mips_invalidate_guest_tlb(struct kvm_vcpu *vcpu,
 	preempt_enable();
 }
 
+/**
+ * kvm_mips_invalidate_guest_tlb() - Indicates a change in guest MMU map.
+ * @vcpu:	VCPU with changed mappings.
+ * @tlb:	TLB entry being removed.
+ *
+ * This is called to indicate a single change in guest MMU mappings, so that we
+ * can arrange TLB flushes on this and other CPUs.
+ */
+static void kvm_mips_invalidate_guest_tlb(struct kvm_vcpu *vcpu,
+					  struct kvm_mips_tlb *tlb)
+{
+	int cpu, i;
+	bool user;
+
+	/* No need to flush for entries which are already invalid */
+	if (!((tlb->tlb_lo0 | tlb->tlb_lo1) & MIPS3_PG_V))
+		return;
+	/* User address space doesn't need flushing for KSeg2/3 changes */
+	user = tlb->tlb_hi < KVM_GUEST_KSEG0;
+
+	preempt_disable();
+
+	/*
+	 * Probe the shadow host TLB for the entry being overwritten, if one
+	 * matches, invalidate it
+	 */
+	kvm_mips_host_tlb_inv(vcpu, tlb->tlb_hi);
+
+	/* Invalidate the whole ASID on other CPUs */
+	cpu = smp_processor_id();
+	for_each_possible_cpu(i) {
+		if (i == cpu)
+			continue;
+		if (user)
+			vcpu->arch.guest_user_asid[i] = 0;
+		vcpu->arch.guest_kernel_asid[i] = 0;
+	}
+
+	preempt_enable();
+}
+
 /* Write Guest TLB Entry @ Index */
 enum emulation_result kvm_mips_emul_tlbwi(struct kvm_vcpu *vcpu)
 {
@@ -1269,6 +1342,7 @@ enum emulation_result kvm_mips_emulate_CP0(union mips_instruction inst,
 	enum emulation_result er = EMULATE_DONE;
 	u32 rt, rd, sel;
 	unsigned long curr_pc;
+	int cpu, i;
 
 	/*
 	 * Update PC and hold onto current PC in case there is
@@ -1370,8 +1444,35 @@ enum emulation_result kvm_mips_emulate_CP0(union mips_instruction inst,
 				kvm_change_c0_guest_ebase(cop0, 0x1ffff000,
 							  vcpu->arch.gprs[rt]);
 			} else if (rd == MIPS_CP0_TLB_HI && sel == 0) {
+<<<<<<< HEAD
 				kvm_mips_change_entryhi(vcpu,
 							vcpu->arch.gprs[rt]);
+=======
+				uint32_t nasid =
+					vcpu->arch.gprs[rt] & ASID_MASK;
+				if ((KSEGX(vcpu->arch.gprs[rt]) != CKSEG0) &&
+				    ((kvm_read_c0_guest_entryhi(cop0) &
+				      ASID_MASK) != nasid)) {
+					kvm_debug("MTCz, change ASID from %#lx to %#lx\n",
+						kvm_read_c0_guest_entryhi(cop0)
+						& ASID_MASK,
+						vcpu->arch.gprs[rt]
+						& ASID_MASK);
+
+					preempt_disable();
+					/* Blow away the shadow host TLBs */
+					kvm_mips_flush_host_tlb(1);
+					cpu = smp_processor_id();
+					for_each_possible_cpu(i)
+						if (i != cpu) {
+							vcpu->arch.guest_user_asid[i] = 0;
+							vcpu->arch.guest_kernel_asid[i] = 0;
+						}
+					preempt_enable();
+				}
+				kvm_write_c0_guest_entryhi(cop0,
+							   vcpu->arch.gprs[rt]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 			/* Are we writing to COUNT */
 			else if ((rd == MIPS_CP0_COUNT) && (sel == 0)) {
@@ -1681,9 +1782,16 @@ enum emulation_result kvm_mips_emulate_load(union mips_instruction inst,
 					    u32 cause, struct kvm_run *run,
 					    struct kvm_vcpu *vcpu)
 {
+<<<<<<< HEAD
 	enum emulation_result er;
 	unsigned long curr_pc;
 	u32 op, rt;
+=======
+	enum emulation_result er = EMULATE_DO_MMIO;
+	unsigned long curr_pc;
+	int32_t op, base, rt, offset;
+	uint32_t bytes;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	rt = inst.i_format.rt;
 	op = inst.i_format.opcode;
@@ -1700,6 +1808,21 @@ enum emulation_result kvm_mips_emulate_load(union mips_instruction inst,
 	vcpu->arch.io_pc = vcpu->arch.pc;
 	vcpu->arch.pc = curr_pc;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Find the resume PC now while we have safe and easy access to the
+	 * prior branch instruction, and save it for
+	 * kvm_mips_complete_mmio_load() to restore later.
+	 */
+	curr_pc = vcpu->arch.pc;
+	er = update_pc(vcpu, cause);
+	if (er == EMULATE_FAIL)
+		return er;
+	vcpu->arch.io_pc = vcpu->arch.pc;
+	vcpu->arch.pc = curr_pc;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	vcpu->arch.io_gpr = rt;
 
 	run->mmio.phys_addr = kvm_mips_callbacks->gva_to_gpa(
@@ -1879,6 +2002,78 @@ enum emulation_result kvm_mips_emulate_cache(union mips_instruction inst,
 		goto done;
 	}
 
+<<<<<<< HEAD
+=======
+	preempt_disable();
+	if (KVM_GUEST_KSEGX(va) == KVM_GUEST_KSEG0) {
+		if (kvm_mips_host_tlb_lookup(vcpu, va) < 0 &&
+		    kvm_mips_handle_kseg0_tlb_fault(va, vcpu)) {
+			kvm_err("%s: handling mapped kseg0 tlb fault for %lx, vcpu: %p, ASID: %#lx\n",
+				__func__, va, vcpu, read_c0_entryhi());
+			er = EMULATE_FAIL;
+			preempt_enable();
+			goto done;
+		}
+	} else if ((KVM_GUEST_KSEGX(va) < KVM_GUEST_KSEG0) ||
+		   KVM_GUEST_KSEGX(va) == KVM_GUEST_KSEG23) {
+		int index;
+
+		/* If an entry already exists then skip */
+		if (kvm_mips_host_tlb_lookup(vcpu, va) >= 0)
+			goto skip_fault;
+
+		/*
+		 * If address not in the guest TLB, then give the guest a fault,
+		 * the resulting handler will do the right thing
+		 */
+		index = kvm_mips_guest_tlb_lookup(vcpu, (va & VPN2_MASK) |
+						  (kvm_read_c0_guest_entryhi
+						   (cop0) & ASID_MASK));
+
+		if (index < 0) {
+			vcpu->arch.host_cp0_entryhi = (va & VPN2_MASK);
+			vcpu->arch.host_cp0_badvaddr = va;
+			er = kvm_mips_emulate_tlbmiss_ld(cause, NULL, run,
+							 vcpu);
+			preempt_enable();
+			goto dont_update_pc;
+		} else {
+			struct kvm_mips_tlb *tlb = &vcpu->arch.guest_tlb[index];
+			/*
+			 * Check if the entry is valid, if not then setup a TLB
+			 * invalid exception to the guest
+			 */
+			if (!TLB_IS_VALID(*tlb, va)) {
+				er = kvm_mips_emulate_tlbinv_ld(cause, NULL,
+								run, vcpu);
+				preempt_enable();
+				goto dont_update_pc;
+			}
+			/*
+			 * We fault an entry from the guest tlb to the
+			 * shadow host TLB
+			 */
+			if (kvm_mips_handle_mapped_seg_tlb_fault(vcpu, tlb,
+								 NULL, NULL)) {
+				kvm_err("%s: handling mapped seg tlb fault for %lx, index: %u, vcpu: %p, ASID: %#lx\n",
+					__func__, va, index, vcpu,
+					read_c0_entryhi());
+				er = EMULATE_FAIL;
+				preempt_enable();
+				goto done;
+			}
+		}
+	} else {
+		kvm_err("INVALID CACHE INDEX/ADDRESS (cache: %#x, op: %#x, base[%d]: %#lx, offset: %#x\n",
+			cache, op, base, arch->gprs[base], offset);
+		er = EMULATE_FAIL;
+		preempt_enable();
+		goto dont_update_pc;
+
+	}
+
+skip_fault:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* XXXKYMA: Only a subset of cache ops are supported, used by Linux */
 	if (op_inst == Hit_Writeback_Inv_D || op_inst == Hit_Invalidate_D) {
 		/*
@@ -2814,8 +3009,13 @@ enum emulation_result kvm_mips_handle_tlbmiss(u32 cause,
 			 * OK we have a Guest TLB entry, now inject it into the
 			 * shadow host TLB
 			 */
+<<<<<<< HEAD
 			if (kvm_mips_handle_mapped_seg_tlb_fault(vcpu, tlb, va,
 								 write_fault)) {
+=======
+			if (kvm_mips_handle_mapped_seg_tlb_fault(vcpu, tlb,
+								 NULL, NULL)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				kvm_err("%s: handling mapped seg tlb fault for %lx, index: %u, vcpu: %p, ASID: %#lx\n",
 					__func__, va, index, vcpu,
 					read_c0_entryhi());

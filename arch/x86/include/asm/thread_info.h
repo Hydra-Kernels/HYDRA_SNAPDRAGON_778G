@@ -79,7 +79,11 @@ struct thread_info {
 #define TIF_SIGPENDING		2	/* signal pending */
 #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
 #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
+<<<<<<< HEAD
 #define TIF_SSBD		5	/* Speculative store bypass disable */
+=======
+#define TIF_SSBD		5	/* Reduced data speculation */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define TIF_SYSCALL_EMU		6	/* syscall emulation active */
 #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
 #define TIF_SECCOMP		8	/* secure computing */
@@ -143,6 +147,7 @@ struct thread_info {
 	 _TIF_NOHZ)
 
 /* flags to check in __switch_to() */
+<<<<<<< HEAD
 #define _TIF_WORK_CTXSW_BASE						\
 	(_TIF_IO_BITMAP|_TIF_NOCPUID|_TIF_NOTSC|_TIF_BLOCKSTEP|		\
 	 _TIF_SSBD | _TIF_SPEC_FORCE_UPDATE)
@@ -155,6 +160,10 @@ struct thread_info {
 #else
 # define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE)
 #endif
+=======
+#define _TIF_WORK_CTXSW							\
+	(_TIF_IO_BITMAP|_TIF_NOTSC|_TIF_BLOCKSTEP|_TIF_SSBD)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define _TIF_WORK_CTXSW_PREV (_TIF_WORK_CTXSW|_TIF_USER_RETURN_NOTIFY)
 #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW)
@@ -185,6 +194,7 @@ static inline int arch_within_stack_frames(const void * const stack,
 	const void *frame = NULL;
 	const void *oldframe;
 
+<<<<<<< HEAD
 	oldframe = __builtin_frame_address(1);
 	if (oldframe)
 		frame = __builtin_frame_address(2);
@@ -213,6 +223,8 @@ static inline int arch_within_stack_frames(const void * const stack,
 #endif
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else /* !__ASSEMBLY__ */
 
 #ifdef CONFIG_X86_64

@@ -190,10 +190,28 @@ struct module;
 
 #ifdef CONFIG_JUMP_LABEL
 
+<<<<<<< HEAD
 #define JUMP_TYPE_FALSE		0UL
 #define JUMP_TYPE_TRUE		1UL
 #define JUMP_TYPE_LINKED	2UL
 #define JUMP_TYPE_MASK		3UL
+=======
+#ifdef HAVE_JUMP_LABEL
+
+static inline int static_key_count(struct static_key *key)
+{
+	/*
+	 * -1 means the first static_key_slow_inc() is in progress.
+	 *  static_key_enabled() must return true, so return 1 here.
+	 */
+	int n = atomic_read(&key->enabled);
+	return n >= 0 ? n : 1;
+}
+
+#define JUMP_TYPE_FALSE	0UL
+#define JUMP_TYPE_TRUE	1UL
+#define JUMP_TYPE_MASK	1UL
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static __always_inline bool static_key_false(struct static_key *key)
 {
@@ -248,6 +266,11 @@ extern void static_key_disable_cpuslocked(struct static_key *key);
 
 #include <linux/atomic.h>
 #include <linux/bug.h>
+
+static inline int static_key_count(struct static_key *key)
+{
+	return atomic_read(&key->enabled);
+}
 
 static inline int static_key_count(struct static_key *key)
 {

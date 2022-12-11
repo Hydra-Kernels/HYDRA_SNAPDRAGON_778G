@@ -215,10 +215,15 @@ void wbc_attach_and_unlock_inode(struct writeback_control *wbc,
 				 struct inode *inode)
 	__releases(&inode->i_lock);
 void wbc_detach_inode(struct writeback_control *wbc);
+<<<<<<< HEAD
 void wbc_account_cgroup_owner(struct writeback_control *wbc, struct page *page,
 			      size_t bytes);
 int cgroup_writeback_by_id(u64 bdi_id, int memcg_id, unsigned long nr_pages,
 			   enum wb_reason reason, struct wb_completion *done);
+=======
+void wbc_account_io(struct writeback_control *wbc, struct page *page,
+		    size_t bytes);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void cgroup_writeback_umount(void);
 
 /**
@@ -322,6 +327,10 @@ static inline void wbc_init_bio(struct writeback_control *wbc, struct bio *bio)
 
 static inline void wbc_account_cgroup_owner(struct writeback_control *wbc,
 					    struct page *page, size_t bytes)
+{
+}
+
+static inline void cgroup_writeback_umount(void)
 {
 }
 

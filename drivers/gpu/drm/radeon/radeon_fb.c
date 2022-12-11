@@ -247,8 +247,12 @@ static int radeonfb_create(struct drm_fb_helper *helper,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* radeon resume is fragile and needs a vt switch to help it along */
 	info->skip_vt_switch = false;
+=======
+	info->par = rfbdev;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = radeon_framebuffer_init(rdev->ddev, &rfbdev->fb, &mode_cmd, gobj);
 	if (ret) {

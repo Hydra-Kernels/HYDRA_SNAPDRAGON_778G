@@ -20,11 +20,14 @@
  * ------------
  * 13 bit converter
  * MCP3301
+<<<<<<< HEAD
  * ------------
  * 22 bit converter
  * MCP3550
  * MCP3551
  * MCP3553
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  *
  * Datasheet can be found here:
  * http://ww1.microchip.com/downloads/en/DeviceDoc/21293C.pdf  mcp3001
@@ -160,6 +163,7 @@ static int mcp320x_adc_conversion(struct mcp320x *adc, u8 channel,
 		*val = sign_extend32((adc->rx_buf[0] & 0x1f) << 8
 				    | adc->rx_buf[1], 12);
 		return 0;
+<<<<<<< HEAD
 	case mcp3550_50:
 	case mcp3550_60:
 	case mcp3551:
@@ -185,6 +189,8 @@ static int mcp320x_adc_conversion(struct mcp320x *adc, u8 channel,
 		*val = (s32)raw;
 		return 0;
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default:
 		return -EINVAL;
 	}

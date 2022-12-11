@@ -1645,8 +1645,12 @@ static void coda_finish_encode(struct coda_ctx *ctx)
 	wr_ptr = coda_read(dev, CODA_REG_BIT_WR_PTR(ctx->reg_idx));
 
 	/* Calculate bytesused field */
+<<<<<<< HEAD
 	if (dst_buf->sequence == 0 ||
 	    src_buf->flags & V4L2_BUF_FLAG_KEYFRAME) {
+=======
+	if (dst_buf->sequence == 0) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		vb2_set_plane_payload(&dst_buf->vb2_buf, 0, wr_ptr - start_ptr +
 					ctx->vpu_header_size[0] +
 					ctx->vpu_header_size[1] +

@@ -1686,6 +1686,7 @@ static void nfs_state_set_open_stateid(struct nfs4_state *state,
 	 * Protect the call to nfs4_state_set_mode_locked and
 	 * serialise the stateid update
 	 */
+	spin_lock(&state->owner->so_lock);
 	write_seqlock(&state->seqlock);
 	nfs_set_open_stateid_locked(state, open_stateid, freeme);
 	switch (fmode) {
@@ -1700,6 +1701,11 @@ static void nfs_state_set_open_stateid(struct nfs4_state *state,
 	}
 	set_bit(NFS_OPEN_STATE, &state->flags);
 	write_sequnlock(&state->seqlock);
+<<<<<<< HEAD
+=======
+	update_open_stateflags(state, fmode);
+	spin_unlock(&state->owner->so_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void nfs_state_clear_open_state_flags(struct nfs4_state *state)
@@ -2941,12 +2947,19 @@ static unsigned nfs4_exclusive_attrset(struct nfs4_opendata *opendata,
 	ret = (opendata->o_arg.createmode == NFS4_CREATE_EXCLUSIVE) ?
 		sattr->ia_valid : 0;
 
+<<<<<<< HEAD
 	if ((attrset[1] & (FATTR4_WORD1_TIME_ACCESS|FATTR4_WORD1_TIME_ACCESS_SET))) {
 		if (sattr->ia_valid & ATTR_ATIME_SET)
 			ret |= ATTR_ATIME_SET;
 		else
 			ret |= ATTR_ATIME;
 	}
+=======
+	/* Except MODE, it seems harmless of setting twice. */
+	if (opendata->o_arg.createmode != NFS4_CREATE_EXCLUSIVE &&
+		attrset[1] & FATTR4_WORD1_MODE)
+		sattr->ia_valid &= ~ATTR_MODE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if ((attrset[1] & (FATTR4_WORD1_TIME_MODIFY|FATTR4_WORD1_TIME_MODIFY_SET))) {
 		if (sattr->ia_valid & ATTR_MTIME_SET)
@@ -2994,6 +3007,7 @@ static int _nfs4_open_and_get_state(struct nfs4_opendata *opendata,
 	if (d_really_is_negative(dentry)) {
 		struct dentry *alias;
 		d_drop(dentry);
+<<<<<<< HEAD
 		alias = d_exact_alias(dentry, state->inode);
 		if (!alias)
 			alias = d_splice_alias(igrab(state->inode), dentry);
@@ -3001,6 +3015,14 @@ static int _nfs4_open_and_get_state(struct nfs4_opendata *opendata,
 		if (alias) {
 			dput(ctx->dentry);
 			ctx->dentry = dentry = alias;
+=======
+		dentry = d_add_unique(dentry, igrab(state->inode));
+		if (dentry == NULL) {
+			dentry = opendata->dentry;
+		} else {
+			dput(ctx->dentry);
+			ctx->dentry = dentry;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -3583,7 +3605,10 @@ static void nfs4_close_prepare(struct rpc_task *task, void *data)
 	} else if (is_rdwr)
 		calldata->arg.fmode |= FMODE_READ|FMODE_WRITE;
 
+<<<<<<< HEAD
 	nfs4_sync_open_stateid(&calldata->arg.stateid, state);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!nfs4_valid_open_stateid(state))
 		call_close = 0;
 	spin_unlock(&state->owner->so_lock);
@@ -6784,8 +6809,12 @@ static struct nfs4_lockdata *nfs4_alloc_lockdata(struct file_lock *fl,
 	p->lsp = lsp;
 	p->server = server;
 	p->ctx = get_nfs_open_context(ctx);
+<<<<<<< HEAD
 	locks_init_lock(&p->fl);
 	locks_copy_lock(&p->fl, fl);
+=======
+	memcpy(&p->fl, fl, sizeof(p->fl));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return p;
 out_free_seqid:
 	nfs_free_seqid(p->arg.open_seqid);
@@ -7268,12 +7297,16 @@ int nfs4_lock_delegation_recall(struct file_lock *fl, struct nfs4_state *state, 
 	err = nfs4_set_lock_state(state, fl);
 	if (err != 0)
 		return err;
+<<<<<<< HEAD
 	do {
 		err = _nfs4_do_setlk(state, F_SETLK, fl, NFS_LOCK_NEW);
 		if (err != -NFS4ERR_DELAY)
 			break;
 		ssleep(1);
 	} while (err == -NFS4ERR_DELAY);
+=======
+	err = _nfs4_do_setlk(state, F_SETLK, fl, NFS_LOCK_NEW);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return nfs4_handle_delegation_recall_error(server, state, stateid, fl, err);
 }
 
@@ -8978,6 +9011,11 @@ static int nfs41_reclaim_complete_handle_errors(struct rpc_task *task, struct nf
 	case -NFS4ERR_BADSESSION:
 	case -NFS4ERR_DEADSESSION:
 	case -NFS4ERR_CONN_NOT_BOUND_TO_SESSION:
+<<<<<<< HEAD
+=======
+		nfs4_schedule_session_recovery(clp->cl_session,
+				task->tk_status);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		break;
 	default:
 		nfs4_schedule_lease_recovery(clp);
@@ -9046,7 +9084,19 @@ static int nfs41_proc_reclaim_complete(struct nfs_client *clp,
 	msg.rpc_argp = &calldata->arg;
 	msg.rpc_resp = &calldata->res;
 	task_setup_data.callback_data = calldata;
+<<<<<<< HEAD
 	status = nfs4_call_sync_custom(&task_setup_data);
+=======
+	task = rpc_run_task(&task_setup_data);
+	if (IS_ERR(task)) {
+		status = PTR_ERR(task);
+		goto out;
+	}
+	status = nfs4_wait_for_completion_rpc_task(task);
+	if (status == 0)
+		status = task->tk_status;
+	rpc_put_task(task);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out:
 	dprintk("<-- %s status=%d\n", __func__, status);
 	return status;
@@ -9313,11 +9363,21 @@ static void nfs4_layoutreturn_release(void *calldata)
 	struct pnfs_layout_hdr *lo = lrp->args.layout;
 
 	dprintk("--> %s\n", __func__);
+<<<<<<< HEAD
 	pnfs_layoutreturn_free_lsegs(lo, &lrp->args.stateid, &lrp->args.range,
 			lrp->res.lrs_present ? &lrp->res.stateid : NULL);
 	nfs4_sequence_free_slot(&lrp->res.seq_res);
 	if (lrp->ld_private.ops && lrp->ld_private.ops->free)
 		lrp->ld_private.ops->free(&lrp->ld_private);
+=======
+	spin_lock(&lo->plh_inode->i_lock);
+	if (lrp->res.lrs_present)
+		pnfs_set_layout_stateid(lo, &lrp->res.stateid, true);
+	pnfs_mark_matching_lsegs_invalid(lo, &freeme, &lrp->args.range);
+	pnfs_clear_layoutreturn_waitbit(lo);
+	spin_unlock(&lo->plh_inode->i_lock);
+	pnfs_free_lseg_list(&freeme);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pnfs_put_layout_hdr(lrp->args.layout);
 	nfs_iput_and_deactive(lrp->inode);
 	kfree(calldata);

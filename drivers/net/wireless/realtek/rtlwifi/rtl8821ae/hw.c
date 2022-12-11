@@ -1351,7 +1351,12 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 
 	ppsc->wakeup_reason = 0;
 
+<<<<<<< HEAD
 	rtlhal->last_suspend_sec = ktime_get_real_seconds();
+=======
+	do_gettimeofday(&ts);
+	rtlhal->last_suspend_sec = ts.tv_sec;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	switch (fw_reason) {
 	case FW_WOW_V2_PTK_UPDATE_EVENT:

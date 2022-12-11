@@ -737,7 +737,24 @@ static void sdhci_adma_table_pre(struct sdhci_host *host,
 	 * We currently guess that it is LE.
 	 */
 
+<<<<<<< HEAD
 	host->sg_count = sg_count;
+=======
+	if (data->flags & MMC_DATA_READ)
+		direction = DMA_FROM_DEVICE;
+	else
+		direction = DMA_TO_DEVICE;
+
+	host->align_addr = dma_map_single(mmc_dev(host->mmc),
+		host->align_buffer, host->align_buffer_sz, direction);
+	if (dma_mapping_error(mmc_dev(host->mmc), host->align_addr))
+		goto fail;
+	BUG_ON(host->align_addr & SDHCI_ADMA2_MASK);
+
+	host->sg_count = sdhci_pre_dma_transfer(host, data);
+	if (host->sg_count < 0)
+		goto unmap_align;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	desc = host->adma_table;
 	align = host->align_buffer;
@@ -771,6 +788,11 @@ static void sdhci_adma_table_pre(struct sdhci_host *host,
 
 			align += SDHCI_ADMA2_ALIGN;
 			align_addr += SDHCI_ADMA2_ALIGN;
+<<<<<<< HEAD
+=======
+
+			desc += host->desc_sz;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			addr += offset;
 			len -= offset;
@@ -778,10 +800,19 @@ static void sdhci_adma_table_pre(struct sdhci_host *host,
 
 		BUG_ON(len > 65536);
 
+<<<<<<< HEAD
 		/* tran, valid */
 		if (len)
 			__sdhci_adma_write_desc(host, &desc, addr, len,
 						ADMA2_TRAN_VALID);
+=======
+		if (len) {
+			/* tran, valid */
+			sdhci_adma_write_desc(host, desc, addr, len,
+					      ADMA2_TRAN_VALID);
+			desc += host->desc_sz;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/*
 		 * If this triggers then we have a calculation bug
@@ -821,9 +852,19 @@ static void sdhci_adma_table_post(struct sdhci_host *host,
 				break;
 			}
 
+<<<<<<< HEAD
 		if (has_unaligned) {
 			dma_sync_sg_for_cpu(mmc_dev(host->mmc), data->sg,
 					    data->sg_len, DMA_FROM_DEVICE);
+=======
+	/* Do a quick scan of the SG list for any unaligned mappings */
+	has_unaligned = false;
+	for_each_sg(data->sg, sg, host->sg_count, i)
+		if (sg_dma_address(sg) & SDHCI_ADMA2_MASK) {
+			has_unaligned = true;
+			break;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			align = host->align_buffer;
 
@@ -832,12 +873,25 @@ static void sdhci_adma_table_post(struct sdhci_host *host,
 					size = SDHCI_ADMA2_ALIGN -
 					       (sg_dma_address(sg) & SDHCI_ADMA2_MASK);
 
+<<<<<<< HEAD
 					buffer = sdhci_kmap_atomic(sg, &flags);
 					memcpy(buffer, align, size);
 					sdhci_kunmap_atomic(buffer, &flags);
 
 					align += SDHCI_ADMA2_ALIGN;
 				}
+=======
+		for_each_sg(data->sg, sg, host->sg_count, i) {
+			if (sg_dma_address(sg) & SDHCI_ADMA2_MASK) {
+				size = SDHCI_ADMA2_ALIGN -
+				       (sg_dma_address(sg) & SDHCI_ADMA2_MASK);
+
+				buffer = sdhci_kmap_atomic(sg, &flags);
+				memcpy(buffer, align, size);
+				sdhci_kunmap_atomic(buffer, &flags);
+
+				align += SDHCI_ADMA2_ALIGN;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 	}
@@ -956,7 +1010,28 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_command *cmd,
 		return 0xE;
 
 	/* timeout in us */
+<<<<<<< HEAD
 	target_timeout = sdhci_target_timeout(host, cmd, data);
+=======
+	if (!data)
+		target_timeout = cmd->busy_timeout * 1000;
+	else {
+		target_timeout = DIV_ROUND_UP(data->timeout_ns, 1000);
+		if (host->clock && data->timeout_clks) {
+			unsigned long long val;
+
+			/*
+			 * data->timeout_clks is in units of clock cycles.
+			 * host->clock is in Hz.  target_timeout is in us.
+			 * Hence, us = 1000000 * cycles / Hz.  Round up.
+			 */
+			val = 1000000ULL * data->timeout_clks;
+			if (do_div(val, host->clock))
+				target_timeout++;
+			target_timeout += val;
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Figure out needed cycles.
@@ -1792,6 +1867,7 @@ void sdhci_enable_clk(struct sdhci_host *host, u16 clk)
 			sdhci_dumpregs(host);
 			return;
 		}
+<<<<<<< HEAD
 		udelay(10);
 	}
 
@@ -1818,6 +1894,12 @@ void sdhci_enable_clk(struct sdhci_host *host, u16 clk)
 			}
 			udelay(10);
 		}
+=======
+		timeout--;
+		spin_unlock_irq(&host->lock);
+		usleep_range(900, 1100);
+		spin_lock_irq(&host->lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	clk |= SDHCI_CLOCK_CARD_EN;
@@ -2502,8 +2584,141 @@ void sdhci_start_tuning(struct sdhci_host *host)
 }
 EXPORT_SYMBOL_GPL(sdhci_start_tuning);
 
+<<<<<<< HEAD
 void sdhci_end_tuning(struct sdhci_host *host)
 {
+=======
+	/*
+	 * Issue CMD19 repeatedly till Execute Tuning is set to 0 or the number
+	 * of loops reaches 40 times or a timeout of 150ms occurs.
+	 */
+	do {
+		struct mmc_command cmd = {0};
+		struct mmc_request mrq = {NULL};
+
+		cmd.opcode = opcode;
+		cmd.arg = 0;
+		cmd.flags = MMC_RSP_R1 | MMC_CMD_ADTC;
+		cmd.retries = 0;
+		cmd.data = NULL;
+		cmd.error = 0;
+
+		if (tuning_loop_counter-- == 0)
+			break;
+
+		mrq.cmd = &cmd;
+		host->mrq = &mrq;
+
+		/*
+		 * In response to CMD19, the card sends 64 bytes of tuning
+		 * block to the Host Controller. So we set the block size
+		 * to 64 here.
+		 */
+		if (cmd.opcode == MMC_SEND_TUNING_BLOCK_HS200) {
+			if (mmc->ios.bus_width == MMC_BUS_WIDTH_8)
+				sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, 128),
+					     SDHCI_BLOCK_SIZE);
+			else if (mmc->ios.bus_width == MMC_BUS_WIDTH_4)
+				sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, 64),
+					     SDHCI_BLOCK_SIZE);
+		} else {
+			sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, 64),
+				     SDHCI_BLOCK_SIZE);
+		}
+
+		/*
+		 * The tuning block is sent by the card to the host controller.
+		 * So we set the TRNS_READ bit in the Transfer Mode register.
+		 * This also takes care of setting DMA Enable and Multi Block
+		 * Select in the same register to 0.
+		 */
+		sdhci_writew(host, SDHCI_TRNS_READ, SDHCI_TRANSFER_MODE);
+
+		sdhci_send_command(host, &cmd);
+
+		host->cmd = NULL;
+		host->mrq = NULL;
+
+		spin_unlock_irqrestore(&host->lock, flags);
+		/* Wait for Buffer Read Ready interrupt */
+		wait_event_interruptible_timeout(host->buf_ready_int,
+					(host->tuning_done == 1),
+					msecs_to_jiffies(50));
+		spin_lock_irqsave(&host->lock, flags);
+
+		if (!host->tuning_done) {
+			pr_info(DRIVER_NAME ": Timeout waiting for "
+				"Buffer Read Ready interrupt during tuning "
+				"procedure, falling back to fixed sampling "
+				"clock\n");
+			ctrl = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+			ctrl &= ~SDHCI_CTRL_TUNED_CLK;
+			ctrl &= ~SDHCI_CTRL_EXEC_TUNING;
+			sdhci_writew(host, ctrl, SDHCI_HOST_CONTROL2);
+
+			sdhci_do_reset(host, SDHCI_RESET_CMD);
+			sdhci_do_reset(host, SDHCI_RESET_DATA);
+
+			err = -EIO;
+
+			if (cmd.opcode != MMC_SEND_TUNING_BLOCK_HS200)
+				goto out;
+
+			sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
+			sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
+
+			spin_unlock_irqrestore(&host->lock, flags);
+
+			memset(&cmd, 0, sizeof(cmd));
+			cmd.opcode = MMC_STOP_TRANSMISSION;
+			cmd.flags = MMC_RSP_SPI_R1B | MMC_RSP_R1B | MMC_CMD_AC;
+			cmd.busy_timeout = 50;
+			mmc_wait_for_cmd(mmc, &cmd, 0);
+
+			spin_lock_irqsave(&host->lock, flags);
+
+			goto out;
+		}
+
+		host->tuning_done = 0;
+
+		ctrl = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+
+		/* eMMC spec does not require a delay between tuning cycles */
+		if (opcode == MMC_SEND_TUNING_BLOCK)
+			mdelay(1);
+	} while (ctrl & SDHCI_CTRL_EXEC_TUNING);
+
+	/*
+	 * The Host Driver has exhausted the maximum number of loops allowed,
+	 * so use fixed sampling frequency.
+	 */
+	if (tuning_loop_counter < 0) {
+		ctrl &= ~SDHCI_CTRL_TUNED_CLK;
+		sdhci_writew(host, ctrl, SDHCI_HOST_CONTROL2);
+	}
+	if (!(ctrl & SDHCI_CTRL_TUNED_CLK)) {
+		pr_info(DRIVER_NAME ": Tuning procedure"
+			" failed, falling back to fixed sampling"
+			" clock\n");
+		err = -EIO;
+	}
+
+out:
+	if (tuning_count) {
+		/*
+		 * In case tuning fails, host controllers which support
+		 * re-tuning can try tuning again at a later time, when the
+		 * re-tuning timer expires.  So for these controllers, we
+		 * return 0. Since there might be other controllers who do not
+		 * have this capability, we return error for them.
+		 */
+		err = 0;
+	}
+
+	host->mmc->retune_period = err ? 0 : tuning_count;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
 	sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
 }
@@ -3396,9 +3611,12 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
 			pr_err("%s: Card is consuming too much power!\n",
 				mmc_hostname(host->mmc));
 
+<<<<<<< HEAD
 		if (intmask & SDHCI_INT_RETUNE)
 			mmc_retune_needed(host->mmc);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if ((intmask & SDHCI_INT_CARD_INT) &&
 		    (host->ier & SDHCI_INT_CARD_INT)) {
 			sdhci_enable_sdio_irq_nolock(host, false);
@@ -3623,6 +3841,36 @@ int sdhci_resume_host(struct sdhci_host *host)
 
 EXPORT_SYMBOL_GPL(sdhci_resume_host);
 
+<<<<<<< HEAD
+=======
+static int sdhci_runtime_pm_get(struct sdhci_host *host)
+{
+	return pm_runtime_get_sync(host->mmc->parent);
+}
+
+static int sdhci_runtime_pm_put(struct sdhci_host *host)
+{
+	pm_runtime_mark_last_busy(host->mmc->parent);
+	return pm_runtime_put_autosuspend(host->mmc->parent);
+}
+
+static void sdhci_runtime_pm_bus_on(struct sdhci_host *host)
+{
+	if (host->bus_on)
+		return;
+	host->bus_on = true;
+	pm_runtime_get_noresume(host->mmc->parent);
+}
+
+static void sdhci_runtime_pm_bus_off(struct sdhci_host *host)
+{
+	if (!host->bus_on)
+		return;
+	host->bus_on = false;
+	pm_runtime_put_noidle(host->mmc->parent);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int sdhci_runtime_suspend_host(struct sdhci_host *host)
 {
 	unsigned long flags;
@@ -3857,6 +4105,7 @@ struct sdhci_host *sdhci_alloc_host(struct device *dev,
 	host->mmc = mmc;
 	host->mmc_host_ops = sdhci_ops;
 	mmc->ops = &host->mmc_host_ops;
+<<<<<<< HEAD
 
 	host->flags = SDHCI_SIGNALING_330;
 
@@ -3879,6 +4128,8 @@ struct sdhci_host *sdhci_alloc_host(struct device *dev,
 	ratelimit_state_init(&host->dbg_dump_rs, SDHCI_DBG_DUMP_RS_INTERVAL,
 			SDHCI_DBG_DUMP_RS_BURST);
 #endif
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return host;
 }
@@ -4151,14 +4402,21 @@ int sdhci_setup_host(struct sdhci_host *host)
 		host->adma_table_sz = host->adma_table_cnt * host->desc_sz;
 #else
 		if (host->flags & SDHCI_USE_64_BIT_DMA) {
+<<<<<<< HEAD
 			host->adma_table_sz = host->adma_table_cnt *
 					      SDHCI_ADMA2_64_DESC_SZ(host);
 			host->desc_sz = SDHCI_ADMA2_64_DESC_SZ(host);
+=======
+			host->adma_table_sz = (SDHCI_MAX_SEGS * 2 + 1) *
+					      SDHCI_ADMA2_64_DESC_SZ;
+			host->desc_sz = SDHCI_ADMA2_64_DESC_SZ;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			host->adma_table_sz = host->adma_table_cnt *
 					      SDHCI_ADMA2_32_DESC_SZ;
 			host->desc_sz = SDHCI_ADMA2_32_DESC_SZ;
 		}
+<<<<<<< HEAD
 #endif
 
 		host->align_buffer_sz = SDHCI_MAX_SEGS * SDHCI_ADMA2_ALIGN;
@@ -4175,6 +4433,27 @@ int sdhci_setup_host(struct sdhci_host *host)
 			host->flags &= ~SDHCI_USE_ADMA;
 		} else if ((dma + host->align_buffer_sz) &
 			   (SDHCI_ADMA2_DESC_ALIGN - 1)) {
+=======
+		host->adma_table = dma_alloc_coherent(mmc_dev(mmc),
+						      host->adma_table_sz,
+						      &host->adma_addr,
+						      GFP_KERNEL);
+		host->align_buffer_sz = SDHCI_MAX_SEGS * SDHCI_ADMA2_ALIGN;
+		host->align_buffer = kmalloc(host->align_buffer_sz, GFP_KERNEL);
+		if (!host->adma_table || !host->align_buffer) {
+			if (host->adma_table)
+				dma_free_coherent(mmc_dev(mmc),
+						  host->adma_table_sz,
+						  host->adma_table,
+						  host->adma_addr);
+			kfree(host->align_buffer);
+			pr_warn("%s: Unable to allocate ADMA buffers - falling back to standard DMA\n",
+				mmc_hostname(mmc));
+			host->flags &= ~SDHCI_USE_ADMA;
+			host->adma_table = NULL;
+			host->align_buffer = NULL;
+		} else if (host->adma_addr & (SDHCI_ADMA2_DESC_ALIGN - 1)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			pr_warn("%s: unable to allocate aligned ADMA descriptor\n",
 				mmc_hostname(mmc));
 			host->flags &= ~SDHCI_USE_ADMA;
@@ -4282,15 +4561,21 @@ int sdhci_setup_host(struct sdhci_host *host)
 		host->timeout_clk /= host->timeout_clk_div;
 #endif
 
+		if (override_timeout_clk)
+			host->timeout_clk = override_timeout_clk;
+
 		mmc->max_busy_timeout = host->ops->get_max_timeout_count ?
 			host->ops->get_max_timeout_count(host) : 1 << 27;
 		mmc->max_busy_timeout /= host->timeout_clk;
 	}
 
+<<<<<<< HEAD
 	if (host->quirks2 & SDHCI_QUIRK2_DISABLE_HW_TIMEOUT &&
 	    !host->ops->get_max_timeout_count)
 		mmc->max_busy_timeout = 0;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mmc->caps |= MMC_CAP_SDIO_IRQ | MMC_CAP_ERASE | MMC_CAP_CMD23;
 	mmc->caps2 |= MMC_CAP2_SDIO_IRQ_NOTHREAD;
 

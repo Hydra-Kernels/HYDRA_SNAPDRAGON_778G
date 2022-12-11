@@ -45,7 +45,11 @@ if test "$(objtree)" != "$(srctree)"; then \
 	false; \
 fi ; \
 $(srctree)/scripts/setlocalversion --save-scmversion; \
+<<<<<<< HEAD:scripts/Makefile.package
 tar -I $(KGZIP) -c $(RCS_TAR_IGNORE) -f $(2).tar.gz \
+=======
+tar -cz $(RCS_TAR_IGNORE) -f $(2).tar.gz \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/package/Makefile
 	--transform 's:^:$(2)/:S' $(TAR_CONTENT) $(3); \
 rm -f $(objtree)/.scmversion
 
@@ -56,8 +60,15 @@ rpm-pkg:
 	$(MAKE) clean
 	$(CONFIG_SHELL) $(MKSPEC) >$(objtree)/kernel.spec
 	$(call cmd,src_tar,$(KERNELPATH),kernel.spec)
+<<<<<<< HEAD:scripts/Makefile.package
 	+rpmbuild $(RPMOPTS) --target $(UTS_MACHINE) -ta $(KERNELPATH).tar.gz \
 	--define='_smp_mflags %{nil}'
+=======
+	$(CONFIG_SHELL) $(srctree)/scripts/mkversion > $(objtree)/.tmp_version
+	mv -f $(objtree)/.tmp_version $(objtree)/.version
+	rpmbuild $(RPMOPTS) --target $(UTS_MACHINE) -ta $(KERNELPATH).tar.gz
+	rm $(KERNELPATH).tar.gz kernel.spec
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/package/Makefile
 
 # binrpm-pkg
 # ---------------------------------------------------------------------------
@@ -65,7 +76,14 @@ PHONY += binrpm-pkg
 binrpm-pkg:
 	$(MAKE) -f $(srctree)/Makefile
 	$(CONFIG_SHELL) $(MKSPEC) prebuilt > $(objtree)/binkernel.spec
+<<<<<<< HEAD:scripts/Makefile.package
 	+rpmbuild $(RPMOPTS) --define "_builddir $(objtree)" --target \
+=======
+	$(CONFIG_SHELL) $(srctree)/scripts/mkversion > $(objtree)/.tmp_version
+	mv -f $(objtree)/.tmp_version $(objtree)/.version
+
+	rpmbuild $(RPMOPTS) --define "_builddir $(objtree)" --target \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:scripts/package/Makefile
 		$(UTS_MACHINE) -bb $(objtree)/binkernel.spec
 
 PHONY += deb-pkg

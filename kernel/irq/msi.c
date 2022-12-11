@@ -403,9 +403,13 @@ int msi_domain_alloc_irqs(struct irq_domain *domain, struct device *dev,
 	struct msi_domain_ops *ops = info->ops;
 	struct irq_data *irq_data;
 	struct msi_desc *desc;
+<<<<<<< HEAD
 	msi_alloc_info_t arg;
 	int i, ret, virq;
 	bool can_reserve;
+=======
+	int i, ret, virq;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = msi_domain_prepare_irqs(domain, dev, nvec, &arg);
 	if (ret)
@@ -415,8 +419,12 @@ int msi_domain_alloc_irqs(struct irq_domain *domain, struct device *dev,
 		ops->set_desc(&arg, desc);
 
 		virq = __irq_domain_alloc_irqs(domain, -1, desc->nvec_used,
+<<<<<<< HEAD
 					       dev_to_node(dev), &arg, false,
 					       desc->affinity);
+=======
+					       dev_to_node(dev), &arg, false);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (virq < 0) {
 			ret = -ENOSPC;
 			if (ops->handle_error)
@@ -435,6 +443,7 @@ int msi_domain_alloc_irqs(struct irq_domain *domain, struct device *dev,
 	if (ops->msi_finish)
 		ops->msi_finish(&arg, 0);
 
+<<<<<<< HEAD
 	can_reserve = msi_check_reservation_mode(domain, info, dev);
 
 	/*
@@ -461,6 +470,26 @@ int msi_domain_alloc_irqs(struct irq_domain *domain, struct device *dev,
 		ret = irq_domain_activate_irq(irq_data, can_reserve);
 		if (ret)
 			goto cleanup;
+=======
+	for_each_msi_entry(desc, dev) {
+		virq = desc->irq;
+		if (desc->nvec_used == 1)
+			dev_dbg(dev, "irq %d for MSI\n", virq);
+		else
+			dev_dbg(dev, "irq [%d-%d] for MSI\n",
+				virq, virq + desc->nvec_used - 1);
+		/*
+		 * This flag is set by the PCI layer as we need to activate
+		 * the MSI entries before the PCI layer enables MSI in the
+		 * card. Otherwise the card latches a random msi message.
+		 */
+		if (info->flags & MSI_FLAG_ACTIVATE_EARLY) {
+			struct irq_data *irq_data;
+
+			irq_data = irq_domain_get_irq_data(domain, desc->irq);
+			irq_domain_activate_irq(irq_data);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 skip_activate:

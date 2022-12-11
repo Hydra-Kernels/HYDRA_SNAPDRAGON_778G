@@ -141,8 +141,33 @@ fdimage288: $(obj)/bzImage $(obj)/mtools.conf
 	@$(kecho) 'Kernel: $(obj)/fdimage is ready'
 
 isoimage: $(obj)/bzImage
+<<<<<<< HEAD
 	$(call cmd,genimage,isoimage,$(obj)/image.iso)
 	@$(kecho) 'Kernel: $(obj)/image.iso is ready'
+=======
+	-rm -rf $(obj)/isoimage
+	mkdir $(obj)/isoimage
+	for i in lib lib64 share end ; do \
+		if [ -f /usr/$$i/syslinux/isolinux.bin ] ; then \
+			cp /usr/$$i/syslinux/isolinux.bin $(obj)/isoimage ; \
+			if [ -f /usr/$$i/syslinux/ldlinux.c32 ]; then \
+				cp /usr/$$i/syslinux/ldlinux.c32 $(obj)/isoimage ; \
+			fi ; \
+			break ; \
+		fi ; \
+		if [ $$i = end ] ; then exit 1 ; fi ; \
+	done
+	cp $(obj)/bzImage $(obj)/isoimage/linux
+	echo '$(image_cmdline)' > $(obj)/isoimage/isolinux.cfg
+	if [ -f '$(FDINITRD)' ] ; then \
+		cp '$(FDINITRD)' $(obj)/isoimage/initrd.img ; \
+	fi
+	mkisofs -J -r -o $(obj)/image.iso -b isolinux.bin -c boot.cat \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		$(obj)/isoimage
+	isohybrid $(obj)/image.iso 2>/dev/null || true
+	rm -rf $(obj)/isoimage
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 bzlilo: $(obj)/bzImage
 	if [ -f $(INSTALL_PATH)/vmlinuz ]; then mv $(INSTALL_PATH)/vmlinuz $(INSTALL_PATH)/vmlinuz.old; fi

@@ -35,7 +35,10 @@
 
 #define AS3935_INT		0x03
 #define AS3935_INT_MASK		0x0f
+<<<<<<< HEAD
 #define AS3935_DISTURB_INT	BIT(2)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define AS3935_EVENT_INT	BIT(3)
 #define AS3935_NOISE_INT	BIT(0)
 
@@ -60,12 +63,16 @@ struct as3935_state {
 
 	unsigned long noise_tripped;
 	u32 tune_cap;
+<<<<<<< HEAD
 	u32 nflwdth_reg;
 	/* Ensure timestamp is naturally aligned */
 	struct {
 		u8 chan;
 		s64 timestamp __aligned(8);
 	} scan;
+=======
+	u8 buffer[16]; /* 8-bit data + 56-bit padding + 64-bit timestamp */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u8 buf[2] ____cacheline_aligned;
 };
 
@@ -199,9 +206,12 @@ static int as3935_read_raw(struct iio_dev *indio_dev,
 		if (*val == AS3935_DATA_MASK)
 			return -EINVAL;
 
+<<<<<<< HEAD
 		if (m == IIO_CHAN_INFO_RAW)
 			return IIO_VAL_INT;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (m == IIO_CHAN_INFO_PROCESSED)
 			*val *= 1000;
 		break;
@@ -231,9 +241,15 @@ static irqreturn_t as3935_trigger_handler(int irq, void *private)
 	if (ret)
 		goto err_read;
 
+<<<<<<< HEAD
 	st->scan.chan = val & AS3935_DATA_MASK;
 	iio_push_to_buffers_with_timestamp(indio_dev, &st->scan,
 					   iio_get_time_ns(indio_dev));
+=======
+	st->buffer[0] = val & AS3935_DATA_MASK;
+	iio_push_to_buffers_with_timestamp(indio_dev, &st->buffer,
+					   pf->timestamp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_read:
 	iio_trigger_notify_done(indio_dev->trig);
 
@@ -290,14 +306,23 @@ static irqreturn_t as3935_interrupt_handler(int irq, void *private)
 
 static void calibrate_as3935(struct as3935_state *st)
 {
+<<<<<<< HEAD
 	as3935_write(st, AS3935_DEFAULTS, 0x96);
+=======
+	/* mask disturber interrupt bit */
+	as3935_write(st, AS3935_INT, BIT(5));
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	as3935_write(st, AS3935_CALIBRATE, 0x96);
 	as3935_write(st, AS3935_TUNE_CAP,
 		BIT(5) | (st->tune_cap / TUNE_CAP_DIV));
 
 	mdelay(2);
 	as3935_write(st, AS3935_TUNE_CAP, (st->tune_cap / TUNE_CAP_DIV));
+<<<<<<< HEAD
 	as3935_write(st, AS3935_NFLWDTH, st->nflwdth_reg);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -431,9 +456,14 @@ static int as3935_probe(struct spi_device *spi)
 		return ret;
 	}
 
+<<<<<<< HEAD
 	ret = devm_iio_triggered_buffer_setup(&spi->dev, indio_dev,
 					      iio_pollfunc_store_time,
 					      as3935_trigger_handler, NULL);
+=======
+	ret = iio_triggered_buffer_setup(indio_dev, iio_pollfunc_store_time,
+		&as3935_trigger_handler, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ret) {
 		dev_err(&spi->dev, "cannot setup iio trigger\n");

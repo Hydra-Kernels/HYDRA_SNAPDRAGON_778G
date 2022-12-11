@@ -250,5 +250,8 @@ struct rds_transport rds_loop_transport = {
 	.inc_free		= rds_loop_inc_free,
 	.t_name			= "loopback",
 	.t_type			= RDS_TRANS_LOOP,
+<<<<<<< HEAD
 	.t_unloading		= rds_loop_is_unloading,
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };

@@ -1080,7 +1080,10 @@ static int rsi_mac80211_ampdu_action(struct ieee80211_hw *hw,
 	u16 seq_no = 0, seq_start = 0;
 	u8 ii = 0;
 	struct ieee80211_sta *sta = params->sta;
+<<<<<<< HEAD
 	u8 sta_id = 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;
 	u16 *ssn = &params->ssn;

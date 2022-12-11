@@ -768,10 +768,13 @@ static int cros_ec_spi_probe(struct spi_device *spi)
 	ec_dev->dout_size = sizeof(struct ec_host_request);
 
 	ec_spi->last_transfer_ns = ktime_get_ns();
+<<<<<<< HEAD:drivers/platform/chrome/cros_ec_spi.c
 
 	err = cros_ec_spi_devm_high_pri_alloc(dev, ec_spi);
 	if (err)
 		return err;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mfd/cros_ec_spi.c
 
 	err = cros_ec_register(ec_dev);
 	if (err) {

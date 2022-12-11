@@ -111,7 +111,11 @@ static int sched_switch_handler(struct trace_seq *s,
 	}
 	trace_seq_printf(s, "%lld ", val);
 
+<<<<<<< HEAD:tools/lib/traceevent/plugins/plugin_sched_switch.c
 	if (tep_get_field_val(s, event, "prev_prio", record, &val, 0) == 0)
+=======
+	if (pevent_get_field_val(s, event, "prev_prio", record, &val, 0) == 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:tools/lib/traceevent/plugin_sched_switch.c
 		trace_seq_printf(s, "[%d] ", (int) val);
 
 	if (tep_get_field_val(s,  event, "prev_state", record, &val, 0) == 0)
@@ -129,7 +133,11 @@ static int sched_switch_handler(struct trace_seq *s,
 	}
 	trace_seq_printf(s, "%lld", val);
 
+<<<<<<< HEAD:tools/lib/traceevent/plugins/plugin_sched_switch.c
 	if (tep_get_field_val(s, event, "next_prio", record, &val, 0) == 0)
+=======
+	if (pevent_get_field_val(s, event, "next_prio", record, &val, 0) == 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:tools/lib/traceevent/plugin_sched_switch.c
 		trace_seq_printf(s, " [%d]", (int) val);
 
 	return 0;

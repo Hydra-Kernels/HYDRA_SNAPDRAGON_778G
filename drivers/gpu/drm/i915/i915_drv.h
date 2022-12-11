@@ -591,7 +591,10 @@ struct intel_rps {
 
 	/* manual wa residency calculations */
 	struct intel_rps_ei ei;
+<<<<<<< HEAD
 };
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct intel_rc6 {
 	bool enabled;
@@ -1823,10 +1826,430 @@ static inline struct drm_i915_private *pdev_to_i915(struct pci_dev *pdev)
  * We have one bit per pipe and per scanout plane type.
  */
 #define INTEL_FRONTBUFFER_BITS_PER_PIPE 8
+<<<<<<< HEAD
 #define INTEL_FRONTBUFFER(pipe, plane_id) ({ \
 	BUILD_BUG_ON(INTEL_FRONTBUFFER_BITS_PER_PIPE * I915_MAX_PIPES > 32); \
 	BUILD_BUG_ON(I915_MAX_PLANES > INTEL_FRONTBUFFER_BITS_PER_PIPE); \
 	BIT((plane_id) + INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe)); \
+=======
+#define INTEL_FRONTBUFFER_BITS \
+	(INTEL_FRONTBUFFER_BITS_PER_PIPE * I915_MAX_PIPES)
+#define INTEL_FRONTBUFFER_PRIMARY(pipe) \
+	(1 << (INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe)))
+#define INTEL_FRONTBUFFER_CURSOR(pipe) \
+	(1 << (1 + (INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe))))
+#define INTEL_FRONTBUFFER_SPRITE(pipe, plane) \
+	(1 << (2 + plane + (INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe))))
+#define INTEL_FRONTBUFFER_OVERLAY(pipe) \
+	(1 << (2 + INTEL_MAX_SPRITE_BITS_PER_PIPE + (INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe))))
+#define INTEL_FRONTBUFFER_ALL_MASK(pipe) \
+	(0xff << (INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe)))
+
+struct drm_i915_gem_object {
+	struct drm_gem_object base;
+
+	const struct drm_i915_gem_object_ops *ops;
+
+	/** List of VMAs backed by this object */
+	struct list_head vma_list;
+
+	/** Stolen memory for this object, instead of being backed by shmem. */
+	struct drm_mm_node *stolen;
+	struct list_head global_list;
+
+	struct list_head ring_list[I915_NUM_RINGS];
+	/** Used in execbuf to temporarily hold a ref */
+	struct list_head obj_exec_link;
+
+	struct list_head batch_pool_link;
+
+	/**
+	 * This is set if the object is on the active lists (has pending
+	 * rendering and so a non-zero seqno), and is not set if it i s on
+	 * inactive (ready to be unbound) list.
+	 */
+	unsigned int active:I915_NUM_RINGS;
+
+	/**
+	 * This is set if the object has been written to since last bound
+	 * to the GTT
+	 */
+	unsigned int dirty:1;
+
+	/**
+	 * Fence register bits (if any) for this object.  Will be set
+	 * as needed when mapped into the GTT.
+	 * Protected by dev->struct_mutex.
+	 */
+	signed int fence_reg:I915_MAX_NUM_FENCE_BITS;
+
+	/**
+	 * Advice: are the backing pages purgeable?
+	 */
+	unsigned int madv:2;
+
+	/**
+	 * Current tiling mode for the object.
+	 */
+	unsigned int tiling_mode:2;
+	/**
+	 * Whether the tiling parameters for the currently associated fence
+	 * register have changed. Note that for the purposes of tracking
+	 * tiling changes we also treat the unfenced register, the register
+	 * slot that the object occupies whilst it executes a fenced
+	 * command (such as BLT on gen2/3), as a "fence".
+	 */
+	unsigned int fence_dirty:1;
+
+	/**
+	 * Is the object at the current location in the gtt mappable and
+	 * fenceable? Used to avoid costly recalculations.
+	 */
+	unsigned int map_and_fenceable:1;
+
+	/**
+	 * Whether the current gtt mapping needs to be mappable (and isn't just
+	 * mappable by accident). Track pin and fault separate for a more
+	 * accurate mappable working set.
+	 */
+	unsigned int fault_mappable:1;
+
+	/*
+	 * Is the object to be mapped as read-only to the GPU
+	 * Only honoured if hardware has relevant pte bit
+	 */
+	unsigned long gt_ro:1;
+	unsigned int cache_level:3;
+	unsigned int cache_dirty:1;
+
+	unsigned int frontbuffer_bits:INTEL_FRONTBUFFER_BITS;
+
+	unsigned int pin_display;
+
+	struct sg_table *pages;
+	int pages_pin_count;
+	struct get_page {
+		struct scatterlist *sg;
+		int last;
+	} get_page;
+
+	/* prime dma-buf support */
+	void *dma_buf_vmapping;
+	int vmapping_count;
+
+	/** Breadcrumb of last rendering to the buffer.
+	 * There can only be one writer, but we allow for multiple readers.
+	 * If there is a writer that necessarily implies that all other
+	 * read requests are complete - but we may only be lazily clearing
+	 * the read requests. A read request is naturally the most recent
+	 * request on a ring, so we may have two different write and read
+	 * requests on one ring where the write request is older than the
+	 * read request. This allows for the CPU to read from an active
+	 * buffer by only waiting for the write to complete.
+	 * */
+	struct drm_i915_gem_request *last_read_req[I915_NUM_RINGS];
+	struct drm_i915_gem_request *last_write_req;
+	/** Breadcrumb of last fenced GPU access to the buffer. */
+	struct drm_i915_gem_request *last_fenced_req;
+
+	/** Current tiling stride for the object, if it's tiled. */
+	uint32_t stride;
+
+	/** References from framebuffers, locks out tiling changes. */
+	unsigned long framebuffer_references;
+
+	/** Record of address bit 17 of each page at last unbind. */
+	unsigned long *bit_17;
+
+	struct i915_gem_userptr {
+		uintptr_t ptr;
+		unsigned read_only :1;
+		unsigned workers :4;
+#define I915_GEM_USERPTR_MAX_WORKERS 15
+
+		struct i915_mm_struct *mm;
+		struct i915_mmu_object *mmu_object;
+		struct work_struct *work;
+	} userptr;
+
+	/** for phys allocated objects */
+	struct drm_dma_handle *phys_handle;
+};
+#define to_intel_bo(x) container_of(x, struct drm_i915_gem_object, base)
+
+void i915_gem_track_fb(struct drm_i915_gem_object *old,
+		       struct drm_i915_gem_object *new,
+		       unsigned frontbuffer_bits);
+
+/**
+ * Request queue structure.
+ *
+ * The request queue allows us to note sequence numbers that have been emitted
+ * and may be associated with active buffers to be retired.
+ *
+ * By keeping this list, we can avoid having to do questionable sequence
+ * number comparisons on buffer last_read|write_seqno. It also allows an
+ * emission time to be associated with the request for tracking how far ahead
+ * of the GPU the submission is.
+ *
+ * The requests are reference counted, so upon creation they should have an
+ * initial reference taken using kref_init
+ */
+struct drm_i915_gem_request {
+	struct kref ref;
+
+	/** On Which ring this request was generated */
+	struct drm_i915_private *i915;
+	struct intel_engine_cs *ring;
+
+	 /** GEM sequence number associated with the previous request,
+	  * when the HWS breadcrumb is equal to this the GPU is processing
+	  * this request.
+	  */
+	u32 previous_seqno;
+
+	 /** GEM sequence number associated with this request,
+	  * when the HWS breadcrumb is equal or greater than this the GPU
+	  * has finished processing this request.
+	  */
+	u32 seqno;
+
+	/** Position in the ringbuffer of the start of the request */
+	u32 head;
+
+	/**
+	 * Position in the ringbuffer of the start of the postfix.
+	 * This is required to calculate the maximum available ringbuffer
+	 * space without overwriting the postfix.
+	 */
+	 u32 postfix;
+
+	/** Position in the ringbuffer of the end of the whole request */
+	u32 tail;
+
+	/**
+	 * Context and ring buffer related to this request
+	 * Contexts are refcounted, so when this request is associated with a
+	 * context, we must increment the context's refcount, to guarantee that
+	 * it persists while any request is linked to it. Requests themselves
+	 * are also refcounted, so the request will only be freed when the last
+	 * reference to it is dismissed, and the code in
+	 * i915_gem_request_free() will then decrement the refcount on the
+	 * context.
+	 */
+	struct intel_context *ctx;
+	struct intel_ringbuffer *ringbuf;
+
+	/** Batch buffer related to this request if any (used for
+	    error state dump only) */
+	struct drm_i915_gem_object *batch_obj;
+
+	/** Time at which this request was emitted, in jiffies. */
+	unsigned long emitted_jiffies;
+
+	/** global list entry for this request */
+	struct list_head list;
+
+	struct drm_i915_file_private *file_priv;
+	/** file_priv list entry for this request */
+	struct list_head client_list;
+
+	/** process identifier submitting this request */
+	struct pid *pid;
+
+	/**
+	 * The ELSP only accepts two elements at a time, so we queue
+	 * context/tail pairs on a given queue (ring->execlist_queue) until the
+	 * hardware is available. The queue serves a double purpose: we also use
+	 * it to keep track of the up to 2 contexts currently in the hardware
+	 * (usually one in execution and the other queued up by the GPU): We
+	 * only remove elements from the head of the queue when the hardware
+	 * informs us that an element has been completed.
+	 *
+	 * All accesses to the queue are mediated by a spinlock
+	 * (ring->execlist_lock).
+	 */
+
+	/** Execlist link in the submission queue.*/
+	struct list_head execlist_link;
+
+	/** Execlists no. of times this request has been sent to the ELSP */
+	int elsp_submitted;
+
+};
+
+int i915_gem_request_alloc(struct intel_engine_cs *ring,
+			   struct intel_context *ctx,
+			   struct drm_i915_gem_request **req_out);
+void i915_gem_request_cancel(struct drm_i915_gem_request *req);
+void i915_gem_request_free(struct kref *req_ref);
+int i915_gem_request_add_to_client(struct drm_i915_gem_request *req,
+				   struct drm_file *file);
+
+static inline uint32_t
+i915_gem_request_get_seqno(struct drm_i915_gem_request *req)
+{
+	return req ? req->seqno : 0;
+}
+
+static inline struct intel_engine_cs *
+i915_gem_request_get_ring(struct drm_i915_gem_request *req)
+{
+	return req ? req->ring : NULL;
+}
+
+static inline struct drm_i915_gem_request *
+i915_gem_request_reference(struct drm_i915_gem_request *req)
+{
+	if (req)
+		kref_get(&req->ref);
+	return req;
+}
+
+static inline void
+i915_gem_request_unreference(struct drm_i915_gem_request *req)
+{
+	WARN_ON(!mutex_is_locked(&req->ring->dev->struct_mutex));
+	kref_put(&req->ref, i915_gem_request_free);
+}
+
+static inline void
+i915_gem_request_unreference__unlocked(struct drm_i915_gem_request *req)
+{
+	struct drm_device *dev;
+
+	if (!req)
+		return;
+
+	dev = req->ring->dev;
+	if (kref_put_mutex(&req->ref, i915_gem_request_free, &dev->struct_mutex))
+		mutex_unlock(&dev->struct_mutex);
+}
+
+static inline void i915_gem_request_assign(struct drm_i915_gem_request **pdst,
+					   struct drm_i915_gem_request *src)
+{
+	if (src)
+		i915_gem_request_reference(src);
+
+	if (*pdst)
+		i915_gem_request_unreference(*pdst);
+
+	*pdst = src;
+}
+
+/*
+ * XXX: i915_gem_request_completed should be here but currently needs the
+ * definition of i915_seqno_passed() which is below. It will be moved in
+ * a later patch when the call to i915_seqno_passed() is obsoleted...
+ */
+
+/*
+ * A command that requires special handling by the command parser.
+ */
+struct drm_i915_cmd_descriptor {
+	/*
+	 * Flags describing how the command parser processes the command.
+	 *
+	 * CMD_DESC_FIXED: The command has a fixed length if this is set,
+	 *                 a length mask if not set
+	 * CMD_DESC_SKIP: The command is allowed but does not follow the
+	 *                standard length encoding for the opcode range in
+	 *                which it falls
+	 * CMD_DESC_REJECT: The command is never allowed
+	 * CMD_DESC_REGISTER: The command should be checked against the
+	 *                    register whitelist for the appropriate ring
+	 * CMD_DESC_MASTER: The command is allowed if the submitting process
+	 *                  is the DRM master
+	 */
+	u32 flags;
+#define CMD_DESC_FIXED    (1<<0)
+#define CMD_DESC_SKIP     (1<<1)
+#define CMD_DESC_REJECT   (1<<2)
+#define CMD_DESC_REGISTER (1<<3)
+#define CMD_DESC_BITMASK  (1<<4)
+#define CMD_DESC_MASTER   (1<<5)
+
+	/*
+	 * The command's unique identification bits and the bitmask to get them.
+	 * This isn't strictly the opcode field as defined in the spec and may
+	 * also include type, subtype, and/or subop fields.
+	 */
+	struct {
+		u32 value;
+		u32 mask;
+	} cmd;
+
+	/*
+	 * The command's length. The command is either fixed length (i.e. does
+	 * not include a length field) or has a length field mask. The flag
+	 * CMD_DESC_FIXED indicates a fixed length. Otherwise, the command has
+	 * a length mask. All command entries in a command table must include
+	 * length information.
+	 */
+	union {
+		u32 fixed;
+		u32 mask;
+	} length;
+
+	/*
+	 * Describes where to find a register address in the command to check
+	 * against the ring's register whitelist. Only valid if flags has the
+	 * CMD_DESC_REGISTER bit set.
+	 *
+	 * A non-zero step value implies that the command may access multiple
+	 * registers in sequence (e.g. LRI), in that case step gives the
+	 * distance in dwords between individual offset fields.
+	 */
+	struct {
+		u32 offset;
+		u32 mask;
+		u32 step;
+	} reg;
+
+#define MAX_CMD_DESC_BITMASKS 3
+	/*
+	 * Describes command checks where a particular dword is masked and
+	 * compared against an expected value. If the command does not match
+	 * the expected value, the parser rejects it. Only valid if flags has
+	 * the CMD_DESC_BITMASK bit set. Only entries where mask is non-zero
+	 * are valid.
+	 *
+	 * If the check specifies a non-zero condition_mask then the parser
+	 * only performs the check when the bits specified by condition_mask
+	 * are non-zero.
+	 */
+	struct {
+		u32 offset;
+		u32 mask;
+		u32 expected;
+		u32 condition_offset;
+		u32 condition_mask;
+	} bits[MAX_CMD_DESC_BITMASKS];
+};
+
+/*
+ * A table of commands requiring special handling by the command parser.
+ *
+ * Each ring has an array of tables. Each table consists of an array of command
+ * descriptors, which must be sorted with command opcodes in ascending order.
+ */
+struct drm_i915_cmd_table {
+	const struct drm_i915_cmd_descriptor *table;
+	int count;
+};
+
+/* Note that the (struct drm_i915_private *) cast is just to shut up gcc. */
+#define __I915__(p) ({ \
+	struct drm_i915_private *__p; \
+	if (__builtin_types_compatible_p(typeof(*p), struct drm_i915_private)) \
+		__p = (struct drm_i915_private *)p; \
+	else if (__builtin_types_compatible_p(typeof(*p), struct drm_device)) \
+		__p = to_i915((struct drm_device *)p); \
+	else \
+		BUILD_BUG(); \
+	__p; \
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 })
 #define INTEL_FRONTBUFFER_OVERLAY(pipe) \
 	BIT(INTEL_FRONTBUFFER_BITS_PER_PIPE - 1 + INTEL_FRONTBUFFER_BITS_PER_PIPE * (pipe))
@@ -2166,7 +2589,20 @@ IS_SUBPLATFORM(const struct drm_i915_private *i915,
 #define HAS_RUNTIME_PM(dev_priv) (INTEL_INFO(dev_priv)->has_runtime_pm)
 #define HAS_64BIT_RELOC(dev_priv) (INTEL_INFO(dev_priv)->has_64bit_reloc)
 
+<<<<<<< HEAD
 #define HAS_IPC(dev_priv)		 (INTEL_INFO(dev_priv)->display.has_ipc)
+=======
+#define INTEL_PCH_DEVICE_ID_MASK		0xff00
+#define INTEL_PCH_IBX_DEVICE_ID_TYPE		0x3b00
+#define INTEL_PCH_CPT_DEVICE_ID_TYPE		0x1c00
+#define INTEL_PCH_PPT_DEVICE_ID_TYPE		0x1e00
+#define INTEL_PCH_LPT_DEVICE_ID_TYPE		0x8c00
+#define INTEL_PCH_LPT_LP_DEVICE_ID_TYPE		0x9c00
+#define INTEL_PCH_SPT_DEVICE_ID_TYPE		0xA100
+#define INTEL_PCH_SPT_LP_DEVICE_ID_TYPE		0x9D00
+#define INTEL_PCH_P2X_DEVICE_ID_TYPE		0x7100
+#define INTEL_PCH_QEMU_DEVICE_ID_TYPE		0x2900 /* qemu q35 has 2918 */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define HAS_GT_UC(dev_priv)	(INTEL_INFO(dev_priv)->has_gt_uc)
 
@@ -2432,6 +2868,68 @@ mkwrite_device_info(struct drm_i915_private *dev_priv)
 	return (struct intel_device_info *)INTEL_INFO(dev_priv);
 }
 
+<<<<<<< HEAD
+=======
+/* intel_bios.c */
+bool intel_bios_is_port_present(struct drm_i915_private *dev_priv, enum port port);
+
+/* intel_opregion.c */
+#ifdef CONFIG_ACPI
+extern int intel_opregion_setup(struct drm_device *dev);
+extern void intel_opregion_init(struct drm_device *dev);
+extern void intel_opregion_fini(struct drm_device *dev);
+extern void intel_opregion_asle_intr(struct drm_device *dev);
+extern int intel_opregion_notify_encoder(struct intel_encoder *intel_encoder,
+					 bool enable);
+extern int intel_opregion_notify_adapter(struct drm_device *dev,
+					 pci_power_t state);
+#else
+static inline int intel_opregion_setup(struct drm_device *dev) { return 0; }
+static inline void intel_opregion_init(struct drm_device *dev) { return; }
+static inline void intel_opregion_fini(struct drm_device *dev) { return; }
+static inline void intel_opregion_asle_intr(struct drm_device *dev) { return; }
+static inline int
+intel_opregion_notify_encoder(struct intel_encoder *intel_encoder, bool enable)
+{
+	return 0;
+}
+static inline int
+intel_opregion_notify_adapter(struct drm_device *dev, pci_power_t state)
+{
+	return 0;
+}
+#endif
+
+/* intel_acpi.c */
+#ifdef CONFIG_ACPI
+extern void intel_register_dsm_handler(void);
+extern void intel_unregister_dsm_handler(void);
+#else
+static inline void intel_register_dsm_handler(void) { return; }
+static inline void intel_unregister_dsm_handler(void) { return; }
+#endif /* CONFIG_ACPI */
+
+/* modesetting */
+extern void intel_modeset_init_hw(struct drm_device *dev);
+extern void intel_modeset_init(struct drm_device *dev);
+extern void intel_modeset_gem_init(struct drm_device *dev);
+extern void intel_modeset_cleanup(struct drm_device *dev);
+extern void intel_connector_unregister(struct intel_connector *);
+extern int intel_modeset_vga_set_state(struct drm_device *dev, bool state);
+extern void intel_display_resume(struct drm_device *dev);
+extern void i915_redisable_vga(struct drm_device *dev);
+extern void i915_redisable_vga_power_on(struct drm_device *dev);
+extern bool ironlake_set_drps(struct drm_device *dev, u8 val);
+extern void intel_init_pch_refclk(struct drm_device *dev);
+extern void intel_set_rps(struct drm_device *dev, u8 val);
+extern void intel_set_memory_cxsr(struct drm_i915_private *dev_priv,
+				  bool enable);
+extern void intel_detect_pch(struct drm_device *dev);
+extern int intel_trans_dp_port_sel(struct drm_crtc *crtc);
+extern int intel_enable_rc6(const struct drm_device *dev);
+
+extern bool i915_semaphore_is_enabled(struct drm_device *dev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 int i915_reg_read_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file);
 

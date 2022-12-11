@@ -592,7 +592,47 @@ unsigned long arch_deref_entry_point(void *entry)
 		return ppc_global_function_entry(entry);
 	else
 #endif
+<<<<<<< HEAD
 		return (unsigned long)entry;
+=======
+#endif
+
+	/*
+	 * jprobes use jprobe_return() which skips the normal return
+	 * path of the function, and this messes up the accounting of the
+	 * function graph tracer.
+	 *
+	 * Pause function graph tracing while performing the jprobe function.
+	 */
+	pause_graph_tracing();
+
+	return 1;
+}
+
+void __used __kprobes jprobe_return(void)
+{
+	asm volatile("trap" ::: "memory");
+}
+
+static void __used __kprobes jprobe_return_end(void)
+{
+};
+
+int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+{
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+
+	/*
+	 * FIXME - we should ideally be validating that we got here 'cos
+	 * of the "trap" in jprobe_return() above, before restoring the
+	 * saved regs...
+	 */
+	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
+	/* It's OK to start function graph tracing again */
+	unpause_graph_tracing();
+	preempt_enable_no_resched();
+	return 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 NOKPROBE_SYMBOL(arch_deref_entry_point);
 

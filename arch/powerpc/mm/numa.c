@@ -832,7 +832,11 @@ static void __init find_possible_nodes(void)
 	struct device_node *rtas;
 	u32 numnodes, i;
 
+<<<<<<< HEAD
 	if (!numa_enabled)
+=======
+	if (min_common_depth <= 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 
 	rtas = of_find_node_by_path("/rtas");
@@ -853,6 +857,7 @@ out:
 	of_node_put(rtas);
 }
 
+<<<<<<< HEAD
 void __init mem_topology_setup(void)
 {
 	int cpu;
@@ -878,6 +883,8 @@ void __init mem_topology_setup(void)
 		numa_setup_cpu(cpu);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void __init initmem_init(void)
 {
 	int nid;
@@ -887,6 +894,19 @@ void __init initmem_init(void)
 
 	memblock_dump_all();
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Modify the set of possible NUMA nodes to reflect information
+	 * available about the set of online nodes, and the set of nodes
+	 * that we expect to make use of for this platform's affinity
+	 * calculations.
+	 */
+	nodes_and(node_possible_map, node_possible_map, node_online_map);
+
+	find_possible_nodes();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	for_each_online_node(nid) {
 		unsigned long start_pfn, end_pfn;
 
@@ -1211,15 +1231,23 @@ static long vphn_get_associativity(unsigned long cpu,
 	return rc;
 }
 
+<<<<<<< HEAD
 int find_and_online_cpu_nid(int cpu)
+=======
+static inline int find_and_online_cpu_nid(int cpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
 	int new_nid;
 
 	/* Use associativity from first thread for all siblings */
+<<<<<<< HEAD
 	if (vphn_get_associativity(cpu, associativity))
 		return cpu_to_node(cpu);
 
+=======
+	vphn_get_associativity(cpu, associativity);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	new_nid = associativity_to_nid(associativity);
 	if (new_nid < 0 || !node_possible(new_nid))
 		new_nid = first_online_node;
@@ -1230,10 +1258,16 @@ int find_and_online_cpu_nid(int cpu)
 		 * Need to ensure that NODE_DATA is initialized for a node from
 		 * available memory (see memblock_alloc_try_nid). If unable to
 		 * init the node, then default to nearest node that has memory
+<<<<<<< HEAD
 		 * installed. Skip onlining a node if the subsystems are not
 		 * yet initialized.
 		 */
 		if (!topology_inited || try_online_node(new_nid))
+=======
+		 * installed.
+		 */
+		if (try_online_node(new_nid))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			new_nid = first_online_node;
 #else
 		/*
@@ -1245,8 +1279,11 @@ int find_and_online_cpu_nid(int cpu)
 #endif
 	}
 
+<<<<<<< HEAD
 	pr_debug("%s:%d cpu %d nid %d\n", __FUNCTION__, __LINE__,
 		cpu, new_nid);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return new_nid;
 }
 

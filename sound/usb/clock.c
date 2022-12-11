@@ -26,9 +26,16 @@ static void *find_uac_clock_desc(struct usb_host_interface *iface, int id,
 {
 	void *cs = NULL;
 
+<<<<<<< HEAD
 	while ((cs = snd_usb_find_csint_desc(iface->extra, iface->extralen,
 					     cs, type))) {
 		if (validator(cs, id))
+=======
+	while ((cs = snd_usb_find_csint_desc(ctrl_iface->extra,
+					     ctrl_iface->extralen,
+					     cs, UAC2_CLOCK_SOURCE))) {
+		if (cs->bLength >= sizeof(*cs) && cs->bClockID == clock_id)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return cs;
 	}
 
@@ -37,14 +44,43 @@ static void *find_uac_clock_desc(struct usb_host_interface *iface, int id,
 
 static bool validate_clock_source_v2(void *p, int id)
 {
+<<<<<<< HEAD
 	struct uac_clock_source_descriptor *cs = p;
 	return cs->bClockID == id;
+=======
+	struct uac_clock_selector_descriptor *cs = NULL;
+
+	while ((cs = snd_usb_find_csint_desc(ctrl_iface->extra,
+					     ctrl_iface->extralen,
+					     cs, UAC2_CLOCK_SELECTOR))) {
+		if (cs->bLength >= sizeof(*cs) && cs->bClockID == clock_id) {
+			if (cs->bLength < 5 + cs->bNrInPins)
+				return NULL;
+			return cs;
+		}
+	}
+
+	return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static bool validate_clock_source_v3(void *p, int id)
 {
+<<<<<<< HEAD
 	struct uac3_clock_source_descriptor *cs = p;
 	return cs->bClockID == id;
+=======
+	struct uac_clock_multiplier_descriptor *cs = NULL;
+
+	while ((cs = snd_usb_find_csint_desc(ctrl_iface->extra,
+					     ctrl_iface->extralen,
+					     cs, UAC2_CLOCK_MULTIPLIER))) {
+		if (cs->bLength >= sizeof(*cs) && cs->bClockID == clock_id)
+			return cs;
+	}
+
+	return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static bool validate_clock_selector_v2(void *p, int id)

@@ -38,7 +38,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
 
 	ctx->afu = afu;
 	ctx->master = master;
-	ctx->pid = NULL; /* Set in start work ioctl */
+	ctx->pid = ctx->glpid = NULL; /* Set in start work ioctl */
 	mutex_init(&ctx->mapping_lock);
 	ctx->mapping = NULL;
 	ctx->tidr = 0;
@@ -249,6 +249,7 @@ int __detach_context(struct cxl_context *ctx)
 		cxl_ops->link_ok(ctx->afu->adapter, ctx->afu));
 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
 
+<<<<<<< HEAD
 	/*
 	 * Wait until no further interrupts are presented by the PSL
 	 * for this context.
@@ -258,6 +259,11 @@ int __detach_context(struct cxl_context *ctx)
 
 	/* release the reference to the group leader and mm handling pid */
 	put_pid(ctx->pid);
+=======
+	/* release the reference to the group leader and mm handling pid */
+	put_pid(ctx->pid);
+	put_pid(ctx->glpid);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	cxl_ctx_put();
 
@@ -332,6 +338,9 @@ static void reclaim_ctx(struct rcu_head *rcu)
 	ctx->sstp = NULL;
 
 	kfree(ctx->irq_bitmap);
+
+	/* Drop ref to the afu device taken during cxl_context_init */
+	cxl_afu_put(ctx->afu);
 
 	/* Drop ref to the afu device taken during cxl_context_init */
 	cxl_afu_put(ctx->afu);

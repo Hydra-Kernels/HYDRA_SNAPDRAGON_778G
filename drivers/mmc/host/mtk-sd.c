@@ -813,6 +813,7 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 			sclk = (host->src_clk_freq >> 2) / div;
 		}
 	}
+<<<<<<< HEAD
 	sdr_clr_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
 	/*
 	 * As src_clk/HCLK use the same bit to gate/ungate,
@@ -835,6 +836,11 @@ static void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 	else
 		clk_prepare_enable(clk_get_parent(host->src_clk));
 
+=======
+	sdr_set_field(host->base + MSDC_CFG, MSDC_CFG_CKMOD | MSDC_CFG_CKDIV,
+		      (mode << 8) | div);
+	sdr_set_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	while (!(readl(host->base + MSDC_CFG) & MSDC_CFG_CKSTB))
 		cpu_relax();
 	sdr_set_bits(host->base + MSDC_CFG, MSDC_CFG_CKPDN);
@@ -2282,6 +2288,7 @@ static int msdc_drv_probe(struct platform_device *pdev)
 	host->src_clk_freq = clk_get_rate(host->src_clk);
 	/* Set host parameters to mmc */
 	mmc->ops = &mt_msdc_ops;
+<<<<<<< HEAD
 	if (host->dev_comp->clk_div_bits == 8)
 		mmc->f_min = DIV_ROUND_UP(host->src_clk_freq, 4 * 255);
 	else
@@ -2299,6 +2306,9 @@ static int msdc_drv_probe(struct platform_device *pdev)
 
 	if (mmc->caps & MMC_CAP_SDIO_IRQ)
 		mmc->caps2 |= MMC_CAP2_SDIO_IRQ_NOTHREAD;
+=======
+	mmc->f_min = DIV_ROUND_UP(host->src_clk_freq, 4 * 255);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mmc->caps |= MMC_CAP_ERASE | MMC_CAP_CMD23;
 	/* MMC core transfer sizes tunable parameters */

@@ -67,6 +67,11 @@ struct rtable {
 	/* Miscellaneous cached information */
 	u32			rt_mtu_locked:1,
 				rt_pmtu:31;
+<<<<<<< HEAD
+=======
+
+	u32			rt_table_id;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	struct list_head	rt_uncached;
 	struct uncached_list	*rt_uncached_list;

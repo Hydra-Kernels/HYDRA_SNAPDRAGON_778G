@@ -955,7 +955,11 @@ out_free_interp:
 			 * independently randomized mmap region (0 load_bias
 			 * without MAP_FIXED).
 			 */
+<<<<<<< HEAD
 			if (interpreter) {
+=======
+			if (elf_interpreter) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				load_bias = ELF_ET_DYN_BASE;
 				if (current->flags & PF_RANDOMIZE)
 					load_bias += arch_mmap_rnd();

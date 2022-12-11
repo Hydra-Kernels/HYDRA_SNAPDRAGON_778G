@@ -62,7 +62,11 @@ static inline int mei_cl_hbm_equal(struct mei_cl *cl,
  * @dev: mei device
  * @hdr: message header
  */
+<<<<<<< HEAD
 static void mei_irq_discard_msg(struct mei_device *dev, struct mei_msg_hdr *hdr)
+=======
+void mei_irq_discard_msg(struct mei_device *dev, struct mei_msg_hdr *hdr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	if (hdr->dma_ring)
 		mei_dma_ring_read(dev, NULL, hdr->extension[0]);
@@ -180,7 +184,11 @@ static int mei_cl_irq_disconnect_rsp(struct mei_cl *cl, struct mei_cl_cb *cb,
 		return -EMSGSIZE;
 
 	ret = mei_hbm_cl_disconnect_rsp(dev, cl);
+<<<<<<< HEAD
 	list_move_tail(&cb->list, cmpl_list);
+=======
+	list_move_tail(&cb->list, &cmpl_list->list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return ret;
 }

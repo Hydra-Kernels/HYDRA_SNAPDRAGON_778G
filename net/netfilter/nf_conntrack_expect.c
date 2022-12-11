@@ -472,7 +472,15 @@ int nf_ct_expect_related_report(struct nf_conntrack_expect *expect,
 	int ret;
 
 	spin_lock_bh(&nf_conntrack_expect_lock);
+<<<<<<< HEAD
 	ret = __nf_ct_expect_check(expect, flags);
+=======
+	ret = __nf_ct_expect_check(expect);
+	if (ret < 0)
+		goto out;
+
+	ret = nf_ct_expect_insert(expect);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret < 0)
 		goto out;
 

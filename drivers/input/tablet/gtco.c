@@ -875,14 +875,26 @@ static int gtco_probe(struct usb_interface *usbinterface,
 	}
 
 	/* Sanity check that a device has an endpoint */
+<<<<<<< HEAD
 	if (usbinterface->cur_altsetting->desc.bNumEndpoints < 1) {
+=======
+	if (usbinterface->altsetting[0].desc.bNumEndpoints < 1) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_err(&usbinterface->dev,
 			"Invalid number of endpoints\n");
 		error = -EINVAL;
 		goto err_free_urb;
 	}
 
+<<<<<<< HEAD
 	endpoint = &usbinterface->cur_altsetting->endpoint[0].desc;
+=======
+	/*
+	 * The endpoint is always altsetting 0, we know this since we know
+	 * this device only has one interrupt endpoint
+	 */
+	endpoint = &usbinterface->altsetting[0].endpoint[0].desc;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Some debug */
 	dev_dbg(&usbinterface->dev, "gtco # interfaces: %d\n", usbinterface->num_altsetting);

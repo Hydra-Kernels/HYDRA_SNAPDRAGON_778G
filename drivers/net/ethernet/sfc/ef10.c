@@ -1500,7 +1500,11 @@ static void efx_ef10_reset_mc_allocations(struct efx_nic *efx)
 	nic_data->must_restore_filters = true;
 	nic_data->must_restore_piobufs = true;
 	efx_ef10_forget_old_piobufs(efx);
+<<<<<<< HEAD
 	efx->rss_context.context_id = EFX_EF10_RSS_CONTEXT_INVALID;
+=======
+	nic_data->rx_rss_context = EFX_EF10_RSS_CONTEXT_INVALID;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Driver-created vswitches and vports must be re-created */
 	nic_data->must_probe_vswitching = true;

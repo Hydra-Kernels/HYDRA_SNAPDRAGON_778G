@@ -121,7 +121,12 @@ struct kioctx {
 	struct page		**ring_pages;
 	long			nr_pages;
 
+<<<<<<< HEAD
 	struct rcu_work		free_rwork;	/* see free_ioctx() */
+=======
+	struct rcu_head		free_rcu;
+	struct work_struct	free_work;	/* see free_ioctx() */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * signals when all in-flight requests are done
@@ -248,10 +253,22 @@ static struct file *aio_private_file(struct kioctx *ctx, loff_t nr_pages)
 
 static int aio_init_fs_context(struct fs_context *fc)
 {
+<<<<<<< HEAD
 	if (!init_pseudo(fc, AIO_RING_MAGIC))
 		return -ENOMEM;
 	fc->s_iflags |= SB_I_NOEXEC;
 	return 0;
+=======
+	static const struct dentry_operations ops = {
+		.d_dname	= simple_dname,
+	};
+	struct dentry *root = mount_pseudo(fs_type, "aio:", NULL, &ops,
+					   AIO_RING_MAGIC);
+
+	if (!IS_ERR(root))
+		root->d_sb->s_iflags |= SB_I_NOEXEC;
+	return root;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* aio_setup
@@ -570,10 +587,39 @@ void kiocb_set_cancel_fn(struct kiocb *iocb, kiocb_cancel_fn *cancel)
 }
 EXPORT_SYMBOL(kiocb_set_cancel_fn);
 
+<<<<<<< HEAD
 /*
  * free_ioctx() should be RCU delayed to synchronize against the RCU
  * protected lookup_ioctx() and also needs process context to call
  * aio_free_ring().  Use rcu_work.
+=======
+static int kiocb_cancel(struct aio_kiocb *kiocb)
+{
+	kiocb_cancel_fn *old, *cancel;
+
+	/*
+	 * Don't want to set kiocb->ki_cancel = KIOCB_CANCELLED unless it
+	 * actually has a cancel function, hence the cmpxchg()
+	 */
+
+	cancel = ACCESS_ONCE(kiocb->ki_cancel);
+	do {
+		if (!cancel || cancel == KIOCB_CANCELLED)
+			return -EINVAL;
+
+		old = cancel;
+		cancel = cmpxchg(&kiocb->ki_cancel, old, KIOCB_CANCELLED);
+	} while (cancel != old);
+
+	return cancel(&kiocb->common);
+}
+
+/*
+ * free_ioctx() should be RCU delayed to synchronize against the RCU
+ * protected lookup_ioctx() and also needs process context to call
+ * aio_free_ring(), so the double bouncing through kioctx->free_rcu and
+ * ->free_work.
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 static void free_ioctx(struct work_struct *work)
 {
@@ -588,6 +634,14 @@ static void free_ioctx(struct work_struct *work)
 	kmem_cache_free(kioctx_cachep, ctx);
 }
 
+static void free_ioctx_rcufn(struct rcu_head *head)
+{
+	struct kioctx *ctx = container_of(head, struct kioctx, free_rcu);
+
+	INIT_WORK(&ctx->free_work, free_ioctx);
+	schedule_work(&ctx->free_work);
+}
+
 static void free_ioctx_reqs(struct percpu_ref *ref)
 {
 	struct kioctx *ctx = container_of(ref, struct kioctx, reqs);
@@ -597,8 +651,12 @@ static void free_ioctx_reqs(struct percpu_ref *ref)
 		complete(&ctx->rq_wait->comp);
 
 	/* Synchronize against RCU protected table->table[] dereferences */
+<<<<<<< HEAD
 	INIT_RCU_WORK(&ctx->free_rwork, free_ioctx);
 	queue_rcu_work(system_wq, &ctx->free_rwork);
+=======
+	call_rcu(&ctx->free_rcu, free_ioctx_rcufn);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -616,7 +674,11 @@ static void free_ioctx_users(struct percpu_ref *ref)
 	while (!list_empty(&ctx->active_reqs)) {
 		req = list_first_entry(&ctx->active_reqs,
 				       struct aio_kiocb, ki_list);
+<<<<<<< HEAD
 		req->ki_cancel(&req->rw);
+=======
+		kiocb_cancel(req);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		list_del_init(&req->ki_list);
 	}
 
@@ -1057,7 +1119,10 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
 	if (!table || id >= table->nr)
 		goto out;
 
+<<<<<<< HEAD
 	id = array_index_nospec(id, table->nr);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ctx = rcu_dereference(table->table[id]);
 	if (ctx && ctx->user_id == ctx_id) {
 		if (percpu_ref_tryget_live(&ctx->users))

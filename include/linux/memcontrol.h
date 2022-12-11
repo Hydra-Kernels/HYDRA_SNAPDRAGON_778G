@@ -167,6 +167,7 @@ struct mem_cgroup_thresholds {
 	struct mem_cgroup_threshold_ary *spare;
 };
 
+<<<<<<< HEAD
 enum memcg_kmem_state {
 	KMEM_NONE,
 	KMEM_ALLOCATED,
@@ -197,6 +198,11 @@ struct memcg_cgwb_frn {
 	int memcg_id;			/* memcg->css.id of foreign inode */
 	u64 at;				/* jiffies_64 at the time of dirtying */
 	struct wb_completion done;	/* tracks in-flight foreign writebacks */
+=======
+struct mem_cgroup_id {
+	int id;
+	atomic_t ref;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /*

@@ -5,8 +5,14 @@
 #ifndef __DMA_IOMMU_H
 #define __DMA_IOMMU_H
 
+<<<<<<< HEAD
 #include <linux/errno.h>
 #include <linux/types.h>
+=======
+#ifdef __KERNEL__
+#include <linux/types.h>
+#include <asm/errno.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef CONFIG_IOMMU_DMA
 #include <linux/dma-mapping.h>

@@ -885,7 +885,15 @@ static void emulate_load_store_insn(struct pt_regs *regs,
 {
 	unsigned long origpc, orig31, value;
 	union mips_instruction insn;
+<<<<<<< HEAD
 	unsigned int res;
+=======
+	unsigned long value;
+	unsigned int res, preempted;
+	unsigned long origpc;
+	unsigned long orig31;
+	void __user *fault_addr = NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef	CONFIG_EVA
 	mm_segment_t seg;
 #endif

@@ -82,6 +82,13 @@ int aic_common_set_type(struct irq_data *d, unsigned type, unsigned *val)
 
 void aic_common_set_priority(int priority, unsigned *val)
 {
+<<<<<<< HEAD
+=======
+	if (priority < AT91_AIC_IRQ_MIN_PRIORITY ||
+	    priority > AT91_AIC_IRQ_MAX_PRIORITY)
+		return -EINVAL;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	*val &= ~AT91_AIC_PRIOR;
 	*val |= priority;
 }

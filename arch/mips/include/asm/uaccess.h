@@ -12,6 +12,11 @@
 #define _ASM_UACCESS_H
 
 #include <linux/kernel.h>
+<<<<<<< HEAD
+=======
+#include <linux/errno.h>
+#include <linux/thread_info.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/string.h>
 #include <asm/asm-eva.h>
 #include <asm/extable.h>
@@ -610,6 +615,7 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
 		return __invoke_copy_to_user(to, from, n);
 }
 
+<<<<<<< HEAD
 static inline unsigned long
 raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 {
@@ -618,6 +624,50 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	else
 		return __invoke_copy_from_user(to, from, n);
 }
+=======
+/*
+ * copy_from_user: - Copy a block of data from user space.
+ * @to:	  Destination address, in kernel space.
+ * @from: Source address, in user space.
+ * @n:	  Number of bytes to copy.
+ *
+ * Context: User context only. This function may sleep if pagefaults are
+ *          enabled.
+ *
+ * Copy data from user space to kernel space.
+ *
+ * Returns number of bytes that could not be copied.
+ * On success, this will be zero.
+ *
+ * If some data could not be copied, this function will pad the copied
+ * data to the requested size using zero bytes.
+ */
+#define copy_from_user(to, from, n)					\
+({									\
+	void *__cu_to;							\
+	const void __user *__cu_from;					\
+	long __cu_len;							\
+									\
+	__cu_to = (to);							\
+	__cu_from = (from);						\
+	__cu_len = (n);							\
+	if (eva_kernel_access()) {					\
+		__cu_len = __invoke_copy_from_kernel(__cu_to,		\
+						     __cu_from,		\
+						     __cu_len);		\
+	} else {							\
+		if (access_ok(VERIFY_READ, __cu_from, __cu_len)) {	\
+			might_fault();                                  \
+			__cu_len = __invoke_copy_from_user(__cu_to,	\
+							   __cu_from,	\
+							   __cu_len);   \
+		} else {						\
+			memset(__cu_to, 0, __cu_len);			\
+		}							\
+	}								\
+	__cu_len;							\
+})
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define INLINE_COPY_FROM_USER
 #define INLINE_COPY_TO_USER

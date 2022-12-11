@@ -343,6 +343,7 @@ tracesys_next:
 	stw     %r21, -56(%r30)                 /* 6th argument */
 #endif
 
+<<<<<<< HEAD
 	cmpib,COND(=),n -1,%r20,tracesys_exit /* seccomp may have returned -1 */
 	comiclr,>>	__NR_Linux_syscalls, %r20, %r0
 	b,n	.Ltracesys_nosys
@@ -363,6 +364,10 @@ tracesys_next:
 #else
 	load32	sys_call_table, %r19
 #endif
+=======
+	comiclr,>>=	__NR_Linux_syscalls, %r20, %r0
+	b,n	.Ltracesys_nosys
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	LDREGX  %r20(%r19), %r19
 
@@ -636,10 +641,17 @@ cas_action:
 	stw	%r1, 4(%sr2,%r20)
 #endif
 	/* The load and store could fail */
+<<<<<<< HEAD
 1:	ldw	0(%r26), %r28
 	sub,<>	%r28, %r25, %r0
 2:	stw	%r24, 0(%r26)
+=======
+1:	ldw,ma	0(%r26), %r28
+	sub,<>	%r28, %r25, %r0
+2:	stw,ma	%r24, 0(%r26)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Free lock */
+	sync
 	stw,ma	%r20, 0(%sr2,%r20)
 #if ENABLE_LWS_DEBUG
 	/* Clear thread register indicator */
@@ -654,7 +666,12 @@ cas_action:
 3:		
 	/* Error occurred on load or store */
 	/* Free lock */
+<<<<<<< HEAD
 	stw,ma	%r20, 0(%sr2,%r20)
+=======
+	sync
+	stw	%r20, 0(%sr2,%r20)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #if ENABLE_LWS_DEBUG
 	stw	%r0, 4(%sr2,%r20)
 #endif
@@ -803,30 +820,51 @@ cas2_action:
 	ldo	1(%r0),%r28
 
 	/* 8bit CAS */
+<<<<<<< HEAD
 13:	ldb	0(%r26), %r29
 	sub,=	%r29, %r25, %r0
 	b,n	cas2_end
 14:	stb	%r24, 0(%r26)
+=======
+13:	ldb,ma	0(%r26), %r29
+	sub,=	%r29, %r25, %r0
+	b,n	cas2_end
+14:	stb,ma	%r24, 0(%r26)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	b	cas2_end
 	copy	%r0, %r28
 	nop
 	nop
 
 	/* 16bit CAS */
+<<<<<<< HEAD
 15:	ldh	0(%r26), %r29
 	sub,=	%r29, %r25, %r0
 	b,n	cas2_end
 16:	sth	%r24, 0(%r26)
+=======
+15:	ldh,ma	0(%r26), %r29
+	sub,=	%r29, %r25, %r0
+	b,n	cas2_end
+16:	sth,ma	%r24, 0(%r26)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	b	cas2_end
 	copy	%r0, %r28
 	nop
 	nop
 
 	/* 32bit CAS */
+<<<<<<< HEAD
 17:	ldw	0(%r26), %r29
 	sub,=	%r29, %r25, %r0
 	b,n	cas2_end
 18:	stw	%r24, 0(%r26)
+=======
+17:	ldw,ma	0(%r26), %r29
+	sub,=	%r29, %r25, %r0
+	b,n	cas2_end
+18:	stw,ma	%r24, 0(%r26)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	b	cas2_end
 	copy	%r0, %r28
 	nop
@@ -834,10 +872,17 @@ cas2_action:
 
 	/* 64bit CAS */
 #ifdef CONFIG_64BIT
+<<<<<<< HEAD
 19:	ldd	0(%r26), %r29
 	sub,*=	%r29, %r25, %r0
 	b,n	cas2_end
 20:	std	%r24, 0(%r26)
+=======
+19:	ldd,ma	0(%r26), %r29
+	sub,*=	%r29, %r25, %r0
+	b,n	cas2_end
+20:	std,ma	%r24, 0(%r26)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	copy	%r0, %r28
 #else
 	/* Compare first word */
@@ -855,6 +900,7 @@ cas2_action:
 
 cas2_end:
 	/* Free lock */
+	sync
 	stw,ma	%r20, 0(%sr2,%r20)
 	/* Enable interrupts */
 	ssm	PSW_SM_I, %r0
@@ -865,7 +911,12 @@ cas2_end:
 22:
 	/* Error occurred on load or store */
 	/* Free lock */
+<<<<<<< HEAD
 	stw,ma	%r20, 0(%sr2,%r20)
+=======
+	sync
+	stw	%r20, 0(%sr2,%r20)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ssm	PSW_SM_I, %r0
 	ldo	1(%r0),%r28
 	b	lws_exit

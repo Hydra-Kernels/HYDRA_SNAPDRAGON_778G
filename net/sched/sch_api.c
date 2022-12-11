@@ -751,7 +751,12 @@ static u32 qdisc_alloc_handle(struct net_device *dev)
 	return 0;
 }
 
+<<<<<<< HEAD
 void qdisc_tree_reduce_backlog(struct Qdisc *sch, int n, int len)
+=======
+void qdisc_tree_reduce_backlog(struct Qdisc *sch, unsigned int n,
+			       unsigned int len)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	bool qdisc_is_offloaded = sch->flags & TCQ_F_OFFLOADED;
 	const struct Qdisc_class_ops *cops;
@@ -799,6 +804,7 @@ void qdisc_tree_reduce_backlog(struct Qdisc *sch, int n, int len)
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL(qdisc_tree_reduce_backlog);
+<<<<<<< HEAD
 
 int qdisc_offload_dump_helper(struct Qdisc *sch, enum tc_setup_type type,
 			      void *type_data)
@@ -984,6 +990,8 @@ err_out:
 	kfree_skb(skb);
 	return -EINVAL;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static void notify_and_destroy(struct net *net, struct sk_buff *skb,
 			       struct nlmsghdr *n, u32 clid,
@@ -1229,6 +1237,7 @@ static struct Qdisc *qdisc_create(struct net_device *dev,
 		dev->tx_queue_len = DEFAULT_TX_QUEUE_LEN;
 		netdev_info(dev, "Caught tx_queue_len zero misconfig\n");
 	}
+<<<<<<< HEAD
 
 	err = qdisc_block_indexes_set(sch, tca, extack);
 	if (err)
@@ -1281,6 +1290,8 @@ static struct Qdisc *qdisc_create(struct net_device *dev,
 	return sch;
 
 err_out5:
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* ops->init() failed, we call ->destroy() like qdisc_create_dflt() */
 	if (ops->destroy)
 		ops->destroy(sch);
@@ -2219,6 +2230,78 @@ done:
 	return skb->len;
 }
 
+<<<<<<< HEAD
+=======
+/* Main classifier routine: scans classifier chain attached
+ * to this qdisc, (optionally) tests for protocol and asks
+ * specific classifiers.
+ */
+int tc_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+		struct tcf_result *res, bool compat_mode)
+{
+	__be16 protocol = tc_skb_protocol(skb);
+#ifdef CONFIG_NET_CLS_ACT
+	const struct tcf_proto *old_tp = tp;
+	int limit = 0;
+
+reclassify:
+#endif
+	for (; tp; tp = rcu_dereference_bh(tp->next)) {
+		int err;
+
+		if (tp->protocol != protocol &&
+		    tp->protocol != htons(ETH_P_ALL))
+			continue;
+
+		err = tp->classify(skb, tp, res);
+#ifdef CONFIG_NET_CLS_ACT
+		if (unlikely(err == TC_ACT_RECLASSIFY && !compat_mode))
+			goto reset;
+#endif
+		if (err >= 0)
+			return err;
+	}
+
+	return -1;
+#ifdef CONFIG_NET_CLS_ACT
+reset:
+	if (unlikely(limit++ >= MAX_REC_LOOP)) {
+		net_notice_ratelimited("%s: reclassify loop, rule prio %u, protocol %02x\n",
+				       tp->q->ops->id, tp->prio & 0xffff,
+				       ntohs(tp->protocol));
+		return TC_ACT_SHOT;
+	}
+
+	tp = old_tp;
+	protocol = tc_skb_protocol(skb);
+	goto reclassify;
+#endif
+}
+EXPORT_SYMBOL(tc_classify);
+
+bool tcf_destroy(struct tcf_proto *tp, bool force)
+{
+	if (tp->ops->destroy(tp, force)) {
+		module_put(tp->ops->owner);
+		kfree_rcu(tp, rcu);
+		return true;
+	}
+
+	return false;
+}
+
+void tcf_destroy_chain(struct tcf_proto __rcu **fl)
+{
+	struct tcf_proto *tp;
+
+	while ((tp = rtnl_dereference(*fl)) != NULL) {
+		RCU_INIT_POINTER(*fl, tp->next);
+		tcf_destroy(tp, true);
+	}
+}
+EXPORT_SYMBOL(tcf_destroy_chain);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_PROC_FS
 static int psched_show(struct seq_file *seq, void *v)
 {

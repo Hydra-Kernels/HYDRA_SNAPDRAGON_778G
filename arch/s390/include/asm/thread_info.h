@@ -62,6 +62,7 @@ void arch_setup_new_exec(void);
 #define TIF_NOTIFY_RESUME	0	/* callback before returning to user */
 #define TIF_SIGPENDING		1	/* signal pending */
 #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+<<<<<<< HEAD
 #define TIF_UPROBE		3	/* breakpointed or single-stepping */
 #define TIF_GUARDED_STORAGE	4	/* load guarded storage control block */
 #define TIF_PATCH_PENDING	5	/* pending live patching update */
@@ -69,6 +70,15 @@ void arch_setup_new_exec(void);
 #define TIF_ISOLATE_BP		8	/* Run process with isolated BP */
 #define TIF_ISOLATE_BP_GUEST	9	/* Run KVM guests with isolated BP */
 
+=======
+#define TIF_SYSCALL_TRACE	3	/* syscall trace active */
+#define TIF_SYSCALL_AUDIT	4	/* syscall auditing active */
+#define TIF_SECCOMP		5	/* secure computing */
+#define TIF_SYSCALL_TRACEPOINT	6	/* syscall tracepoint instrumentation */
+#define TIF_UPROBE		7	/* breakpointed or single-stepping */
+#define TIF_ISOLATE_BP		8	/* Run process with isolated BP */
+#define TIF_ISOLATE_BP_GUEST	9	/* Run KVM guests with isolated BP */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define TIF_31BIT		16	/* 32bit process */
 #define TIF_MEMDIE		17	/* is terminating due to OOM killer */
 #define TIF_RESTORE_SIGMASK	18	/* restore signal mask in do_signal() */
@@ -76,11 +86,26 @@ void arch_setup_new_exec(void);
 #define TIF_BLOCK_STEP		20	/* This task is block stepped */
 #define TIF_UPROBE_SINGLESTEP	21	/* This task is uprobe single stepped */
 
+<<<<<<< HEAD
 /* _TIF_TRACE bits */
 #define TIF_SYSCALL_TRACE	24	/* syscall trace active */
 #define TIF_SYSCALL_AUDIT	25	/* syscall auditing active */
 #define TIF_SECCOMP		26	/* secure computing */
 #define TIF_SYSCALL_TRACEPOINT	27	/* syscall tracepoint instrumentation */
+=======
+#define _TIF_NOTIFY_RESUME	_BITUL(TIF_NOTIFY_RESUME)
+#define _TIF_SIGPENDING		_BITUL(TIF_SIGPENDING)
+#define _TIF_NEED_RESCHED	_BITUL(TIF_NEED_RESCHED)
+#define _TIF_SYSCALL_TRACE	_BITUL(TIF_SYSCALL_TRACE)
+#define _TIF_SYSCALL_AUDIT	_BITUL(TIF_SYSCALL_AUDIT)
+#define _TIF_SECCOMP		_BITUL(TIF_SECCOMP)
+#define _TIF_SYSCALL_TRACEPOINT	_BITUL(TIF_SYSCALL_TRACEPOINT)
+#define _TIF_UPROBE		_BITUL(TIF_UPROBE)
+#define _TIF_ISOLATE_BP		_BITUL(TIF_ISOLATE_BP)
+#define _TIF_ISOLATE_BP_GUEST	_BITUL(TIF_ISOLATE_BP_GUEST)
+#define _TIF_31BIT		_BITUL(TIF_31BIT)
+#define _TIF_SINGLE_STEP	_BITUL(TIF_SINGLE_STEP)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define _TIF_NOTIFY_RESUME	BIT(TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		BIT(TIF_SIGPENDING)

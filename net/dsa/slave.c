@@ -1285,7 +1285,15 @@ static int dsa_slave_phy_connect(struct net_device *slave_dev, int addr)
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	return phylink_connect_phy(dp->pl, slave_dev->phydev);
+=======
+	/* Use already configured phy mode */
+	if (p->phy_interface == PHY_INTERFACE_MODE_NA)
+		p->phy_interface = p->phy->interface;
+	return phy_connect_direct(slave_dev, p->phy, dsa_slave_adjust_link,
+				  p->phy_interface);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int dsa_slave_phy_setup(struct net_device *slave_dev)
@@ -1346,6 +1354,7 @@ int dsa_slave_suspend(struct net_device *slave_dev)
 	if (!netif_running(slave_dev))
 		return 0;
 
+<<<<<<< HEAD
 	cancel_work_sync(&dp->xmit_work);
 	skb_queue_purge(&dp->xmit_queue);
 
@@ -1354,6 +1363,17 @@ int dsa_slave_suspend(struct net_device *slave_dev)
 	rtnl_lock();
 	phylink_stop(dp->pl);
 	rtnl_unlock();
+=======
+	netif_device_detach(slave_dev);
+
+	if (p->phy) {
+		phy_stop(p->phy);
+		p->old_pause = -1;
+		p->old_link = -1;
+		p->old_duplex = -1;
+		phy_suspend(p->phy);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -1361,6 +1381,9 @@ int dsa_slave_suspend(struct net_device *slave_dev)
 int dsa_slave_resume(struct net_device *slave_dev)
 {
 	struct dsa_port *dp = dsa_slave_to_port(slave_dev);
+
+	if (!netif_running(slave_dev))
+		return 0;
 
 	if (!netif_running(slave_dev))
 		return 0;

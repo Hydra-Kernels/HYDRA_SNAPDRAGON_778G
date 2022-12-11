@@ -238,8 +238,15 @@ static struct ucma_multicast* ucma_alloc_multicast(struct ucma_context *ctx)
 	if (!mc)
 		return NULL;
 
+<<<<<<< HEAD
 	mc->ctx = ctx;
 	if (xa_alloc(&multicast_table, &mc->id, NULL, xa_limit_32b, GFP_KERNEL))
+=======
+	mutex_lock(&mut);
+	mc->id = idr_alloc(&multicast_idr, NULL, 0, 0, GFP_KERNEL);
+	mutex_unlock(&mut);
+	if (mc->id < 0)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto error;
 
 	list_add_tail(&mc->list, &ctx->mc_list);
@@ -500,8 +507,13 @@ static ssize_t ucma_create_id(struct ucma_file *file, const char __user *inbuf,
 		return -ENOMEM;
 
 	ctx->uid = cmd.uid;
+<<<<<<< HEAD
 	cm_id = __rdma_create_id(current->nsproxy->net_ns,
 				 ucma_event_handler, ctx, cmd.ps, qp_type, NULL);
+=======
+	cm_id = rdma_create_id(current->nsproxy->net_ns,
+			       ucma_event_handler, ctx, cmd.ps, qp_type);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(cm_id)) {
 		ret = PTR_ERR(cm_id);
 		goto err1;
@@ -520,7 +532,13 @@ static ssize_t ucma_create_id(struct ucma_file *file, const char __user *inbuf,
 err2:
 	rdma_destroy_id(cm_id);
 err1:
+<<<<<<< HEAD
 	xa_erase(&ctx_table, ctx->id);
+=======
+	mutex_lock(&mut);
+	idr_remove(&ctx_idr, ctx->id);
+	mutex_unlock(&mut);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_lock(&file->mut);
 	list_del(&ctx->list);
 	mutex_unlock(&file->mut);
@@ -687,9 +705,13 @@ static ssize_t ucma_bind(struct ucma_file *file, const char __user *inbuf,
 	if (IS_ERR(ctx))
 		return PTR_ERR(ctx);
 
+<<<<<<< HEAD
 	mutex_lock(&ctx->mutex);
 	ret = rdma_bind_addr(ctx->cm_id, (struct sockaddr *) &cmd.addr);
 	mutex_unlock(&ctx->mutex);
+=======
+	ret = rdma_bind_addr(ctx->cm_id, (struct sockaddr *) &cmd.addr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ucma_put_ctx(ctx);
 	return ret;
 }
@@ -716,7 +738,10 @@ static ssize_t ucma_resolve_ip(struct ucma_file *file,
 	mutex_lock(&ctx->mutex);
 	ret = rdma_resolve_addr(ctx->cm_id, (struct sockaddr *) &cmd.src_addr,
 				(struct sockaddr *) &cmd.dst_addr, cmd.timeout_ms);
+<<<<<<< HEAD
 	mutex_unlock(&ctx->mutex);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ucma_put_ctx(ctx);
 	return ret;
 }
@@ -741,10 +766,15 @@ static ssize_t ucma_resolve_addr(struct ucma_file *file,
 	if (IS_ERR(ctx))
 		return PTR_ERR(ctx);
 
+<<<<<<< HEAD
 	mutex_lock(&ctx->mutex);
 	ret = rdma_resolve_addr(ctx->cm_id, (struct sockaddr *) &cmd.src_addr,
 				(struct sockaddr *) &cmd.dst_addr, cmd.timeout_ms);
 	mutex_unlock(&ctx->mutex);
+=======
+	ret = rdma_resolve_addr(ctx->cm_id, (struct sockaddr *) &cmd.src_addr,
+				(struct sockaddr *) &cmd.dst_addr, cmd.timeout_ms);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ucma_put_ctx(ctx);
 	return ret;
 }
@@ -1210,9 +1240,18 @@ static ssize_t ucma_init_qp_attr(struct ucma_file *file,
 	if (cmd.qp_state > IB_QPS_ERR)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	ctx = ucma_get_ctx_dev(file, cmd.id);
+=======
+	ctx = ucma_get_ctx(file, cmd.id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(ctx))
 		return PTR_ERR(ctx);
+
+	if (!ctx->cm_id->device) {
+		ret = -EINVAL;
+		goto out;
+	}
 
 	resp.qp_attr_mask = 0;
 	memset(&qp_attr, 0, sizeof qp_attr);
@@ -1376,7 +1415,14 @@ static ssize_t ucma_set_option(struct ucma_file *file, const char __user *inbuf,
 	if (IS_ERR(ctx))
 		return PTR_ERR(ctx);
 
+<<<<<<< HEAD
 	optval = memdup_user(u64_to_user_ptr(cmd.optval),
+=======
+	if (unlikely(cmd.optlen > KMALLOC_MAX_SIZE))
+		return -EINVAL;
+
+	optval = memdup_user((void __user *) (unsigned long) cmd.optval,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			     cmd.optlen);
 	if (IS_ERR(optval)) {
 		ret = PTR_ERR(optval);
@@ -1406,10 +1452,15 @@ static ssize_t ucma_notify(struct ucma_file *file, const char __user *inbuf,
 	if (IS_ERR(ctx))
 		return PTR_ERR(ctx);
 
+<<<<<<< HEAD
 	mutex_lock(&ctx->mutex);
 	if (ctx->cm_id->device)
 		ret = rdma_notify(ctx->cm_id, (enum ib_event_type)cmd.event);
 	mutex_unlock(&ctx->mutex);
+=======
+	if (ctx->cm_id->device)
+		ret = rdma_notify(ctx->cm_id, (enum ib_event_type)cmd.event);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ucma_put_ctx(ctx);
 	return ret;
@@ -1429,7 +1480,11 @@ static ssize_t ucma_process_join(struct ucma_file *file,
 		return -ENOSPC;
 
 	addr = (struct sockaddr *) &cmd->addr;
+<<<<<<< HEAD
 	if (cmd->addr_size != rdma_addr_size(addr))
+=======
+	if (cmd->reserved || (cmd->addr_size != rdma_addr_size(addr)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (cmd->join_flags == RDMA_MC_JOIN_FLAG_FULLMEMBER)
@@ -1466,7 +1521,13 @@ static ssize_t ucma_process_join(struct ucma_file *file,
 		goto err3;
 	}
 
+<<<<<<< HEAD
 	xa_store(&multicast_table, mc->id, mc, 0);
+=======
+	mutex_lock(&mut);
+	idr_replace(&multicast_idr, mc, mc->id);
+	mutex_unlock(&mut);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	mutex_unlock(&file->mut);
 	ucma_put_ctx(ctx);
@@ -1504,7 +1565,11 @@ static ssize_t ucma_join_ip_multicast(struct ucma_file *file,
 	if (!join_cmd.addr_size)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	join_cmd.join_flags = RDMA_MC_JOIN_FLAG_FULLMEMBER;
+=======
+	join_cmd.reserved = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	memcpy(&join_cmd.addr, &cmd.addr, join_cmd.addr_size);
 
 	return ucma_process_join(file, &join_cmd, out_len);
@@ -1708,11 +1773,16 @@ static ssize_t ucma_write(struct file *filp, const char __user *buf,
 	struct rdma_ucm_cmd_hdr hdr;
 	ssize_t ret;
 
+<<<<<<< HEAD
 	if (!ib_safe_file_access(filp)) {
 		pr_err_once("ucma_write: process %d (%s) changed security contexts after opening file descriptor, this is not allowed.\n",
 			    task_tgid_vnr(current), current->comm);
 		return -EACCES;
 	}
+=======
+	if (WARN_ON_ONCE(!ib_safe_file_access(filp)))
+		return -EACCES;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (len < sizeof(hdr))
 		return -EINVAL;

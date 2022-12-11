@@ -2302,6 +2302,30 @@ struct batadv_algo_gw_ops {
 
 /**
  * struct batadv_algo_ops - mesh algorithm callbacks
+<<<<<<< HEAD
+=======
+ * @list: list node for the batadv_algo_list
+ * @name: name of the algorithm
+ * @bat_iface_enable: init routing info when hard-interface is enabled
+ * @bat_iface_disable: de-init routing info when hard-interface is disabled
+ * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
+ *  belonging to this hard-interface
+ * @bat_primary_iface_set: called when primary interface is selected / changed
+ * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
+ * @bat_ogm_emit: send scheduled OGM
+ * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
+ *  outgoing interfaces
+ * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
+ *  than neigh2 for their respective outgoing interface from the metric
+ *  prospective
+ * @bat_orig_print: print the originator table (optional)
+ * @bat_orig_free: free the resources allocated by the routing algorithm for an
+ *  orig_node object
+ * @bat_orig_add_if: ask the routing algorithm to apply the needed changes to
+ *  the orig_node due to a new hard-interface being added into the mesh
+ * @bat_orig_del_if: ask the routing algorithm to apply the needed changes to
+ *  the orig_node due to an hard-interface being removed from the mesh
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 struct batadv_algo_ops {
 	/** @list: list node for the batadv_algo_list */
@@ -2309,6 +2333,7 @@ struct batadv_algo_ops {
 
 	/** @name: name of the algorithm */
 	char *name;
+<<<<<<< HEAD
 
 	/** @iface: callbacks related to interface handling */
 	struct batadv_algo_iface_ops iface;
@@ -2321,6 +2346,32 @@ struct batadv_algo_ops {
 
 	/** @gw: callbacks related to GW mode */
 	struct batadv_algo_gw_ops gw;
+=======
+	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
+	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
+	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
+	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
+	/* neigh_node handling API */
+	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
+			     struct batadv_hard_iface *if_outgoing1,
+			     struct batadv_neigh_node *neigh2,
+			     struct batadv_hard_iface *if_outgoing2);
+	bool (*bat_neigh_is_equiv_or_better)
+		(struct batadv_neigh_node *neigh1,
+		 struct batadv_hard_iface *if_outgoing1,
+		 struct batadv_neigh_node *neigh2,
+		 struct batadv_hard_iface *if_outgoing2);
+	/* orig_node handling API */
+	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+			       struct batadv_hard_iface *hard_iface);
+	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
+	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
+			       int max_if_num);
+	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
+			       int max_if_num, int del_if_num);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /**

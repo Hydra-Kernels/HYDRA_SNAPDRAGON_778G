@@ -2354,6 +2354,7 @@ void qlt_xmit_tm_rsp(struct qla_tgt_mgmt_cmd *mcmd)
 		return;
 	}
 
+<<<<<<< HEAD
 	if (mcmd->flags == QLA24XX_MGMT_SEND_NACK) {
 		switch (mcmd->orig_iocb.imm_ntfy.u.isp24.status_subcode) {
 		case ELS_LOGO:
@@ -2376,6 +2377,17 @@ void qlt_xmit_tm_rsp(struct qla_tgt_mgmt_cmd *mcmd)
 			free_mcmd = false;
 		} else
 			qlt_24xx_send_task_mgmt_ctio(qpair, mcmd,
+=======
+	if (mcmd->flags == QLA24XX_MGMT_SEND_NACK)
+		qlt_send_notify_ack(vha, &mcmd->orig_iocb.imm_ntfy,
+		    0, 0, 0, 0, 0, 0);
+	else {
+		if (mcmd->orig_iocb.atio.u.raw.entry_type == ABTS_RECV_24XX)
+			qlt_24xx_send_abts_resp(vha, &mcmd->orig_iocb.abts,
+			    mcmd->fc_tm_rsp, false);
+		else
+			qlt_24xx_send_task_mgmt_ctio(vha, mcmd,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			    mcmd->fc_tm_rsp);
 	}
 	/*

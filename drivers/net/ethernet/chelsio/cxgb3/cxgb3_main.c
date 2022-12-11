@@ -49,8 +49,13 @@
 #include <linux/stringify.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+<<<<<<< HEAD
 #include <linux/uaccess.h>
 #include <linux/nospec.h>
+=======
+#include <linux/nospec.h>
+#include <asm/uaccess.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "common.h"
 #include "cxgb3_ioctl.h"

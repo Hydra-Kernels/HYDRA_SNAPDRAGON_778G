@@ -213,6 +213,10 @@ static struct mount *next_group(struct mount *m, struct mount *origin)
 }
 
 /* all accesses are serialized by namespace_sem */
+<<<<<<< HEAD
+=======
+static struct user_namespace *user_ns;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct mount *last_dest, *first_source, *last_source, *dest_master;
 static struct mountpoint *mp;
 static struct hlist_head *list;

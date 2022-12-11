@@ -845,8 +845,166 @@ static int mtk_gpio_set_config(struct gpio_chip *chip, unsigned offset,
 	unsigned long eint_n;
 	u32 debounce;
 
+<<<<<<< HEAD
 	if (pinconf_to_config_param(config) != PIN_CONFIG_INPUT_DEBOUNCE)
 		return -ENOTSUPP;
+=======
+	pin = mtk_find_pin_by_eint_num(pctl, d->hwirq);
+
+	if (!pin) {
+		dev_err(pctl->dev, "Can not find pin\n");
+		return -EINVAL;
+	}
+
+	ret = gpiochip_lock_as_irq(pctl->chip, pin->pin.number);
+	if (ret) {
+		dev_err(pctl->dev, "unable to lock HW IRQ %lu for IRQ\n",
+			irqd_to_hwirq(d));
+		return ret;
+	}
+
+	/* set mux to INT mode */
+	mtk_pmx_set_mode(pctl->pctl_dev, pin->pin.number, pin->eint.eintmux);
+
+	return 0;
+}
+
+static void mtk_pinctrl_irq_release_resources(struct irq_data *d)
+{
+	struct mtk_pinctrl *pctl = irq_data_get_irq_chip_data(d);
+	const struct mtk_desc_pin *pin;
+
+	pin = mtk_find_pin_by_eint_num(pctl, d->hwirq);
+
+	if (!pin) {
+		dev_err(pctl->dev, "Can not find pin\n");
+		return;
+	}
+
+	gpiochip_unlock_as_irq(pctl->chip, pin->pin.number);
+}
+
+static void __iomem *mtk_eint_get_offset(struct mtk_pinctrl *pctl,
+	unsigned int eint_num, unsigned int offset)
+{
+	unsigned int eint_base = 0;
+	void __iomem *reg;
+
+	if (eint_num >= pctl->devdata->ap_num)
+		eint_base = pctl->devdata->ap_num;
+
+	reg = pctl->eint_reg_base + offset + ((eint_num - eint_base) / 32) * 4;
+
+	return reg;
+}
+
+/*
+ * mtk_can_en_debounce: Check the EINT number is able to enable debounce or not
+ * @eint_num: the EINT number to setmtk_pinctrl
+ */
+static unsigned int mtk_eint_can_en_debounce(struct mtk_pinctrl *pctl,
+	unsigned int eint_num)
+{
+	unsigned int sens;
+	unsigned int bit = BIT(eint_num % 32);
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+
+	void __iomem *reg = mtk_eint_get_offset(pctl, eint_num,
+			eint_offsets->sens);
+
+	if (readl(reg) & bit)
+		sens = MT_LEVEL_SENSITIVE;
+	else
+		sens = MT_EDGE_SENSITIVE;
+
+	if ((eint_num < pctl->devdata->db_cnt) && (sens != MT_EDGE_SENSITIVE))
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ * mtk_eint_get_mask: To get the eint mask
+ * @eint_num: the EINT number to get
+ */
+static unsigned int mtk_eint_get_mask(struct mtk_pinctrl *pctl,
+	unsigned int eint_num)
+{
+	unsigned int bit = BIT(eint_num % 32);
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+
+	void __iomem *reg = mtk_eint_get_offset(pctl, eint_num,
+			eint_offsets->mask);
+
+	return !!(readl(reg) & bit);
+}
+
+static int mtk_eint_flip_edge(struct mtk_pinctrl *pctl, int hwirq)
+{
+	int start_level, curr_level;
+	unsigned int reg_offset;
+	const struct mtk_eint_offsets *eint_offsets = &(pctl->devdata->eint_offsets);
+	u32 mask = BIT(hwirq & 0x1f);
+	u32 port = (hwirq >> 5) & eint_offsets->port_mask;
+	void __iomem *reg = pctl->eint_reg_base + (port << 2);
+	const struct mtk_desc_pin *pin;
+
+	pin = mtk_find_pin_by_eint_num(pctl, hwirq);
+	curr_level = mtk_gpio_get(pctl->chip, pin->pin.number);
+	do {
+		start_level = curr_level;
+		if (start_level)
+			reg_offset = eint_offsets->pol_clr;
+		else
+			reg_offset = eint_offsets->pol_set;
+		writel(mask, reg + reg_offset);
+
+		curr_level = mtk_gpio_get(pctl->chip, pin->pin.number);
+	} while (start_level != curr_level);
+
+	return start_level;
+}
+
+static void mtk_eint_mask(struct irq_data *d)
+{
+	struct mtk_pinctrl *pctl = irq_data_get_irq_chip_data(d);
+	const struct mtk_eint_offsets *eint_offsets =
+			&pctl->devdata->eint_offsets;
+	u32 mask = BIT(d->hwirq & 0x1f);
+	void __iomem *reg = mtk_eint_get_offset(pctl, d->hwirq,
+			eint_offsets->mask_set);
+
+	writel(mask, reg);
+}
+
+static void mtk_eint_unmask(struct irq_data *d)
+{
+	struct mtk_pinctrl *pctl = irq_data_get_irq_chip_data(d);
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+	u32 mask = BIT(d->hwirq & 0x1f);
+	void __iomem *reg = mtk_eint_get_offset(pctl, d->hwirq,
+			eint_offsets->mask_clr);
+
+	writel(mask, reg);
+
+	if (pctl->eint_dual_edges[d->hwirq])
+		mtk_eint_flip_edge(pctl, d->hwirq);
+}
+
+static int mtk_gpio_set_debounce(struct gpio_chip *chip, unsigned offset,
+	unsigned debounce)
+{
+	struct mtk_pinctrl *pctl = dev_get_drvdata(chip->dev);
+	int eint_num, virq, eint_offset;
+	unsigned int set_offset, bit, clr_bit, clr_offset, rst, i, unmask, dbnc;
+	static const unsigned int debounce_time[] = {500, 1000, 16000, 32000, 64000,
+						128000, 256000};
+	const struct mtk_desc_pin *pin;
+	struct irq_data *d;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pin = pctl->devdata->pins + offset;
 	if (pin->eint.eintnum == NO_EINT_SUPPORT)
@@ -855,7 +1013,45 @@ static int mtk_gpio_set_config(struct gpio_chip *chip, unsigned offset,
 	debounce = pinconf_to_config_argument(config);
 	eint_n = pin->eint.eintnum;
 
+<<<<<<< HEAD
 	return mtk_eint_set_debounce(pctl->eint, eint_n, debounce);
+=======
+	set_offset = (eint_num / 4) * 4 + pctl->devdata->eint_offsets.dbnc_set;
+	clr_offset = (eint_num / 4) * 4 + pctl->devdata->eint_offsets.dbnc_clr;
+	if (!mtk_eint_can_en_debounce(pctl, eint_num))
+		return -ENOSYS;
+
+	dbnc = ARRAY_SIZE(debounce_time);
+	for (i = 0; i < ARRAY_SIZE(debounce_time); i++) {
+		if (debounce <= debounce_time[i]) {
+			dbnc = i;
+			break;
+		}
+	}
+
+	if (!mtk_eint_get_mask(pctl, eint_num)) {
+		mtk_eint_mask(d);
+		unmask = 1;
+	} else {
+		unmask = 0;
+	}
+
+	clr_bit = 0xff << eint_offset;
+	writel(clr_bit, pctl->eint_reg_base + clr_offset);
+
+	bit = ((dbnc << EINT_DBNC_SET_DBNC_BITS) | EINT_DBNC_SET_EN) <<
+		eint_offset;
+	rst = EINT_DBNC_RST_BIT << eint_offset;
+	writel(rst | bit, pctl->eint_reg_base + set_offset);
+
+	/* Delay a while (more than 2T) to wait for hw debounce counter reset
+	work correctly */
+	udelay(1);
+	if (unmask == 1)
+		mtk_eint_unmask(d);
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static const struct gpio_chip mtk_gpio_chip = {
@@ -891,6 +1087,120 @@ const struct dev_pm_ops mtk_eint_pm_ops = {
 	.resume_noirq = mtk_eint_resume,
 };
 
+<<<<<<< HEAD
+=======
+static void mtk_eint_ack(struct irq_data *d)
+{
+	struct mtk_pinctrl *pctl = irq_data_get_irq_chip_data(d);
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+	u32 mask = BIT(d->hwirq & 0x1f);
+	void __iomem *reg = mtk_eint_get_offset(pctl, d->hwirq,
+			eint_offsets->ack);
+
+	writel(mask, reg);
+}
+
+static struct irq_chip mtk_pinctrl_irq_chip = {
+	.name = "mt-eint",
+	.irq_disable = mtk_eint_mask,
+	.irq_mask = mtk_eint_mask,
+	.irq_unmask = mtk_eint_unmask,
+	.irq_ack = mtk_eint_ack,
+	.irq_set_type = mtk_eint_set_type,
+	.irq_set_wake = mtk_eint_irq_set_wake,
+	.irq_request_resources = mtk_pinctrl_irq_request_resources,
+	.irq_release_resources = mtk_pinctrl_irq_release_resources,
+};
+
+static unsigned int mtk_eint_init(struct mtk_pinctrl *pctl)
+{
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+	void __iomem *reg = pctl->eint_reg_base + eint_offsets->dom_en;
+	unsigned int i;
+
+	for (i = 0; i < pctl->devdata->ap_num; i += 32) {
+		writel(0xffffffff, reg);
+		reg += 4;
+	}
+	return 0;
+}
+
+static inline void
+mtk_eint_debounce_process(struct mtk_pinctrl *pctl, int index)
+{
+	unsigned int rst, ctrl_offset;
+	unsigned int bit, dbnc;
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+
+	ctrl_offset = (index / 4) * 4 + eint_offsets->dbnc_ctrl;
+	dbnc = readl(pctl->eint_reg_base + ctrl_offset);
+	bit = EINT_DBNC_SET_EN << ((index % 4) * 8);
+	if ((bit & dbnc) > 0) {
+		ctrl_offset = (index / 4) * 4 + eint_offsets->dbnc_set;
+		rst = EINT_DBNC_RST_BIT << ((index % 4) * 8);
+		writel(rst, pctl->eint_reg_base + ctrl_offset);
+	}
+}
+
+static void mtk_eint_irq_handler(struct irq_desc *desc)
+{
+	struct irq_chip *chip = irq_desc_get_chip(desc);
+	struct mtk_pinctrl *pctl = irq_desc_get_handler_data(desc);
+	unsigned int status, eint_num;
+	int offset, index, virq;
+	const struct mtk_eint_offsets *eint_offsets =
+		&pctl->devdata->eint_offsets;
+	void __iomem *reg =  mtk_eint_get_offset(pctl, 0, eint_offsets->stat);
+	int dual_edges, start_level, curr_level;
+	const struct mtk_desc_pin *pin;
+
+	chained_irq_enter(chip, desc);
+	for (eint_num = 0;
+	     eint_num < pctl->devdata->ap_num;
+	     eint_num += 32, reg += 4) {
+		status = readl(reg);
+		while (status) {
+			offset = __ffs(status);
+			index = eint_num + offset;
+			virq = irq_find_mapping(pctl->domain, index);
+			status &= ~BIT(offset);
+
+			dual_edges = pctl->eint_dual_edges[index];
+			if (dual_edges) {
+				/* Clear soft-irq in case we raised it
+				   last time */
+				writel(BIT(offset), reg - eint_offsets->stat +
+					eint_offsets->soft_clr);
+
+				pin = mtk_find_pin_by_eint_num(pctl, index);
+				start_level = mtk_gpio_get(pctl->chip,
+							   pin->pin.number);
+			}
+
+			generic_handle_irq(virq);
+
+			if (dual_edges) {
+				curr_level = mtk_eint_flip_edge(pctl, index);
+
+				/* If level changed, we might lost one edge
+				   interrupt, raised it through soft-irq */
+				if (start_level != curr_level)
+					writel(BIT(offset), reg -
+						eint_offsets->stat +
+						eint_offsets->soft_set);
+			}
+
+			if (index < pctl->devdata->db_cnt)
+				mtk_eint_debounce_process(pctl , index);
+		}
+	}
+	chained_irq_exit(chip, desc);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int mtk_pctrl_build_state(struct platform_device *pdev)
 {
 	struct mtk_pinctrl *pctl = platform_get_drvdata(pdev);

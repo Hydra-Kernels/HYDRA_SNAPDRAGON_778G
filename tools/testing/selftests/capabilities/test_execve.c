@@ -147,8 +147,12 @@ static void chdir_to_tmpfs(void)
 					strerror(errno));
 
 	if (chdir(cwd) != 0)
+<<<<<<< HEAD
 		ksft_exit_fail_msg("chdir to private tmpfs - %s\n",
 					strerror(errno));
+=======
+		err(1, "chdir to private tmpfs");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void copy_fromat_to(int fromfd, const char *fromname, const char *toname)
@@ -259,7 +263,11 @@ static int do_tests(int uid, const char *our_path)
 		if (chown("validate_cap_sgidnonroot", -1, gid + 1) != 0)
 			ksft_exit_fail_msg("chown - %s\n", strerror(errno));
 		if (chmod("validate_cap_sgidnonroot", S_ISGID | 0710) != 0)
+<<<<<<< HEAD
 			ksft_exit_fail_msg("chmod - %s\n", strerror(errno));
+=======
+			err(1, "chmod");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	capng_get_caps_process();
@@ -406,9 +414,14 @@ static int do_tests(int uid, const char *our_path)
 			exec_other_validate_cap("./validate_cap_sgidnonroot",
 						true, true, true, false);
 	} else {
+<<<<<<< HEAD
 		ksft_print_msg("[RUN]\tNon-root +ia, sgidnonroot => i\n");
 		if (fork_wait())
 			exec_other_validate_cap("./validate_cap_sgidnonroot",
+=======
+		printf("[RUN]\tNon-root +ia, sgidnonroot => i\n");
+		exec_other_validate_cap("./validate_cap_sgidnonroot",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					false, false, true, false);
 
 		if (fork_wait()) {

@@ -73,14 +73,26 @@ const char *outfilename;
 enum {
 	sym_vvar_start,
 	sym_vvar_page,
+<<<<<<< HEAD
 	sym_pvclock_page,
 	sym_hvclock_page,
+=======
+	sym_hpet_page,
+	sym_pvclock_page,
+	sym_VDSO_FAKE_SECTION_TABLE_START,
+	sym_VDSO_FAKE_SECTION_TABLE_END,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 const int special_pages[] = {
 	sym_vvar_page,
+<<<<<<< HEAD
 	sym_pvclock_page,
 	sym_hvclock_page,
+=======
+	sym_hpet_page,
+	sym_pvclock_page,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 struct vdso_sym {
@@ -91,8 +103,19 @@ struct vdso_sym {
 struct vdso_sym required_syms[] = {
 	[sym_vvar_start] = {"vvar_start", true},
 	[sym_vvar_page] = {"vvar_page", true},
+<<<<<<< HEAD
 	[sym_pvclock_page] = {"pvclock_page", true},
 	[sym_hvclock_page] = {"hvclock_page", true},
+=======
+	[sym_hpet_page] = {"hpet_page", true},
+	[sym_pvclock_page] = {"pvclock_page", true},
+	[sym_VDSO_FAKE_SECTION_TABLE_START] = {
+		"VDSO_FAKE_SECTION_TABLE_START", false
+	},
+	[sym_VDSO_FAKE_SECTION_TABLE_END] = {
+		"VDSO_FAKE_SECTION_TABLE_END", false
+	},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{"VDSO32_NOTE_MASK", true},
 	{"__kernel_vsyscall", true},
 	{"__kernel_sigreturn", true},

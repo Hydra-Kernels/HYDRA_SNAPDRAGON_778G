@@ -203,7 +203,12 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 			goto get_unmapped_area;
 
 		vma = find_vma(mm, addr);
+<<<<<<< HEAD
 		if (!vma || addr + len <= vm_start_gap(vma))
+=======
+		if (TASK_SIZE - len >= addr &&
+				(!vma || addr + len <= vm_start_gap(vma)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return addr;
 	}
 get_unmapped_area:

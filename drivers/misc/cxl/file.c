@@ -214,6 +214,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
 	 * process is still accessible.
 	 */
 	ctx->pid = get_task_pid(current, PIDTYPE_PID);
+<<<<<<< HEAD
 
 	/* acquire a reference to the task's mm */
 	ctx->mm = get_task_mm(current);
@@ -227,12 +228,16 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
 		/* make TLBIs for this context global */
 		mm_context_add_copro(ctx->mm);
 	}
+=======
+	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Increment driver use count. Enables global TLBIs for hash
 	 * and callbacks to handle the segment table
 	 */
 	cxl_ctx_get();
+<<<<<<< HEAD
 
 	/*
 	 * A barrier is needed to make sure all TLBIs are global
@@ -247,12 +252,15 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
 	 * vs. global TLBIs, i.e SMP=y. So keep smp_mb().
 	 */
 	smp_mb();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
 
 	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
 							amr))) {
 		afu_release_irqs(ctx, ctx);
+<<<<<<< HEAD
 		cxl_adapter_context_put(ctx->afu->adapter);
 		put_pid(ctx->pid);
 		ctx->pid = NULL;
@@ -260,6 +268,9 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
 		cxl_context_mm_count_put(ctx);
 		if (ctx->mm)
 			mm_context_remove_copro(ctx->mm);
+=======
+		cxl_ctx_put();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 

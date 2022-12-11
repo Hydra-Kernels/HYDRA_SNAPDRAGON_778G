@@ -121,6 +121,7 @@ nvkm_pci_oneinit(struct nvkm_subdev *subdev)
 		return ret;
 
 	pci->irq = pdev->irq;
+<<<<<<< HEAD
 	return 0;
 }
 
@@ -140,6 +141,8 @@ nvkm_pci_init(struct nvkm_subdev *subdev)
 
 	if (pci->func->init)
 		pci->func->init(pci);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Ensure MSI interrupts are armed, for the case where there are
 	 * already interrupts pending (for whatever reason) at load time.
@@ -147,7 +150,11 @@ nvkm_pci_init(struct nvkm_subdev *subdev)
 	if (pci->msi)
 		pci->func->msi_rearm(pci);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void *

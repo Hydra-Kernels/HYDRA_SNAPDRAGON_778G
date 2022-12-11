@@ -427,11 +427,16 @@ static inline type pfx##in##bwlq##p(unsigned long port)			\
 	if (barrier)							\
 		iobarrier_rw();						\
 									\
+<<<<<<< HEAD
 	__val = *__addr;						\
 									\
 	/* prevent prefetching of coherent DMA data prematurely */	\
 	if (!relax)							\
 		rmb();							\
+=======
+	/* prevent prefetching of coherent DMA data prematurely */	\
+	rmb();								\
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return pfx##ioswab##bwlq(__addr, __val);			\
 }
 

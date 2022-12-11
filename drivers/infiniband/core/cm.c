@@ -344,7 +344,11 @@ static int cm_alloc_msg(struct cm_id_private *cm_id_priv,
 		ret = -ENODEV;
 		goto out;
 	}
+<<<<<<< HEAD
 	ah = rdma_create_ah(mad_agent->qp->pd, &av->ah_attr, 0);
+=======
+	ah = ib_create_ah(mad_agent->qp->pd, &av->ah_attr);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(ah)) {
 		ret = PTR_ERR(ah);
 		goto out;
@@ -356,7 +360,11 @@ static int cm_alloc_msg(struct cm_id_private *cm_id_priv,
 			       GFP_ATOMIC,
 			       IB_MGMT_BASE_VERSION);
 	if (IS_ERR(m)) {
+<<<<<<< HEAD
 		rdma_destroy_ah(ah, 0);
+=======
+		ib_destroy_ah(ah);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = PTR_ERR(m);
 		goto out;
 	}
@@ -489,6 +497,7 @@ static int cm_init_av_for_response(struct cm_port *port, struct ib_wc *wc,
 				       grh, &av->ah_attr);
 }
 
+<<<<<<< HEAD
 static int add_cm_id_to_port_list(struct cm_id_private *cm_id_priv,
 				  struct cm_av *av,
 				  struct cm_port *port)
@@ -511,6 +520,10 @@ static int add_cm_id_to_port_list(struct cm_id_private *cm_id_priv,
 
 static struct cm_port *
 get_cm_port_from_path(struct sa_path_rec *path, const struct ib_gid_attr *attr)
+=======
+static int cm_init_av_by_path(struct ib_sa_path_rec *path, struct cm_av *av,
+			      struct cm_id_private *cm_id_priv)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct cm_device *cm_dev;
 	struct cm_port *port = NULL;
@@ -588,6 +601,7 @@ static int cm_init_av_by_path(struct sa_path_rec *path,
 
 	av->timeout = path->packet_life_time + 1;
 
+<<<<<<< HEAD
 	ret = add_cm_id_to_port_list(cm_id_priv, av, port);
 	if (ret) {
 		rdma_destroy_ah_attr(&new_ah_attr);
@@ -595,6 +609,19 @@ static int cm_init_av_by_path(struct sa_path_rec *path,
 	}
 	rdma_move_ah_attr(&av->ah_attr, &new_ah_attr);
 	return 0;
+=======
+	spin_lock_irqsave(&cm.lock, flags);
+	if (&cm_id_priv->av == av)
+		list_add_tail(&cm_id_priv->prim_list, &port->cm_priv_prim_list);
+	else if (&cm_id_priv->alt_av == av)
+		list_add_tail(&cm_id_priv->altr_list, &port->cm_priv_altr_list);
+	else
+		ret = -EINVAL;
+
+	spin_unlock_irqrestore(&cm.lock, flags);
+
+	return ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static u32 cm_local_id(__be32 local_id)
@@ -1092,6 +1119,7 @@ retest:
 		break;
 	}
 
+<<<<<<< HEAD
 	spin_lock_irq(&cm_id_priv->lock);
 	spin_lock(&cm.lock);
 	/* Required for cleanup paths related cm_req_handler() */
@@ -1100,14 +1128,21 @@ retest:
 		kfree(cm_id_priv->timewait_info);
 		cm_id_priv->timewait_info = NULL;
 	}
+=======
+	spin_lock_irq(&cm.lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!list_empty(&cm_id_priv->altr_list) &&
 	    (!cm_id_priv->altr_send_port_not_ready))
 		list_del(&cm_id_priv->altr_list);
 	if (!list_empty(&cm_id_priv->prim_list) &&
 	    (!cm_id_priv->prim_send_port_not_ready))
 		list_del(&cm_id_priv->prim_list);
+<<<<<<< HEAD
 	spin_unlock(&cm.lock);
 	spin_unlock_irq(&cm_id_priv->lock);
+=======
+	spin_unlock_irq(&cm.lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	cm_free_id(cm_id->local_id);
 	cm_deref_id(cm_id_priv);
@@ -1439,13 +1474,21 @@ int ib_send_cm_req(struct ib_cm_id *cm_id,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	ret = cm_init_av_by_path(param->primary_path,
 				 param->ppath_sgid_attr, &cm_id_priv->av,
+=======
+	ret = cm_init_av_by_path(param->primary_path, &cm_id_priv->av,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 cm_id_priv);
 	if (ret)
 		goto out;
 	if (param->alternate_path) {
+<<<<<<< HEAD
 		ret = cm_init_av_by_path(param->alternate_path, NULL,
+=======
+		ret = cm_init_av_by_path(param->alternate_path,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					 &cm_id_priv->alt_av, cm_id_priv);
 		if (ret)
 			goto out;
@@ -1984,6 +2027,7 @@ static int cm_req_handler(struct cm_work *work)
 
 	cm_process_routed_req(req_msg, work->mad_recv_wc->wc);
 
+<<<<<<< HEAD
 	memset(&work->path[0], 0, sizeof(work->path[0]));
 	if (cm_req_has_alt_path(req_msg))
 		memset(&work->path[1], 0, sizeof(work->path[1]));
@@ -2010,6 +2054,10 @@ static int cm_req_handler(struct cm_work *work)
 				 cm_id_priv->av.ah_attr.roce.dmac);
 	work->path[0].hop_limit = grh->hop_limit;
 	ret = cm_init_av_by_path(&work->path[0], gid_attr, &cm_id_priv->av,
+=======
+	memcpy(work->path[0].dmac, cm_id_priv->av.ah_attr.dmac, ETH_ALEN);
+	ret = cm_init_av_by_path(&work->path[0], &cm_id_priv->av,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 cm_id_priv);
 	if (ret) {
 		int err;
@@ -2027,9 +2075,15 @@ static int cm_req_handler(struct cm_work *work)
 				       NULL, 0);
 		goto rejected;
 	}
+<<<<<<< HEAD
 	if (cm_req_has_alt_path(req_msg)) {
 		ret = cm_init_av_by_path(&work->path[1], NULL,
 					 &cm_id_priv->alt_av, cm_id_priv);
+=======
+	if (req_msg->alt_local_lid) {
+		ret = cm_init_av_by_path(&work->path[1], &cm_id_priv->alt_av,
+					 cm_id_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (ret) {
 			ib_send_cm_rej(cm_id, IB_CM_REJ_INVALID_ALT_GID,
 				       &work->path[0].sgid,
@@ -3149,7 +3203,11 @@ int ib_send_cm_lap(struct ib_cm_id *cm_id,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	ret = cm_init_av_by_path(alternate_path, NULL, &cm_id_priv->alt_av,
+=======
+	ret = cm_init_av_by_path(alternate_path, &cm_id_priv->alt_av,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 cm_id_priv);
 	if (ret)
 		goto out;
@@ -3299,6 +3357,14 @@ static int cm_lap_handler(struct cm_work *work)
 
 	cm_id_priv->id.lap_state = IB_CM_LAP_RCVD;
 	cm_id_priv->tid = lap_msg->hdr.tid;
+<<<<<<< HEAD
+=======
+	cm_init_av_for_response(work->port, work->mad_recv_wc->wc,
+				work->mad_recv_wc->recv_buf.grh,
+				&cm_id_priv->av);
+	cm_init_av_by_path(param->alternate_path, &cm_id_priv->alt_av,
+			   cm_id_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret = atomic_inc_and_test(&cm_id_priv->work_count);
 	if (!ret)
 		list_add_tail(&work->list, &cm_id_priv->work_list);
@@ -3497,9 +3563,13 @@ int ib_send_cm_sidr_req(struct ib_cm_id *cm_id,
 		return -EINVAL;
 
 	cm_id_priv = container_of(cm_id, struct cm_id_private, id);
+<<<<<<< HEAD
 	ret = cm_init_av_by_path(param->path, param->sgid_attr,
 				 &cm_id_priv->av,
 				 cm_id_priv);
+=======
+	ret = cm_init_av_by_path(param->path, &cm_id_priv->av, cm_id_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret)
 		goto out;
 
@@ -4468,6 +4538,10 @@ static void cm_remove_one(struct ib_device *ib_device, void *client_data)
 		kfree(port);
 	}
 
+<<<<<<< HEAD
+=======
+	device_unregister(cm_dev->device);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(cm_dev);
 }
 

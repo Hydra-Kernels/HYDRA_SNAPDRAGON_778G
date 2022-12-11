@@ -174,8 +174,12 @@ static struct mlx5_profile profile[] = {
 
 #define FW_INIT_TIMEOUT_MILI		2000
 #define FW_INIT_WAIT_MS			2
+<<<<<<< HEAD
 #define FW_PRE_INIT_TIMEOUT_MILI	120000
 #define FW_INIT_WARN_MESSAGE_INTERVAL	20000
+=======
+#define FW_PRE_INIT_TIMEOUT_MILI	10000
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static int wait_fw_init(struct mlx5_core_dev *dev, u32 max_wait_mili,
 			u32 warn_time_mili)
@@ -657,8 +661,14 @@ int mlx5_core_enable_hca(struct mlx5_core_dev *dev, u16 func_id)
 
 int mlx5_core_disable_hca(struct mlx5_core_dev *dev, u16 func_id)
 {
+<<<<<<< HEAD
 	u32 out[MLX5_ST_SZ_DW(disable_hca_out)] = {0};
 	u32 in[MLX5_ST_SZ_DW(disable_hca_in)]   = {0};
+=======
+	struct mlx5_priv *priv  = &mdev->priv;
+	struct msix_entry *msix = priv->msix_arr;
+	int irq                 = msix[i + MLX5_EQ_VEC_COMP_BASE].vector;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	MLX5_SET(disable_hca_in, in, opcode, MLX5_CMD_OP_DISABLE_HCA);
 	MLX5_SET(disable_hca_in, in, function_id, func_id);
@@ -684,9 +694,143 @@ u64 mlx5_read_internal_timer(struct mlx5_core_dev *dev,
 		ptp_read_system_postts(sts);
 	}
 
+<<<<<<< HEAD
 	return (u64)timer_l | (u64)timer_h1 << 32;
 }
 
+=======
+	cpumask_set_cpu(cpumask_local_spread(i, priv->numa_node),
+			priv->irq_info[i].mask);
+
+	if (IS_ENABLED(CONFIG_SMP) &&
+	    irq_set_affinity_hint(irq, priv->irq_info[i].mask))
+		mlx5_core_warn(mdev, "irq_set_affinity_hint failed, irq 0x%.4x", irq);
+
+	return 0;
+}
+
+static void mlx5_irq_clear_affinity_hint(struct mlx5_core_dev *mdev, int i)
+{
+	struct mlx5_priv *priv  = &mdev->priv;
+	struct msix_entry *msix = priv->msix_arr;
+	int irq                 = msix[i + MLX5_EQ_VEC_COMP_BASE].vector;
+
+	irq_set_affinity_hint(irq, NULL);
+	free_cpumask_var(priv->irq_info[i].mask);
+}
+
+static int mlx5_irq_set_affinity_hints(struct mlx5_core_dev *mdev)
+{
+	int err;
+	int i;
+
+	for (i = 0; i < mdev->priv.eq_table.num_comp_vectors; i++) {
+		err = mlx5_irq_set_affinity_hint(mdev, i);
+		if (err)
+			goto err_out;
+	}
+
+	return 0;
+
+err_out:
+	for (i--; i >= 0; i--)
+		mlx5_irq_clear_affinity_hint(mdev, i);
+
+	return err;
+}
+
+static void mlx5_irq_clear_affinity_hints(struct mlx5_core_dev *mdev)
+{
+	int i;
+
+	for (i = 0; i < mdev->priv.eq_table.num_comp_vectors; i++)
+		mlx5_irq_clear_affinity_hint(mdev, i);
+}
+
+int mlx5_vector2eqn(struct mlx5_core_dev *dev, int vector, int *eqn,
+		    unsigned int *irqn)
+{
+	struct mlx5_eq_table *table = &dev->priv.eq_table;
+	struct mlx5_eq *eq, *n;
+	int err = -ENOENT;
+
+	spin_lock(&table->lock);
+	list_for_each_entry_safe(eq, n, &table->comp_eqs_list, list) {
+		if (eq->index == vector) {
+			*eqn = eq->eqn;
+			*irqn = eq->irqn;
+			err = 0;
+			break;
+		}
+	}
+	spin_unlock(&table->lock);
+
+	return err;
+}
+EXPORT_SYMBOL(mlx5_vector2eqn);
+
+static void free_comp_eqs(struct mlx5_core_dev *dev)
+{
+	struct mlx5_eq_table *table = &dev->priv.eq_table;
+	struct mlx5_eq *eq, *n;
+
+	spin_lock(&table->lock);
+	list_for_each_entry_safe(eq, n, &table->comp_eqs_list, list) {
+		list_del(&eq->list);
+		spin_unlock(&table->lock);
+		if (mlx5_destroy_unmap_eq(dev, eq))
+			mlx5_core_warn(dev, "failed to destroy EQ 0x%x\n",
+				       eq->eqn);
+		kfree(eq);
+		spin_lock(&table->lock);
+	}
+	spin_unlock(&table->lock);
+}
+
+static int alloc_comp_eqs(struct mlx5_core_dev *dev)
+{
+	struct mlx5_eq_table *table = &dev->priv.eq_table;
+	char name[MLX5_MAX_IRQ_NAME];
+	struct mlx5_eq *eq;
+	int ncomp_vec;
+	int nent;
+	int err;
+	int i;
+
+	INIT_LIST_HEAD(&table->comp_eqs_list);
+	ncomp_vec = table->num_comp_vectors;
+	nent = MLX5_COMP_EQ_SIZE;
+	for (i = 0; i < ncomp_vec; i++) {
+		eq = kzalloc(sizeof(*eq), GFP_KERNEL);
+		if (!eq) {
+			err = -ENOMEM;
+			goto clean;
+		}
+
+		snprintf(name, MLX5_MAX_IRQ_NAME, "mlx5_comp%d", i);
+		err = mlx5_create_map_eq(dev, eq,
+					 i + MLX5_EQ_VEC_COMP_BASE, nent, 0,
+					 name, &dev->priv.uuari.uars[0]);
+		if (err) {
+			kfree(eq);
+			goto clean;
+		}
+		mlx5_core_dbg(dev, "allocated completion EQN %d\n", eq->eqn);
+		eq->index = i;
+		spin_lock(&table->lock);
+		list_add_tail(&eq->list, &table->comp_eqs_list);
+		spin_unlock(&table->lock);
+	}
+
+	return 0;
+
+clean:
+	free_comp_eqs(dev);
+	return err;
+}
+
+#ifdef CONFIG_MLX5_CORE_EN
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int mlx5_core_set_issi(struct mlx5_core_dev *dev)
 {
 	u32 query_in[MLX5_ST_SZ_DW(query_issi_in)]   = {0};
@@ -960,6 +1104,15 @@ static int mlx5_function_setup(struct mlx5_core_dev *dev, bool boot)
 		mlx5_core_err(dev, "Firmware over %d MS in pre-initializing state, aborting\n",
 			      FW_PRE_INIT_TIMEOUT_MILI);
 		return err;
+	}
+
+	/* wait for firmware to accept initialization segments configurations
+	 */
+	err = wait_fw_init(dev, FW_PRE_INIT_TIMEOUT_MILI);
+	if (err) {
+		dev_err(&dev->pdev->dev, "Firmware over %d MS in pre-initializing state, aborting\n",
+			FW_PRE_INIT_TIMEOUT_MILI);
+		goto out;
 	}
 
 	err = mlx5_cmd_init(dev);

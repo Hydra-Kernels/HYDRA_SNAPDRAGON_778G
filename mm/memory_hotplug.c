@@ -1277,7 +1277,11 @@ int test_pages_in_a_zone(unsigned long start_pfn, unsigned long end_pfn,
 
 	if (zone) {
 		*valid_start = start;
+<<<<<<< HEAD
 		*valid_end = min(end, end_pfn);
+=======
+		*valid_end = end;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 1;
 	} else {
 		return 0;
@@ -1538,12 +1542,17 @@ static int __ref __offline_pages(unsigned long start_pfn,
 
 	/* This makes hotplug much easier...and readable.
 	   we assume this for now. .*/
+<<<<<<< HEAD
 	if (!test_pages_in_a_zone(start_pfn, end_pfn, &valid_start,
 				  &valid_end)) {
 		ret = -EINVAL;
 		reason = "multizone range";
 		goto failed_removal;
 	}
+=======
+	if (!test_pages_in_a_zone(start_pfn, end_pfn, &valid_start, &valid_end))
+		return -EINVAL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	zone = page_zone(pfn_to_page(valid_start));
 	node = zone_to_nid(zone);

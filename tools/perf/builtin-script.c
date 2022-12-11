@@ -2819,6 +2819,24 @@ out:
 		    (strcmp(lang_dirent->d_name, ".")) &&		\
 		    (strcmp(lang_dirent->d_name, "..")))
 
+<<<<<<< HEAD
+=======
+	sprintf(path, "%s/%s", base_path, dent->d_name);
+	if (stat(path, &st))
+		return 0;
+
+	return S_ISDIR(st.st_mode);
+}
+
+#define for_each_lang(scripts_path, scripts_dir, lang_dirent)		\
+	while ((lang_dirent = readdir(scripts_dir)) != NULL)		\
+		if ((lang_dirent->d_type == DT_DIR ||			\
+		     (lang_dirent->d_type == DT_UNKNOWN &&		\
+		      is_directory(scripts_path, lang_dirent))) &&	\
+		    (strcmp(lang_dirent->d_name, ".")) &&		\
+		    (strcmp(lang_dirent->d_name, "..")))
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define for_each_script(lang_path, lang_dir, script_dirent)		\
 	while ((script_dirent = readdir(lang_dir)) != NULL)		\
 		if (script_dirent->d_type != DT_DIR &&			\
@@ -2985,8 +3003,13 @@ static int list_available_scripts(const struct option *opt __maybe_unused,
 	}
 
 	for_each_lang(scripts_path, scripts_dir, lang_dirent) {
+<<<<<<< HEAD
 		scnprintf(lang_path, MAXPATHLEN, "%s/%s/bin", scripts_path,
 			  lang_dirent->d_name);
+=======
+		snprintf(lang_path, MAXPATHLEN, "%s/%s/bin", scripts_path,
+			 lang_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		lang_dir = opendir(lang_path);
 		if (!lang_dir)
 			continue;
@@ -2995,8 +3018,13 @@ static int list_available_scripts(const struct option *opt __maybe_unused,
 			script_root = get_script_root(script_dirent, REPORT_SUFFIX);
 			if (script_root) {
 				desc = script_desc__findnew(script_root);
+<<<<<<< HEAD
 				scnprintf(script_path, MAXPATHLEN, "%s/%s",
 					  lang_path, script_dirent->d_name);
+=======
+				snprintf(script_path, MAXPATHLEN, "%s/%s",
+					 lang_path, script_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				read_script_info(desc, script_path);
 				free(script_root);
 			}
@@ -3109,9 +3137,15 @@ int find_scripts(char **scripts_array, char **scripts_path_array, int num,
 	}
 
 	for_each_lang(scripts_path, scripts_dir, lang_dirent) {
+<<<<<<< HEAD
 		scnprintf(lang_path, MAXPATHLEN, "%s/%s", scripts_path,
 			  lang_dirent->d_name);
 #ifndef HAVE_LIBPERL_SUPPORT
+=======
+		snprintf(lang_path, MAXPATHLEN, "%s/%s", scripts_path,
+			 lang_dirent->d_name);
+#ifdef NO_LIBPERL
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (strstr(lang_path, "perl"))
 			continue;
 #endif
@@ -3128,10 +3162,14 @@ int find_scripts(char **scripts_array, char **scripts_path_array, int num,
 			/* Skip those real time scripts: xxxtop.p[yl] */
 			if (strstr(script_dirent->d_name, "top."))
 				continue;
+<<<<<<< HEAD
 			if (i >= num)
 				break;
 			snprintf(scripts_path_array[i], pathlen, "%s/%s",
 				lang_path,
+=======
+			sprintf(scripts_path_array[i], "%s/%s", lang_path,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				script_dirent->d_name);
 			temp = strchr(script_dirent->d_name, '.');
 			snprintf(scripts_array[i],
@@ -3168,8 +3206,13 @@ static char *get_script_path(const char *script_root, const char *suffix)
 		return NULL;
 
 	for_each_lang(scripts_path, scripts_dir, lang_dirent) {
+<<<<<<< HEAD
 		scnprintf(lang_path, MAXPATHLEN, "%s/%s/bin", scripts_path,
 			  lang_dirent->d_name);
+=======
+		snprintf(lang_path, MAXPATHLEN, "%s/%s/bin", scripts_path,
+			 lang_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		lang_dir = opendir(lang_path);
 		if (!lang_dir)
 			continue;
@@ -3180,8 +3223,13 @@ static char *get_script_path(const char *script_root, const char *suffix)
 				free(__script_root);
 				closedir(lang_dir);
 				closedir(scripts_dir);
+<<<<<<< HEAD
 				scnprintf(script_path, MAXPATHLEN, "%s/%s",
 					  lang_path, script_dirent->d_name);
+=======
+				snprintf(script_path, MAXPATHLEN, "%s/%s",
+					 lang_path, script_dirent->d_name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return strdup(script_path);
 			}
 			free(__script_root);

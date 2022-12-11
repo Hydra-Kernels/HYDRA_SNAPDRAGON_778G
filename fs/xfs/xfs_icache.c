@@ -589,6 +589,22 @@ out_destroy:
 	return error;
 }
 
+static void
+xfs_inew_wait(
+	struct xfs_inode	*ip)
+{
+	wait_queue_head_t *wq = bit_waitqueue(&ip->i_flags, __XFS_INEW_BIT);
+	DEFINE_WAIT_BIT(wait, &ip->i_flags, __XFS_INEW_BIT);
+
+	do {
+		prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+		if (!xfs_iflags_test(ip, XFS_INEW))
+			break;
+		schedule();
+	} while (true);
+	finish_wait(wq, &wait.wait);
+}
+
 /*
  * Look up an inode by number in the given file system.
  * The inode is looked up in the cache held in each AG.
@@ -975,6 +991,39 @@ xfs_inode_ag_iterator_flags(
 		}
 	}
 	return last_error;
+}
+
+int
+xfs_inode_ag_iterator_flags(
+	struct xfs_mount	*mp,
+	int			(*execute)(struct xfs_inode *ip, int flags,
+					   void *args),
+	int			flags,
+	void			*args,
+	int			iter_flags)
+{
+<<<<<<< HEAD
+	return xfs_inode_ag_iterator_flags(mp, execute, flags, args, 0);
+=======
+	struct xfs_perag	*pag;
+	int			error = 0;
+	int			last_error = 0;
+	xfs_agnumber_t		ag;
+
+	ag = 0;
+	while ((pag = xfs_perag_get(mp, ag))) {
+		ag = pag->pag_agno + 1;
+		error = xfs_inode_ag_walk(mp, pag, execute, flags, args, -1,
+					  iter_flags);
+		xfs_perag_put(pag);
+		if (error) {
+			last_error = error;
+			if (error == -EFSCORRUPTED)
+				break;
+		}
+	}
+	return last_error;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int

@@ -358,6 +358,13 @@ static int compat_sock_setsockopt(struct socket *sock, int level, int optname,
 	    optname == SO_ATTACH_REUSEPORT_CBPF)
 		return do_set_attach_filter(sock, level, optname,
 					    optval, optlen);
+<<<<<<< HEAD
+=======
+	if (!COMPAT_USE_64BIT_TIME &&
+	    (optname == SO_RCVTIMEO || optname == SO_SNDTIMEO))
+		return do_set_sock_timeout(sock, level, optname, optval, optlen);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return sock_setsockopt(sock, level, optname, optval, optlen);
 }
 
@@ -398,9 +405,79 @@ COMPAT_SYSCALL_DEFINE5(setsockopt, int, fd, int, level, int, optname,
 	return __compat_sys_setsockopt(fd, level, optname, optval, optlen);
 }
 
+<<<<<<< HEAD
 static int __compat_sys_getsockopt(int fd, int level, int optname,
 				   char __user *optval,
 				   int __user *optlen)
+=======
+static int compat_sock_getsockopt(struct socket *sock, int level, int optname,
+				char __user *optval, int __user *optlen)
+{
+	if (!COMPAT_USE_64BIT_TIME &&
+	    (optname == SO_RCVTIMEO || optname == SO_SNDTIMEO))
+		return do_get_sock_timeout(sock, level, optname, optval, optlen);
+	return sock_getsockopt(sock, level, optname, optval, optlen);
+}
+
+int compat_sock_get_timestamp(struct sock *sk, struct timeval __user *userstamp)
+{
+	struct compat_timeval __user *ctv;
+	int err;
+	struct timeval tv;
+
+	if (COMPAT_USE_64BIT_TIME)
+		return sock_get_timestamp(sk, userstamp);
+
+	ctv = (struct compat_timeval __user *) userstamp;
+	err = -ENOENT;
+	if (!sock_flag(sk, SOCK_TIMESTAMP))
+		sock_enable_timestamp(sk, SOCK_TIMESTAMP);
+	tv = ktime_to_timeval(sk->sk_stamp);
+	if (tv.tv_sec == -1)
+		return err;
+	if (tv.tv_sec == 0) {
+		sk->sk_stamp = ktime_get_real();
+		tv = ktime_to_timeval(sk->sk_stamp);
+	}
+	err = 0;
+	if (put_user(tv.tv_sec, &ctv->tv_sec) ||
+			put_user(tv.tv_usec, &ctv->tv_usec))
+		err = -EFAULT;
+	return err;
+}
+EXPORT_SYMBOL(compat_sock_get_timestamp);
+
+int compat_sock_get_timestampns(struct sock *sk, struct timespec __user *userstamp)
+{
+	struct compat_timespec __user *ctv;
+	int err;
+	struct timespec ts;
+
+	if (COMPAT_USE_64BIT_TIME)
+		return sock_get_timestampns (sk, userstamp);
+
+	ctv = (struct compat_timespec __user *) userstamp;
+	err = -ENOENT;
+	if (!sock_flag(sk, SOCK_TIMESTAMP))
+		sock_enable_timestamp(sk, SOCK_TIMESTAMP);
+	ts = ktime_to_timespec(sk->sk_stamp);
+	if (ts.tv_sec == -1)
+		return err;
+	if (ts.tv_sec == 0) {
+		sk->sk_stamp = ktime_get_real();
+		ts = ktime_to_timespec(sk->sk_stamp);
+	}
+	err = 0;
+	if (put_user(ts.tv_sec, &ctv->tv_sec) ||
+			put_user(ts.tv_nsec, &ctv->tv_nsec))
+		err = -EFAULT;
+	return err;
+}
+EXPORT_SYMBOL(compat_sock_get_timestampns);
+
+COMPAT_SYSCALL_DEFINE5(getsockopt, int, fd, int, level, int, optname,
+		       char __user *, optval, int __user *, optlen)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int err;
 	struct socket *sock = sockfd_lookup(fd, &err);

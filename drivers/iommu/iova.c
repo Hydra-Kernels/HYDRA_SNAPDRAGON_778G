@@ -153,7 +153,105 @@ __cached_rbnode_delete_update(struct iova_domain *iovad, struct iova *free)
 		iovad->cached_node = rb_next(&free->node);
 }
 
+<<<<<<< HEAD
 /* Insert the iova into domain rbtree by holding writer lock */
+=======
+/*
+ * Computes the padding size required, to make the start address
+ * naturally aligned on the power-of-two order of its size
+ */
+static unsigned int
+iova_get_pad_size(unsigned int size, unsigned int limit_pfn)
+{
+	return (limit_pfn + 1 - size) & (__roundup_pow_of_two(size) - 1);
+}
+
+static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
+		unsigned long size, unsigned long limit_pfn,
+			struct iova *new, bool size_aligned)
+{
+	struct rb_node *prev, *curr = NULL;
+	unsigned long flags;
+	unsigned long saved_pfn;
+	unsigned int pad_size = 0;
+
+	/* Walk the tree backwards */
+	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
+	saved_pfn = limit_pfn;
+	curr = __get_cached_rbnode(iovad, &limit_pfn);
+	prev = curr;
+	while (curr) {
+		struct iova *curr_iova = container_of(curr, struct iova, node);
+
+		if (limit_pfn < curr_iova->pfn_lo)
+			goto move_left;
+		else if (limit_pfn < curr_iova->pfn_hi)
+			goto adjust_limit_pfn;
+		else {
+			if (size_aligned)
+				pad_size = iova_get_pad_size(size, limit_pfn);
+			if ((curr_iova->pfn_hi + size + pad_size) <= limit_pfn)
+				break;	/* found a free slot */
+		}
+adjust_limit_pfn:
+		limit_pfn = curr_iova->pfn_lo ? (curr_iova->pfn_lo - 1) : 0;
+move_left:
+		prev = curr;
+		curr = rb_prev(curr);
+	}
+
+	if (!curr) {
+		if (size_aligned)
+			pad_size = iova_get_pad_size(size, limit_pfn);
+		if ((iovad->start_pfn + size + pad_size) > limit_pfn) {
+			spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
+			return -ENOMEM;
+		}
+	}
+
+	/* pfn_lo will point to size aligned address if size_aligned is set */
+	new->pfn_lo = limit_pfn - (size + pad_size) + 1;
+	new->pfn_hi = new->pfn_lo + size - 1;
+
+	/* Insert the new_iova into domain rbtree by holding writer lock */
+	/* Add new node and rebalance tree. */
+	{
+		struct rb_node **entry, *parent = NULL;
+
+		/* If we have 'prev', it's a valid place to start the
+		   insertion. Otherwise, start from the root. */
+		if (prev)
+			entry = &prev;
+		else
+			entry = &iovad->rbroot.rb_node;
+
+		/* Figure out where to put new node */
+		while (*entry) {
+			struct iova *this = container_of(*entry,
+							struct iova, node);
+			parent = *entry;
+
+			if (new->pfn_lo < this->pfn_lo)
+				entry = &((*entry)->rb_left);
+			else if (new->pfn_lo > this->pfn_lo)
+				entry = &((*entry)->rb_right);
+			else
+				BUG(); /* this should not happen */
+		}
+
+		/* Add new node and rebalance tree. */
+		rb_link_node(&new->node, parent, entry);
+		rb_insert_color(&new->node, &iovad->rbroot);
+	}
+	__cached_rbnode_insert_update(iovad, saved_pfn, new);
+
+	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
+
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void
 iova_insert_rbtree(struct rb_root *root, struct iova *iova,
 		   struct rb_node *start)

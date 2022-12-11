@@ -132,8 +132,11 @@ ext4_read_inode_bitmap(struct super_block *sb, ext4_group_t block_group)
 	    (bitmap_blk >= ext4_blocks_count(sbi->s_es))) {
 		ext4_error(sb, "Invalid inode bitmap blk %llu in "
 			   "block_group %u", bitmap_blk, block_group);
+<<<<<<< HEAD
 		ext4_mark_group_bitmap_corrupted(sb, block_group,
 					EXT4_GROUP_INFO_IBITMAP_CORRUPT);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return ERR_PTR(-EFSCORRUPTED);
 	}
 	bh = sb_getblk(sb, bitmap_blk);
@@ -1217,8 +1220,16 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
 	block_group = (ino - 1) / EXT4_INODES_PER_GROUP(sb);
 	bit = (ino - 1) % EXT4_INODES_PER_GROUP(sb);
 	bitmap_bh = ext4_read_inode_bitmap(sb, block_group);
+<<<<<<< HEAD
 	if (IS_ERR(bitmap_bh))
 		return ERR_CAST(bitmap_bh);
+=======
+	if (IS_ERR(bitmap_bh)) {
+		ext4_error(sb, "inode bitmap error %ld for orphan %lu",
+			   ino, PTR_ERR(bitmap_bh));
+		return (struct inode *) bitmap_bh;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Having the inode bit set should be a 100% indicator that this
 	 * is a valid orphan (no e2fsck run on fs).  Orphans also include
@@ -1227,7 +1238,11 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
 	if (!ext4_test_bit(bit, bitmap_bh->b_data))
 		goto bad_orphan;
 
+<<<<<<< HEAD
 	inode = ext4_iget(sb, ino, EXT4_IGET_NORMAL);
+=======
+	inode = ext4_iget(sb, ino);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (IS_ERR(inode)) {
 		err = PTR_ERR(inode);
 		ext4_error(sb, "couldn't read orphan inode %lu (err %d)",
@@ -1391,6 +1406,7 @@ int ext4_init_inode_table(struct super_block *sb, ext4_group_t group,
 			    ext4_itable_unused_count(sb, gdp);
 		used_blks = DIV_ROUND_UP(used_inos, sbi->s_inodes_per_block);
 
+<<<<<<< HEAD
 		/* Bogus inode unused count? */
 		if (used_blks < 0 || used_blks > sbi->s_itb_per_group) {
 			ext4_error(sb, "Something is wrong with group %u: "
@@ -1417,6 +1433,19 @@ int ext4_init_inode_table(struct super_block *sb, ext4_group_t group,
 			ret = 1;
 			goto err_out;
 		}
+=======
+	if ((used_blks < 0) || (used_blks > sbi->s_itb_per_group) ||
+	    ((group == 0) && ((EXT4_INODES_PER_GROUP(sb) -
+			       ext4_itable_unused_count(sb, gdp)) <
+			      EXT4_FIRST_INO(sb)))) {
+		ext4_error(sb, "Something is wrong with group %u: "
+			   "used itable blocks: %d; "
+			   "itable unused count: %u",
+			   group, used_blks,
+			   ext4_itable_unused_count(sb, gdp));
+		ret = 1;
+		goto err_out;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	blk = ext4_inode_table(sb, gdp) + used_blks;

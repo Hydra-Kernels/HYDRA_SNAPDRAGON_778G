@@ -15,7 +15,10 @@
  * User space memory access functions
  */
 #include <linux/bitops.h>
+<<<<<<< HEAD
 #include <linux/kasan-checks.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/string.h>
 
 #include <asm/cpufeature.h>
@@ -58,6 +61,7 @@ static inline void set_fs(mm_segment_t fs)
  * This is equivalent to the following test:
  * (u65)addr + (u65)size <= (u65)current->addr_limit + 1
  */
+<<<<<<< HEAD
 static inline unsigned long __range_ok(const void __user *addr, unsigned long size)
 {
 	unsigned long ret, limit = current_thread_info()->addr_limit;
@@ -93,6 +97,29 @@ static inline unsigned long __range_ok(const void __user *addr, unsigned long si
 }
 
 #define access_ok(addr, size)	__range_ok(addr, size)
+=======
+#define __range_ok(addr, size)						\
+({									\
+	unsigned long __addr = (unsigned long __force)(addr);		\
+	unsigned long flag, roksum;					\
+	__chk_user_ptr(addr);						\
+	asm("adds %1, %1, %3; ccmp %1, %4, #2, cc; cset %0, ls"		\
+		: "=&r" (flag), "=&r" (roksum)				\
+		: "1" (__addr), "Ir" (size),				\
+		  "r" (current_thread_info()->addr_limit)		\
+		: "cc");						\
+	flag;								\
+})
+
+/*
+ * When dealing with data aborts, watchpoints, or instruction traps we may end
+ * up with a tagged userland pointer. Clear the tag to get a sane pointer to
+ * pass on to access_ok(), for instance.
+ */
+#define untagged_addr(addr)		sign_extend64(addr, 55)
+
+#define access_ok(type, addr, size)	__range_ok(addr, size)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define user_addr_max			get_fs
 
 #define _ASM_EXTABLE(from, to)						\

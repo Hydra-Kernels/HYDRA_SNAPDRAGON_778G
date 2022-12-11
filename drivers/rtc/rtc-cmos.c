@@ -39,8 +39,11 @@
 #include <linux/of_platform.h>
 #ifdef CONFIG_X86
 #include <asm/i8259.h>
+<<<<<<< HEAD
 #include <asm/processor.h>
 #include <linux/dmi.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 /* this is for "generic access to PC-style RTC" using CMOS_READ/CMOS_WRITE */

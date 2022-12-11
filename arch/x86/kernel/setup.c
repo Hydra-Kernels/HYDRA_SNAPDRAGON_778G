@@ -117,8 +117,12 @@
 #include <asm/alternative.h>
 #include <asm/prom.h>
 #include <asm/microcode.h>
+<<<<<<< HEAD
 #include <asm/kaslr.h>
 #include <asm/unwind.h>
+=======
+#include <asm/kaiser.h>
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * max_low_pfn_mapped: highest direct mapped pfn under 4GB
@@ -851,6 +855,12 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	memblock_reserve(0, PAGE_SIZE);
 
+	/*
+	 * Make sure page 0 is always reserved because on systems with
+	 * L1TF its contents can be leaked to user processes.
+	 */
+	memblock_reserve(0, PAGE_SIZE);
+
 	early_reserve_initrd();
 
 	/*
@@ -1035,7 +1045,16 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	init_hypervisor_platform();
 
+<<<<<<< HEAD
 	tsc_early_init();
+=======
+	/*
+	 * This needs to happen right after XENPV is set on xen and
+	 * kaiser_enabled is checked below in cleanup_highmap().
+	 */
+	kaiser_check_boottime_disable();
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	x86_init.resources.probe_roms();
 
 	/* after parse_early_param, so could debug it */
@@ -1082,6 +1101,13 @@ void __init setup_arch(char **cmdline_p)
 	 * defined and before each memory section base is used.
 	 */
 	kernel_randomize_memory();
+
+	/*
+	 * This call is required when the CPU does not support PAT. If
+	 * mtrr_bp_init() invoked it already via pat_init() the call has no
+	 * effect.
+	 */
+	init_cache_modes();
 
 #ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */

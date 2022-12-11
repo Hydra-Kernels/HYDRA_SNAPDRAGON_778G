@@ -298,12 +298,19 @@ struct key *key_alloc(struct key_type *type, const char *desc,
 
 	if (!(flags & KEY_ALLOC_NOT_IN_QUOTA))
 		key->flags |= 1 << KEY_FLAG_IN_QUOTA;
+<<<<<<< HEAD
 	if (flags & KEY_ALLOC_BUILT_IN)
 		key->flags |= 1 << KEY_FLAG_BUILTIN;
 	if (flags & KEY_ALLOC_UID_KEYRING)
 		key->flags |= 1 << KEY_FLAG_UID_KEYRING;
 	if (flags & KEY_ALLOC_SET_KEEP)
 		key->flags |= 1 << KEY_FLAG_KEEP;
+=======
+	if (flags & KEY_ALLOC_TRUSTED)
+		key->flags |= 1 << KEY_FLAG_TRUSTED;
+	if (flags & KEY_ALLOC_UID_KEYRING)
+		key->flags |= 1 << KEY_FLAG_UID_KEYRING;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #ifdef KEY_DEBUGGING
 	key->magic = KEY_DEBUG_MAGIC;
@@ -602,7 +609,12 @@ int key_reject_and_link(struct key *key,
 		/* mark the key as being negatively instantiated */
 		atomic_inc(&key->user->nikeys);
 		mark_key_instantiated(key, -error);
+<<<<<<< HEAD
 		key->expiry = ktime_get_real_seconds() + timeout;
+=======
+		now = current_kernel_time();
+		key->expiry = now.tv_sec + timeout;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		key_schedule_gc(key->expiry + key_gc_delay);
 
 		if (test_and_clear_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags))

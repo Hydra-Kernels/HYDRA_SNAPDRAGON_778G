@@ -178,7 +178,11 @@ static void ipip6_tunnel_clone_6rd(struct net_device *dev, struct sit_net *sitn)
 #ifdef CONFIG_IPV6_SIT_6RD
 	struct ip_tunnel *t = netdev_priv(dev);
 
+<<<<<<< HEAD
 	if (dev == sitn->fb_tunnel_dev || !sitn->fb_tunnel_dev) {
+=======
+	if (dev == sitn->fb_tunnel_dev) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ipv6_addr_set(&t->ip6rd.prefix, htonl(0x20020000), 0, 0, 0);
 		t->ip6rd.relay_prefix = 0;
 		t->ip6rd.prefixlen = 16;
@@ -528,13 +532,22 @@ static int ipip6_err(struct sk_buff *skb, u32 info)
 
 	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) {
 		ipv4_update_pmtu(skb, dev_net(skb->dev), info,
+<<<<<<< HEAD
 				 t->parms.link, iph->protocol);
+=======
+				 t->parms.link, 0, iph->protocol, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = 0;
 		goto out;
 	}
 	if (type == ICMP_REDIRECT) {
+<<<<<<< HEAD
 		ipv4_redirect(skb, dev_net(skb->dev), t->parms.link,
 			      iph->protocol);
+=======
+		ipv4_redirect(skb, dev_net(skb->dev), t->parms.link, 0,
+			      iph->protocol, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		err = 0;
 		goto out;
 	}
@@ -659,8 +672,12 @@ static int ipip6_rcv(struct sk_buff *skb)
 			goto out;
 		}
 
+<<<<<<< HEAD
 		if (iptunnel_pull_header(skb, 0, htons(ETH_P_IPV6),
 		    !net_eq(tunnel->net, dev_net(tunnel->dev))))
+=======
+		if (iptunnel_pull_header(skb, 0, htons(ETH_P_IPV6)))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto out;
 
 		/* skb can be uncloned in iptunnel_pull_header, so
@@ -1108,7 +1125,11 @@ static void ipip6_tunnel_update(struct ip_tunnel *t, struct ip_tunnel_parm *p,
 	t->parms.iph.ttl = p->iph.ttl;
 	t->parms.iph.tos = p->iph.tos;
 	t->parms.iph.frag_off = p->iph.frag_off;
+<<<<<<< HEAD
 	if (t->parms.link != p->link || t->fwmark != fwmark) {
+=======
+	if (t->parms.link != p->link) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		t->parms.link = p->link;
 		t->fwmark = fwmark;
 		ipip6_tunnel_bind_dev(t->dev);
@@ -1588,8 +1609,12 @@ static int ipip6_newlink(struct net *src_net, struct net_device *dev,
 	if (tb[IFLA_MTU]) {
 		u32 mtu = nla_get_u32(tb[IFLA_MTU]);
 
+<<<<<<< HEAD
 		if (mtu >= IPV6_MIN_MTU &&
 		    mtu <= IP6_MAX_MTU - dev->hard_header_len)
+=======
+		if (mtu >= IPV6_MIN_MTU && mtu <= 0xFFF8 - dev->hard_header_len)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			dev->mtu = mtu;
 	}
 

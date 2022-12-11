@@ -375,18 +375,44 @@ void xenbus_dev_queue_reply(struct xb_req_data *req)
 		trans = xenbus_get_transaction(u, 0);
 		if (WARN_ON(!trans))
 			goto out;
+<<<<<<< HEAD
 		if (req->msg.type == XS_ERROR) {
 			list_del(&trans->list);
+=======
+		}
+	} else if (u->u.msg.tx_id != 0) {
+		list_for_each_entry(trans, &u->transactions, list)
+			if (trans->handle.id == u->u.msg.tx_id)
+				break;
+		if (&trans->list == &u->transactions)
+			return -ESRCH;
+	}
+
+	reply = xenbus_dev_request_and_reply(&u->u.msg);
+	if (IS_ERR(reply)) {
+		if (msg_type == XS_TRANSACTION_START)
+			kfree(trans);
+		rc = PTR_ERR(reply);
+		goto out;
+	}
+
+	if (msg_type == XS_TRANSACTION_START) {
+		if (u->u.msg.type == XS_ERROR)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			kfree(trans);
 		} else {
 			rc = kstrtou32(req->body, 10, &trans->handle.id);
 			if (WARN_ON(rc))
 				goto out;
 		}
+<<<<<<< HEAD
 	} else if (req->type == XS_TRANSACTION_END) {
 		trans = xenbus_get_transaction(u, req->msg.tx_id);
 		if (WARN_ON(!trans))
 			goto out;
+=======
+	} else if (u->u.msg.type == XS_TRANSACTION_END) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		list_del(&trans->list);
 		kfree(trans);
 	}

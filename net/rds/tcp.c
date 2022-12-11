@@ -723,7 +723,7 @@ static int rds_tcp_init(void)
 
 	ret = rds_tcp_recv_init();
 	if (ret)
-		goto out_slab;
+		goto out_pernet;
 
 	ret = register_pernet_device(&rds_tcp_net_ops);
 	if (ret)
@@ -739,6 +739,11 @@ static int rds_tcp_init(void)
 	goto out;
 out_recv:
 	rds_tcp_recv_exit();
+<<<<<<< HEAD
+=======
+out_pernet:
+	unregister_pernet_subsys(&rds_tcp_net_ops);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 out_slab:
 	kmem_cache_destroy(rds_tcp_conn_slab);
 out:

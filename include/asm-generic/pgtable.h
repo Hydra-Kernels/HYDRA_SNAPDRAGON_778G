@@ -1056,9 +1056,14 @@ int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot);
 int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot);
 int pud_clear_huge(pud_t *pud);
 int pmd_clear_huge(pmd_t *pmd);
+<<<<<<< HEAD
 int p4d_free_pud_page(p4d_t *p4d, unsigned long addr);
 int pud_free_pmd_page(pud_t *pud, unsigned long addr);
 int pmd_free_pte_page(pmd_t *pmd, unsigned long addr);
+=======
+int pud_free_pmd_page(pud_t *pud);
+int pmd_free_pte_page(pmd_t *pmd);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else	/* !CONFIG_HAVE_ARCH_HUGE_VMAP */
 static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
 {
@@ -1084,6 +1089,7 @@ static inline int pmd_clear_huge(pmd_t *pmd)
 {
 	return 0;
 }
+<<<<<<< HEAD
 static inline int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
 {
 	return 0;
@@ -1093,11 +1099,19 @@ static inline int pud_free_pmd_page(pud_t *pud, unsigned long addr)
 	return 0;
 }
 static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+=======
+static inline int pud_free_pmd_page(pud_t *pud)
+{
+	return 0;
+}
+static inline int pmd_free_pte_page(pmd_t *pmd)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return 0;
 }
 #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
+<<<<<<< HEAD
 #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 /*
@@ -1127,6 +1141,8 @@ static inline void init_espfix_bsp(void) { }
 
 extern void __init pgtable_cache_init(void);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
 static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {
@@ -1139,6 +1155,7 @@ static inline bool arch_has_pfn_modify_check(void)
 }
 #endif /* !_HAVE_ARCH_PFN_MODIFY_ALLOWED */
 
+<<<<<<< HEAD
 /*
  * Architecture PAGE_KERNEL_* fallbacks
  *
@@ -1157,6 +1174,8 @@ static inline bool arch_has_pfn_modify_check(void)
 # define PAGE_KERNEL_EXEC PAGE_KERNEL
 #endif
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* !__ASSEMBLY__ */
 
 #if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)

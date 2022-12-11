@@ -349,8 +349,16 @@ config ARM_PXA2xx_CPUFREQ
 
 	  If in doubt, say N.
 
+<<<<<<< HEAD
 config CPU_FREQ_MSM
 	bool "MSM CPUFreq support"
 	depends on CPU_FREQ
+=======
+config ACPI_CPPC_CPUFREQ
+	tristate "CPUFreq driver based on the ACPI CPPC spec"
+	depends on ACPI_PROCESSOR
+	select ACPI_CPPC_LIB
+	default n
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  This enables the CPUFreq driver for Qualcomm Technologies, Inc. CPUs.

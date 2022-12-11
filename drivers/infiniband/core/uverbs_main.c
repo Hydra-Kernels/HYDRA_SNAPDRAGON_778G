@@ -53,6 +53,8 @@
 #include <rdma/uverbs_std_types.h>
 #include <rdma/rdma_netlink.h>
 
+#include <rdma/ib.h>
+
 #include "uverbs.h"
 #include "core_priv.h"
 #include "rdma_core.h"
@@ -183,6 +185,110 @@ void ib_uverbs_detach_umcast(struct ib_qp *qp,
 	}
 }
 
+<<<<<<< HEAD
+=======
+static int ib_uverbs_cleanup_ucontext(struct ib_uverbs_file *file,
+				      struct ib_ucontext *context)
+{
+	struct ib_uobject *uobj, *tmp;
+
+	context->closing = 1;
+
+	list_for_each_entry_safe(uobj, tmp, &context->ah_list, list) {
+		struct ib_ah *ah = uobj->object;
+
+		idr_remove_uobj(&ib_uverbs_ah_idr, uobj);
+		ib_destroy_ah(ah);
+		kfree(uobj);
+	}
+
+	/* Remove MWs before QPs, in order to support type 2A MWs. */
+	list_for_each_entry_safe(uobj, tmp, &context->mw_list, list) {
+		struct ib_mw *mw = uobj->object;
+
+		idr_remove_uobj(&ib_uverbs_mw_idr, uobj);
+		ib_dealloc_mw(mw);
+		kfree(uobj);
+	}
+
+	list_for_each_entry_safe(uobj, tmp, &context->rule_list, list) {
+		struct ib_flow *flow_id = uobj->object;
+
+		idr_remove_uobj(&ib_uverbs_rule_idr, uobj);
+		ib_destroy_flow(flow_id);
+		kfree(uobj);
+	}
+
+	list_for_each_entry_safe(uobj, tmp, &context->qp_list, list) {
+		struct ib_qp *qp = uobj->object;
+		struct ib_uqp_object *uqp =
+			container_of(uobj, struct ib_uqp_object, uevent.uobject);
+
+		idr_remove_uobj(&ib_uverbs_qp_idr, uobj);
+		if (qp == qp->real_qp)
+			ib_uverbs_detach_umcast(qp, uqp);
+		ib_destroy_qp(qp);
+		ib_uverbs_release_uevent(file, &uqp->uevent);
+		kfree(uqp);
+	}
+
+	list_for_each_entry_safe(uobj, tmp, &context->srq_list, list) {
+		struct ib_srq *srq = uobj->object;
+		struct ib_uevent_object *uevent =
+			container_of(uobj, struct ib_uevent_object, uobject);
+
+		idr_remove_uobj(&ib_uverbs_srq_idr, uobj);
+		ib_destroy_srq(srq);
+		ib_uverbs_release_uevent(file, uevent);
+		kfree(uevent);
+	}
+
+	list_for_each_entry_safe(uobj, tmp, &context->cq_list, list) {
+		struct ib_cq *cq = uobj->object;
+		struct ib_uverbs_event_file *ev_file = cq->cq_context;
+		struct ib_ucq_object *ucq =
+			container_of(uobj, struct ib_ucq_object, uobject);
+
+		idr_remove_uobj(&ib_uverbs_cq_idr, uobj);
+		ib_destroy_cq(cq);
+		ib_uverbs_release_ucq(file, ev_file, ucq);
+		kfree(ucq);
+	}
+
+	list_for_each_entry_safe(uobj, tmp, &context->mr_list, list) {
+		struct ib_mr *mr = uobj->object;
+
+		idr_remove_uobj(&ib_uverbs_mr_idr, uobj);
+		ib_dereg_mr(mr);
+		kfree(uobj);
+	}
+
+	mutex_lock(&file->device->xrcd_tree_mutex);
+	list_for_each_entry_safe(uobj, tmp, &context->xrcd_list, list) {
+		struct ib_xrcd *xrcd = uobj->object;
+		struct ib_uxrcd_object *uxrcd =
+			container_of(uobj, struct ib_uxrcd_object, uobject);
+
+		idr_remove_uobj(&ib_uverbs_xrcd_idr, uobj);
+		ib_uverbs_dealloc_xrcd(file->device, xrcd);
+		kfree(uxrcd);
+	}
+	mutex_unlock(&file->device->xrcd_tree_mutex);
+
+	list_for_each_entry_safe(uobj, tmp, &context->pd_list, list) {
+		struct ib_pd *pd = uobj->object;
+
+		idr_remove_uobj(&ib_uverbs_pd_idr, uobj);
+		ib_dealloc_pd(pd);
+		kfree(uobj);
+	}
+
+	put_pid(context->tgid);
+
+	return context->device->dealloc_ucontext(context);
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void ib_uverbs_comp_dev(struct ib_uverbs_device *dev)
 {
 	complete(&dev->comp);
@@ -668,6 +774,7 @@ static ssize_t ib_uverbs_write(struct file *filp, const char __user *buf,
 	int srcu_key;
 	ssize_t ret;
 
+<<<<<<< HEAD
 	if (!ib_safe_file_access(filp)) {
 		pr_err_once("uverbs_write: process %d (%s) changed security contexts after opening file descriptor, this is not allowed.\n",
 			    task_tgid_vnr(current), current->comm);
@@ -675,6 +782,12 @@ static ssize_t ib_uverbs_write(struct file *filp, const char __user *buf,
 	}
 
 	if (count < sizeof(hdr))
+=======
+	if (WARN_ON_ONCE(!ib_safe_file_access(filp)))
+		return -EACCES;
+
+	if (count < sizeof hdr)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 
 	if (copy_from_user(&hdr, buf, sizeof(hdr)))
@@ -1085,6 +1198,7 @@ static int ib_uverbs_open(struct inode *inode, struct file *filp)
 
 	file->device	 = dev;
 	kref_init(&file->ref);
+<<<<<<< HEAD
 	mutex_init(&file->ucontext_lock);
 
 	spin_lock_init(&file->uobjects_lock);
@@ -1092,6 +1206,10 @@ static int ib_uverbs_open(struct inode *inode, struct file *filp)
 	init_rwsem(&file->hw_destroy_rwsem);
 	mutex_init(&file->umap_lock);
 	INIT_LIST_HEAD(&file->umaps);
+=======
+	mutex_init(&file->mutex);
+	mutex_init(&file->cleanup_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	filp->private_data = file;
 	list_add_tail(&file->list, &dev->uverbs_file_list);
@@ -1118,12 +1236,33 @@ err:
 static int ib_uverbs_close(struct inode *inode, struct file *filp)
 {
 	struct ib_uverbs_file *file = filp->private_data;
+<<<<<<< HEAD
 
 	uverbs_destroy_ufile_hw(file, RDMA_REMOVE_CLOSE);
 
 	mutex_lock(&file->device->lists_mutex);
 	list_del_init(&file->list);
 	mutex_unlock(&file->device->lists_mutex);
+=======
+	struct ib_uverbs_device *dev = file->device;
+
+	mutex_lock(&file->cleanup_mutex);
+	if (file->ucontext) {
+		ib_uverbs_cleanup_ucontext(file, file->ucontext);
+		file->ucontext = NULL;
+	}
+	mutex_unlock(&file->cleanup_mutex);
+
+	mutex_lock(&file->device->lists_mutex);
+	if (!file->is_closed) {
+		list_del(&file->list);
+		file->is_closed = 1;
+	}
+	mutex_unlock(&file->device->lists_mutex);
+
+	if (file->async_file)
+		kref_put(&file->async_file->ref, ib_uverbs_release_event_file);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	kref_put(&file->ref, ib_uverbs_release_file);
 
@@ -1339,6 +1478,7 @@ static void ib_uverbs_free_hw_resources(struct ib_uverbs_device *uverbs_dev,
 
 	mutex_lock(&uverbs_dev->lists_mutex);
 	while (!list_empty(&uverbs_dev->uverbs_file_list)) {
+<<<<<<< HEAD
 		file = list_first_entry(&uverbs_dev->uverbs_file_list,
 					struct ib_uverbs_file, list);
 		list_del_init(&file->list);
@@ -1354,6 +1494,36 @@ static void ib_uverbs_free_hw_resources(struct ib_uverbs_device *uverbs_dev,
 		ib_uverbs_event_handler(&file->event_handler, &event);
 		uverbs_destroy_ufile_hw(file, RDMA_REMOVE_DRIVER_REMOVE);
 		kref_put(&file->ref, ib_uverbs_release_file);
+=======
+		struct ib_ucontext *ucontext;
+		file = list_first_entry(&uverbs_dev->uverbs_file_list,
+					struct ib_uverbs_file, list);
+		file->is_closed = 1;
+		list_del(&file->list);
+		kref_get(&file->ref);
+		mutex_unlock(&uverbs_dev->lists_mutex);
+
+		ib_uverbs_event_handler(&file->event_handler, &event);
+
+		mutex_lock(&file->cleanup_mutex);
+		ucontext = file->ucontext;
+		file->ucontext = NULL;
+		mutex_unlock(&file->cleanup_mutex);
+
+		/* At this point ib_uverbs_close cannot be running
+		 * ib_uverbs_cleanup_ucontext
+		 */
+		if (ucontext) {
+			/* We must release the mutex before going ahead and
+			 * calling disassociate_ucontext. disassociate_ucontext
+			 * might end up indirectly calling uverbs_close,
+			 * for example due to freeing the resources
+			 * (e.g mmput).
+			 */
+			ib_dev->disassociate_ucontext(ucontext);
+			ib_uverbs_cleanup_ucontext(file, ucontext);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		mutex_lock(&uverbs_dev->lists_mutex);
 	}

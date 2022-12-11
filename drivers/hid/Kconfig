@@ -206,7 +206,11 @@ config HID_CHERRY
 
 config HID_CHICONY
 	tristate "Chicony devices"
+<<<<<<< HEAD
 	depends on USB_HID
+=======
+	depends on HID
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	default !EXPERT
 	---help---
 	Support for Chicony Tactical pad and special keys on Chicony keyboards.

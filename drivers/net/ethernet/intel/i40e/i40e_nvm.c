@@ -308,6 +308,7 @@ i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
 {
 	i40e_status ret_code = 0;
 
+<<<<<<< HEAD
 	if (hw->flags & I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK)
 		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
 	if (ret_code)
@@ -387,6 +388,16 @@ i40e_status i40e_read_nvm_module_data(struct i40e_hw *hw,
 				   "Reading nvm buffer failed.Error code: %d.\n",
 				   status);
 		}
+=======
+	ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
+	if (!ret_code) {
+		if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
+			ret_code = i40e_read_nvm_word_aq(hw, offset, data);
+		} else {
+			ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
+		}
+		i40e_release_nvm(hw);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return status;

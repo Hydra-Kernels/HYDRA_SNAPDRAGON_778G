@@ -41,12 +41,15 @@ struct br_ip_list {
 #define BR_PROXYARP		BIT(8)
 #define BR_LEARNING_SYNC	BIT(9)
 #define BR_PROXYARP_WIFI	BIT(10)
+<<<<<<< HEAD
 #define BR_MCAST_FLOOD		BIT(11)
 #define BR_MULTICAST_TO_UNICAST	BIT(12)
 #define BR_VLAN_TUNNEL		BIT(13)
 #define BR_BCAST_FLOOD		BIT(14)
 #define BR_NEIGH_SUPPRESS	BIT(15)
 #define BR_ISOLATED		BIT(16)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define BR_DEFAULT_AGEING_TIME	(300 * HZ)
 

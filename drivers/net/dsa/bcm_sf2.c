@@ -536,7 +536,12 @@ static void bcm_sf2_sw_mac_config(struct dsa_switch *ds, int port,
 				  unsigned int mode,
 				  const struct phylink_link_state *state)
 {
+<<<<<<< HEAD
 	struct bcm_sf2_priv *priv = bcm_sf2_to_priv(ds);
+=======
+	struct bcm_sf2_priv *priv = ds_to_priv(ds);
+	struct ethtool_eee *p = &priv->port_sts[port].eee;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	u32 id_mode_dis = 0, port_mode;
 	u32 reg, offset;
 
@@ -603,7 +608,14 @@ force_link:
 	if (state->duplex == DUPLEX_FULL)
 		reg |= DUPLX_MODE;
 
+<<<<<<< HEAD
 	core_writel(priv, reg, offset);
+=======
+	core_writel(priv, reg, CORE_STS_OVERRIDE_GMIIP_PORT(port));
+
+	if (!phydev->is_pseudo_fixed_link)
+		p->eee_enabled = bcm_sf2_eee_init(ds, port, phydev);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void bcm_sf2_sw_mac_link_set(struct dsa_switch *ds, int port,

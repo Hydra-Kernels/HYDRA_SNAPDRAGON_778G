@@ -226,8 +226,12 @@ int
 ext4_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 {
 	handle_t *handle;
+<<<<<<< HEAD
 	int error, credits, retries = 0;
 	size_t acl_size = acl ? ext4_acl_size(acl->a_count) : 0;
+=======
+	int error, retries = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	umode_t mode = inode->i_mode;
 	int update_mode = 0;
 
@@ -248,6 +252,7 @@ retry:
 		error = posix_acl_update_mode(inode, &mode, &acl);
 		if (error)
 			goto out_stop;
+<<<<<<< HEAD
 		if (mode != inode->i_mode)
 			update_mode = 1;
 	}
@@ -256,6 +261,15 @@ retry:
 	if (!error && update_mode) {
 		inode->i_mode = mode;
 		inode->i_ctime = current_time(inode);
+=======
+		update_mode = 1;
+	}
+
+	error = __ext4_set_acl(handle, inode, type, acl);
+	if (!error && update_mode) {
+		inode->i_mode = mode;
+		inode->i_ctime = ext4_current_time(inode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ext4_mark_inode_dirty(handle, inode);
 	}
 out_stop:

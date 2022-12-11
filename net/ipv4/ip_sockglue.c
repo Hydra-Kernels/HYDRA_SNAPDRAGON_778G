@@ -150,15 +150,29 @@ static void ip_cmsg_recv_dstaddr(struct msghdr *msg, struct sk_buff *skb)
 {
 	__be16 _ports[2], *ports;
 	struct sockaddr_in sin;
+<<<<<<< HEAD
+=======
+	const struct iphdr *iph = ip_hdr(skb);
+	__be16 *ports;
+	int end;
+
+	end = skb_transport_offset(skb) + 4;
+	if (end > 0 && !pskb_may_pull(skb, end))
+		return;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* All current transport protocols have the port numbers in the
 	 * first four bytes of the transport header and this function is
 	 * written with this assumption in mind.
 	 */
+<<<<<<< HEAD
 	ports = skb_header_pointer(skb, skb_transport_offset(skb),
 				   sizeof(_ports), &_ports);
 	if (!ports)
 		return;
+=======
+	ports = (__be16 *)skb_transport_header(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = ip_hdr(skb)->daddr;
@@ -168,8 +182,13 @@ static void ip_cmsg_recv_dstaddr(struct msghdr *msg, struct sk_buff *skb)
 	put_cmsg(msg, SOL_IP, IP_ORIGDSTADDR, sizeof(sin), &sin);
 }
 
+<<<<<<< HEAD
 void ip_cmsg_recv_offset(struct msghdr *msg, struct sock *sk,
 			 struct sk_buff *skb, int tlen, int offset)
+=======
+void ip_cmsg_recv_offset(struct msghdr *msg, struct sk_buff *skb,
+			 int tlen, int offset)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct inet_sock *inet = inet_sk(sk);
 	unsigned int flags = inet->cmsg_flags;
@@ -233,9 +252,12 @@ void ip_cmsg_recv_offset(struct msghdr *msg, struct sock *sk,
 
 	if (flags & IP_CMSG_CHECKSUM)
 		ip_cmsg_recv_checksum(msg, skb, tlen, offset);
+<<<<<<< HEAD
 
 	if (flags & IP_CMSG_RECVFRAGSIZE)
 		ip_cmsg_recv_fragsize(msg, skb);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(ip_cmsg_recv_offset);
 
@@ -277,7 +299,11 @@ int ip_cmsg_send(struct sock *sk, struct msghdr *msg, struct ipcm_cookie *ipc,
 			continue;
 		switch (cmsg->cmsg_type) {
 		case IP_RETOPTS:
+<<<<<<< HEAD
 			err = cmsg->cmsg_len - sizeof(struct cmsghdr);
+=======
+			err = cmsg->cmsg_len - CMSG_ALIGN(sizeof(struct cmsghdr));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			/* Our caller is responsible for freeing ipc->opt */
 			err = ip_options_get(net, &ipc->opt, CMSG_DATA(cmsg),
@@ -1234,7 +1260,14 @@ void ipv4_pktinfo_prepare(const struct sock *sk, struct sk_buff *skb)
 		pktinfo->ipi_ifindex = 0;
 		pktinfo->ipi_spec_dst.s_addr = 0;
 	}
-	skb_dst_drop(skb);
+	/* We need to keep the dst for __ip_options_echo()
+	 * We could restrict the test to opt.ts_needtime || opt.srr,
+	 * but the following is good enough as IP options are not often used.
+	 */
+	if (unlikely(IPCB(skb)->opt.optlen))
+		skb_dst_force(skb);
+	else
+		skb_dst_drop(skb);
 }
 
 int ip_setsockopt(struct sock *sk, int level,

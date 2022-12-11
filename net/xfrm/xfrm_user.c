@@ -131,7 +131,11 @@ static inline int verify_replay(struct xfrm_usersa_info *p,
 	if (rs->bmp_len > XFRMA_REPLAY_ESN_MAX / sizeof(rs->bmp[0]) / 8)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (nla_len(rt) < (int)xfrm_replay_state_esn_len(rs) &&
+=======
+	if (nla_len(rt) < xfrm_replay_state_esn_len(rs) &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    nla_len(rt) != sizeof(*rs))
 		return -EINVAL;
 
@@ -436,7 +440,11 @@ static inline int xfrm_replay_verify_len(struct xfrm_replay_state_esn *replay_es
 
 	/* Check the overall length and the internal bitmap length to avoid
 	 * potential overflow. */
+<<<<<<< HEAD
 	if (nla_len(rp) < (int)ulen ||
+=======
+	if (nla_len(rp) < ulen ||
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    xfrm_replay_state_esn_len(replay_esn) != ulen ||
 	    replay_esn->bmp_len != up->bmp_len)
 		return -EINVAL;
@@ -1545,6 +1553,7 @@ static int validate_tmpl(int nr, struct xfrm_user_tmpl *ut, u16 family)
 		if (!ut[i].family)
 			ut[i].family = family;
 
+<<<<<<< HEAD
 		switch (ut[i].mode) {
 		case XFRM_MODE_TUNNEL:
 		case XFRM_MODE_BEET:
@@ -1555,6 +1564,10 @@ static int validate_tmpl(int nr, struct xfrm_user_tmpl *ut, u16 family)
 			break;
 		}
 		if (ut[i].mode >= XFRM_MODE_MAX)
+=======
+		if ((ut[i].mode == XFRM_MODE_TRANSPORT) &&
+		    (ut[i].family != prev_family))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			return -EINVAL;
 
 		prev_family = ut[i].family;
@@ -1570,8 +1583,25 @@ static int validate_tmpl(int nr, struct xfrm_user_tmpl *ut, u16 family)
 			return -EINVAL;
 		}
 
+<<<<<<< HEAD
 		if (!xfrm_id_proto_valid(ut[i].id.proto))
 			return -EINVAL;
+=======
+		switch (ut[i].id.proto) {
+		case IPPROTO_AH:
+		case IPPROTO_ESP:
+		case IPPROTO_COMP:
+#if IS_ENABLED(CONFIG_IPV6)
+		case IPPROTO_ROUTING:
+		case IPPROTO_DSTOPTS:
+#endif
+		case IPSEC_PROTO_ANY:
+			break;
+		default:
+			return -EINVAL;
+		}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;
@@ -2694,6 +2724,14 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 	struct nlmsghdr *nlh64 = NULL;
 	int type, err;
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_COMPAT
+	if (is_compat_task())
+		return -EOPNOTSUPP;
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	type = nlh->nlmsg_type;
 	if (type > XFRM_MSG_MAX)
 		return -EINVAL;
@@ -2710,6 +2748,7 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 		if (in_compat_syscall()) {
 			struct xfrm_translator *xtr = xfrm_get_translator();
 
+<<<<<<< HEAD
 			if (!xtr)
 				return -EOPNOTSUPP;
 
@@ -2720,6 +2759,15 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 				return PTR_ERR(nlh64);
 			if (nlh64)
 				nlh = nlh64;
+=======
+		{
+			struct netlink_dump_control c = {
+				.start = link->start,
+				.dump = link->dump,
+				.done = link->done,
+			};
+			return netlink_dump_start(net->xfrm.nlsk, skb, nlh, &c);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 

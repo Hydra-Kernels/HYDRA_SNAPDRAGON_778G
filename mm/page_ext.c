@@ -134,7 +134,11 @@ struct page_ext *lookup_page_ext(const struct page *page)
 	 */
 	if (unlikely(!base))
 		return NULL;
+<<<<<<< HEAD
 	index = pfn - round_down(node_start_pfn(page_to_nid(page)),
+=======
+	offset = pfn - round_down(node_start_pfn(page_to_nid(page)),
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					MAX_ORDER_NR_PAGES);
 	return get_entry(base, index);
 }
@@ -205,7 +209,11 @@ struct page_ext *lookup_page_ext(const struct page *page)
 	 */
 	if (!section->page_ext)
 		return NULL;
+<<<<<<< HEAD
 	return get_entry(section->page_ext, pfn);
+=======
+	return section->page_ext + pfn;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void *__meminit alloc_page_ext(size_t size, int nid)

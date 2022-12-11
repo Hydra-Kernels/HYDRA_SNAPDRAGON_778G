@@ -244,6 +244,7 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
 		if (!f.file)
 			return -EBADF;
 
+<<<<<<< HEAD
 		ret = -ENOENT;
 
 		mutex_lock(&kv->lock);
@@ -303,12 +304,15 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
 			return -EIO;
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ret = -ENOENT;
 
 		mutex_lock(&kv->lock);
 
 		list_for_each_entry(kvg, &kv->group_list, node) {
-			if (kvg->vfio_group != vfio_group)
+			if (!kvm_vfio_external_group_match_file(kvg->vfio_group,
+								f.file))
 				continue;
 
 			ret = kvm_spapr_tce_attach_iommu_group(dev->kvm,
@@ -318,8 +322,12 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
 
 		mutex_unlock(&kv->lock);
 
+<<<<<<< HEAD
 		iommu_group_put(grp);
 		kvm_vfio_group_put_external_user(vfio_group);
+=======
+		fdput(f);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		return ret;
 	}

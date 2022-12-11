@@ -160,7 +160,11 @@ int __fsnotify_parent(const struct path *path, struct dentry *dentry, __u32 mask
 
 	if (unlikely(!fsnotify_inode_watches_children(p_inode))) {
 		__fsnotify_update_child_dentry_flags(p_inode);
+<<<<<<< HEAD
 	} else if (p_inode->i_fsnotify_mask & mask & ALL_FSNOTIFY_EVENTS) {
+=======
+	else if (p_inode->i_fsnotify_mask & mask) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		struct name_snapshot name;
 
 		/* we are notifying a parent so come up with the new mask which
@@ -170,10 +174,17 @@ int __fsnotify_parent(const struct path *path, struct dentry *dentry, __u32 mask
 		take_dentry_name_snapshot(&name, dentry);
 		if (path)
 			ret = fsnotify(p_inode, mask, path, FSNOTIFY_EVENT_PATH,
+<<<<<<< HEAD
 				       &name.name, 0);
 		else
 			ret = fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE,
 				       &name.name, 0);
+=======
+				       name.name, 0);
+		else
+			ret = fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE,
+				       name.name, 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		release_dentry_name_snapshot(&name);
 	}
 

@@ -1394,6 +1394,11 @@ static int atl2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (err)
 		goto err_sw_init;
 
+<<<<<<< HEAD
+=======
+	err = -EIO;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	netdev->hw_features = NETIF_F_HW_VLAN_CTAG_RX;
 	netdev->features |= (NETIF_F_HW_VLAN_CTAG_TX | NETIF_F_HW_VLAN_CTAG_RX);
 

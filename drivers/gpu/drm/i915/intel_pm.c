@@ -2565,6 +2565,7 @@ static u32 ilk_compute_cur_wm(const struct intel_crtc_state *crtc_state,
 			      const struct intel_plane_state *plane_state,
 			      u32 mem_value)
 {
+<<<<<<< HEAD
 	int cpp;
 
 	if (mem_value == 0)
@@ -2578,6 +2579,22 @@ static u32 ilk_compute_cur_wm(const struct intel_crtc_state *crtc_state,
 	return ilk_wm_method2(crtc_state->pixel_rate,
 			      crtc_state->base.adjusted_mode.crtc_htotal,
 			      plane_state->base.crtc_w, cpp, mem_value);
+=======
+	/*
+	 * We treat the cursor plane as always-on for the purposes of watermark
+	 * calculation.  Until we have two-stage watermark programming merged,
+	 * this is necessary to avoid flickering.
+	 */
+	int cpp = 4;
+	int width = pstate->visible ? pstate->base.crtc_w : 64;
+
+	if (!cstate->base.active)
+		return 0;
+
+	return ilk_wm_method2(ilk_pipe_pixel_rate(cstate),
+			      cstate->base.adjusted_mode.crtc_htotal,
+			      width, cpp, mem_value);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Only for WM_LP. */
@@ -2872,6 +2889,7 @@ static void intel_read_wm_latency(struct drm_i915_private *dev_priv,
 		 * If a level n (n > 1) has a 0us latency, all levels m (m >= n)
 		 * need to be disabled. We make sure to sanitize the values out
 		 * of the punit to satisfy this requirement.
+<<<<<<< HEAD
 		 */
 		for (level = 1; level <= max_level; level++) {
 			if (wm[level] == 0) {
@@ -2908,6 +2926,35 @@ static void intel_read_wm_latency(struct drm_i915_private *dev_priv,
 
 	} else if (IS_HASWELL(dev_priv) || IS_BROADWELL(dev_priv)) {
 		u64 sskpd = intel_uncore_read64(uncore, MCH_SSKPD);
+=======
+		 */
+		for (level = 1; level <= max_level; level++) {
+			if (wm[level] == 0) {
+				for (i = level + 1; i <= max_level; i++)
+					wm[i] = 0;
+				break;
+			}
+		}
+
+		/*
+		 * WaWmMemoryReadLatency:skl
+		 *
+		 * punit doesn't take into account the read latency so we need
+		 * to add 2us to the various latency levels we retrieve from the
+		 * punit when level 0 response data us 0us.
+		 */
+		if (wm[0] == 0) {
+			wm[0] += 2;
+			for (level = 1; level <= max_level; level++) {
+				if (wm[level] == 0)
+					break;
+				wm[level] += 2;
+			}
+		}
+
+	} else if (IS_HASWELL(dev) || IS_BROADWELL(dev)) {
+		uint64_t sskpd = I915_READ64(MCH_SSKPD);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		wm[0] = (sskpd >> 56) & 0xFF;
 		if (wm[0] == 0)
@@ -5845,7 +5892,11 @@ static void ilk_pipe_wm_get_hw_state(struct intel_crtc *crtc)
 
 	memset(active, 0, sizeof(*active));
 
+<<<<<<< HEAD
 	active->pipe_enabled = crtc->active;
+=======
+	active->pipe_enabled = intel_crtc->active;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (active->pipe_enabled) {
 		u32 tmp = hw->wm_pipe[pipe];
@@ -6634,6 +6685,7 @@ static void rps_set_power(struct drm_i915_private *dev_priv, int new_power)
 		   GEN6_RP_DOWN_IDLE_AVG);
 
 skip_hw_write:
+<<<<<<< HEAD
 	rps->power.mode = new_power;
 	rps->power.up_threshold = threshold_up;
 	rps->power.down_threshold = threshold_down;
@@ -6696,6 +6748,12 @@ void intel_rps_mark_interactive(struct drm_i915_private *i915, bool interactive)
 		rps->power.interactive--;
 	}
 	mutex_unlock(&rps->power.mutex);
+=======
+	dev_priv->rps.power = new_power;
+	dev_priv->rps.up_threshold = threshold_up;
+	dev_priv->rps.down_threshold = threshold_down;
+	dev_priv->rps.last_adj = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static u32 gen6_rps_pm_mask(struct drm_i915_private *dev_priv, u8 val)
@@ -6704,9 +6762,15 @@ static u32 gen6_rps_pm_mask(struct drm_i915_private *dev_priv, u8 val)
 	u32 mask = 0;
 
 	/* We use UP_EI_EXPIRED interupts for both up/down in manual mode */
+<<<<<<< HEAD
 	if (val > rps->min_freq_softlimit)
 		mask |= GEN6_PM_RP_UP_EI_EXPIRED | GEN6_PM_RP_DOWN_THRESHOLD | GEN6_PM_RP_DOWN_TIMEOUT;
 	if (val < rps->max_freq_softlimit)
+=======
+	if (val > dev_priv->rps.min_freq_softlimit)
+		mask |= GEN6_PM_RP_UP_EI_EXPIRED | GEN6_PM_RP_DOWN_THRESHOLD | GEN6_PM_RP_DOWN_TIMEOUT;
+	if (val < dev_priv->rps.max_freq_softlimit)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		mask |= GEN6_PM_RP_UP_EI_EXPIRED | GEN6_PM_RP_UP_THRESHOLD;
 
 	mask &= dev_priv->pm_rps_events;
@@ -6816,12 +6880,17 @@ static void vlv_set_rps_idle(struct drm_i915_private *dev_priv)
 
 void gen6_rps_busy(struct drm_i915_private *dev_priv)
 {
+<<<<<<< HEAD
 	struct intel_rps *rps = &dev_priv->gt_pm.rps;
 
 	mutex_lock(&rps->lock);
 	if (rps->enabled) {
 		u8 freq;
 
+=======
+	mutex_lock(&dev_priv->rps.hw_lock);
+	if (dev_priv->rps.enabled) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (dev_priv->pm_rps_events & GEN6_PM_RP_UP_EI_EXPIRED)
 			gen6_rps_reset_ei(dev_priv);
 		I915_WRITE(GEN6_PMINTRMSK,
@@ -6860,8 +6929,13 @@ void gen6_rps_idle(struct drm_i915_private *dev_priv)
 		if (IS_VALLEYVIEW(dev_priv) || IS_CHERRYVIEW(dev_priv))
 			vlv_set_rps_idle(dev_priv);
 		else
+<<<<<<< HEAD
 			gen6_set_rps(dev_priv, rps->idle_freq);
 		rps->last_adj = 0;
+=======
+			gen6_set_rps(dev_priv->dev, dev_priv->rps.idle_freq);
+		dev_priv->rps.last_adj = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		I915_WRITE(GEN6_PMINTRMSK,
 			   gen6_sanitize_rps_pm_mask(dev_priv, ~0));
 	}
@@ -9327,8 +9401,25 @@ static void bdw_init_clock_gating(struct drm_i915_private *dev_priv)
 	I915_WRITE(GEN8_UCGCTL6, I915_READ(GEN8_UCGCTL6) |
 		   GEN8_SDEUNIT_CLOCK_GATE_DISABLE);
 
+<<<<<<< HEAD
 	/* WaProgramL3SqcReg1Default:bdw */
 	gen8_set_l3sqc_credits(dev_priv, 30, 2);
+=======
+	/*
+	 * WaProgramL3SqcReg1Default:bdw
+	 * WaTempDisableDOPClkGating:bdw
+	 */
+	misccpctl = I915_READ(GEN7_MISCCPCTL);
+	I915_WRITE(GEN7_MISCCPCTL, misccpctl & ~GEN7_DOP_CLOCK_GATE_ENABLE);
+	I915_WRITE(GEN8_L3SQCREG1, BDW_WA_L3SQCREG1_DEFAULT);
+	/*
+	 * Wait at least 100 clocks before re-enabling clock gating. See
+	 * the definition of L3SQCREG1 in BSpec.
+	 */
+	POSTING_READ(GEN8_L3SQCREG1);
+	udelay(1);
+	I915_WRITE(GEN7_MISCCPCTL, misccpctl);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* WaKVMNotificationOnConfigChange:bdw */
 	I915_WRITE(CHICKEN_PAR2_1, I915_READ(CHICKEN_PAR2_1)
@@ -9490,6 +9581,35 @@ static void ivb_init_clock_gating(struct drm_i915_private *dev_priv)
 
 static void vlv_init_clock_gating(struct drm_i915_private *dev_priv)
 {
+<<<<<<< HEAD
+=======
+        u32 val;
+
+        /*
+        * On driver load, a pipe may be active and driving a DSI display.
+        * Preserve DPOUNIT_CLOCK_GATE_DISABLE to avoid the pipe getting stuck
+        * (and never recovering) in this case. intel_dsi_post_disable() will
+        * clear it when we turn off the display.
+        */
+        val = I915_READ(DSPCLK_GATE_D);
+        val &= DPOUNIT_CLOCK_GATE_DISABLE;
+        val |= VRHUNIT_CLOCK_GATE_DISABLE;
+        I915_WRITE(DSPCLK_GATE_D, val);
+
+	/*
+	 * Disable trickle feed and enable pnd deadline calculation
+	 */
+	I915_WRITE(MI_ARB_VLV, MI_ARB_DISPLAY_TRICKLE_FEED_DISABLE);
+	I915_WRITE(CBR1_VLV, 0);
+}
+
+static void valleyview_init_clock_gating(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	vlv_init_display_clock_gating(dev_priv);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* WaDisableEarlyCull:vlv */
 	I915_WRITE(_3D_CHICKEN3,
 		   _MASKED_BIT_ENABLE(_3D_CHICKEN_SF_DISABLE_OBJEND_CULL));

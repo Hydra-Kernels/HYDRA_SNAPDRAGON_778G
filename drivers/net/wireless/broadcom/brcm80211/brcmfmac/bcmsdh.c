@@ -581,10 +581,18 @@ int brcmf_sdiod_recv_chain(struct brcmf_sdio_dev *sdiodev,
 		glom_skb = brcmu_pkt_buf_get_skb(totlen);
 		if (!glom_skb)
 			return -ENOMEM;
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 		err = brcmf_sdiod_skbuff_read(sdiodev, sdiodev->func2, addr,
 					      glom_skb);
 		if (err)
+=======
+		err = brcmf_sdiod_buffrw(sdiodev, SDIO_FUNC_2, false, addr,
+					 glom_skb);
+		if (err) {
+			brcmu_pkt_buf_free_skb(glom_skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmfmac/bcmsdh.c
 			goto done;
+		}
 
 		skb_queue_walk(pktq, skb) {
 			memcpy(skb->data, glom_skb->data, skb->len);

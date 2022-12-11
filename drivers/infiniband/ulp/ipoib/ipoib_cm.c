@@ -1075,7 +1075,14 @@ static struct ib_qp *ipoib_cm_create_tx_qp(struct net_device *dev, struct ipoib_
 					      MAX_SKB_FRAGS + 1);
 
 	tx_qp = ib_create_qp(priv->pd, &attr);
+<<<<<<< HEAD
 	tx->max_send_sge = attr.cap.max_send_sge;
+=======
+	if (PTR_ERR(tx_qp) == -EINVAL) {
+		attr.create_flags &= ~IB_QP_CREATE_USE_GFP_NOIO;
+		tx_qp = ib_create_qp(priv->pd, &attr);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return tx_qp;
 }
 
@@ -1372,7 +1379,11 @@ static void ipoib_cm_tx_start(struct work_struct *work)
 				neigh->daddr + QPN_AND_OPTIONS_OFFSET);
 			goto free_neigh;
 		}
+<<<<<<< HEAD
 		memcpy(&pathrec, &path->pathrec, sizeof(pathrec));
+=======
+		memcpy(&pathrec, &p->path->pathrec, sizeof pathrec);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		spin_unlock_irqrestore(&priv->lock, flags);
 		netif_tx_unlock_bh(dev);

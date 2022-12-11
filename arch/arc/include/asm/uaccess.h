@@ -683,7 +683,11 @@ __arc_strncpy_from_user(char *dst, const char __user *src, long count)
 	"	.previous			\n"
 	: "+r"(res), "+r"(dst), "+r"(src), "=r"(val)
 	: "g"(-EFAULT), "r"(count)
+<<<<<<< HEAD
 	: "lp_count", "memory");
+=======
+	: "lp_count", "lp_start", "lp_end", "memory");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return res;
 }

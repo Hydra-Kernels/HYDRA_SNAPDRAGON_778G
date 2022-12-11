@@ -1595,7 +1595,12 @@ static struct ib_qp *_mlx4_ib_create_qp(struct ib_pd *pd,
 		/* fall through */
 	case IB_QPT_UD:
 	{
+<<<<<<< HEAD
 		err = create_qp_common(pd, init_attr, udata, 0, &qp);
+=======
+		err = create_qp_common(to_mdev(pd->device), pd, init_attr,
+				       udata, 0, &qp, gfp);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (err) {
 			kfree(qp);
 			return ERR_PTR(err);
@@ -3125,8 +3130,15 @@ static int build_mlx_header(struct mlx4_ib_sqp *sqp, const struct ib_ud_wr *wr,
 					to_mdev(ib_dev)->sriov.demux[sqp->qp.port - 1].
 						       guid_cache[ah->av.ib.gid_index];
 			} else {
+<<<<<<< HEAD
 				sqp->ud_header.grh.source_gid =
 					ah->ibah.sgid_attr->gid;
+=======
+				ib_get_cached_gid(ib_dev,
+						  be32_to_cpu(ah->av.ib.port_pd) >> 24,
+						  ah->av.ib.gid_index,
+						  &sqp->ud_header.grh.source_gid, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 		}
 		memcpy(sqp->ud_header.grh.destination_gid.raw,

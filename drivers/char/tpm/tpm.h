@@ -28,6 +28,7 @@
 #include <linux/highmem.h>
 #include <linux/tpm_eventlog.h>
 
+<<<<<<< HEAD
 #ifdef CONFIG_X86
 #include <asm/intel-family.h>
 #endif
@@ -36,6 +37,14 @@
 #define TPM_BUFSIZE		4096
 #define TPM_NUM_DEVICES		65536
 #define TPM_RETRY		50
+=======
+enum tpm_const {
+	TPM_MINOR = 224,	/* officially assigned */
+	TPM_BUFSIZE = 4096,
+	TPM_NUM_DEVICES = 65536,
+	TPM_RETRY = 50,		/* 5 seconds */
+};
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 enum tpm_timeout {
 	TPM_TIMEOUT = 5,	/* msecs */
@@ -158,14 +167,51 @@ enum tpm2_cc_attrs {
 
 enum tpm_chip_flags {
 	TPM_CHIP_FLAG_TPM2		= BIT(1),
+<<<<<<< HEAD
 	TPM_CHIP_FLAG_IRQ		= BIT(2),
 	TPM_CHIP_FLAG_VIRTUAL		= BIT(3),
 	TPM_CHIP_FLAG_HAVE_TIMEOUTS	= BIT(4),
 	TPM_CHIP_FLAG_ALWAYS_POWERED	= BIT(5),
+=======
+	TPM_CHIP_FLAG_ALWAYS_POWERED	= BIT(5),
+};
+
+struct tpm_chip {
+	struct device dev;
+	struct cdev cdev;
+
+	/* A driver callback under ops cannot be run unless ops_sem is held
+	 * (sometimes implicitly, eg for the sysfs code). ops becomes null
+	 * when the driver is unregistered, see tpm_try_get_ops.
+	 */
+	struct rw_semaphore ops_sem;
+	const struct tpm_class_ops *ops;
+
+	unsigned int flags;
+
+	int dev_num;		/* /dev/tpm# */
+	char devname[7];
+	unsigned long is_open;	/* only one allowed */
+	int time_expired;
+
+	struct mutex tpm_mutex;	/* tpm is processing */
+
+	struct tpm_vendor_specific vendor;
+
+	struct dentry **bios_dir;
+
+#ifdef CONFIG_ACPI
+	const struct attribute_group *groups[2];
+	unsigned int groups_cnt;
+	acpi_handle acpi_dev_handle;
+	char ppi_version[TPM_PPI_VERSION_LEN + 1];
+#endif /* CONFIG_ACPI */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 #define to_tpm_chip(d) container_of(d, struct tpm_chip, dev)
 
+<<<<<<< HEAD
 struct tpm_header {
 	__be16 tag;
 	__be32 length;
@@ -173,6 +219,23 @@ struct tpm_header {
 		__be32 ordinal;
 		__be32 return_code;
 	};
+=======
+static inline int tpm_read_index(int base, int index)
+{
+	outb(index, base);
+	return inb(base+1) & 0xFF;
+}
+
+static inline void tpm_write_index(int base, int index, int value)
+{
+	outb(index, base);
+	outb(value & 0xFF, base+1);
+}
+struct tpm_input_header {
+	__be16	tag;
+	__be32	length;
+	__be32	ordinal;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 } __packed;
 
 #define TPM_TAG_RQU_COMMAND 193
@@ -377,6 +440,7 @@ extern struct class *tpm_class;
 extern struct class *tpmrm_class;
 extern dev_t tpm_devt;
 extern const struct file_operations tpm_fops;
+<<<<<<< HEAD
 extern const struct file_operations tpmrm_fops;
 extern struct idr dev_nums_idr;
 
@@ -401,6 +465,36 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip);
 unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
 int tpm_pm_suspend(struct device *dev);
 int tpm_pm_resume(struct device *dev);
+=======
+extern struct idr dev_nums_idr;
+
+enum tpm_transmit_flags {
+	TPM_TRANSMIT_UNLOCKED	= BIT(0),
+};
+
+ssize_t tpm_transmit(struct tpm_chip *chip, const u8 *buf, size_t bufsiz,
+		     unsigned int flags);
+ssize_t tpm_transmit_cmd(struct tpm_chip *chip, const void *cmd, int len,
+			 unsigned int flags, const char *desc);
+ssize_t	tpm_getcap(struct device *, __be32, cap_t *, const char *);
+extern int tpm_get_timeouts(struct tpm_chip *);
+extern void tpm_gen_interrupt(struct tpm_chip *);
+extern int tpm_do_selftest(struct tpm_chip *);
+extern unsigned long tpm_calc_ordinal_duration(struct tpm_chip *, u32);
+extern int tpm_pm_suspend(struct device *);
+extern int tpm_pm_resume(struct device *);
+extern int wait_for_tpm_stat(struct tpm_chip *, u8, unsigned long,
+			     wait_queue_head_t *, bool);
+
+struct tpm_chip *tpm_chip_find_get(int chip_num);
+__must_check int tpm_try_get_ops(struct tpm_chip *chip);
+void tpm_put_ops(struct tpm_chip *chip);
+
+extern struct tpm_chip *tpmm_chip_alloc(struct device *dev,
+				       const struct tpm_class_ops *ops);
+extern int tpm_chip_register(struct tpm_chip *chip);
+extern void tpm_chip_unregister(struct tpm_chip *chip);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline void tpm_msleep(unsigned int delay_msec)
 {

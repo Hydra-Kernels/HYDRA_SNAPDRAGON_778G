@@ -18,7 +18,10 @@
 struct pwm_beeper {
 	struct input_dev *input;
 	struct pwm_device *pwm;
+<<<<<<< HEAD
 	struct regulator *amplifier;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct work_struct work;
 	unsigned long period;
 	unsigned int bell_frequency;
@@ -28,6 +31,7 @@ struct pwm_beeper {
 
 #define HZ_TO_NANOSECONDS(x) (1000000000UL/(x))
 
+<<<<<<< HEAD
 static int pwm_beeper_on(struct pwm_beeper *beeper, unsigned long period)
 {
 	struct pwm_state state;
@@ -64,10 +68,22 @@ static void pwm_beeper_off(struct pwm_beeper *beeper)
 	}
 
 	pwm_disable(beeper->pwm);
+=======
+static void __pwm_beeper_set(struct pwm_beeper *beeper)
+{
+	unsigned long period = beeper->period;
+
+	if (period) {
+		pwm_config(beeper->pwm, period / 2, period);
+		pwm_enable(beeper->pwm);
+	} else
+		pwm_disable(beeper->pwm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void pwm_beeper_work(struct work_struct *work)
 {
+<<<<<<< HEAD
 	struct pwm_beeper *beeper = container_of(work, struct pwm_beeper, work);
 	unsigned long period = READ_ONCE(beeper->period);
 
@@ -75,6 +91,12 @@ static void pwm_beeper_work(struct work_struct *work)
 		pwm_beeper_on(beeper, period);
 	else
 		pwm_beeper_off(beeper);
+=======
+	struct pwm_beeper *beeper =
+		container_of(work, struct pwm_beeper, work);
+
+	__pwm_beeper_set(beeper);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int pwm_beeper_event(struct input_dev *input,
@@ -100,8 +122,12 @@ static int pwm_beeper_event(struct input_dev *input,
 	else
 		beeper->period = HZ_TO_NANOSECONDS(value);
 
+<<<<<<< HEAD
 	if (!beeper->suspended)
 		schedule_work(&beeper->work);
+=======
+	schedule_work(&beeper->work);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -109,7 +135,13 @@ static int pwm_beeper_event(struct input_dev *input,
 static void pwm_beeper_stop(struct pwm_beeper *beeper)
 {
 	cancel_work_sync(&beeper->work);
+<<<<<<< HEAD
 	pwm_beeper_off(beeper);
+=======
+
+	if (beeper->period)
+		pwm_disable(beeper->pwm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void pwm_beeper_close(struct input_dev *input)
@@ -140,6 +172,7 @@ static int pwm_beeper_probe(struct platform_device *pdev)
 		return error;
 	}
 
+<<<<<<< HEAD
 	/* Sync up PWM state and ensure it is off. */
 	pwm_init_state(beeper->pwm, &state);
 	state.enabled = false;
@@ -175,6 +208,15 @@ static int pwm_beeper_probe(struct platform_device *pdev)
 	if (!beeper->input) {
 		dev_err(dev, "Failed to allocate input device\n");
 		return -ENOMEM;
+=======
+	INIT_WORK(&beeper->work, pwm_beeper_work);
+
+	beeper->input = input_allocate_device();
+	if (!beeper->input) {
+		dev_err(&pdev->dev, "Failed to allocate input device\n");
+		error = -ENOMEM;
+		goto err_pwm_free;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	beeper->input->name = "pwm-beeper";
@@ -201,12 +243,38 @@ static int pwm_beeper_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, beeper);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+err_input_free:
+	input_free_device(beeper->input);
+err_pwm_free:
+	pwm_free(beeper->pwm);
+err_free:
+	kfree(beeper);
+
+	return error;
+}
+
+static int pwm_beeper_remove(struct platform_device *pdev)
+{
+	struct pwm_beeper *beeper = platform_get_drvdata(pdev);
+
+	input_unregister_device(beeper->input);
+
+	pwm_free(beeper->pwm);
+
+	kfree(beeper);
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static int __maybe_unused pwm_beeper_suspend(struct device *dev)
 {
 	struct pwm_beeper *beeper = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	/*
 	 * Spinlock is taken here is not to protect write to
 	 * beeper->suspended, but to ensure that pwm_beeper_event
@@ -216,6 +284,8 @@ static int __maybe_unused pwm_beeper_suspend(struct device *dev)
 	beeper->suspended = true;
 	spin_unlock_irq(&beeper->input->event_lock);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pwm_beeper_stop(beeper);
 
 	return 0;
@@ -225,12 +295,17 @@ static int __maybe_unused pwm_beeper_resume(struct device *dev)
 {
 	struct pwm_beeper *beeper = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	spin_lock_irq(&beeper->input->event_lock);
 	beeper->suspended = false;
 	spin_unlock_irq(&beeper->input->event_lock);
 
 	/* Let worker figure out if we should resume beeping */
 	schedule_work(&beeper->work);
+=======
+	if (beeper->period)
+		__pwm_beeper_set(beeper);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }

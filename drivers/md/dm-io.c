@@ -317,10 +317,16 @@ static void do_region(int op, int op_flags, unsigned region,
 		special_cmd_max_sectors = q->limits.max_write_zeroes_sectors;
 	else if (op == REQ_OP_WRITE_SAME)
 		special_cmd_max_sectors = q->limits.max_write_same_sectors;
+<<<<<<< HEAD
 	if ((op == REQ_OP_DISCARD || op == REQ_OP_WRITE_ZEROES ||
 	     op == REQ_OP_WRITE_SAME) && special_cmd_max_sectors == 0) {
 		atomic_inc(&io->count);
 		dec_count(io, region, BLK_STS_NOTSUPP);
+=======
+	if ((rw & (REQ_DISCARD | REQ_WRITE_SAME)) && special_cmd_max_sectors == 0) {
+		atomic_inc(&io->count);
+		dec_count(io, region, -EOPNOTSUPP);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return;
 	}
 

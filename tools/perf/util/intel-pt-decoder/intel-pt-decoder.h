@@ -63,6 +63,7 @@ enum intel_pt_param_flags {
 	INTEL_PT_FUP_WITH_NLIP	= 1 << 0,
 };
 
+<<<<<<< HEAD
 enum intel_pt_blk_type {
 	INTEL_PT_GP_REGS	= 1,
 	INTEL_PT_PEBS_BASIC	= 4,
@@ -198,6 +199,8 @@ struct intel_pt_blk_items {
 	bool is_32_bit;
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 struct intel_pt_state {
 	enum intel_pt_sample_type type;
 	int err;

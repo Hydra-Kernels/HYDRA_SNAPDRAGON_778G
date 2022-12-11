@@ -558,6 +558,7 @@ static int amdgpu_bo_do_create(struct amdgpu_device *adev,
 	    bo->allowed_domains == AMDGPU_GEM_DOMAIN_VRAM)
 		bo->allowed_domains |= AMDGPU_GEM_DOMAIN_GTT;
 
+<<<<<<< HEAD
 	bo->flags = bp->flags;
 
 	if (!amdgpu_bo_support_uswc(bo->flags))
@@ -576,6 +577,22 @@ static int amdgpu_bo_do_create(struct amdgpu_device *adev,
 				 &bo->placement, page_align, &ctx, acc_size,
 				 NULL, bp->resv, &amdgpu_bo_destroy);
 	if (unlikely(r != 0))
+=======
+	bo->flags = flags;
+
+	/* For architectures that don't support WC memory,
+	 * mask out the WC flag from the BO
+	 */
+	if (!drm_arch_can_wc_memory())
+		bo->flags &= ~AMDGPU_GEM_CREATE_CPU_GTT_USWC;
+
+	amdgpu_fill_placement_to_bo(bo, placement);
+	/* Kernel allocation are uninterruptible */
+	r = ttm_bo_init(&adev->mman.bdev, &bo->tbo, size, type,
+			&bo->placement, page_align, !kernel, NULL,
+			acc_size, sg, resv, &amdgpu_ttm_bo_destroy);
+	if (unlikely(r != 0)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return r;
 
 	if (!amdgpu_gmc_vram_full_visible(&adev->gmc) &&

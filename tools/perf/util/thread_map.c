@@ -77,7 +77,11 @@ static struct perf_thread_map *__thread_map__new_all_cpus(uid_t uid)
 	int max_threads = 32, items, i;
 	char path[NAME_MAX + 1 + 6];
 	struct dirent *dirent, **namelist = NULL;
+<<<<<<< HEAD
 	struct perf_thread_map *threads = thread_map__alloc(max_threads);
+=======
+	struct thread_map *threads = thread_map__alloc(max_threads);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (threads == NULL)
 		goto out;
@@ -92,6 +96,10 @@ static struct perf_thread_map *__thread_map__new_all_cpus(uid_t uid)
 	while ((dirent = readdir(proc)) != NULL) {
 		char *end;
 		bool grow = false;
+<<<<<<< HEAD
+=======
+		struct stat st;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pid_t pid = strtol(dirent->d_name, &end, 10);
 
 		if (*end) /* only interested in proper numerical dirents */

@@ -237,10 +237,16 @@ ENTRY(chacha_4block_xor_ssse3)
 	# done with the slightly better performing SSSE3 byte shuffling,
 	# 7/12-bit word rotation uses traditional shift+OR.
 
+<<<<<<< HEAD:arch/x86/crypto/chacha-ssse3-x86_64.S
 	lea		8(%rsp),%r10
 	sub		$0x80,%rsp
 	and		$~63,%rsp
 	mov		%rcx,%rax
+=======
+	mov		%rsp,%r11
+	sub		$0x80,%rsp
+	and		$~63,%rsp
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/crypto/chacha20-ssse3-x86_64.S
 
 	# x0..15[0-3] = s0..3[0..3]
 	movq		0x00(%rdi),%xmm1
@@ -739,6 +745,7 @@ ENTRY(chacha_4block_xor_ssse3)
 	pxor		%xmm1,%xmm0
 	movdqu		%xmm0,0xc0(%rsi)
 
+<<<<<<< HEAD:arch/x86/crypto/chacha-ssse3-x86_64.S
 	movdqu		%xmm7,%xmm0
 	cmp		$0xe0,%rax
 	jl		.Lxorpart4
@@ -762,6 +769,9 @@ ENTRY(chacha_4block_xor_ssse3)
 
 .Ldone4:
 	lea		-8(%r10),%rsp
+=======
+	mov		%r11,%rsp
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/x86/crypto/chacha20-ssse3-x86_64.S
 	ret
 
 .Lxorpart4:

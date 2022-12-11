@@ -137,6 +137,7 @@ void iommu_put_dma_cookie(struct iommu_domain *domain)
 	if (!cookie)
 		return;
 
+<<<<<<< HEAD
 	if (cookie->type == IOMMU_DMA_IOVA_COOKIE && cookie->iovad.granule)
 		put_iova_domain(&cookie->iovad);
 
@@ -145,6 +146,11 @@ void iommu_put_dma_cookie(struct iommu_domain *domain)
 		kfree(msi);
 	}
 	kfree(cookie);
+=======
+	if (iovad->granule)
+		put_iova_domain(iovad);
+	kfree(iovad);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	domain->iova_cookie = NULL;
 }
 EXPORT_SYMBOL(iommu_put_dma_cookie);
@@ -843,7 +849,11 @@ int iommu_dma_finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
 		unsigned int s_length = sg_dma_len(s);
 		unsigned int s_iova_len = s->length;
 
+<<<<<<< HEAD
 		s->offset += s_iova_off;
+=======
+		s->offset += s_offset;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		s->length = s_length;
 		sg_dma_address(s) = DMA_MAPPING_ERROR;
 		sg_dma_len(s) = 0;
@@ -888,7 +898,11 @@ void iommu_dma_invalidate_sg(struct scatterlist *sg, int nents)
 	int i;
 
 	for_each_sg(sg, s, nents, i) {
+<<<<<<< HEAD
 		if (sg_dma_address(s) != DMA_MAPPING_ERROR)
+=======
+		if (sg_dma_address(s) != DMA_ERROR_CODE)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			s->offset += sg_dma_address(s);
 		if (sg_dma_len(s))
 			s->length = sg_dma_len(s);

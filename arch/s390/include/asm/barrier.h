@@ -46,9 +46,12 @@ do {									\
 	___p1;								\
 })
 
+<<<<<<< HEAD
 #define __smp_mb__before_atomic()	barrier()
 #define __smp_mb__after_atomic()	barrier()
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /**
  * array_index_mask_nospec - generate a mask for array_idx() that is
  * ~0UL when the bounds check succeeds and 0 otherwise
@@ -73,6 +76,9 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 	return ~mask;
 }
 
+<<<<<<< HEAD
 #include <asm-generic/barrier.h>
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* __ASM_BARRIER_H */

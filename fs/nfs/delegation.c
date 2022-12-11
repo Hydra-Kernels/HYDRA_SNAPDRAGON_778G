@@ -53,6 +53,7 @@ nfs4_is_valid_delegation(const struct nfs_delegation *delegation,
 	return false;
 }
 
+<<<<<<< HEAD
 struct nfs_delegation *nfs4_get_valid_delegation(const struct inode *inode)
 {
 	struct nfs_delegation *delegation;
@@ -63,6 +64,8 @@ struct nfs_delegation *nfs4_get_valid_delegation(const struct inode *inode)
 	return NULL;
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static int
 nfs4_do_check_delegation(struct inode *inode, fmode_t flags, bool mark)
 {

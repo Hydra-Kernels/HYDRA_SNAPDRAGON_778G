@@ -5202,6 +5202,7 @@ static netdev_features_t be_features_check(struct sk_buff *skb,
 	struct be_adapter *adapter = netdev_priv(dev);
 	u8 l4_hdr = 0;
 
+<<<<<<< HEAD
 	if (skb_is_gso(skb)) {
 		/* IPv6 TSO requests with extension hdrs are a problem
 		 * to Lancer and BE3 HW. Disable TSO6 feature.
@@ -5219,6 +5220,8 @@ static netdev_features_t be_features_check(struct sk_buff *skb,
 			features &= ~NETIF_F_GSO_MASK;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* The code below restricts offload features for some tunneled and
 	 * Q-in-Q packets.
 	 * Offload features for normal (non tunnel) packets are unchanged.

@@ -143,6 +143,7 @@ static inline int guest_cpuid_model(struct kvm_vcpu *vcpu)
 	return x86_model(best->eax);
 }
 
+<<<<<<< HEAD
 static inline int guest_cpuid_stepping(struct kvm_vcpu *vcpu)
 {
 	struct kvm_cpuid_entry2 *best;
@@ -155,6 +156,9 @@ static inline int guest_cpuid_stepping(struct kvm_vcpu *vcpu)
 }
 
 static inline bool guest_has_spec_ctrl_msr(struct kvm_vcpu *vcpu)
+=======
+static inline bool guest_cpuid_has_pcommit(struct kvm_vcpu *vcpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return (guest_cpuid_has(vcpu, X86_FEATURE_SPEC_CTRL) ||
 		guest_cpuid_has(vcpu, X86_FEATURE_AMD_STIBP) ||
@@ -162,7 +166,19 @@ static inline bool guest_has_spec_ctrl_msr(struct kvm_vcpu *vcpu)
 		guest_cpuid_has(vcpu, X86_FEATURE_AMD_SSBD));
 }
 
+<<<<<<< HEAD
 static inline bool guest_has_pred_cmd_msr(struct kvm_vcpu *vcpu)
+=======
+static inline bool guest_cpuid_has_mpx(struct kvm_vcpu *vcpu)
+{
+	struct kvm_cpuid_entry2 *best;
+
+	best = kvm_find_cpuid_entry(vcpu, 7, 0);
+	return best && (best->ebx & bit(X86_FEATURE_MPX));
+}
+
+static inline bool guest_cpuid_has_rdtscp(struct kvm_vcpu *vcpu)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	return (guest_cpuid_has(vcpu, X86_FEATURE_SPEC_CTRL) ||
 		guest_cpuid_has(vcpu, X86_FEATURE_AMD_IBPB));

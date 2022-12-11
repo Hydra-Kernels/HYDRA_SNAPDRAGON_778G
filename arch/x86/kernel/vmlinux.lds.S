@@ -142,12 +142,17 @@ SECTIONS
 		__indirect_thunk_end = .;
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_CFI_CLANG
 		. = ALIGN(PAGE_SIZE);
 		__cfi_jt_start = .;
 		*(.text..L.cfi.jumptable .text..L.cfi.jumptable.*)
 		__cfi_jt_end = .;
 #endif
+=======
+		/* End of text section */
+		_etext = .;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} :text = 0x9090
 
 	NOTES :text :note

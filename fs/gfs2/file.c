@@ -262,9 +262,13 @@ static int do_gfs2_set_flags(struct file *filp, u32 reqflags, u32 mask,
 	}
 	if ((flags ^ new_flags) & GFS2_DIF_JDATA) {
 		if (new_flags & GFS2_DIF_JDATA)
+<<<<<<< HEAD
 			gfs2_log_flush(sdp, ip->i_gl,
 				       GFS2_LOG_HEAD_FLUSH_NORMAL |
 				       GFS2_LFC_SET_FLAGS);
+=======
+			gfs2_log_flush(sdp, ip->i_gl, NORMAL_FLUSH);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		error = filemap_fdatawrite(inode->i_mapping);
 		if (error)
 			goto out;

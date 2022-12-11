@@ -2322,7 +2322,11 @@ static int rto_next_cpu(struct root_domain *rd)
 	 * rt_next_cpu() will simply return the first CPU found in
 	 * the rto_mask.
 	 *
+<<<<<<< HEAD
 	 * If rto_next_cpu() is called with rto_cpu is a valid CPU, it
+=======
+	 * If rto_next_cpu() is called with rto_cpu is a valid cpu, it
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * will return the next CPU found in the rto_mask.
 	 *
 	 * If there are no more CPUs left in the rto_mask, then a check is made
@@ -2383,7 +2387,11 @@ static void tell_cpu_to_push(struct rq *rq)
 	raw_spin_lock(&rq->rd->rto_lock);
 
 	/*
+<<<<<<< HEAD
 	 * The rto_cpu is updated under the lock, if it has a valid CPU
+=======
+	 * The rto_cpu is updated under the lock, if it has a valid cpu
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	 * then the IPI is still running and will continue due to the
 	 * update to loop_next, and nothing needs to be done here.
 	 * Otherwise it is finishing up and an ipi needs to be sent.
@@ -2633,7 +2641,11 @@ static void switched_to_rt(struct rq *rq, struct task_struct *p)
 	if (task_on_rq_queued(p)) {
 #ifdef CONFIG_SMP
 		if (p->nr_cpus_allowed > 1 && rq->rt.overloaded)
+<<<<<<< HEAD
 			rt_queue_push_tasks(rq);
+=======
+			queue_push_tasks(rq);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif /* CONFIG_SMP */
 		if (p->prio < rq->curr->prio && cpu_online(cpu_of(rq)))
 			resched_curr(rq);

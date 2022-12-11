@@ -846,8 +846,11 @@ static s32 i801_access(struct i2c_adapter *adap, u16 addr,
 		return -EBUSY;
 	}
 
+<<<<<<< HEAD
 	pm_runtime_get_sync(&priv->pci_dev->dev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	hwpec = (priv->features & FEATURE_SMBUS_PEC) && (flags & I2C_CLIENT_PEC)
 		&& size != I2C_SMBUS_QUICK
 		&& size != I2C_SMBUS_I2C_BLOCK_DATA;
@@ -962,8 +965,11 @@ static s32 i801_access(struct i2c_adapter *adap, u16 addr,
 	}
 
 out:
+<<<<<<< HEAD
 	pm_runtime_mark_last_busy(&priv->pci_dev->dev);
 	pm_runtime_put_autosuspend(&priv->pci_dev->dev);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	mutex_unlock(&priv->acpi_lock);
 	return ret;
 }
@@ -1696,6 +1702,72 @@ static unsigned char i801_setup_hstcfg(struct i801_priv *priv)
 	return hstcfg;
 }
 
+#ifdef CONFIG_ACPI
+static acpi_status
+i801_acpi_io_handler(u32 function, acpi_physical_address address, u32 bits,
+		     u64 *value, void *handler_context, void *region_context)
+{
+	struct i801_priv *priv = handler_context;
+	struct pci_dev *pdev = priv->pci_dev;
+	acpi_status status;
+
+	/*
+	 * Once BIOS AML code touches the OpRegion we warn and inhibit any
+	 * further access from the driver itself. This device is now owned
+	 * by the system firmware.
+	 */
+	mutex_lock(&priv->acpi_lock);
+
+	if (!priv->acpi_reserved) {
+		priv->acpi_reserved = true;
+
+		dev_warn(&pdev->dev, "BIOS is accessing SMBus registers\n");
+		dev_warn(&pdev->dev, "Driver SMBus register access inhibited\n");
+	}
+
+	if ((function & ACPI_IO_MASK) == ACPI_READ)
+		status = acpi_os_read_port(address, (u32 *)value, bits);
+	else
+		status = acpi_os_write_port(address, (u32)*value, bits);
+
+	mutex_unlock(&priv->acpi_lock);
+
+	return status;
+}
+
+static int i801_acpi_probe(struct i801_priv *priv)
+{
+	struct acpi_device *adev;
+	acpi_status status;
+
+	adev = ACPI_COMPANION(&priv->pci_dev->dev);
+	if (adev) {
+		status = acpi_install_address_space_handler(adev->handle,
+				ACPI_ADR_SPACE_SYSTEM_IO, i801_acpi_io_handler,
+				NULL, priv);
+		if (ACPI_SUCCESS(status))
+			return 0;
+	}
+
+	return acpi_check_resource_conflict(&priv->pci_dev->resource[SMBBAR]);
+}
+
+static void i801_acpi_remove(struct i801_priv *priv)
+{
+	struct acpi_device *adev;
+
+	adev = ACPI_COMPANION(&priv->pci_dev->dev);
+	if (!adev)
+		return;
+
+	acpi_remove_address_space_handler(adev->handle,
+		ACPI_ADR_SPACE_SYSTEM_IO, i801_acpi_io_handler);
+}
+#else
+static inline int i801_acpi_probe(struct i801_priv *priv) { return 0; }
+static inline void i801_acpi_remove(struct i801_priv *priv) { }
+#endif
+
 static int i801_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
 	unsigned char temp;
@@ -1877,6 +1949,10 @@ static int i801_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		"SMBus I801 adapter at %04lx", priv->smba);
 	err = i2c_add_adapter(&priv->adapter);
 	if (err) {
+<<<<<<< HEAD
+=======
+		dev_err(&dev->dev, "Failed to add SMBus adapter\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		i801_acpi_remove(priv);
 		return err;
 	}

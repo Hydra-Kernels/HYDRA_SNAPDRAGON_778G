@@ -344,6 +344,7 @@ xen_swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
 	 * physical address */
 	phys = xen_bus_to_phys(dev_addr);
 
+<<<<<<< HEAD
 	/* Convert the size to actually allocated. */
 	size = 1UL << (order + XEN_PAGE_SHIFT);
 
@@ -355,6 +356,10 @@ xen_swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
 	if (!WARN_ON((dev_addr + size - 1 > dma_mask) ||
 		     range_straddles_page_boundary(phys, size)) &&
 	    TestClearPageXenRemapped(page))
+=======
+	if (((dev_addr + size - 1 <= dma_mask)) ||
+	    range_straddles_page_boundary(phys, size))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		xen_destroy_contiguous_region(phys, order);
 
 	xen_free_coherent_pages(hwdev, size, vaddr, (dma_addr_t)phys, attrs);
@@ -397,8 +402,14 @@ static dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
 	if (map == (phys_addr_t)DMA_MAPPING_ERROR)
 		return DMA_MAPPING_ERROR;
 
+<<<<<<< HEAD
 	phys = map;
 	dev_addr = xen_phys_to_bus(map);
+=======
+	dev_addr = xen_phys_to_bus(map);
+	xen_dma_map_page(dev, pfn_to_page(map >> PAGE_SHIFT),
+					dev_addr, map & ~PAGE_MASK, size, dir, attrs);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/*
 	 * Ensure that the address returned is DMA'ble
@@ -493,10 +504,54 @@ xen_swiotlb_map_sg(struct device *dev, struct scatterlist *sgl, int nelems,
 	BUG_ON(dir == DMA_NONE);
 
 	for_each_sg(sgl, sg, nelems, i) {
+<<<<<<< HEAD
 		sg->dma_address = xen_swiotlb_map_page(dev, sg_page(sg),
 				sg->offset, sg->length, dir, attrs);
 		if (sg->dma_address == DMA_MAPPING_ERROR)
 			goto out_unmap;
+=======
+		phys_addr_t paddr = sg_phys(sg);
+		dma_addr_t dev_addr = xen_phys_to_bus(paddr);
+
+		if (swiotlb_force ||
+		    xen_arch_need_swiotlb(hwdev, paddr, dev_addr) ||
+		    !dma_capable(hwdev, dev_addr, sg->length) ||
+		    range_straddles_page_boundary(paddr, sg->length)) {
+			phys_addr_t map = swiotlb_tbl_map_single(hwdev,
+								 start_dma_addr,
+								 sg_phys(sg),
+								 sg->length,
+								 dir);
+			if (map == SWIOTLB_MAP_ERROR) {
+				dev_warn(hwdev, "swiotlb buffer is full\n");
+				/* Don't panic here, we expect map_sg users
+				   to do proper error handling. */
+				xen_swiotlb_unmap_sg_attrs(hwdev, sgl, i, dir,
+							   attrs);
+				sg_dma_len(sgl) = 0;
+				return 0;
+			}
+			dev_addr = xen_phys_to_bus(map);
+			xen_dma_map_page(hwdev, pfn_to_page(map >> PAGE_SHIFT),
+						dev_addr,
+						map & ~PAGE_MASK,
+						sg->length,
+						dir,
+						attrs);
+			sg->dma_address = dev_addr;
+		} else {
+			/* we are not interested in the dma_addr returned by
+			 * xen_dma_map_page, only in the potential cache flushes executed
+			 * by the function. */
+			xen_dma_map_page(hwdev, pfn_to_page(paddr >> PAGE_SHIFT),
+						dev_addr,
+						paddr & ~PAGE_MASK,
+						sg->length,
+						dir,
+						attrs);
+			sg->dma_address = dev_addr;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		sg_dma_len(sg) = sg->length;
 	}
 
@@ -545,6 +600,7 @@ xen_swiotlb_dma_supported(struct device *hwdev, u64 mask)
 	return xen_virt_to_bus(xen_io_tlb_end - 1) <= mask;
 }
 
+<<<<<<< HEAD
 const struct dma_map_ops xen_swiotlb_dma_ops = {
 	.alloc = xen_swiotlb_alloc_coherent,
 	.free = xen_swiotlb_free_coherent,
@@ -560,3 +616,35 @@ const struct dma_map_ops xen_swiotlb_dma_ops = {
 	.mmap = dma_common_mmap,
 	.get_sgtable = dma_common_get_sgtable,
 };
+=======
+int
+xen_swiotlb_set_dma_mask(struct device *dev, u64 dma_mask)
+{
+	if (!dev->dma_mask || !xen_swiotlb_dma_supported(dev, dma_mask))
+		return -EIO;
+
+	*dev->dma_mask = dma_mask;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(xen_swiotlb_set_dma_mask);
+
+/*
+ * Create userspace mapping for the DMA-coherent memory.
+ * This function should be called with the pages from the current domain only,
+ * passing pages mapped from other domains would lead to memory corruption.
+ */
+int
+xen_swiotlb_dma_mmap(struct device *dev, struct vm_area_struct *vma,
+		     void *cpu_addr, dma_addr_t dma_addr, size_t size,
+		     struct dma_attrs *attrs)
+{
+#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+	if (__generic_dma_ops(dev)->mmap)
+		return __generic_dma_ops(dev)->mmap(dev, vma, cpu_addr,
+						    dma_addr, size, attrs);
+#endif
+	return dma_common_mmap(dev, vma, cpu_addr, dma_addr, size);
+}
+EXPORT_SYMBOL_GPL(xen_swiotlb_dma_mmap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc

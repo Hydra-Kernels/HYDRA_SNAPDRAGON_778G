@@ -12,7 +12,10 @@
 #include <linux/termios.h>
 #include <linux/serial_core.h>
 #include <linux/module.h>
+<<<<<<< HEAD
 #include <linux/property.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #include "serial_mctrl_gpio.h"
 

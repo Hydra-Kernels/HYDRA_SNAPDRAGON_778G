@@ -534,4 +534,13 @@ config SYSVIPC_COMPAT
 	depends on COMPAT && SYSVIPC
 	default y
 
+<<<<<<< HEAD
+=======
+endmenu
+
+source "net/Kconfig"
+
+source "drivers/Kconfig"
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 source "drivers/sbus/char/Kconfig"

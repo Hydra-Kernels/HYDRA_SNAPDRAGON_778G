@@ -182,8 +182,11 @@ static ssize_t hidraw_get_report(struct file *file, char __user *buffer, size_t 
 	int ret = 0, len;
 	unsigned char report_number;
 
+<<<<<<< HEAD
 	lockdep_assert_held(&minors_lock);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!hidraw_table[minor] || !hidraw_table[minor]->exist) {
 		ret = -ENODEV;
 		goto out;

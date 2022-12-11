@@ -183,6 +183,7 @@ struct x86_pmu_capability {
 #define GLOBAL_STATUS_COUNTERS_FROZEN			BIT_ULL(59)
 #define GLOBAL_STATUS_LBRS_FROZEN			BIT_ULL(58)
 #define GLOBAL_STATUS_TRACE_TOPAPMI			BIT_ULL(55)
+<<<<<<< HEAD
 
 /*
  * Adaptive PEBS v4
@@ -218,6 +219,8 @@ struct pebs_lbr_entry {
 struct pebs_lbr {
 	struct pebs_lbr_entry lbr[0]; /* Variable length */
 };
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * IBS cpuid feature detection

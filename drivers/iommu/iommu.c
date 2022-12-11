@@ -768,14 +768,21 @@ err_put_group:
 	mutex_unlock(&group->mutex);
 	dev->iommu_group = NULL;
 	kobject_put(group->devices_kobj);
+<<<<<<< HEAD
 	sysfs_remove_link(group->devices_kobj, device->name);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 err_free_name:
 	kfree(device->name);
 err_remove_link:
 	sysfs_remove_link(&dev->kobj, "iommu_group");
 err_free_device:
 	kfree(device);
+<<<<<<< HEAD
 	dev_err(dev, "Failed to add to iommu group %d: %d\n", group->id, ret);
+=======
+	pr_err("Failed to add device %s to group %d: %d\n", dev_name(dev), group->id, ret);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return ret;
 }
 EXPORT_SYMBOL_GPL(iommu_group_add_device);
@@ -1399,6 +1406,7 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
 	 * IOMMU driver.
 	 */
 	if (!group->default_domain) {
+<<<<<<< HEAD
 		struct iommu_domain *dom;
 
 		dom = __iommu_domain_alloc(dev->bus, iommu_def_domain_type);
@@ -1421,6 +1429,12 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
 					      DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
 					      &attr);
 		}
+=======
+		group->default_domain = __iommu_domain_alloc(dev->bus,
+							     IOMMU_DOMAIN_DMA);
+		if (!group->domain)
+			group->domain = group->default_domain;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	ret = iommu_group_add_device(group, dev);

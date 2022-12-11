@@ -924,6 +924,10 @@ static int mei_hbm_fw_disconnect_req(struct mei_device *dev,
 					       NULL);
 		if (!cb)
 			return -ENOMEM;
+<<<<<<< HEAD
+=======
+		list_add_tail(&cb->list, &dev->ctrl_wr_list.list);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	return 0;
 }

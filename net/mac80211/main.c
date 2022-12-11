@@ -983,9 +983,12 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 		supp_ht = supp_ht || sband->ht_cap.ht_supported;
 		supp_vht = supp_vht || sband->vht_cap.vht_supported;
 
+<<<<<<< HEAD
 		if (!supp_he)
 			supp_he = !!ieee80211_get_he_sta_cap(sband);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!sband->ht_cap.ht_supported)
 			continue;
 

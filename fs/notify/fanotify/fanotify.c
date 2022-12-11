@@ -92,6 +92,7 @@ static int fanotify_get_response(struct fsnotify_group *group,
 
 	pr_debug("%s: group=%p event=%p\n", __func__, group, event);
 
+<<<<<<< HEAD
 	ret = wait_event_killable(group->fanotify_data.access_waitq,
 				  event->state == FAN_EVENT_ANSWERED);
 	/* Signal pending? */
@@ -115,6 +116,9 @@ static int fanotify_get_response(struct fsnotify_group *group,
 		spin_unlock(&group->notification_lock);
 		goto out;
 	}
+=======
+	wait_event(group->fanotify_data.access_waitq, event->response);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* userspace responded, convert to something usable */
 	switch (event->response & ~FAN_AUDIT) {
@@ -150,14 +154,19 @@ static u32 fanotify_group_event_mask(struct fsnotify_group *group,
 				     int data_type)
 {
 	__u32 marks_mask = 0, marks_ignored_mask = 0;
+<<<<<<< HEAD
 	__u32 test_mask, user_mask = FANOTIFY_OUTGOING_EVENTS;
 	const struct path *path = data;
 	struct fsnotify_mark *mark;
 	int type;
+=======
+	struct path *path = data;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pr_debug("%s: report_mask=%x mask=%x data=%p data_type=%d\n",
 		 __func__, iter_info->report_mask, event_mask, data, data_type);
 
+<<<<<<< HEAD
 	if (!FAN_GROUP_FLAG(group, FAN_REPORT_FID)) {
 		/* Do we have path to open a file descriptor? */
 		if (data_type != FSNOTIFY_EVENT_PATH)
@@ -165,6 +174,31 @@ static u32 fanotify_group_event_mask(struct fsnotify_group *group,
 		/* Path type events are only relevant for files and dirs */
 		if (!d_is_reg(path->dentry) && !d_can_lookup(path->dentry))
 			return 0;
+=======
+	/* if we don't have enough info to send an event to userspace say no */
+	if (data_type != FSNOTIFY_EVENT_PATH)
+		return false;
+
+	/* sorry, fanotify only gives a damn about files and dirs */
+	if (!d_is_reg(path->dentry) &&
+	    !d_can_lookup(path->dentry))
+		return false;
+
+	/*
+	 * if the event is for a child and this inode doesn't care about
+	 * events on the child, don't send it!
+	 */
+	if (inode_mark &&
+	    (!(event_mask & FS_EVENT_ON_CHILD) ||
+	     (inode_mark->mask & FS_EVENT_ON_CHILD))) {
+		marks_mask |= inode_mark->mask;
+		marks_ignored_mask |= inode_mark->ignored_mask;
+	}
+
+	if (vfsmnt_mark) {
+		marks_mask |= vfsmnt_mark->mask;
+		marks_ignored_mask |= vfsmnt_mark->ignored_mask;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	fsnotify_foreach_obj_type(type) {

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 /* SPDX-License-Identifier: GPL-2.0 */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <asm/thread_info.h>
 #include <asm/trap_block.h>
 #include <asm/spitfire.h>
@@ -50,12 +53,16 @@ user_rtt_fill_fixup_common:
 		SET_GL(0)
 		.previous
 
+<<<<<<< HEAD
 661:		wrpr	%g0, RTRAP_PSTATE, %pstate
 		.section		.sun_m7_1insn_patch, "ax"
 		.word			661b
 		/* Re-enable PSTATE.mcde to maintain ADI security */
 		wrpr	%g0, RTRAP_PSTATE|PSTATE_MCDE, %pstate
 		.previous
+=======
+		wrpr	%g0, RTRAP_PSTATE, %pstate
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		mov	%l1, %g6
 		ldx	[%g6 + TI_TASK], %g4
@@ -98,7 +105,10 @@ user_rtt_fill_fixup_common:
 		call	sun4v_data_access_exception
 		 nop
 		ba,a,pt	%xcc, rtrap
+<<<<<<< HEAD
 		 nop
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 1:		call	spitfire_data_access_exception
 		 nop

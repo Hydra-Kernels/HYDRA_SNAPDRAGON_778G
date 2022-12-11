@@ -2535,7 +2535,7 @@ static netdev_tx_t liquidio_xmit(struct sk_buff *skb, struct net_device *netdev)
 	else
 		status = octnet_send_nic_data_pkt(oct, &ndata, xmit_more);
 	if (status == IQ_SEND_FAILED)
-		goto lio_xmit_failed;
+		goto lio_xmit_dma_failed;
 
 	netif_info(lio, tx_queued, lio->netdev, "Transmit queued successfully\n");
 
@@ -2552,10 +2552,14 @@ static netdev_tx_t liquidio_xmit(struct sk_buff *skb, struct net_device *netdev)
 
 	return NETDEV_TX_OK;
 
+lio_xmit_dma_failed:
+	dma_unmap_single(&oct->pci_dev->dev, ndata.cmd.dptr,
+			 ndata.datasize, DMA_TO_DEVICE);
 lio_xmit_failed:
 	stats->tx_dropped++;
 	netif_info(lio, tx_err, lio->netdev, "IQ%d Transmit dropped:%llu\n",
 		   iq_no, stats->tx_dropped);
+<<<<<<< HEAD
 	if (dptr)
 		dma_unmap_single(&oct->pci_dev->dev, dptr,
 				 ndata.datasize, DMA_TO_DEVICE);
@@ -2563,6 +2567,9 @@ lio_xmit_failed:
 	octeon_ring_doorbell_locked(oct, iq_no);
 
 	tx_buffer_free(skb);
+=======
+	recv_buffer_free(skb);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return NETDEV_TX_OK;
 }
 

@@ -406,7 +406,11 @@ static void __init of_ti_omap3_dpll_setup(struct device_node *node)
 
 	if ((of_machine_is_compatible("ti,omap3630") ||
 	     of_machine_is_compatible("ti,omap36xx")) &&
+<<<<<<< HEAD
 	     of_node_name_eq(node, "dpll5_ck"))
+=======
+	    !strcmp(node->name, "dpll5_ck"))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		of_ti_dpll_setup(node, &omap3_dpll5_ck_ops, &dd);
 	else
 		of_ti_dpll_setup(node, &omap3_dpll_ck_ops, &dd);

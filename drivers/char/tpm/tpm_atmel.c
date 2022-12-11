@@ -97,7 +97,11 @@ static int tpm_atml_send(struct tpm_chip *chip, u8 *buf, size_t count)
 	dev_dbg(&chip->dev, "tpm_atml_send:\n");
 	for (i = 0; i < count; i++) {
 		dev_dbg(&chip->dev, "%d 0x%x(%d)\n",  i, buf[i], buf[i]);
+<<<<<<< HEAD
 		iowrite8(buf[i], priv->iobase);
+=======
+ 		iowrite8(buf[i], chip->vendor.iobase);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;

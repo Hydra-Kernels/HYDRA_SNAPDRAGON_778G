@@ -361,9 +361,13 @@ bool has_capability_noaudit(struct task_struct *t, int cap)
 	return has_ns_capability_noaudit(t, &init_user_ns, cap);
 }
 
+<<<<<<< HEAD
 static bool ns_capable_common(struct user_namespace *ns,
 			      int cap,
 			      unsigned int opts)
+=======
+static bool ns_capable_common(struct user_namespace *ns, int cap, bool audit)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int capable;
 
@@ -372,7 +376,12 @@ static bool ns_capable_common(struct user_namespace *ns,
 		BUG();
 	}
 
+<<<<<<< HEAD
 	capable = security_capable(current_cred(), ns, cap, opts);
+=======
+	capable = audit ? security_capable(current_cred(), ns, cap) :
+			  security_capable_noaudit(current_cred(), ns, cap);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (capable == 0) {
 		current->flags |= PF_SUPERPRIV;
 		return true;
@@ -393,7 +402,11 @@ static bool ns_capable_common(struct user_namespace *ns,
  */
 bool ns_capable(struct user_namespace *ns, int cap)
 {
+<<<<<<< HEAD
 	return ns_capable_common(ns, cap, CAP_OPT_NONE);
+=======
+	return ns_capable_common(ns, cap, true);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL(ns_capable);
 
@@ -411,6 +424,7 @@ EXPORT_SYMBOL(ns_capable);
  */
 bool ns_capable_noaudit(struct user_namespace *ns, int cap)
 {
+<<<<<<< HEAD
 	return ns_capable_common(ns, cap, CAP_OPT_NOAUDIT);
 }
 EXPORT_SYMBOL(ns_capable_noaudit);
@@ -433,6 +447,11 @@ bool ns_capable_setid(struct user_namespace *ns, int cap)
 	return ns_capable_common(ns, cap, CAP_OPT_INSETID);
 }
 EXPORT_SYMBOL(ns_capable_setid);
+=======
+	return ns_capable_common(ns, cap, false);
+}
+EXPORT_SYMBOL(ns_capable_noaudit);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /**
  * capable - Determine if the current task has a superior capability in effect
@@ -519,12 +538,19 @@ bool ptracer_capable(struct task_struct *tsk, struct user_namespace *ns)
 {
 	int ret = 0;  /* An absent tracer adds no restrictions */
 	const struct cred *cred;
+<<<<<<< HEAD
 
 	rcu_read_lock();
 	cred = rcu_dereference(tsk->ptracer_cred);
 	if (cred)
 		ret = security_capable(cred, ns, CAP_SYS_PTRACE,
 				       CAP_OPT_NOAUDIT);
+=======
+	rcu_read_lock();
+	cred = rcu_dereference(tsk->ptracer_cred);
+	if (cred)
+		ret = security_capable_noaudit(cred, ns, CAP_SYS_PTRACE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rcu_read_unlock();
 	return (ret == 0);
 }

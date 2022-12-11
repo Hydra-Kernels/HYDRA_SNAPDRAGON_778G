@@ -3133,11 +3133,20 @@ int amdgpu_device_resume(struct drm_device *dev, bool resume, bool fbcon)
 	}
 
 	/* post card */
+<<<<<<< HEAD
 	if (amdgpu_device_need_post(adev)) {
 		r = amdgpu_atom_asic_init(adev->mode_info.atom_context);
 		if (r)
 			DRM_ERROR("amdgpu asic init failed\n");
 	}
+=======
+	if (!amdgpu_card_posted(adev))
+		amdgpu_atom_asic_init(adev->mode_info.atom_context);
+
+	r = amdgpu_resume(adev);
+	if (r)
+		DRM_ERROR("amdgpu_resume failed (%d).\n", r);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	r = amdgpu_device_ip_resume(adev);
 	if (r) {
@@ -3146,10 +3155,24 @@ int amdgpu_device_resume(struct drm_device *dev, bool resume, bool fbcon)
 	}
 	amdgpu_fence_driver_resume(adev);
 
+<<<<<<< HEAD
 
 	r = amdgpu_device_ip_late_init(adev);
 	if (r)
+=======
+	if (resume) {
+		r = amdgpu_ib_ring_tests(adev);
+		if (r)
+			DRM_ERROR("ib ring test failed (%d).\n", r);
+	}
+
+	r = amdgpu_late_init(adev);
+	if (r) {
+		if (fbcon)
+			console_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return r;
+	}
 
 	queue_delayed_work(system_wq, &adev->delayed_init_work,
 			   msecs_to_jiffies(AMDGPU_RESUME_MS));
@@ -3197,8 +3220,11 @@ int amdgpu_device_resume(struct drm_device *dev, bool resume, bool fbcon)
 
 	drm_kms_helper_poll_enable(dev);
 
+<<<<<<< HEAD
 	amdgpu_ras_resume(adev);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Most of the connector probing functions try to acquire runtime pm
 	 * refs to ensure that the GPU is powered on when connector polling is
@@ -3211,6 +3237,7 @@ int amdgpu_device_resume(struct drm_device *dev, bool resume, bool fbcon)
 #ifdef CONFIG_PM
 	dev->dev->power.disable_depth++;
 #endif
+<<<<<<< HEAD
 	if (!amdgpu_device_has_dc_support(adev))
 		drm_helper_hpd_irq_event(dev);
 	else
@@ -3282,6 +3309,16 @@ static int amdgpu_device_ip_pre_soft_reset(struct amdgpu_device *adev)
 			if (r)
 				return r;
 		}
+=======
+	drm_helper_hpd_irq_event(dev);
+#ifdef CONFIG_PM
+	dev->dev->power.disable_depth--;
+#endif
+
+	if (fbcon) {
+		amdgpu_fbdev_set_suspend(adev, 0);
+		console_unlock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return 0;

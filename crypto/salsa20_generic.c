@@ -162,11 +162,20 @@ static int salsa20_crypt(struct skcipher_request *req)
 
 	salsa20_init(state, ctx, req->iv);
 
+<<<<<<< HEAD
 	while (walk.nbytes > 0) {
 		unsigned int nbytes = walk.nbytes;
 
 		if (nbytes < walk.total)
 			nbytes = round_down(nbytes, walk.stride);
+=======
+	while (walk.nbytes >= 64) {
+		salsa20_encrypt_bytes(ctx, walk.dst.virt.addr,
+				      walk.src.virt.addr,
+				      walk.nbytes - (walk.nbytes % 64));
+		err = blkcipher_walk_done(desc, &walk, walk.nbytes % 64);
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		salsa20_docrypt(state, walk.dst.virt.addr, walk.src.virt.addr,
 				nbytes);

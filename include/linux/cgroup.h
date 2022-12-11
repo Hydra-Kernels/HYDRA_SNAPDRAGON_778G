@@ -665,6 +665,7 @@ static inline void pr_cont_cgroup_path(struct cgroup *cgrp)
 	pr_cont_kernfs_path(cgrp->kn);
 }
 
+<<<<<<< HEAD
 static inline struct psi_group *cgroup_psi(struct cgroup *cgrp)
 {
 	return &cgrp->psi;
@@ -672,6 +673,8 @@ static inline struct psi_group *cgroup_psi(struct cgroup *cgrp)
 
 bool cgroup_psi_enabled(void);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline void cgroup_init_kthreadd(void)
 {
 	/*
@@ -691,6 +694,7 @@ static inline void cgroup_kthread_ready(void)
 	current->no_cgroup_migration = 0;
 }
 
+<<<<<<< HEAD
 static inline union kernfs_node_id *cgroup_get_kernfs_id(struct cgroup *cgrp)
 {
 	return &cgrp->kn->id;
@@ -698,6 +702,8 @@ static inline union kernfs_node_id *cgroup_get_kernfs_id(struct cgroup *cgrp)
 
 void cgroup_path_from_kernfs_id(const union kernfs_node_id *id,
 					char *buf, size_t buflen);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #else /* !CONFIG_CGROUPS */
 
 struct cgroup_subsys_state;
@@ -722,6 +728,7 @@ static inline int cgroup_init_early(void) { return 0; }
 static inline int cgroup_init(void) { return 0; }
 static inline void cgroup_init_kthreadd(void) {}
 static inline void cgroup_kthread_ready(void) {}
+<<<<<<< HEAD
 static inline union kernfs_node_id *cgroup_get_kernfs_id(struct cgroup *cgrp)
 {
 	return NULL;
@@ -890,6 +897,8 @@ copy_cgroup_ns(unsigned long flags, struct user_namespace *user_ns,
 {
 	return old_ns;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* !CONFIG_CGROUPS */
 

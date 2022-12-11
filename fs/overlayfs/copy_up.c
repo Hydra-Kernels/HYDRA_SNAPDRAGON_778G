@@ -40,7 +40,11 @@ int ovl_copy_xattr(struct dentry *old, struct dentry *new)
 {
 	ssize_t list_size, size, value_size = 0;
 	char *buf, *name, *value = NULL;
+<<<<<<< HEAD
 	int error = 0;
+=======
+	int uninitialized_var(error);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	size_t slen;
 
 	if (!(old->d_inode->i_opflags & IOP_XATTR) ||
@@ -76,6 +80,7 @@ int ovl_copy_xattr(struct dentry *old, struct dentry *new)
 
 		if (ovl_is_private_xattr(name))
 			continue;
+<<<<<<< HEAD
 
 		error = security_inode_copy_up_xattr(name);
 		if (error < 0 && error != -EOPNOTSUPP)
@@ -84,6 +89,8 @@ int ovl_copy_xattr(struct dentry *old, struct dentry *new)
 			error = 0;
 			continue; /* Discard */
 		}
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 retry:
 		size = vfs_getxattr(old, name, value, value_size);
 		if (size == -ERANGE)
@@ -169,7 +176,11 @@ static int ovl_copy_up_data(struct path *old, struct path *new, loff_t len)
 
 		len -= bytes;
 	}
+<<<<<<< HEAD
 out:
+=======
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!error)
 		error = vfs_fsync(new_file, 0);
 	fput(new_file);

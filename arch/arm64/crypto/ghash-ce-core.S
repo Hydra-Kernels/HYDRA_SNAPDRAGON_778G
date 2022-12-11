@@ -59,6 +59,7 @@
 	.text
 	.arch		armv8-a+crypto
 
+<<<<<<< HEAD
 	.macro		__pmull_p64, rd, rn, rm
 	pmull		\rd\().1q, \rn\().1d, \rm\().1d
 	.endm
@@ -155,6 +156,15 @@
 	trn2		T1.2d, HH3.2d, HH4.2d
 	eor		HH34.16b, HH34.16b, T1.16b
 
+=======
+	/*
+	 * void pmull_ghash_update(int blocks, u64 dg[], const char *src,
+	 *			   struct ghash_key const *k, const char *head)
+	 */
+ENTRY(pmull_ghash_update)
+	ld1		{SHASH.2d}, [x3]
+	ld1		{XL.2d}, [x1]
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	movi		MASK.16b, #0xe1
 	shl		MASK.2d, MASK.2d, #57
 	.endm
@@ -342,7 +352,11 @@ CPU_LE(	rev64		T1.16b, T1.16b	)
 
 	cbnz		w0, 0b
 
+<<<<<<< HEAD
 5:	st1		{XL.2d}, [x1]
+=======
+	st1		{XL.2d}, [x1]
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ret
 	.endm
 

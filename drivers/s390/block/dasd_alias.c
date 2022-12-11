@@ -966,6 +966,7 @@ void dasd_alias_handle_summary_unit_check(struct work_struct *work)
 	lcu->suc_data.reason = private->suc_reason;
 	lcu->suc_data.device = device;
 	dasd_get_device(device);
+<<<<<<< HEAD
 	if (!schedule_work(&lcu->suc_data.worker))
 		dasd_put_device(device);
 out_unlock:
@@ -973,4 +974,9 @@ out_unlock:
 out:
 	clear_bit(DASD_FLAG_SUC, &device->flags);
 	dasd_put_device(device);
+=======
+	spin_unlock(&lcu->lock);
+	if (!schedule_work(&lcu->suc_data.worker))
+		dasd_put_device(device);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };

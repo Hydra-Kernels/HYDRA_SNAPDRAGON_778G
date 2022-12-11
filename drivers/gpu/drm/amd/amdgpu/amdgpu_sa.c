@@ -315,6 +315,7 @@ int amdgpu_sa_bo_new(struct amdgpu_sa_manager *sa_manager,
 
 		for (i = 0, count = 0; i < AMDGPU_SA_NUM_FENCE_LISTS; ++i)
 			if (fences[i])
+<<<<<<< HEAD
 				fences[count++] = dma_fence_get(fences[i]);
 
 		if (count) {
@@ -324,6 +325,16 @@ int amdgpu_sa_bo_new(struct amdgpu_sa_manager *sa_manager,
 						       NULL);
 			for (i = 0; i < count; ++i)
 				dma_fence_put(fences[i]);
+=======
+				fences[count++] = fence_get(fences[i]);
+
+		if (count) {
+			spin_unlock(&sa_manager->wq.lock);
+			t = fence_wait_any_timeout(fences, count, false,
+						   MAX_SCHEDULE_TIMEOUT);
+			for (i = 0; i < count; ++i)
+				fence_put(fences[i]);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 			r = (t > 0) ? 0 : t;
 			spin_lock(&sa_manager->wq.lock);

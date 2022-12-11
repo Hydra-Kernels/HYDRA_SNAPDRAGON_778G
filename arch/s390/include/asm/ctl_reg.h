@@ -43,7 +43,11 @@
 		:							\
 		: "Q" (*(addrtype *)(&array)), "i" (low), "i" (high)	\
 		: "memory");						\
+<<<<<<< HEAD
 } while (0)
+=======
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #define __ctl_store(array, low, high) do {				\
 	typedef struct { char _[sizeof(array)]; } addrtype;		\

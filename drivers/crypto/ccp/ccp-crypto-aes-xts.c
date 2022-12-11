@@ -119,6 +119,7 @@ static int ccp_aes_xts_crypt(struct ablkcipher_request *req,
 	if (!req->info)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	/* Check conditions under which the CCP can fulfill a request. The
 	 * device can handle input plaintext of a length that is a multiple
 	 * of the unit_size, bug the crypto implementation only supports
@@ -148,6 +149,20 @@ static int ccp_aes_xts_crypt(struct ablkcipher_request *req,
 		SYNC_SKCIPHER_REQUEST_ON_STACK(subreq,
 					       ctx->u.aes.tfm_skcipher);
 
+=======
+	unit_size = CCP_XTS_AES_UNIT_SIZE__LAST;
+	if (req->nbytes <= unit_size_map[0].size) {
+		for (unit = 0; unit < ARRAY_SIZE(unit_size_map); unit++) {
+			if (!(req->nbytes & (unit_size_map[unit].size - 1))) {
+				unit_size = unit_size_map[unit].value;
+				break;
+			}
+		}
+	}
+
+	if ((unit_size == CCP_XTS_AES_UNIT_SIZE__LAST) ||
+	    (ctx->u.aes.key_len != AES_KEYSIZE_128)) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		/* Use the fallback to process the request for any
 		 * unsupported unit sizes or key sizes
 		 */

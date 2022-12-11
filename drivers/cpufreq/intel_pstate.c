@@ -515,6 +515,7 @@ static int min_perf_pct_min(void)
 	struct cpudata *cpu = all_cpu_data[0];
 	int turbo_pstate = cpu->pstate.turbo_pstate;
 
+<<<<<<< HEAD
 	return turbo_pstate ?
 		(cpu->pstate.min_pstate * 100 / turbo_pstate) : 0;
 }
@@ -526,6 +527,21 @@ static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
 
 	if (!boot_cpu_has(X86_FEATURE_EPB))
 		return -ENXIO;
+=======
+	get_online_cpus();
+
+	for_each_online_cpu(cpu) {
+		rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
+		hw_min = HWP_LOWEST_PERF(cap);
+		hw_max = HWP_HIGHEST_PERF(cap);
+		range = hw_max - hw_min;
+
+		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+		adj_range = limits->min_perf_pct * range / 100;
+		min = hw_min + adj_range;
+		value &= ~HWP_MIN_PERF(~0L);
+		value |= HWP_MIN_PERF(min);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
 	if (ret)
@@ -1480,10 +1496,38 @@ static int core_get_max_pstate(void)
 		int tar_levels;
 
 		/* Do some sanity checking for safety */
+<<<<<<< HEAD
 		tar_levels = tar & 0xff;
 		if (tdp_ratio - 1 == tar_levels) {
 			max_pstate = tar_levels;
 			pr_debug("max_pstate=TAC %x\n", max_pstate);
+=======
+		if (plat_info & 0x600000000) {
+			u64 tdp_ctrl;
+			u64 tdp_ratio;
+			int tdp_msr;
+
+			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
+			if (err)
+				goto skip_tar;
+
+			tdp_msr = MSR_CONFIG_TDP_NOMINAL + (tdp_ctrl & 0x3);
+			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
+			if (err)
+				goto skip_tar;
+
+			/* For level 1 and 2, bits[23:16] contain the ratio */
+			if (tdp_ctrl)
+				tdp_ratio >>= 16;
+
+			tdp_ratio &= 0xff; /* ratios are only 8 bits long */
+			if (tdp_ratio - 1 == tar) {
+				max_pstate = tar;
+				pr_debug("max_pstate=TAC %x\n", max_pstate);
+			} else {
+				goto skip_tar;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -2737,6 +2781,7 @@ static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
 static inline void intel_pstate_request_control_from_smm(void) {}
 #endif /* CONFIG_ACPI */
 
+<<<<<<< HEAD
 #define INTEL_PSTATE_HWP_BROADWELL	0x01
 
 #define ICPU_HWP(model, hwp_mode) \
@@ -2746,6 +2791,10 @@ static const struct x86_cpu_id hwp_support_ids[] __initconst = {
 	ICPU_HWP(INTEL_FAM6_BROADWELL_X, INTEL_PSTATE_HWP_BROADWELL),
 	ICPU_HWP(INTEL_FAM6_BROADWELL_D, INTEL_PSTATE_HWP_BROADWELL),
 	ICPU_HWP(X86_MODEL_ANY, 0),
+=======
+static const struct x86_cpu_id hwp_support_ids[] __initconst = {
+	{ X86_VENDOR_INTEL, 6, X86_MODEL_ANY, X86_FEATURE_HWP },
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 
@@ -2760,6 +2809,7 @@ static int __init intel_pstate_init(void)
 	if (no_load)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	id = x86_match_cpu(hwp_support_ids);
 	if (id) {
 		copy_cpu_funcs(&core_funcs);
@@ -2783,16 +2833,46 @@ static int __init intel_pstate_init(void)
 		pr_info("Invalid MSRs\n");
 		return -ENODEV;
 	}
+=======
+	if (x86_match_cpu(hwp_support_ids) && !no_hwp) {
+		copy_cpu_funcs(&core_params.funcs);
+		hwp_active++;
+		goto hwp_cpu_matched;
+	}
+
+	id = x86_match_cpu(intel_pstate_cpu_ids);
+	if (!id)
+		return -ENODEV;
+
+	cpu_def = (struct cpu_defaults *)id->driver_data;
+
+	copy_pid_params(&cpu_def->pid_policy);
+	copy_cpu_funcs(&cpu_def->funcs);
+
+	if (intel_pstate_msrs_not_valid())
+		return -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 hwp_cpu_matched:
 	/*
 	 * The Intel pstate driver will be ignored if the platform
 	 * firmware has its own power management modes.
 	 */
+<<<<<<< HEAD
 	if (intel_pstate_platform_pwr_mgmt_exists()) {
 		pr_info("P-states controlled by the platform\n");
 		return -ENODEV;
 	}
+=======
+	if (intel_pstate_platform_pwr_mgmt_exists())
+		return -ENODEV;
+
+	pr_info("Intel P-state driver initializing.\n");
+
+	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+	if (!all_cpu_data)
+		return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (!hwp_active && hwp_only)
 		return -ENOTSUPP;
@@ -2807,11 +2887,26 @@ hwp_cpu_matched:
 
 	intel_pstate_sysfs_expose_params();
 
+<<<<<<< HEAD
 	mutex_lock(&intel_pstate_driver_lock);
 	rc = intel_pstate_register_driver(default_driver);
 	mutex_unlock(&intel_pstate_driver_lock);
 	if (rc)
 		return rc;
+=======
+	if (hwp_active)
+		pr_info("intel_pstate: HWP enabled\n");
+
+	return rc;
+out:
+	get_online_cpus();
+	for_each_online_cpu(cpu) {
+		if (all_cpu_data[cpu]) {
+			del_timer_sync(&all_cpu_data[cpu]->timer);
+			kfree(all_cpu_data[cpu]);
+		}
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (hwp_active)
 		pr_info("HWP enabled\n");

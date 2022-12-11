@@ -1302,6 +1302,9 @@ static int wlanhdr_to_ethhdr(struct recv_frame *precvframe)
 	if (!ptr)
 		return _FAIL;
 
+	if (!ptr)
+		return _FAIL;
+
 	memcpy(ptr, pattrib->dst, ETH_ALEN);
 	memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
 

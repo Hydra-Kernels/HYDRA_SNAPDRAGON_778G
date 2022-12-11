@@ -372,7 +372,10 @@ static void _rtl8812ae_phy_set_rfe_reg_24g(struct ieee80211_hw *hw)
 			rtl_set_bbreg(hw, RB_RFE_INV, BMASKRFEINV, 0x000);
 			break;
 		}
+<<<<<<< HEAD
 		/* fall through */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	case 0:
 	case 2:
 	default:

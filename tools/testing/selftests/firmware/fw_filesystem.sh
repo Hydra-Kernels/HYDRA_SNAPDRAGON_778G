@@ -11,10 +11,43 @@ TEST_REQS_FW_SET_CUSTOM_PATH="yes"
 TEST_DIR=$(dirname $0)
 source $TEST_DIR/fw_lib.sh
 
+<<<<<<< HEAD
 check_mods
 check_setup
 verify_reqs
 setup_tmp_file
+=======
+DIR=/sys/devices/virtual/misc/test_firmware
+
+# CONFIG_FW_LOADER_USER_HELPER has a sysfs class under /sys/class/firmware/
+# These days no one enables CONFIG_FW_LOADER_USER_HELPER so check for that
+# as an indicator for CONFIG_FW_LOADER_USER_HELPER.
+HAS_FW_LOADER_USER_HELPER=$(if [ -d /sys/class/firmware/ ]; then echo yes; else echo no; fi)
+
+if [ "$HAS_FW_LOADER_USER_HELPER" = "yes" ]; then
+	OLD_TIMEOUT=$(cat /sys/class/firmware/timeout)
+fi
+
+OLD_FWPATH=$(cat /sys/module/firmware_class/parameters/path)
+
+FWPATH=$(mktemp -d)
+FW="$FWPATH/test-firmware.bin"
+
+test_finish()
+{
+	if [ "$HAS_FW_LOADER_USER_HELPER" = "yes" ]; then
+		echo "$OLD_TIMEOUT" >/sys/class/firmware/timeout
+	fi
+	if [ "$OLD_FWPATH" = "" ]; then
+		# A zero-length write won't work; write a null byte
+		printf '\000' >/sys/module/firmware_class/parameters/path
+	else
+		echo -n "$OLD_FWPATH" >/sys/module/firmware_class/parameters/path
+	fi
+	rm -f "$FW"
+	rmdir "$FWPATH"
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 trap "test_finish" EXIT
 
@@ -36,6 +69,11 @@ else
 		echo "$0: empty filename should not succeed (async)" >&2
 		exit 1
 	fi
+fi
+
+if printf '\000' >"$DIR"/trigger_request 2> /dev/null; then
+	echo "$0: empty filename should not succeed" >&2
+	exit 1
 fi
 
 # Request a firmware that doesn't exist, it should fail.

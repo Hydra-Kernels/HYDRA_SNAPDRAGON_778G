@@ -1030,6 +1030,7 @@ static const struct usb_device_id id_table_combined[] = {
 	{ USB_DEVICE(CYPRESS_VID, CYPRESS_WICED_BT_USB_PID) },
 	{ USB_DEVICE(CYPRESS_VID, CYPRESS_WICED_WL_USB_PID) },
 	{ USB_DEVICE(AIRBUS_DS_VID, AIRBUS_DS_P8GR) },
+<<<<<<< HEAD
 	/* EZPrototypes devices */
 	{ USB_DEVICE(EZPROTOTYPES_VID, HJELMSLUND_USB485_ISO_PID) },
 	{ USB_DEVICE_INTERFACE_NUMBER(UNJO_VID, UNJO_ISODEBUG_V1_PID, 1) },
@@ -1047,6 +1048,8 @@ static const struct usb_device_id id_table_combined[] = {
 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
 	{ USB_DEVICE(FTDI_VID, FTDI_FALCONIA_JTAG_UNBUF_PID),
 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{ }					/* Terminating entry */
 };
 
@@ -1452,10 +1455,18 @@ static int _read_latency_timer(struct usb_serial_port *port)
 			     0, priv->interface,
 			     buf, 1, WDR_TIMEOUT);
 	if (rv < 1) {
+<<<<<<< HEAD
 		if (rv >= 0)
 			rv = -EIO;
 	} else {
 		rv = buf[0];
+=======
+		dev_err(&port->dev, "Unable to read latency timer: %i\n", rv);
+		if (rv >= 0)
+			rv = -EIO;
+	} else {
+		priv->latency = buf[0];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	kfree(buf);
@@ -1525,6 +1536,7 @@ static int set_serial_info(struct tty_struct *tty,
 	/* Make the changes - these are privileged changes! */
 
 	priv->flags = ((priv->flags & ~ASYNC_FLAGS) |
+<<<<<<< HEAD
 					(ss->flags & ASYNC_FLAGS));
 	priv->custom_divisor = ss->custom_divisor;
 
@@ -1539,6 +1551,31 @@ check_and_exit:
 		if (priv->flags & ASYNC_SPD_MASK)
 			dev_warn_ratelimited(&port->dev, "use of SPD flags is deprecated\n");
 
+=======
+					(new_serial.flags & ASYNC_FLAGS));
+	priv->custom_divisor = new_serial.custom_divisor;
+
+check_and_exit:
+	write_latency_timer(port);
+
+	if ((old_priv.flags & ASYNC_SPD_MASK) !=
+	     (priv->flags & ASYNC_SPD_MASK)) {
+		if ((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
+			tty->alt_speed = 57600;
+		else if ((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
+			tty->alt_speed = 115200;
+		else if ((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
+			tty->alt_speed = 230400;
+		else if ((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
+			tty->alt_speed = 460800;
+		else
+			tty->alt_speed = 0;
+	}
+	if (((old_priv.flags & ASYNC_SPD_MASK) !=
+	     (priv->flags & ASYNC_SPD_MASK)) ||
+	    (((priv->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST) &&
+	     (old_priv.custom_divisor != priv->custom_divisor))) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		change_speed(tty, port);
 	}
 	mutex_unlock(&priv->cfg_lock);
@@ -2532,12 +2569,21 @@ static int ftdi_process_packet(struct usb_serial_port *port,
 	}
 
 	/* save if the transmitter is empty or not */
+<<<<<<< HEAD
 	if (buf[1] & FTDI_RS_TEMT)
+=======
+	if (packet[1] & FTDI_RS_TEMT)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		priv->transmit_empty = 1;
 	else
 		priv->transmit_empty = 0;
 
+<<<<<<< HEAD
 	if (len == 2)
+=======
+	len -= 2;
+	if (!len)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;	/* status only */
 
 	/*
@@ -2566,7 +2612,12 @@ static int ftdi_process_packet(struct usb_serial_port *port,
 		}
 	}
 
+<<<<<<< HEAD
 	port->icount.rx += len - 2;
+=======
+	port->icount.rx += len;
+	ch = packet + 2;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (port->port.console && port->sysrq) {
 		for (i = 2; i < len; i++) {

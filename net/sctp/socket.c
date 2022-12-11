@@ -147,6 +147,7 @@ static void sctp_clear_owner_w(struct sctp_chunk *chunk)
 	skb_orphan(chunk->skb);
 }
 
+<<<<<<< HEAD
 #define traverse_and_process()	\
 do {				\
 	msg = chunk->msg;	\
@@ -201,6 +202,31 @@ static void sctp_for_each_rx_skb(struct sctp_association *asoc, struct sock *sk,
 
 	sctp_skb_for_each(skb, &asoc->ulpq.reasm_uo, tmp)
 		cb(skb, sk);
+=======
+static void sctp_for_each_tx_datachunk(struct sctp_association *asoc,
+				       void (*cb)(struct sctp_chunk *))
+
+{
+	struct sctp_outq *q = &asoc->outqueue;
+	struct sctp_transport *t;
+	struct sctp_chunk *chunk;
+
+	list_for_each_entry(t, &asoc->peer.transport_addr_list, transports)
+		list_for_each_entry(chunk, &t->transmitted, transmitted_list)
+			cb(chunk);
+
+	list_for_each_entry(chunk, &q->retransmit, list)
+		cb(chunk);
+
+	list_for_each_entry(chunk, &q->sacked, list)
+		cb(chunk);
+
+	list_for_each_entry(chunk, &q->abandoned, list)
+		cb(chunk);
+
+	list_for_each_entry(chunk, &q->out_chunk_list, list)
+		cb(chunk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /* Verify that this is a valid address. */
@@ -1253,8 +1279,23 @@ static int __sctp_connect(struct sock *sk, struct sockaddr *kaddrs,
 	sp->pf->to_sk_daddr(daddr, sk);
 	sk->sk_err = 0;
 
+<<<<<<< HEAD
+=======
+	/* in-kernel sockets don't generally have a file allocated to them
+	 * if all they do is call sock_create_kern().
+	 */
+	if (sk->sk_socket->file)
+		f_flags = sk->sk_socket->file->f_flags;
+
+	timeo = sock_sndtimeo(sk, f_flags & O_NONBLOCK);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (assoc_id)
 		*assoc_id = asoc->assoc_id;
+	err = sctp_wait_for_connect(asoc, &timeo);
+	/* Note: the asoc may be freed after the return of
+	 * sctp_wait_for_connect.
+	 */
 
 	timeo = sock_sndtimeo(sk, flags & O_NONBLOCK);
 	return sctp_wait_for_connect(asoc, &timeo);
@@ -1847,6 +1888,7 @@ static int sctp_sendmsg_to_asoc(struct sctp_association *asoc,
 	if (sctp_wspace(asoc) < (int)msg_len)
 		sctp_prsctp_prune(asoc, sinfo, msg_len - sctp_wspace(asoc));
 
+<<<<<<< HEAD
 	if (sk_under_memory_pressure(sk))
 		sk_mem_reclaim(sk);
 
@@ -1855,6 +1897,20 @@ static int sctp_sendmsg_to_asoc(struct sctp_association *asoc,
 		err = sctp_wait_for_sndbuf(asoc, &timeo, msg_len);
 		if (err)
 			goto err;
+=======
+	timeo = sock_sndtimeo(sk, msg->msg_flags & MSG_DONTWAIT);
+	if (!sctp_wspace(asoc)) {
+		/* sk can be changed by peel off when waiting for buf. */
+		err = sctp_wait_for_sndbuf(asoc, &timeo, msg_len);
+		if (err) {
+			if (err == -ESRCH) {
+				/* asoc is already dead. */
+				new_asoc = NULL;
+				err = -EPIPE;
+			}
+			goto out_free;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (sctp_state(asoc, CLOSED)) {
@@ -5601,10 +5657,13 @@ static int sctp_getsockopt_disable_fragments(struct sock *sk, int len,
 static int sctp_getsockopt_events(struct sock *sk, int len, char __user *optval,
 				  int __user *optlen)
 {
+<<<<<<< HEAD
 	struct sctp_event_subscribe subscribe;
 	__u8 *sn_type = (__u8 *)&subscribe;
 	int i;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (len == 0)
 		return -EINVAL;
 	if (len > sizeof(struct sctp_event_subscribe))
@@ -5643,7 +5702,11 @@ static int sctp_getsockopt_autoclose(struct sock *sk, int len, char __user *optv
 	len = sizeof(int);
 	if (put_user(len, optlen))
 		return -EFAULT;
+<<<<<<< HEAD
 	if (put_user(sctp_sk(sk)->autoclose, (int __user *)optval))
+=======
+	if (copy_to_user(optval, &sctp_sk(sk)->autoclose, len))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EFAULT;
 	return 0;
 }
@@ -8697,8 +8760,13 @@ static int sctp_msghdr_parse(const struct msghdr *msg, struct sctp_cmsgs *cmsgs)
 
 			if (cmsgs->srinfo->sinfo_flags &
 			    ~(SCTP_UNORDERED | SCTP_ADDR_OVER |
+<<<<<<< HEAD
 			      SCTP_SACK_IMMEDIATELY | SCTP_SENDALL |
 			      SCTP_PR_SCTP_MASK | SCTP_ABORT | SCTP_EOF))
+=======
+			      SCTP_SACK_IMMEDIATELY |
+			      SCTP_ABORT | SCTP_EOF))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return -EINVAL;
 			break;
 
@@ -8721,8 +8789,13 @@ static int sctp_msghdr_parse(const struct msghdr *msg, struct sctp_cmsgs *cmsgs)
 
 			if (cmsgs->sinfo->snd_flags &
 			    ~(SCTP_UNORDERED | SCTP_ADDR_OVER |
+<<<<<<< HEAD
 			      SCTP_SACK_IMMEDIATELY | SCTP_SENDALL |
 			      SCTP_PR_SCTP_MASK | SCTP_ABORT | SCTP_EOF))
+=======
+			      SCTP_SACK_IMMEDIATELY |
+			      SCTP_ABORT | SCTP_EOF))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				return -EINVAL;
 			break;
 		case SCTP_PRINFO:
@@ -9477,9 +9550,15 @@ static int sctp_sock_migrate(struct sock *oldsk, struct sock *newsk,
 	 * paths won't try to lock it and then oldsk.
 	 */
 	lock_sock_nested(newsk, SINGLE_DEPTH_NESTING);
+<<<<<<< HEAD
 	sctp_for_each_tx_datachunk(assoc, true, sctp_clear_owner_w);
 	sctp_assoc_migrate(assoc, newsk);
 	sctp_for_each_tx_datachunk(assoc, false, sctp_set_owner_w);
+=======
+	sctp_for_each_tx_datachunk(assoc, sctp_clear_owner_w);
+	sctp_assoc_migrate(assoc, newsk);
+	sctp_for_each_tx_datachunk(assoc, sctp_set_owner_w);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* If the association on the newsk is already closed before accept()
 	 * is called, set RCV_SHUTDOWN flag.

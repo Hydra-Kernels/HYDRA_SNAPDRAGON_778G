@@ -111,6 +111,7 @@ bool target_sense_desc_format(struct se_device *dev);
 sector_t target_to_linux_sector(struct se_device *dev, sector_t lb);
 bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
 				       struct request_queue *q);
+<<<<<<< HEAD
 
 static inline bool target_dev_configured(struct se_device *se_dev)
 {
@@ -122,5 +123,7 @@ static inline uint32_t get_unaligned_be24(const uint8_t *const p)
 {
 	return get_unaligned_be32(p - 1) & 0xffffffU;
 }
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 #endif /* TARGET_CORE_BACKEND_H */

@@ -80,7 +80,21 @@ extern const u8 ieee80211_ac_to_qos_mask[IEEE80211_NUM_ACS];
 
 #define IEEE80211_DEAUTH_FRAME_LEN	(24 /* hdr */ + 2 /* reason */)
 
+<<<<<<< HEAD
 #define IEEE80211_MAX_NAN_INSTANCE_ID 255
+=======
+struct ieee80211_fragment_entry {
+	struct sk_buff_head skb_list;
+	unsigned long first_frag_time;
+	u16 seq;
+	u16 extra_len;
+	u16 last_frag;
+	u8 rx_queue;
+	bool check_sequential_pn; /* needed for CCMP/GCMP */
+	u8 last_pn[6]; /* PN of the last fragment if CCMP was used */
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct ieee80211_bss {
 	u32 device_ts_beacon, device_ts_presp;

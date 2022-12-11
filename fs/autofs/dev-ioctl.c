@@ -318,7 +318,11 @@ static int autofs_dev_ioctl_fail(struct file *fp,
 
 	token = (autofs_wqt_t) param->fail.token;
 	status = param->fail.status < 0 ? param->fail.status : -ENOENT;
+<<<<<<< HEAD:fs/autofs/dev-ioctl.c
 	return autofs_wait_release(sbi, token, status);
+=======
+	return autofs4_wait_release(sbi, token, status);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:fs/autofs4/dev-ioctl.c
 }
 
 /*

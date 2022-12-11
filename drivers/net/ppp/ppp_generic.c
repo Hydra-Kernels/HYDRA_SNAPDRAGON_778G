@@ -608,6 +608,22 @@ static long ppp_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		pr_warn_once("%s (%d) used obsolete PPPIOCDETACH ioctl\n",
 			     current->comm, current->pid);
 		err = -EINVAL;
+<<<<<<< HEAD
+=======
+		if (pf->kind == INTERFACE) {
+			ppp = PF_TO_PPP(pf);
+			rtnl_lock();
+			if (file == ppp->owner)
+				unregister_netdevice(ppp->dev);
+			rtnl_unlock();
+		}
+		if (atomic_long_read(&file->f_count) < 2) {
+			ppp_release(NULL, file);
+			err = 0;
+		} else
+			pr_warn("PPPIOCDETACH file->f_count=%ld\n",
+				atomic_long_read(&file->f_count));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 	}
 
@@ -1335,12 +1351,21 @@ static int ppp_dev_init(struct net_device *dev)
 {
 	struct ppp *ppp;
 
+<<<<<<< HEAD
+=======
+	dev->qdisc_tx_busylock = &ppp_tx_busylock;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	ppp = netdev_priv(dev);
 	/* Let the netdevice take a reference on the ppp file. This ensures
 	 * that ppp_destroy_interface() won't run before the device gets
 	 * unregistered.
 	 */
+<<<<<<< HEAD
 	refcount_inc(&ppp->file.refcnt);
+=======
+	atomic_inc(&ppp->file.refcnt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	return 0;
 }
@@ -1369,7 +1394,11 @@ static void ppp_dev_priv_destructor(struct net_device *dev)
 	struct ppp *ppp;
 
 	ppp = netdev_priv(dev);
+<<<<<<< HEAD
 	if (refcount_dec_and_test(&ppp->file.refcnt))
+=======
+	if (atomic_dec_and_test(&ppp->file.refcnt))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ppp_destroy_interface(ppp);
 }
 
@@ -1398,7 +1427,11 @@ static void ppp_setup(struct net_device *dev)
 	dev->tx_queue_len = 3;
 	dev->type = ARPHRD_PPP;
 	dev->flags = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
+<<<<<<< HEAD
 	dev->priv_destructor = ppp_dev_priv_destructor;
+=======
+	dev->destructor = ppp_dev_priv_destructor;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	netif_keep_dst(dev);
 }
 
@@ -3075,7 +3108,12 @@ static int ppp_create_interface(struct net *net, struct file *file, int *unit)
 
 	return 0;
 
+<<<<<<< HEAD
 err_dev:
+=======
+out2:
+	mutex_unlock(&pn->all_ppp_mutex);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	rtnl_unlock();
 	free_netdev(dev);
 err:

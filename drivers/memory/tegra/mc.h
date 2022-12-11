@@ -18,7 +18,10 @@
 #define MC_INT_INVALID_SMMU_PAGE (1 << 10)
 #define MC_INT_ARBITRATION_EMEM (1 << 9)
 #define MC_INT_SECURITY_VIOLATION (1 << 8)
+<<<<<<< HEAD
 #define MC_INT_INVALID_GART_PAGE (1 << 7)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define MC_INT_DECERR_EMEM (1 << 6)
 
 static inline u32 mc_readl(struct tegra_mc *mc, unsigned long offset)

@@ -389,6 +389,7 @@ static const u16 brcmnand_regs_v71[] = {
 	[BRCMNAND_FC_BASE]		= 0x400,
 };
 
+<<<<<<< HEAD:drivers/mtd/nand/raw/brcmnand/brcmnand.c
 /* BRCMNAND v7.2 */
 static const u16 brcmnand_regs_v72[] = {
 	[BRCMNAND_CMD_START]		=  0x04,
@@ -419,6 +420,8 @@ static const u16 brcmnand_regs_v72[] = {
 	[BRCMNAND_FC_BASE]		= 0x600,
 };
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mtd/nand/brcmnand/brcmnand.c
 enum brcmnand_cs_reg {
 	BRCMNAND_CS_CFG_EXT = 0,
 	BRCMNAND_CS_CFG,
@@ -514,9 +517,13 @@ static int brcmnand_revision_init(struct brcmnand_controller *ctrl)
 	}
 
 	/* Register offsets */
+<<<<<<< HEAD:drivers/mtd/nand/raw/brcmnand/brcmnand.c
 	if (ctrl->nand_version >= 0x0702)
 		ctrl->reg_offsets = brcmnand_regs_v72;
 	else if (ctrl->nand_version == 0x0701)
+=======
+	if (ctrl->nand_version >= 0x0701)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/mtd/nand/brcmnand/brcmnand.c
 		ctrl->reg_offsets = brcmnand_regs_v71;
 	else if (ctrl->nand_version >= 0x0600)
 		ctrl->reg_offsets = brcmnand_regs_v60;

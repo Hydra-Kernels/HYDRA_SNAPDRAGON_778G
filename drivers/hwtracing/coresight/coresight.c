@@ -1322,6 +1322,23 @@ static void coresight_fixup_orphan_conns(struct coresight_device *csdev)
 }
 
 
+<<<<<<< HEAD
+=======
+static int coresight_name_match(struct device *dev, void *data)
+{
+	char *to_match;
+	struct coresight_device *i_csdev;
+
+	to_match = data;
+	i_csdev = to_coresight_device(dev);
+
+	if (to_match && !strcmp(to_match, dev_name(&i_csdev->dev)))
+		return 1;
+
+	return 0;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static void coresight_fixup_device_conns(struct coresight_device *csdev)
 {
 	int i;

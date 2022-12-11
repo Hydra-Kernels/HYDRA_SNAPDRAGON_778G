@@ -6569,10 +6569,13 @@ static int add_advertising(struct sock *sk, struct hci_dev *hdev,
 		return mgmt_cmd_status(sk, hdev->id, MGMT_OP_ADD_ADVERTISING,
 				       status);
 
+<<<<<<< HEAD
 	if (cp->instance < 1 || cp->instance > HCI_MAX_ADV_INSTANCES)
 		return mgmt_cmd_status(sk, hdev->id, MGMT_OP_ADD_ADVERTISING,
 				       MGMT_STATUS_INVALID_PARAMS);
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (data_len != sizeof(*cp) + cp->adv_data_len + cp->scan_rsp_len)
 		return mgmt_cmd_status(sk, hdev->id, MGMT_OP_ADD_ADVERTISING,
 				       MGMT_STATUS_INVALID_PARAMS);

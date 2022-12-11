@@ -439,7 +439,11 @@ int isBranchInstr(struct pt_regs *regs, struct mm_decoded_insn dec_insn,
 					regs->cp0_epc + dec_insn.pc_inc +
 					dec_insn.next_pc_inc;
 			}
+<<<<<<< HEAD
 			/* fall through */
+=======
+			/* Fall through */
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		case jr_op:
 			/* For R6, JR already emulated in jalr_op */
 			if (NO_R6EMU && insn.r_format.func == jr_op)
@@ -2201,8 +2205,13 @@ copcsr:
 
 			MIPS_FPU_EMU_INC_STATS(class_d);
 			DPFROMREG(fs, MIPSInst_FS(ir));
+<<<<<<< HEAD
 			rv.l = ieee754dp_2008class(fs);
 			rfmt = l_fmt;
+=======
+			rv.w = ieee754dp_2008class(fs);
+			rfmt = w_fmt;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto copcsr;
 		}
 

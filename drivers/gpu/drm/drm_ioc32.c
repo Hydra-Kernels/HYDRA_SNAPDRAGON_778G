@@ -874,7 +874,11 @@ static int compat_drm_wait_vblank(struct file *file, unsigned int cmd,
 	return err;
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_X86)
+=======
+#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 typedef struct drm_mode_fb_cmd232 {
 	u32 fb_id;
 	u32 width;
@@ -960,6 +964,13 @@ static struct {
 #if defined(CONFIG_X86) || defined(CONFIG_IA64)
 	DRM_IOCTL32_DEF(DRM_IOCTL_MODE_ADDFB2, compat_drm_mode_addfb2),
 #endif
+<<<<<<< HEAD
+=======
+	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK32)] = compat_drm_wait_vblank,
+#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+	[DRM_IOCTL_NR(DRM_IOCTL_MODE_ADDFB232)] = compat_drm_mode_addfb2,
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 };
 
 /**

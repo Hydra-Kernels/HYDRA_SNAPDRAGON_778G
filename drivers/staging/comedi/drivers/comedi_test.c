@@ -59,6 +59,7 @@
 #define DEV_NAME "comedi_testd"
 #define CLASS_NAME "comedi_test"
 
+<<<<<<< HEAD
 static bool config_mode;
 static unsigned int set_amplitude;
 static unsigned int set_period;
@@ -74,6 +75,8 @@ MODULE_PARM_DESC(amplitude, "Set auto mode wave amplitude in microvolts: (defaul
 module_param_named(period, set_period, uint, 0444);
 MODULE_PARM_DESC(period, "Set auto mode wave period in microseconds: (defaults to 0.1 sec)");
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /* Data unique to this driver */
 struct waveform_private {
 	struct timer_list ai_timer;	/* timer for AI commands */

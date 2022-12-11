@@ -254,11 +254,16 @@ static struct tcf_proto *tcf_proto_create(const char *kind, u32 protocol,
 {
 	struct tcf_proto *tp;
 	int err;
+<<<<<<< HEAD
+=======
+	int tp_created;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	tp = kzalloc(sizeof(*tp), GFP_KERNEL);
 	if (!tp)
 		return ERR_PTR(-ENOBUFS);
 
+<<<<<<< HEAD
 	tp->ops = tcf_proto_lookup_ops(kind, rtnl_held, extack);
 	if (IS_ERR(tp->ops)) {
 		err = PTR_ERR(tp->ops);
@@ -720,6 +725,12 @@ static int tcf_block_offload_cmd(struct tcf_block *block,
 	INIT_LIST_HEAD(&bo.cb_list);
 
 	err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_BLOCK, &bo);
+=======
+replay:
+	tp_created = 0;
+
+	err = nlmsg_parse(n, sizeof(*t), tca, TCA_MAX, NULL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (err < 0)
 		return err;
 
@@ -761,11 +772,184 @@ no_offload_dev_inc:
 		err = -EOPNOTSUPP;
 		goto err_unlock;
 	}
+<<<<<<< HEAD
 	err = 0;
 	block->nooffloaddevcnt++;
 	tc_indr_block_call(block, dev, ei, FLOW_BLOCK_BIND, extack);
 err_unlock:
 	up_write(&block->cb_lock);
+=======
+
+	/* Is it classful? */
+	cops = q->ops->cl_ops;
+	if (!cops)
+		return -EINVAL;
+
+	if (cops->tcf_chain == NULL)
+		return -EOPNOTSUPP;
+
+	/* Do we search for filter, attached to class? */
+	if (TC_H_MIN(parent)) {
+		cl = cops->get(q, parent);
+		if (cl == 0)
+			return -ENOENT;
+	}
+
+	/* And the last stroke */
+	chain = cops->tcf_chain(q, cl);
+	err = -EINVAL;
+	if (chain == NULL)
+		goto errout;
+
+	/* Check the chain for existence of proto-tcf with this priority */
+	for (back = chain;
+	     (tp = rtnl_dereference(*back)) != NULL;
+	     back = &tp->next) {
+		if (tp->prio >= prio) {
+			if (tp->prio == prio) {
+				if (!nprio ||
+				    (tp->protocol != protocol && protocol))
+					goto errout;
+			} else
+				tp = NULL;
+			break;
+		}
+	}
+
+	if (tp == NULL) {
+		/* Proto-tcf does not exist, create new one */
+
+		if (tca[TCA_KIND] == NULL || !protocol)
+			goto errout;
+
+		err = -ENOENT;
+		if (n->nlmsg_type != RTM_NEWTFILTER ||
+		    !(n->nlmsg_flags & NLM_F_CREATE))
+			goto errout;
+
+
+		/* Create new proto tcf */
+
+		err = -ENOBUFS;
+		tp = kzalloc(sizeof(*tp), GFP_KERNEL);
+		if (tp == NULL)
+			goto errout;
+		err = -ENOENT;
+		tp_ops = tcf_proto_lookup_ops(tca[TCA_KIND]);
+		if (tp_ops == NULL) {
+#ifdef CONFIG_MODULES
+			struct nlattr *kind = tca[TCA_KIND];
+			char name[IFNAMSIZ];
+
+			if (kind != NULL &&
+			    nla_strlcpy(name, kind, IFNAMSIZ) < IFNAMSIZ) {
+				rtnl_unlock();
+				request_module("cls_%s", name);
+				rtnl_lock();
+				tp_ops = tcf_proto_lookup_ops(kind);
+				/* We dropped the RTNL semaphore in order to
+				 * perform the module load.  So, even if we
+				 * succeeded in loading the module we have to
+				 * replay the request.  We indicate this using
+				 * -EAGAIN.
+				 */
+				if (tp_ops != NULL) {
+					module_put(tp_ops->owner);
+					err = -EAGAIN;
+				}
+			}
+#endif
+			kfree(tp);
+			goto errout;
+		}
+		tp->ops = tp_ops;
+		tp->protocol = protocol;
+		tp->prio = nprio ? :
+			       TC_H_MAJ(tcf_auto_prio(rtnl_dereference(*back)));
+		tp->q = q;
+		tp->classify = tp_ops->classify;
+		tp->classid = parent;
+
+		err = tp_ops->init(tp);
+		if (err != 0) {
+			module_put(tp_ops->owner);
+			kfree(tp);
+			goto errout;
+		}
+
+		tp_created = 1;
+
+	} else if (tca[TCA_KIND] && nla_strcmp(tca[TCA_KIND], tp->ops->kind))
+		goto errout;
+
+	fh = tp->ops->get(tp, t->tcm_handle);
+
+	if (fh == 0) {
+		if (n->nlmsg_type == RTM_DELTFILTER && t->tcm_handle == 0) {
+			struct tcf_proto *next = rtnl_dereference(tp->next);
+
+			RCU_INIT_POINTER(*back, next);
+
+			tfilter_notify(net, skb, n, tp, fh, RTM_DELTFILTER);
+			tcf_destroy(tp, true);
+			err = 0;
+			goto errout;
+		}
+
+		err = -ENOENT;
+		if (n->nlmsg_type != RTM_NEWTFILTER ||
+		    !(n->nlmsg_flags & NLM_F_CREATE))
+			goto errout;
+	} else {
+		switch (n->nlmsg_type) {
+		case RTM_NEWTFILTER:
+			err = -EEXIST;
+			if (n->nlmsg_flags & NLM_F_EXCL) {
+				if (tp_created)
+					tcf_destroy(tp, true);
+				goto errout;
+			}
+			break;
+		case RTM_DELTFILTER:
+			err = tp->ops->delete(tp, fh);
+			if (err == 0) {
+				struct tcf_proto *next = rtnl_dereference(tp->next);
+
+				tfilter_notify(net, skb, n, tp,
+					       t->tcm_handle, RTM_DELTFILTER);
+				if (tcf_destroy(tp, false))
+					RCU_INIT_POINTER(*back, next);
+			}
+			goto errout;
+		case RTM_GETTFILTER:
+			err = tfilter_notify(net, skb, n, tp, fh, RTM_NEWTFILTER);
+			goto errout;
+		default:
+			err = -EINVAL;
+			goto errout;
+		}
+	}
+
+	err = tp->ops->change(net, skb, tp, cl, t->tcm_handle, tca, &fh,
+			      n->nlmsg_flags & NLM_F_CREATE ? TCA_ACT_NOREPLACE : TCA_ACT_REPLACE);
+	if (err == 0) {
+		if (tp_created) {
+			RCU_INIT_POINTER(tp->next, rtnl_dereference(*back));
+			rcu_assign_pointer(*back, tp);
+		}
+		tfilter_notify(net, skb, n, tp, fh, RTM_NEWTFILTER);
+	} else {
+		if (tp_created)
+			tcf_destroy(tp, true);
+	}
+
+errout:
+	if (cl)
+		cops->put(q, cl);
+	if (err == -EAGAIN)
+		/* Replay the request. */
+		goto replay;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return err;
 }
 

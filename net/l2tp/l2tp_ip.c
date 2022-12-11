@@ -271,12 +271,19 @@ static int l2tp_ip_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		return -EINVAL;
 
 	lock_sock(sk);
+<<<<<<< HEAD
 
 	ret = -EINVAL;
 	if (!sock_flag(sk, SOCK_ZAPPED))
 		goto out;
 
 	if (sk->sk_state != TCP_CLOSE)
+=======
+	if (!sock_flag(sk, SOCK_ZAPPED))
+		goto out;
+
+	if (sk->sk_state != TCP_CLOSE || addr_len < sizeof(struct sockaddr_l2tpip))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		goto out;
 
 	chk_addr_ret = inet_addr_type(net, addr->l2tp_addr.s_addr);

@@ -1174,6 +1174,7 @@ static const struct snd_pci_quirk ca0132_quirks[] = {
 	SND_PCI_QUIRK(0x1028, 0x0685, "Alienware 15 2015", QUIRK_ALIENWARE),
 	SND_PCI_QUIRK(0x1028, 0x0688, "Alienware 17 2015", QUIRK_ALIENWARE),
 	SND_PCI_QUIRK(0x1028, 0x0708, "Alienware 15 R2 2016", QUIRK_ALIENWARE),
+<<<<<<< HEAD
 	SND_PCI_QUIRK(0x1102, 0x0010, "Sound Blaster Z", QUIRK_SBZ),
 	SND_PCI_QUIRK(0x1102, 0x0023, "Sound Blaster Z", QUIRK_SBZ),
 	SND_PCI_QUIRK(0x1102, 0x0027, "Sound Blaster Z", QUIRK_SBZ),
@@ -1187,6 +1188,8 @@ static const struct snd_pci_quirk ca0132_quirks[] = {
 	SND_PCI_QUIRK(0x1102, 0x0051, "Sound Blaster AE-5", QUIRK_AE5),
 	SND_PCI_QUIRK(0x1102, 0x0191, "Sound Blaster AE-5 Plus", QUIRK_AE5),
 	SND_PCI_QUIRK(0x1102, 0x0081, "Sound Blaster AE-7", QUIRK_AE7),
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{}
 };
 
@@ -7641,6 +7644,12 @@ static void hp_callback(struct hda_codec *codec, struct hda_jack_callback *cb)
 	if (tbl)
 		tbl->block_report = 1;
 	schedule_delayed_work(&spec->unsol_hp_work, msecs_to_jiffies(500));
+<<<<<<< HEAD
+=======
+	tbl = snd_hda_jack_tbl_get(codec, cb->nid);
+	if (tbl)
+		tbl->block_report = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void amic_callback(struct hda_codec *codec, struct hda_jack_callback *cb)

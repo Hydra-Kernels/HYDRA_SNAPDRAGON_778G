@@ -1009,6 +1009,7 @@ void fpsimd_thread_switch(struct task_struct *next)
 
 void fpsimd_flush_thread(void)
 {
+<<<<<<< HEAD
 	int vl, supported_vl;
 
 	if (!system_supports_fpsimd())
@@ -1056,6 +1057,13 @@ void fpsimd_flush_thread(void)
 	}
 
 	put_cpu_fpsimd_context();
+=======
+	preempt_disable();
+	memset(&current->thread.fpsimd_state, 0, sizeof(struct fpsimd_state));
+	fpsimd_flush_task_state(current);
+	set_thread_flag(TIF_FOREIGN_FPSTATE);
+	preempt_enable();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

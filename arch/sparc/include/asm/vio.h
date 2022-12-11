@@ -339,6 +339,7 @@ struct vio_dev {
 	int			compat_len;
 
 	u64			dev_no;
+	u64			id;
 
 	unsigned long		port_id;
 	unsigned long		channel_id;

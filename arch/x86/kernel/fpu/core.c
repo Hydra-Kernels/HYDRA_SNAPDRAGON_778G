@@ -82,7 +82,45 @@ bool irq_fpu_usable(void)
 }
 EXPORT_SYMBOL(irq_fpu_usable);
 
+<<<<<<< HEAD
 void kernel_fpu_begin_mask(unsigned int kfpu_mask)
+=======
+void __kernel_fpu_begin(void)
+{
+	struct fpu *fpu = &current->thread.fpu;
+
+	WARN_ON_FPU(!irq_fpu_usable());
+
+	kernel_fpu_disable();
+
+	if (fpu->fpregs_active) {
+		/*
+		 * Ignore return value -- we don't care if reg state
+		 * is clobbered.
+		 */
+		copy_fpregs_to_fpstate(fpu);
+	} else {
+		this_cpu_write(fpu_fpregs_owner_ctx, NULL);
+		__fpregs_activate_hw();
+	}
+}
+EXPORT_SYMBOL(__kernel_fpu_begin);
+
+void __kernel_fpu_end(void)
+{
+	struct fpu *fpu = &current->thread.fpu;
+
+	if (fpu->fpregs_active)
+		copy_kernel_to_fpregs(&fpu->state);
+	else
+		__fpregs_deactivate_hw();
+
+	kernel_fpu_enable();
+}
+EXPORT_SYMBOL(__kernel_fpu_end);
+
+void kernel_fpu_begin(void)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	preempt_disable();
 
@@ -129,12 +167,22 @@ void fpu__save(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
 
+<<<<<<< HEAD
 	fpregs_lock();
 	trace_x86_fpu_before_save(fpu);
 
 	if (!test_thread_flag(TIF_NEED_FPU_LOAD)) {
 		if (!copy_fpregs_to_fpstate(fpu)) {
 			copy_kernel_to_fpregs(&fpu->state);
+=======
+	preempt_disable();
+	if (fpu->fpregs_active) {
+		if (!copy_fpregs_to_fpstate(fpu)) {
+			if (use_eager_fpu())
+				copy_kernel_to_fpregs(&fpu->state);
+			else
+				fpregs_deactivate(fpu);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 
@@ -197,9 +245,23 @@ int fpu__copy(struct task_struct *dst, struct task_struct *src)
 	 * ( The function 'fails' in the FNSAVE case, which destroys
 	 *   register contents so we have to load them back. )
 	 */
+<<<<<<< HEAD
 	fpregs_lock();
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		memcpy(&dst_fpu->state, &src_fpu->state, fpu_kernel_xstate_size);
+=======
+	preempt_disable();
+	if (!copy_fpregs_to_fpstate(dst_fpu)) {
+		memcpy(&src_fpu->state, &dst_fpu->state, xstate_size);
+
+		if (use_eager_fpu())
+			copy_kernel_to_fpregs(&src_fpu->state);
+		else
+			fpregs_deactivate(src_fpu);
+	}
+	preempt_enable();
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	else if (!copy_fpregs_to_fpstate(dst_fpu))
 		copy_kernel_to_fpregs(&dst_fpu->state);
@@ -311,12 +373,15 @@ static inline void copy_init_fpstate_to_fpregs(void)
 		copy_kernel_to_fxregs(&init_fpstate.fxsave);
 	else
 		copy_kernel_to_fregs(&init_fpstate.fsave);
+<<<<<<< HEAD
 
 	if (boot_cpu_has(X86_FEATURE_OSPKE))
 		copy_init_pkru_to_fpregs();
 
 	fpregs_mark_activate();
 	fpregs_unlock();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*
@@ -329,6 +394,7 @@ void fpu__clear(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu); /* Almost certainly an anomaly */
 
+<<<<<<< HEAD
 	fpu__drop(fpu);
 
 	/*
@@ -336,6 +402,16 @@ void fpu__clear(struct fpu *fpu)
 	 */
 	fpu__initialize(fpu);
 	if (static_cpu_has(X86_FEATURE_FPU))
+=======
+	if (!use_eager_fpu() || !static_cpu_has(X86_FEATURE_FPU)) {
+		/* FPU state will be reallocated lazily at the first use. */
+		fpu__drop(fpu);
+	} else {
+		if (!fpu->fpstate_active) {
+			fpu__activate_curr(fpu);
+			user_fpu_begin();
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		copy_init_fpstate_to_fpregs();
 }
 

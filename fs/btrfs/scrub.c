@@ -2508,6 +2508,15 @@ static int scrub_extent(struct scrub_ctx *sctx, struct map_lookup *map,
 			have_csum = scrub_find_csum(sctx, logical, csum);
 			if (have_csum == 0)
 				++sctx->stat.no_csum;
+<<<<<<< HEAD
+=======
+			if (0 && sctx->is_dev_replace && !have_csum) {
+				ret = copy_nocow_pages(sctx, logical, l,
+						       mirror_num,
+						      physical_for_dev_replace);
+				goto behind_scrub_pages;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 		ret = scrub_pages(sctx, logical, l, physical, dev, flags, gen,
 				  mirror_num, have_csum ? csum : NULL, 0,

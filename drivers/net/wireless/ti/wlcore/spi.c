@@ -59,6 +59,7 @@
  * wl18xx driver aggregation buffer size is (13 * 4K) compared to
  * (4 * 4K) for wl12xx, so use the larger buffer needed for wl18xx
  */
+<<<<<<< HEAD
 #define SPI_AGGR_BUFFER_SIZE (13 * SZ_4K)
 
 /* Maximum number of SPI write chunks */
@@ -80,6 +81,14 @@ static const struct wilink_family_data wl18xx_data = {
 	.cfg_name = "ti-connectivity/wl18xx-conf.bin",
 	.nvs_name = "ti-connectivity/wl1271-nvs.bin",
 };
+=======
+#define SPI_AGGR_BUFFER_SIZE (4 * SZ_4K)
+
+/* Maximum number of SPI write chunks */
+#define WSPI_MAX_NUM_OF_CHUNKS \
+	((SPI_AGGR_BUFFER_SIZE / WSPI_MAX_CHUNK_SIZE) + 1)
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct wl12xx_spi_glue {
 	struct device *dev;
@@ -299,7 +308,12 @@ static int __wl12xx_spi_raw_write(struct device *child, int addr,
 				  void *buf, size_t len, bool fixed)
 {
 	struct wl12xx_spi_glue *glue = dev_get_drvdata(child->parent);
+<<<<<<< HEAD
 	struct spi_transfer *t;
+=======
+	/* SPI write buffers - 2 for each chunk */
+	struct spi_transfer t[2 * WSPI_MAX_NUM_OF_CHUNKS];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct spi_message m;
 	u32 commands[WSPI_MAX_NUM_OF_CHUNKS]; /* 1 command per chunk */
 	u32 *cmd;

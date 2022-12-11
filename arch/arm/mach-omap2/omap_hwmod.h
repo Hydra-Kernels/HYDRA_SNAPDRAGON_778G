@@ -437,10 +437,13 @@ struct omap_hwmod_omap4_prcm {
  *     operate and they need to be handled at the same time as the main_clk.
  * HWMOD_NO_IDLE: Do not idle the hwmod at all. Useful to handle certain
  *     IPs like CPSW on DRA7, where clocks to this module cannot be disabled.
+<<<<<<< HEAD
  * HWMOD_CLKDM_NOAUTO: Allows the hwmod's clockdomain to be prevented from
  *     entering HW_AUTO while hwmod is active. This is needed to workaround
  *     some modules which don't function correctly with HW_AUTO. For example,
  *     DCAN on DRA7x SoC needs this to workaround errata i893.
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 #define HWMOD_SWSUP_SIDLE			(1 << 0)
 #define HWMOD_SWSUP_MSTANDBY			(1 << 1)
@@ -458,7 +461,10 @@ struct omap_hwmod_omap4_prcm {
 #define HWMOD_RECONFIG_IO_CHAIN			(1 << 13)
 #define HWMOD_OPT_CLKS_NEEDED			(1 << 14)
 #define HWMOD_NO_IDLE				(1 << 15)
+<<<<<<< HEAD
 #define HWMOD_CLKDM_NOAUTO			(1 << 16)
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*
  * omap_hwmod._int_flags definitions

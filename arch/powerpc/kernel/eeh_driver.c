@@ -223,6 +223,16 @@ static void eeh_dev_save_state(struct eeh_dev *edev, void *userdata)
 	if (edev->pe && (edev->pe->state & EEH_PE_CFG_RESTRICTED))
 		return;
 
+	/*
+	 * We cannot access the config space on some adapters.
+	 * Otherwise, it will cause fenced PHB. We don't save
+	 * the content in their config space and will restore
+	 * from the initial config space saved when the EEH
+	 * device is created.
+	 */
+	if (edev->pe && (edev->pe->state & EEH_PE_CFG_RESTRICTED))
+		return NULL;
+
 	pdev = eeh_dev_to_pci_dev(edev);
 	if (!pdev)
 		return;
@@ -413,6 +423,19 @@ static void eeh_dev_restore_state(struct eeh_dev *edev, void *userdata)
 		return;
 	}
 
+	/*
+	 * The content in the config space isn't saved because
+	 * the blocked config space on some adapters. We have
+	 * to restore the initial saved config space when the
+	 * EEH device is created.
+	 */
+	if (edev->pe && (edev->pe->state & EEH_PE_CFG_RESTRICTED)) {
+		if (list_is_last(&edev->list, &edev->pe->edevs))
+			eeh_pe_restore_bars(edev->pe);
+
+		return NULL;
+	}
+
 	pdev = eeh_dev_to_pci_dev(edev);
 	if (!pdev)
 		return;
@@ -515,6 +538,7 @@ static void eeh_rmv_device(struct eeh_dev *edev, void *userdata)
 	    (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE))
 		return;
 
+<<<<<<< HEAD
 	if (rmv_data) {
 		driver = eeh_pcid_get(dev);
 		if (driver) {
@@ -526,6 +550,25 @@ static void eeh_rmv_device(struct eeh_dev *edev, void *userdata)
 			}
 			eeh_pcid_put(dev);
 		}
+=======
+	/*
+	 * We rely on count-based pcibios_release_device() to
+	 * detach permanently offlined PEs. Unfortunately, that's
+	 * not reliable enough. We might have the permanently
+	 * offlined PEs attached, but we needn't take care of
+	 * them and their child devices.
+	 */
+	if (eeh_dev_removed(edev))
+		return NULL;
+
+	driver = eeh_pcid_get(dev);
+	if (driver) {
+		eeh_pcid_put(dev);
+		if (driver->err_handler &&
+		    driver->err_handler->error_detected &&
+		    driver->err_handler->slot_reset)
+			return NULL;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/* Remove it from PCI subsystem */
@@ -575,8 +618,14 @@ static void *eeh_pe_detach_dev(struct eeh_pe *pe, void *userdata)
  */
 static int eeh_clear_pe_frozen_state(struct eeh_pe *root, bool include_passed)
 {
+<<<<<<< HEAD
 	struct eeh_pe *pe;
 	int i;
+=======
+	struct eeh_pe *pe = (struct eeh_pe *)data;
+	bool clear_sw_state = *(bool *)flag;
+	int i, rc = 1;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	eeh_for_each_pe(root, pe) {
 		if (include_passed || !eeh_pe_passed(pe)) {
@@ -663,9 +712,14 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
 	 * into pci_hp_add_devices().
 	 */
 	eeh_pe_state_mark(pe, EEH_PE_KEEP);
+<<<<<<< HEAD
 	if (any_passed || driver_eeh_aware || (pe->type & EEH_PE_VF)) {
 		eeh_pe_dev_traverse(pe, eeh_rmv_device, rmv_data);
 	} else {
+=======
+	if (bus) {
+		eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		pci_lock_rescan_remove();
 		pci_hp_remove_devices(bus);
 		pci_unlock_rescan_remove();
@@ -737,6 +791,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
  */
 #define MAX_WAIT_FOR_RECOVERY 300
 
+<<<<<<< HEAD
 
 /* Walks the PE tree after processing an event to remove any stale PEs.
  *
@@ -746,6 +801,9 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
  * the leaf nodes will be handled first.
  */
 static void eeh_pe_cleanup(struct eeh_pe *pe)
+=======
+static bool eeh_handle_normal_event(struct eeh_pe *pe)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct eeh_pe *child_pe, *tmp;
 
@@ -866,7 +924,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
 	if (!bus) {
 		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
 			__func__, pe->phb->global_number, pe->addr);
-		return;
+		return false;
 	}
 
 	/*
@@ -1113,7 +1171,24 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
 		}
 	}
 
+<<<<<<< HEAD
 out:
+=======
+	/* All devices should claim they have recovered by now. */
+	if ((result != PCI_ERS_RESULT_RECOVERED) &&
+	    (result != PCI_ERS_RESULT_NONE)) {
+		pr_warn("EEH: Not recovered\n");
+		goto hard_fail;
+	}
+
+	/* Tell all device drivers that they can resume operations */
+	pr_info("EEH: Notify device driver to resume\n");
+	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+
+	return false;
+
+excess_failures:
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * Clean up any PEs without devices. While marked as EEH_PE_RECOVERYING
 	 * we don't want to modify the PE tree structure so we do it here.
@@ -1125,7 +1200,36 @@ out:
 		eeh_pe_for_each_dev(tmp_pe, edev, tmp)
 			eeh_clear_slot_attention(edev->pdev);
 
+<<<<<<< HEAD
 	eeh_pe_state_clear(pe, EEH_PE_RECOVERING, true);
+=======
+perm_error:
+	eeh_slot_error_detail(pe, EEH_LOG_PERM);
+
+	/* Notify all devices that they're about to go down. */
+	eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
+
+	/* Mark the PE to be removed permanently */
+	eeh_pe_state_mark(pe, EEH_PE_REMOVED);
+
+	/*
+	 * Shut down the device drivers for good. We mark
+	 * all removed devices correctly to avoid access
+	 * the their PCI config any more.
+	 */
+	if (frozen_bus) {
+		eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
+
+		pci_lock_rescan_remove();
+		pcibios_remove_pci_devices(frozen_bus);
+		pci_unlock_rescan_remove();
+
+		/* The passed PE should no longer be used */
+		return true;
+	}
+	return false;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /**
@@ -1197,8 +1301,20 @@ void eeh_handle_special_event(void)
 		 */
 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+<<<<<<< HEAD
 			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
 			eeh_handle_normal_event(pe);
+=======
+			/*
+			 * eeh_handle_normal_event() can make the PE stale if it
+			 * determines that the PE cannot possibly be recovered.
+			 * Don't modify the PE state if that's the case.
+			 */
+			if (eeh_handle_normal_event(pe))
+				continue;
+
+			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		} else {
 			eeh_for_each_pe(pe, tmp_pe)
 				eeh_pe_for_each_dev(tmp_pe, edev, tmp_edev)
@@ -1219,16 +1335,31 @@ void eeh_handle_special_event(void)
 				    (phb_pe->state & EEH_PE_RECOVERING))
 					continue;
 
+<<<<<<< HEAD
 				bus = eeh_pe_bus_get(phb_pe);
 				if (!bus) {
 					pr_err("%s: Cannot find PCI bus for "
 					       "PHB#%x-PE#%x\n",
+=======
+				/* Notify all devices to be down */
+				eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+				bus = eeh_pe_bus_get(phb_pe);
+				if (!bus) {
+					pr_err("%s: Cannot find PCI bus for "
+					       "PHB#%d-PE#%x\n",
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 					       __func__,
 					       pe->phb->global_number,
 					       pe->addr);
 					break;
 				}
+<<<<<<< HEAD
 				pci_hp_remove_devices(bus);
+=======
+				eeh_pe_dev_traverse(pe,
+					eeh_report_failure, NULL);
+				pcibios_remove_pci_devices(bus);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 			pci_unlock_rescan_remove();
 		}

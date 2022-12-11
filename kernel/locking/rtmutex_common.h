@@ -109,7 +109,11 @@ static inline struct task_struct *rt_mutex_owner(struct rt_mutex *lock)
 {
 	unsigned long owner = (unsigned long) READ_ONCE(lock->owner);
 
+<<<<<<< HEAD
 	return (struct task_struct *) (owner & ~RT_MUTEX_HAS_WAITERS);
+=======
+	return (struct task_struct *) (owner & ~RT_MUTEX_OWNER_MASKALL);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 /*

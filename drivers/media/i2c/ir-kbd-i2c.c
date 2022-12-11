@@ -935,7 +935,6 @@ static const struct i2c_device_id ir_kbd_id[] = {
 	{ "ir_z8f0811_hdpvr", FLAG_TX | FLAG_HDPVR },
 	{ }
 };
-MODULE_DEVICE_TABLE(i2c, ir_kbd_id);
 
 static struct i2c_driver ir_kbd_driver = {
 	.driver = {

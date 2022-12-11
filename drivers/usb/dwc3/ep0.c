@@ -36,11 +36,37 @@ static int dwc3_ep0_delegate_req(struct dwc3 *dwc,
 static void dwc3_ep0_prepare_one_trb(struct dwc3_ep *dep,
 		dma_addr_t buf_dma, u32 len, u32 type, bool chain)
 {
+<<<<<<< HEAD
+=======
+	switch (state) {
+	case EP0_UNCONNECTED:
+		return "Unconnected";
+	case EP0_SETUP_PHASE:
+		return "Setup Phase";
+	case EP0_DATA_PHASE:
+		return "Data Phase";
+	case EP0_STATUS_PHASE:
+		return "Status Phase";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+static void dwc3_ep0_prepare_one_trb(struct dwc3 *dwc, u8 epnum,
+		dma_addr_t buf_dma, u32 len, u32 type, bool chain)
+{
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	struct dwc3_trb			*trb;
 	struct dwc3			*dwc;
 
+<<<<<<< HEAD
 	dwc = dep->dwc;
 	trb = &dwc->ep0_trb[dep->trb_enqueue];
+=======
+	dep = dwc->eps[epnum];
+
+	trb = &dwc->ep0_trb[dep->free_slot];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (chain)
 		dep->trb_enqueue++;
@@ -62,6 +88,7 @@ static void dwc3_ep0_prepare_one_trb(struct dwc3_ep *dep,
 	trace_dwc3_prepare_trb(dep, trb);
 }
 
+<<<<<<< HEAD
 static int dwc3_ep0_start_trans(struct dwc3_ep *dep)
 {
 	struct dwc3_gadget_ep_cmd_params params;
@@ -69,7 +96,19 @@ static int dwc3_ep0_start_trans(struct dwc3_ep *dep)
 	int				ret;
 
 	if (dep->flags & DWC3_EP_TRANSFER_STARTED)
+=======
+static int dwc3_ep0_start_trans(struct dwc3 *dwc, u8 epnum)
+{
+	struct dwc3_gadget_ep_cmd_params params;
+	struct dwc3_ep			*dep;
+	int				ret;
+
+	dep = dwc->eps[epnum];
+	if (dep->flags & DWC3_EP_BUSY) {
+		dwc3_trace(trace_dwc3_ep0, "%s still busy", dep->name);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return 0;
+	}
 
 	dwc = dep->dwc;
 
@@ -77,7 +116,12 @@ static int dwc3_ep0_start_trans(struct dwc3_ep *dep)
 	params.param0 = upper_32_bits(dwc->ep0_trb_addr);
 	params.param1 = lower_32_bits(dwc->ep0_trb_addr);
 
+<<<<<<< HEAD
 	ret = dwc3_send_gadget_ep_cmd(dep, DWC3_DEPCMD_STARTTRANSFER, &params);
+=======
+	ret = dwc3_send_gadget_ep_cmd(dwc, dep->number,
+			DWC3_DEPCMD_STARTTRANSFER, &params);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (ret < 0) {
 		if (ret == -ETIMEDOUT) {
 			/*
@@ -288,6 +332,7 @@ void dwc3_ep0_out_start(struct dwc3 *dwc)
 	struct dwc3_ep			*dep;
 	int				ret;
 
+<<<<<<< HEAD
 	complete(&dwc->ep0_in_setup);
 
 	if (!dwc->softconnect)
@@ -299,6 +344,12 @@ void dwc3_ep0_out_start(struct dwc3 *dwc)
 	ret = dwc3_ep0_start_trans(dep);
 	if (WARN_ON(ret < 0))
 		dbg_event(dwc->eps[0]->number, "EOUTSTART", ret);
+=======
+	dwc3_ep0_prepare_one_trb(dwc, 0, dwc->ctrl_req_addr, 8,
+			DWC3_TRBCTL_CONTROL_SETUP, false);
+	ret = dwc3_ep0_start_trans(dwc, 0);
+	WARN_ON(ret < 0);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct dwc3_ep *dwc3_wIndex_to_dep(struct dwc3 *dwc, __le16 wIndex_le)
@@ -956,6 +1007,21 @@ static void dwc3_ep0_complete_data(struct dwc3 *dwc,
 		dwc3_ep0_stall_and_restart(dwc);
 	} else {
 		dwc3_gadget_giveback(ep0, r, 0);
+<<<<<<< HEAD
+=======
+
+		if (IS_ALIGNED(ur->length, ep0->endpoint.maxpacket) &&
+				ur->length && ur->zero) {
+			int ret;
+
+			dwc->ep0_next_event = DWC3_EP0_COMPLETE;
+
+			dwc3_ep0_prepare_one_trb(dwc, epnum, dwc->ctrl_req_addr,
+					0, DWC3_TRBCTL_CONTROL_DATA, false);
+			ret = dwc3_ep0_start_trans(dwc, epnum);
+			WARN_ON(ret < 0);
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 }
 
@@ -1035,12 +1101,19 @@ static void __dwc3_ep0_do_control_data(struct dwc3 *dwc,
 	req->direction = !!dep->number;
 
 	if (req->request.length == 0) {
+<<<<<<< HEAD
 		if (!req->direction)
 			trb_length = dep->endpoint.maxpacket;
 
 		dwc3_ep0_prepare_one_trb(dep, dwc->bounce_addr, trb_length,
 				DWC3_TRBCTL_CONTROL_DATA, false);
 		ret = dwc3_ep0_start_trans(dep);
+=======
+		dwc3_ep0_prepare_one_trb(dwc, dep->number,
+				dwc->ctrl_req_addr, 0,
+				DWC3_TRBCTL_CONTROL_DATA, false);
+		ret = dwc3_ep0_start_trans(dwc, dep->number);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	} else if (!IS_ALIGNED(req->request.length, dep->endpoint.maxpacket)
 			&& (dep->number == 0)) {
 		u32	maxpacket;
@@ -1052,6 +1125,7 @@ static void __dwc3_ep0_do_control_data(struct dwc3 *dwc,
 			return;
 
 		maxpacket = dep->endpoint.maxpacket;
+<<<<<<< HEAD
 		rem = req->request.length % maxpacket;
 		dwc->ep0_bounced = true;
 
@@ -1109,6 +1183,40 @@ static void __dwc3_ep0_do_control_data(struct dwc3 *dwc,
 		dbg_ep_map(dep->number, req);
 
 		ret = dwc3_ep0_start_trans(dep);
+=======
+
+		if (req->request.length > DWC3_EP0_BOUNCE_SIZE) {
+			transfer_size = ALIGN(req->request.length - maxpacket,
+					      maxpacket);
+			dwc3_ep0_prepare_one_trb(dwc, dep->number,
+						   req->request.dma,
+						   transfer_size,
+						   DWC3_TRBCTL_CONTROL_DATA,
+						   true);
+		}
+
+		transfer_size = roundup((req->request.length - transfer_size),
+					maxpacket);
+
+		dwc->ep0_bounced = true;
+
+		dwc3_ep0_prepare_one_trb(dwc, dep->number,
+				dwc->ep0_bounce_addr, transfer_size,
+				DWC3_TRBCTL_CONTROL_DATA, false);
+		ret = dwc3_ep0_start_trans(dwc, dep->number);
+	} else {
+		ret = usb_gadget_map_request(&dwc->gadget, &req->request,
+				dep->number);
+		if (ret) {
+			dev_dbg(dwc->dev, "failed to map request\n");
+			return;
+		}
+
+		dwc3_ep0_prepare_one_trb(dwc, dep->number, req->request.dma,
+				req->request.length, DWC3_TRBCTL_CONTROL_DATA,
+				false);
+		ret = dwc3_ep0_start_trans(dwc, dep->number);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	WARN_ON(ret < 0);
@@ -1123,8 +1231,14 @@ static int dwc3_ep0_start_control_status(struct dwc3_ep *dep)
 	type = dwc->three_stage_setup ? DWC3_TRBCTL_CONTROL_STATUS3
 		: DWC3_TRBCTL_CONTROL_STATUS2;
 
+<<<<<<< HEAD
 	dwc3_ep0_prepare_one_trb(dep, dwc->ep0_trb_addr, 0, type, false);
 	return dwc3_ep0_start_trans(dep);
+=======
+	dwc3_ep0_prepare_one_trb(dwc, dep->number,
+			dwc->ctrl_req_addr, 0, type, false);
+	return dwc3_ep0_start_trans(dwc, dep->number);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void __dwc3_ep0_do_control_status(struct dwc3 *dwc, struct dwc3_ep *dep)

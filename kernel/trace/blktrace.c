@@ -322,11 +322,33 @@ static void blk_trace_free(struct blk_trace *bt)
 }
 
 static void get_probe_ref(void)
+<<<<<<< HEAD
 {
 	mutex_lock(&blk_probe_mutex);
 	if (++blk_probes_ref == 1)
 		blk_register_tracepoints();
 	mutex_unlock(&blk_probe_mutex);
+=======
+{
+	mutex_lock(&blk_probe_mutex);
+	if (++blk_probes_ref == 1)
+		blk_register_tracepoints();
+	mutex_unlock(&blk_probe_mutex);
+}
+
+static void put_probe_ref(void)
+{
+	mutex_lock(&blk_probe_mutex);
+	if (!--blk_probes_ref)
+		blk_unregister_tracepoints();
+	mutex_unlock(&blk_probe_mutex);
+}
+
+static void blk_trace_cleanup(struct blk_trace *bt)
+{
+	blk_trace_free(bt);
+	put_probe_ref();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void put_probe_ref(void)
@@ -1657,7 +1679,10 @@ static int blk_trace_remove_queue(struct request_queue *q)
 		return -EINVAL;
 
 	put_probe_ref();
+<<<<<<< HEAD
 	synchronize_rcu();
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	blk_trace_free(bt);
 	return 0;
 }

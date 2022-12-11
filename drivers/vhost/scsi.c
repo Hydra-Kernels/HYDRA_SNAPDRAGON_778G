@@ -660,8 +660,14 @@ vhost_scsi_iov_to_sgl(struct vhost_scsi_cmd *cmd, bool write,
 		      struct iov_iter *iter,
 		      struct scatterlist *sg, int sg_count)
 {
+<<<<<<< HEAD
 	struct scatterlist *p = sg;
 	int ret;
+=======
+	size_t off = iter->iov_offset;
+	struct scatterlist *p = sg;
+	int i, ret;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	while (iov_iter_count(iter)) {
 		ret = vhost_scsi_map_to_sgl(cmd, iter, sg, write);
@@ -1063,8 +1069,13 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
 		}
 		cmd->tvc_vhost = vs;
 		cmd->tvc_vq = vq;
+<<<<<<< HEAD
 		cmd->tvc_resp_iov = vq->iov[vc.out];
 		cmd->tvc_in_iovs = vc.in;
+=======
+		cmd->tvc_resp_iov = vq->iov[out];
+		cmd->tvc_in_iovs = in;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		pr_debug("vhost_scsi got command opcode: %#02x, lun: %d\n",
 			 cmd->tvc_cdb[0], cmd->tvc_lun);

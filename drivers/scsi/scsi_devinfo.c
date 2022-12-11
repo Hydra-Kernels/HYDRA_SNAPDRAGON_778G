@@ -161,8 +161,12 @@ static struct {
 	{"DGC", "RAID", NULL, BLIST_SPARSELUN},	/* EMC CLARiiON, storage on LUN 0 */
 	{"DGC", "DISK", NULL, BLIST_SPARSELUN},	/* EMC CLARiiON, no storage on LUN 0 */
 	{"EMC",  "Invista", "*", BLIST_SPARSELUN | BLIST_LARGELUN},
+<<<<<<< HEAD
 	{"EMC", "SYMMETRIX", NULL, BLIST_SPARSELUN | BLIST_LARGELUN |
 	 BLIST_REPORTLUN2 | BLIST_RETRY_ITF},
+=======
+	{"EMC", "SYMMETRIX", NULL, BLIST_SPARSELUN | BLIST_LARGELUN | BLIST_REPORTLUN2},
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{"EMULEX", "MD21/S2     ESDI", NULL, BLIST_SINGLELUN},
 	{"easyRAID", "16P", NULL, BLIST_NOREPORTLUN},
 	{"easyRAID", "X6P", NULL, BLIST_NOREPORTLUN},
@@ -197,7 +201,10 @@ static struct {
 	{"iRiver", "iFP Mass Driver", NULL, BLIST_NOT_LOCKABLE | BLIST_INQUIRY_36},
 	{"LASOUND", "CDX7405", "3.10", BLIST_MAX5LUN | BLIST_SINGLELUN},
 	{"Marvell", "Console", NULL, BLIST_SKIP_VPD_PAGES},
+<<<<<<< HEAD
 	{"Marvell", "91xx Config", "1.01", BLIST_SKIP_VPD_PAGES},
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	{"MATSHITA", "PD-1", NULL, BLIST_FORCELUN | BLIST_SINGLELUN},
 	{"MATSHITA", "DMC-LC5", NULL, BLIST_NOT_LOCKABLE | BLIST_INQUIRY_36},
 	{"MATSHITA", "DMC-LC40", NULL, BLIST_NOT_LOCKABLE | BLIST_INQUIRY_36},
@@ -456,6 +463,7 @@ static struct scsi_dev_info_list *scsi_dev_info_list_find(const char *vendor,
 			/*
 			 * vendor strings must be an exact match
 			 */
+<<<<<<< HEAD
 			if (vmax != strnlen(devinfo->vendor,
 					    sizeof(devinfo->vendor)) ||
 			    memcmp(devinfo->vendor, vskip, vmax))
@@ -467,6 +475,15 @@ static struct scsi_dev_info_list *scsi_dev_info_list_find(const char *vendor,
 			 */
 			mlen = strnlen(devinfo->model, sizeof(devinfo->model));
 			if (mmax < mlen || memcmp(devinfo->model, mskip, mlen))
+=======
+			if (memcmp(devinfo->vendor, vskip, vmax) ||
+					(vmax < sizeof(devinfo->vendor) &&
+						devinfo->vendor[vmax]))
+				continue;
+			if (memcmp(devinfo->model, mskip, mmax) ||
+					(mmax < sizeof(devinfo->model) &&
+						devinfo->model[mmax]))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				continue;
 			return devinfo;
 		} else {

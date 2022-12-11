@@ -1186,6 +1186,11 @@ static int s3c64xx_serial_startup(struct uart_port *port)
 	if (ourport->dma) {
 		ret = s3c24xx_serial_request_dma(ourport);
 		if (ret < 0) {
+<<<<<<< HEAD:drivers/tty/serial/samsung_tty.c
+=======
+			dev_warn(port->dev,
+				 "DMA request failed, DMA will not be used\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/tty/serial/samsung.c
 			devm_kfree(port->dev, ourport->dma);
 			ourport->dma = NULL;
 		}
@@ -2011,6 +2016,11 @@ static int s3c24xx_serial_probe(struct platform_device *pdev)
 			index = ret;
 	}
 
+<<<<<<< HEAD:drivers/tty/serial/samsung_tty.c
+=======
+	dbg("s3c24xx_serial_probe(%p) %d\n", pdev, index);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/tty/serial/samsung.c
 	if (index >= ARRAY_SIZE(s3c24xx_serial_ports)) {
 		dev_err(&pdev->dev, "serial%d out of range\n", index);
 		return -EINVAL;

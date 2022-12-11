@@ -29,6 +29,12 @@
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 int __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
 
+#ifdef CONFIG_PAGE_TABLE_ISOLATION
+extern int kaiser_enabled;
+#else
+#define kaiser_enabled 0
+#endif
+
 void ptdump_walk_pgd_level(struct seq_file *m, pgd_t *pgd);
 void ptdump_walk_pgd_level_debugfs(struct seq_file *m, pgd_t *pgd, bool user);
 void ptdump_walk_pgd_level_checkwx(void);
@@ -227,6 +233,7 @@ static inline unsigned long pud_pfn(pud_t pud)
 	phys_addr_t pfn = pud_val(pud);
 	pfn ^= protnone_mask(pfn);
 	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
+<<<<<<< HEAD
 }
 
 static inline unsigned long p4d_pfn(p4d_t p4d)
@@ -243,6 +250,8 @@ static inline int p4d_large(p4d_t p4d)
 {
 	/* No 512 GiB pages yet */
 	return 0;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
@@ -430,6 +439,7 @@ static inline pmd_t pmd_mkwrite(pmd_t pmd)
 	return pmd_set_flags(pmd, _PAGE_RW);
 }
 
+<<<<<<< HEAD
 static inline pud_t pud_set_flags(pud_t pud, pudval_t set)
 {
 	pudval_t v = native_pud_val(pud);
@@ -484,6 +494,8 @@ static inline pud_t pud_mkwrite(pud_t pud)
 	return pud_set_flags(pud, _PAGE_RW);
 }
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
 static inline int pte_soft_dirty(pte_t pte)
 {
@@ -568,7 +580,11 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
 	pfn ^= protnone_mask(pgprot_val(pgprot));
 	pfn &= PTE_PFN_MASK;
+<<<<<<< HEAD
 	return __pte(pfn | check_pgprot(pgprot));
+=======
+	return __pte(pfn | massage_pgprot(pgprot));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
@@ -576,20 +592,32 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
 	pfn ^= protnone_mask(pgprot_val(pgprot));
 	pfn &= PHYSICAL_PMD_PAGE_MASK;
+<<<<<<< HEAD
 	return __pmd(pfn | check_pgprot(pgprot));
+=======
+	return __pmd(pfn | massage_pgprot(pgprot));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline pud_t pfn_pud(unsigned long page_nr, pgprot_t pgprot)
 {
+<<<<<<< HEAD
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
 	pfn ^= protnone_mask(pgprot_val(pgprot));
 	pfn &= PHYSICAL_PUD_PAGE_MASK;
 	return __pud(pfn | check_pgprot(pgprot));
+=======
+	phys_addr_t pfn = page_nr << PAGE_SHIFT;
+	pfn ^= protnone_mask(pgprot_val(pgprot));
+	pfn &= PHYSICAL_PUD_PAGE_MASK;
+	return __pud(pfn | massage_pgprot(pgprot));
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline pmd_t pmd_mknotpresent(pmd_t pmd)
 {
 	return pfn_pmd(pmd_pfn(pmd),
+<<<<<<< HEAD
 		      __pgprot(pmd_flags(pmd) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
 }
 
@@ -597,6 +625,28 @@ static inline pud_t pud_mknotpresent(pud_t pud)
 {
 	return pfn_pud(pud_pfn(pud),
 	      __pgprot(pud_flags(pud) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
+=======
+		       __pgprot(pmd_flags(pmd) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
+}
+
+static inline pud_t pud_set_flags(pud_t pud, pudval_t set)
+{
+	pudval_t v = native_pud_val(pud);
+
+	return __pud(v | set);
+}
+
+static inline pud_t pud_clear_flags(pud_t pud, pudval_t clear)
+{
+	pudval_t v = native_pud_val(pud);
+
+	return __pud(v & ~clear);
+}
+
+static inline pud_t pud_mkhuge(pud_t pud)
+{
+	return pud_set_flags(pud, _PAGE_PSE);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
@@ -610,7 +660,11 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 	 * the newprot (if present):
 	 */
 	val &= _PAGE_CHG_MASK;
+<<<<<<< HEAD
 	val |= check_pgprot(newprot) & ~_PAGE_CHG_MASK;
+=======
+	val |= massage_pgprot(newprot) & ~_PAGE_CHG_MASK;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	val = flip_protnone_guard(oldval, val, PTE_PFN_MASK);
 	return __pte(val);
 }
@@ -620,7 +674,11 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
 	pmdval_t val = pmd_val(pmd), oldval = val;
 
 	val &= _HPAGE_CHG_MASK;
+<<<<<<< HEAD
 	val |= check_pgprot(newprot) & ~_HPAGE_CHG_MASK;
+=======
+	val |= massage_pgprot(newprot) & ~_HPAGE_CHG_MASK;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	val = flip_protnone_guard(oldval, val, PHYSICAL_PMD_PAGE_MASK);
 	return __pmd(val);
 }
@@ -973,12 +1031,23 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 
 static inline int pgd_bad(pgd_t pgd)
 {
+<<<<<<< HEAD
 	unsigned long ignore_flags = _PAGE_USER;
 
 	if (!pgtable_l5_enabled())
 		return 0;
 
 	if (IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
+=======
+	pgdval_t ignore_flags = _PAGE_USER;
+	/*
+	 * We set NX on KAISER pgds that map userspace memory so
+	 * that userspace can not meaningfully use the kernel
+	 * page table by accident; it will fault on the first
+	 * instruction it tries to run.  See native_set_pgd().
+	 */
+	if (kaiser_enabled)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		ignore_flags |= _PAGE_NX;
 
 	return (pgd_flags(pgd) & ~ignore_flags) != _KERNPG_TABLE;
@@ -1302,11 +1371,20 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));
 #ifdef CONFIG_PAGE_TABLE_ISOLATION
+<<<<<<< HEAD
 	if (!static_cpu_has(X86_FEATURE_PTI))
 		return;
 	/* Clone the user space pgd as well */
 	memcpy(kernel_to_user_pgdp(dst), kernel_to_user_pgdp(src),
 	       count * sizeof(pgd_t));
+=======
+	if (kaiser_enabled) {
+		/* Clone the shadow pgd part as well */
+		memcpy(native_get_shadow_pgd(dst),
+			native_get_shadow_pgd(src),
+			count * sizeof(pgd_t));
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 }
 
@@ -1457,6 +1535,14 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
 static inline bool pud_access_permitted(pud_t pud, bool write)
 {
 	return __pte_access_permitted(pud_val(pud), write);
+}
+
+#define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1
+extern bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot);
+
+static inline bool arch_has_pfn_modify_check(void)
+{
+	return boot_cpu_has_bug(X86_BUG_L1TF);
 }
 
 #define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1

@@ -300,6 +300,7 @@ xfs_dir2_leaf_readbuf(
 		goto out_no_ra;
 	xfs_trim_extent(&map, next_ra, last_da - next_ra);
 
+<<<<<<< HEAD
 	/* Start ra for each dir (not fs) block that has a mapping. */
 	blk_start_plug(&plug);
 	while (ra_want > 0) {
@@ -309,6 +310,66 @@ xfs_dir2_leaf_readbuf(
 			if (next_ra >= last_da) {
 				*ra_blk = last_da;
 				break;
+=======
+	/*
+	 * Do we need more readahead?
+	 * Each loop tries to process 1 full dir blk; last may be partial.
+	 */
+	blk_start_plug(&plug);
+	for (mip->ra_index = mip->ra_offset = i = 0;
+	     mip->ra_want > mip->ra_current && i < mip->map_blocks;
+	     i += geo->fsbcount) {
+		ASSERT(mip->ra_index < mip->map_valid);
+		/*
+		 * Read-ahead a contiguous directory block.
+		 */
+		if (i > mip->ra_current &&
+		    (map[mip->ra_index].br_blockcount - mip->ra_offset) >=
+		    geo->fsbcount) {
+			xfs_dir3_data_readahead(dp,
+				map[mip->ra_index].br_startoff + mip->ra_offset,
+				XFS_FSB_TO_DADDR(dp->i_mount,
+					map[mip->ra_index].br_startblock +
+							mip->ra_offset));
+			mip->ra_current = i;
+		}
+
+		/*
+		 * Read-ahead a non-contiguous directory block.  This doesn't
+		 * use our mapping, but this is a very rare case.
+		 */
+		else if (i > mip->ra_current) {
+			xfs_dir3_data_readahead(dp,
+					map[mip->ra_index].br_startoff +
+							mip->ra_offset, -1);
+			mip->ra_current = i;
+		}
+
+		/*
+		 * Advance offset through the mapping table, processing a full
+		 * dir block even if it is fragmented into several extents.
+		 * But stop if we have consumed all valid mappings, even if
+		 * it's not yet a full directory block.
+		 */
+		for (j = 0;
+		     j < geo->fsbcount && mip->ra_index < mip->map_valid;
+		     j += length ) {
+			/*
+			 * The rest of this extent but not more than a dir
+			 * block.
+			 */
+			length = min_t(int, geo->fsbcount - j,
+					map[mip->ra_index].br_blockcount -
+							mip->ra_offset);
+			mip->ra_offset += length;
+
+			/*
+			 * Advance to the next mapping if this one is used up.
+			 */
+			if (mip->ra_offset == map[mip->ra_index].br_blockcount) {
+				mip->ra_offset = 0;
+				mip->ra_index++;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			}
 			if (next_ra > *ra_blk) {
 				xfs_dir3_data_readahead(dp, next_ra, -2);

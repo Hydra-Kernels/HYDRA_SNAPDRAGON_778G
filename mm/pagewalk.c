@@ -193,12 +193,21 @@ static int walk_hugetlb_range(unsigned long addr, unsigned long end,
 
 	do {
 		next = hugetlb_entry_end(h, addr, end);
+<<<<<<< HEAD
 		pte = huge_pte_offset(walk->mm, addr & hmask, sz);
 
 		if (pte)
 			err = ops->hugetlb_entry(pte, hmask, addr, next, walk);
 		else if (ops->pte_hole)
 			err = ops->pte_hole(addr, next, walk);
+=======
+		pte = huge_pte_offset(walk->mm, addr & hmask);
+
+		if (pte)
+			err = walk->hugetlb_entry(pte, hmask, addr, next, walk);
+		else if (walk->pte_hole)
+			err = walk->pte_hole(addr, next, walk);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (err)
 			break;

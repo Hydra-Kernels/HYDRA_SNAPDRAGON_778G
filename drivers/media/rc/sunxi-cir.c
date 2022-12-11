@@ -162,6 +162,7 @@ static int sunxi_ir_probe(struct platform_device *pdev)
 	if (!ir)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	quirks = of_device_get_match_data(&pdev->dev);
 	if (!quirks) {
 		dev_err(&pdev->dev, "Failed to determine the quirks to use\n");
@@ -171,6 +172,14 @@ static int sunxi_ir_probe(struct platform_device *pdev)
 	spin_lock_init(&ir->ir_lock);
 
 	ir->fifo_size = quirks->fifo_size;
+=======
+	spin_lock_init(&ir->ir_lock);
+
+	if (of_device_is_compatible(dn, "allwinner,sun5i-a13-ir"))
+		ir->fifo_size = 64;
+	else
+		ir->fifo_size = 16;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	/* Clock */
 	ir->apb_clk = devm_clk_get(dev, "apb");

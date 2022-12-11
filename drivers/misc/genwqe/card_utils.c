@@ -342,7 +342,11 @@ int genwqe_alloc_sync_sgl(struct genwqe_dev *cd, struct genwqe_sgl *sgl,
 		/* Sync with user memory */
 		if (copy_from_user(sgl->lpage, user_addr + user_size -
 				   sgl->lpage_size, sgl->lpage_size)) {
+<<<<<<< HEAD
 			ret = -EFAULT;
+=======
+			rc = -EFAULT;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			goto err_out2;
 		}
 	}
@@ -364,8 +368,12 @@ int genwqe_alloc_sync_sgl(struct genwqe_dev *cd, struct genwqe_sgl *sgl,
 	sgl->sgl = NULL;
 	sgl->sgl_dma_addr = 0;
 	sgl->sgl_size = 0;
+<<<<<<< HEAD
 
 	return ret;
+=======
+	return -ENOMEM;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 int genwqe_setup_sgl(struct genwqe_dev *cd, struct genwqe_sgl *sgl,

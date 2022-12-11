@@ -16051,6 +16051,53 @@ static void wlc_phy_workarounds_nphy_gainctrl(struct brcms_phy *pi)
 
 static void wlc_phy_workarounds_nphy_rev7(struct brcms_phy *pi)
 {
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
+=======
+	static const u8 rfseq_rx2tx_events[] = {
+		NPHY_RFSEQ_CMD_NOP,
+		NPHY_RFSEQ_CMD_RXG_FBW,
+		NPHY_RFSEQ_CMD_TR_SWITCH,
+		NPHY_RFSEQ_CMD_CLR_HIQ_DIS,
+		NPHY_RFSEQ_CMD_RXPD_TXPD,
+		NPHY_RFSEQ_CMD_TX_GAIN,
+		NPHY_RFSEQ_CMD_EXT_PA
+	};
+	u8 rfseq_rx2tx_dlys[] = { 8, 6, 6, 2, 4, 60, 1 };
+	static const u8 rfseq_tx2rx_events[] = {
+		NPHY_RFSEQ_CMD_NOP,
+		NPHY_RFSEQ_CMD_EXT_PA,
+		NPHY_RFSEQ_CMD_TX_GAIN,
+		NPHY_RFSEQ_CMD_RXPD_TXPD,
+		NPHY_RFSEQ_CMD_TR_SWITCH,
+		NPHY_RFSEQ_CMD_RXG_FBW,
+		NPHY_RFSEQ_CMD_CLR_HIQ_DIS
+	};
+	static const u8 rfseq_tx2rx_dlys[] = { 8, 6, 2, 4, 4, 6, 1 };
+	static const u8 rfseq_tx2rx_events_rev3[] = {
+		NPHY_REV3_RFSEQ_CMD_EXT_PA,
+		NPHY_REV3_RFSEQ_CMD_INT_PA_PU,
+		NPHY_REV3_RFSEQ_CMD_TX_GAIN,
+		NPHY_REV3_RFSEQ_CMD_RXPD_TXPD,
+		NPHY_REV3_RFSEQ_CMD_TR_SWITCH,
+		NPHY_REV3_RFSEQ_CMD_RXG_FBW,
+		NPHY_REV3_RFSEQ_CMD_CLR_HIQ_DIS,
+		NPHY_REV3_RFSEQ_CMD_END
+	};
+	static const u8 rfseq_tx2rx_dlys_rev3[] = { 8, 4, 2, 2, 4, 4, 6, 1 };
+	u8 rfseq_rx2tx_events_rev3[] = {
+		NPHY_REV3_RFSEQ_CMD_NOP,
+		NPHY_REV3_RFSEQ_CMD_RXG_FBW,
+		NPHY_REV3_RFSEQ_CMD_TR_SWITCH,
+		NPHY_REV3_RFSEQ_CMD_CLR_HIQ_DIS,
+		NPHY_REV3_RFSEQ_CMD_RXPD_TXPD,
+		NPHY_REV3_RFSEQ_CMD_TX_GAIN,
+		NPHY_REV3_RFSEQ_CMD_INT_PA_PU,
+		NPHY_REV3_RFSEQ_CMD_EXT_PA,
+		NPHY_REV3_RFSEQ_CMD_END
+	};
+	u8 rfseq_rx2tx_dlys_rev3[] = { 8, 6, 6, 4, 4, 18, 42, 1, 1 };
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmsmac/phy/phy_n.c
 	static const u8 rfseq_rx2tx_events_rev3_ipa[] = {
 		NPHY_REV3_RFSEQ_CMD_NOP,
 		NPHY_REV3_RFSEQ_CMD_RXG_FBW,
@@ -16062,15 +16109,33 @@ static void wlc_phy_workarounds_nphy_rev7(struct brcms_phy *pi)
 		NPHY_REV3_RFSEQ_CMD_INT_PA_PU,
 		NPHY_REV3_RFSEQ_CMD_END
 	};
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
 	static const u8 rfseq_rx2tx_dlys_rev3_ipa[] =
 		{ 8, 6, 6, 4, 4, 16, 43, 1, 1 };
 	static const u16 rfseq_rx2tx_dacbufpu_rev7[] = { 0x10f, 0x10f };
 	u32 leg_data_weights;
+=======
+	static const u8 rfseq_rx2tx_dlys_rev3_ipa[] = { 8, 6, 6, 4, 4, 16, 43, 1, 1 };
+	static const u16 rfseq_rx2tx_dacbufpu_rev7[] = { 0x10f, 0x10f };
+
+	s16 alpha0, alpha1, alpha2;
+	s16 beta0, beta1, beta2;
+	u32 leg_data_weights, ht_data_weights, nss1_data_weights,
+	    stbc_data_weights;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmsmac/phy/phy_n.c
 	u8 chan_freq_range = 0;
 	static const u16 dac_control = 0x0002;
 	u16 aux_adc_vmid_rev7_core0[] = { 0x8e, 0x96, 0x96, 0x96 };
 	u16 aux_adc_vmid_rev7_core1[] = { 0x8f, 0x9f, 0x9f, 0x96 };
 	u16 aux_adc_gain_rev7[] = { 0x02, 0x02, 0x02, 0x02 };
+<<<<<<< HEAD:drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
+=======
+	u16 aux_adc_gain_rev4[] = { 0x02, 0x02, 0x02, 0x00 };
+	u16 aux_adc_gain_rev3[] = { 0x02, 0x02, 0x02, 0x00 };
+	u16 *aux_adc_gain;
+	static const u16 sk_adc_vmid[] = { 0xb4, 0xb4, 0xb4, 0x24 };
+	static const u16 sk_adc_gain[] = { 0x02, 0x02, 0x02, 0x02 };
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/wireless/brcm80211/brcmsmac/phy/phy_n.c
 	s32 min_nvar_val = 0x18d;
 	s32 min_nvar_offset_6mbps = 20;
 	u8 pdetrange;

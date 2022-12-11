@@ -964,9 +964,15 @@ struct timespec64 cnvrtDosUnixTm(__le16 le_date, __le16 le_time, int offset)
 		cifs_dbg(VFS, "illegal hours %d\n", st->Hours);
 	day = sd->Day;
 	month = sd->Month;
+<<<<<<< HEAD
 	if (day < 1 || day > 31 || month < 1 || month > 12) {
 		cifs_dbg(VFS, "illegal date, month %d day: %d\n", month, day);
 		day = clamp(day, 1, 31);
+=======
+	if (days < 1 || days > 31 || month < 1 || month > 12) {
+		cifs_dbg(VFS, "illegal date, month %d day: %d\n", month, days);
+		days = clamp(days, 1, 31);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		month = clamp(month, 1, 12);
 	}
 	month -= 1;

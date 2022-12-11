@@ -462,7 +462,11 @@ enqueue:
 		return NET_XMIT_SUCCESS;
 
 	qlen = slot->qlen;
+<<<<<<< HEAD
 	dropped = sfq_drop(sch, to_free);
+=======
+	dropped = sfq_drop(sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/* Return Congestion Notification only if we dropped a packet
 	 * from this flow.
 	 */
@@ -637,6 +641,7 @@ static int sfq_change(struct Qdisc *sch, struct nlattr *opt)
 	if (ctl->divisor &&
 	    (!is_power_of_2(ctl->divisor) || ctl->divisor > 65536))
 		return -EINVAL;
+<<<<<<< HEAD
 
 	/* slot->allot is a short, make sure quantum is not too big. */
 	if (ctl->quantum) {
@@ -648,6 +653,10 @@ static int sfq_change(struct Qdisc *sch, struct nlattr *opt)
 
 	if (ctl_v1 && !red_check_params(ctl_v1->qth_min, ctl_v1->qth_max,
 					ctl_v1->Wlog, ctl_v1->Scell_log, NULL))
+=======
+	if (ctl_v1 && !red_check_params(ctl_v1->qth_min, ctl_v1->qth_max,
+					ctl_v1->Wlog))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EINVAL;
 	if (ctl_v1 && ctl_v1->qth_min) {
 		p = kmalloc(sizeof(*p), GFP_KERNEL);
@@ -687,6 +696,7 @@ static int sfq_change(struct Qdisc *sch, struct nlattr *opt)
 	}
 
 	qlen = sch->q.qlen;
+<<<<<<< HEAD
 	while (sch->q.qlen > q->limit) {
 		dropped += sfq_drop(sch, &to_free);
 		if (!tail)
@@ -694,6 +704,10 @@ static int sfq_change(struct Qdisc *sch, struct nlattr *opt)
 	}
 
 	rtnl_kfree_skbs(to_free, tail);
+=======
+	while (sch->q.qlen > q->limit)
+		dropped += sfq_drop(sch);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	qdisc_tree_reduce_backlog(sch, qlen - sch->q.qlen, dropped);
 
 	del_timer(&q->perturb_timer);

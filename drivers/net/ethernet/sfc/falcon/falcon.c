@@ -2800,6 +2800,15 @@ const struct ef4_nic_type falcon_a1_nic_type = {
 	.max_interrupt_mode = EF4_INT_MODE_MSI,
 	.timer_period_max =  1 << FRF_AB_TC_TIMER_VAL_WIDTH,
 	.offload_features = NETIF_F_IP_CSUM,
+<<<<<<< HEAD:drivers/net/ethernet/sfc/falcon/falcon.c
+=======
+	.mcdi_max_ver = -1,
+#ifdef CONFIG_SFC_SRIOV
+	.vswitching_probe = efx_port_dummy_op_int,
+	.vswitching_restore = efx_port_dummy_op_int,
+	.vswitching_remove = efx_port_dummy_op_void,
+#endif
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/net/ethernet/sfc/falcon.c
 };
 
 const struct ef4_nic_type falcon_b0_nic_type = {
@@ -2900,4 +2909,9 @@ const struct ef4_nic_type falcon_b0_nic_type = {
 	.timer_period_max =  1 << FRF_AB_TC_TIMER_VAL_WIDTH,
 	.offload_features = NETIF_F_IP_CSUM | NETIF_F_RXHASH | NETIF_F_NTUPLE,
 	.max_rx_ip_filters = FR_BZ_RX_FILTER_TBL0_ROWS,
+#ifdef CONFIG_SFC_SRIOV
+	.vswitching_probe = efx_port_dummy_op_int,
+	.vswitching_restore = efx_port_dummy_op_int,
+	.vswitching_remove = efx_port_dummy_op_void,
+#endif
 };

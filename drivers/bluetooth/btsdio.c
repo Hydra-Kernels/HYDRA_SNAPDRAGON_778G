@@ -278,6 +278,7 @@ static int btsdio_probe(struct sdio_func *func,
 		tuple = tuple->next;
 	}
 
+<<<<<<< HEAD
 	/* Broadcom devices soldered onto the PCB (non-removable) use an
 	 * UART connection for Bluetooth, ignore the BT SDIO interface.
 	 */
@@ -290,6 +291,15 @@ static int btsdio_probe(struct sdio_func *func,
 			return -ENODEV;
 		}
 	}
+=======
+	/* BCM43341 devices soldered onto the PCB (non-removable) use an
+	 * uart connection for bluetooth, ignore the BT SDIO interface.
+	 */
+	if (func->vendor == SDIO_VENDOR_ID_BROADCOM &&
+	    func->device == SDIO_DEVICE_ID_BROADCOM_43341 &&
+	    !mmc_card_is_removable(func->card->host))
+		return -ENODEV;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	data = devm_kzalloc(&func->dev, sizeof(*data), GFP_KERNEL);
 	if (!data)

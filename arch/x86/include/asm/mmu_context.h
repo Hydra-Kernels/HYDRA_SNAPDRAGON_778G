@@ -13,11 +13,18 @@
 #include <asm/tlbflush.h>
 #include <asm/paravirt.h>
 #include <asm/mpx.h>
+<<<<<<< HEAD
 #include <asm/debugreg.h>
 
 extern atomic64_t last_mm_ctx_id;
 
 #ifndef CONFIG_PARAVIRT_XXL
+=======
+
+extern atomic64_t last_mm_ctx_id;
+
+#ifndef CONFIG_PARAVIRT
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline void paravirt_activate_mm(struct mm_struct *prev,
 					struct mm_struct *next)
 {
@@ -78,6 +85,7 @@ static inline void *ldt_slot_va(int slot)
 /*
  * Used for LDT copy/destruction.
  */
+<<<<<<< HEAD
 static inline void init_new_context_ldt(struct mm_struct *mm)
 {
 	mm->context.ldt = NULL;
@@ -95,6 +103,17 @@ static inline int ldt_dup_context(struct mm_struct *oldmm,
 }
 static inline void destroy_context_ldt(struct mm_struct *mm) { }
 static inline void ldt_arch_exit_mmap(struct mm_struct *mm) { }
+=======
+int init_new_context_ldt(struct task_struct *tsk, struct mm_struct *mm);
+void destroy_context_ldt(struct mm_struct *mm);
+#else	/* CONFIG_MODIFY_LDT_SYSCALL */
+static inline int init_new_context_ldt(struct task_struct *tsk,
+				       struct mm_struct *mm)
+{
+	return 0;
+}
+static inline void destroy_context_ldt(struct mm_struct *mm) {}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 static inline void load_mm_ldt(struct mm_struct *mm)
@@ -186,6 +205,7 @@ void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 static inline int init_new_context(struct task_struct *tsk,
 				   struct mm_struct *mm)
 {
+<<<<<<< HEAD
 	mutex_init(&mm->context.lock);
 
 	mm->context.ctx_id = atomic64_inc_return(&last_mm_ctx_id);
@@ -200,6 +220,17 @@ static inline int init_new_context(struct task_struct *tsk,
 	}
 #endif
 	init_new_context_ldt(mm);
+=======
+	if (this_cpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
+		this_cpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
+}
+
+static inline int init_new_context(struct task_struct *tsk,
+				   struct mm_struct *mm)
+{
+	mm->context.ctx_id = atomic64_inc_return(&last_mm_ctx_id);
+	init_new_context_ldt(tsk, mm);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return 0;
 }
 static inline void destroy_context(struct mm_struct *mm)

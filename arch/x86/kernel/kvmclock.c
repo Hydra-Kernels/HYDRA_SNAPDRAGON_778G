@@ -63,6 +63,11 @@ static inline struct pvclock_vsyscall_time_info *this_cpu_hvclock(void)
 	return this_cpu_read(hv_clock_per_cpu);
 }
 
+struct pvclock_vsyscall_time_info *pvclock_pvti_cpu0_va(void)
+{
+	return hv_clock;
+}
+
 /*
  * The wallclock is the time of day when we booted. Since then, some time may
  * have elapsed since the hypervisor wrote the data. So we try to account for

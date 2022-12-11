@@ -105,6 +105,7 @@ static int rb532_pata_driver_probe(struct platform_device *pdev)
 	struct gpio_desc *gpiod;
 	struct resource *res;
 	struct ata_host *ah;
+	struct cf_device *pdata;
 	struct rb532_cf_info *info;
 	int ret;
 
@@ -122,8 +123,19 @@ static int rb532_pata_driver_probe(struct platform_device *pdev)
 	if (!irq)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_IN);
 	if (IS_ERR(gpiod)) {
+=======
+	pdata = dev_get_platdata(&pdev->dev);
+	if (!pdata) {
+		dev_err(&pdev->dev, "no platform data specified\n");
+		return -EINVAL;
+	}
+
+	gpio = pdata->gpio_pin;
+	if (gpio < 0) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_err(&pdev->dev, "no GPIO found for irq%d\n", irq);
 		return PTR_ERR(gpiod);
 	}

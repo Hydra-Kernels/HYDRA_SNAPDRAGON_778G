@@ -1226,8 +1226,13 @@ static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
 		of_node = of_graph_get_port_by_id(dev->of_node, i);
 		if (!of_node) {
 			dev_info(dev,
+<<<<<<< HEAD
 				 "no port@%d node in %pOF, not using %s%d\n",
 				 i, dev->of_node,
+=======
+				 "no port@%d node in %s, not using %s%d\n",
+				 i, dev->of_node->full_name,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				 (i / 2) ? "DI" : "CSI", i % 2);
 			continue;
 		}
@@ -1249,6 +1254,12 @@ static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
 			platform_device_put(pdev);
 			goto err_register;
 		}
+
+		/*
+		 * Set of_node only after calling platform_device_add. Otherwise
+		 * the platform:imx-ipuv3-crtc modalias won't be used.
+		 */
+		pdev->dev.of_node = of_node;
 	}
 
 	return 0;

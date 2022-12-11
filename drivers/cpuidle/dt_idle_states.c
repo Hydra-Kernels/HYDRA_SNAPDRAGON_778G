@@ -174,12 +174,15 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
 		if (!state_node)
 			break;
 
+<<<<<<< HEAD
 		match_id = of_match_node(matches, state_node);
 		if (!match_id) {
 			err = -ENODEV;
 			break;
 		}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (!of_device_is_available(state_node)) {
 			of_node_put(state_node);
 			continue;

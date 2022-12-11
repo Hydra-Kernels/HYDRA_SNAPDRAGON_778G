@@ -132,6 +132,7 @@ static struct bio *blk_bio_write_same_split(struct request_queue *q,
 	return bio_split(bio, q->limits.max_write_same_sectors, GFP_NOIO, bs);
 }
 
+<<<<<<< HEAD
 /*
  * Return the maximum number of sectors from the start of a bio that may be
  * submitted as a single request to a block device. If enough sectors remain,
@@ -140,10 +141,13 @@ static struct bio *blk_bio_write_same_split(struct request_queue *q,
  * requests that are submitted to a block device if the start of a bio is not
  * aligned to a physical block boundary.
  */
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static inline unsigned get_max_io_size(struct request_queue *q,
 				       struct bio *bio)
 {
 	unsigned sectors = blk_max_size_offset(q, bio->bi_iter.bi_sector);
+<<<<<<< HEAD
 	unsigned max_sectors = sectors;
 	unsigned pbs = queue_physical_block_size(q) >> SECTOR_SHIFT;
 	unsigned lbs = queue_logical_block_size(q) >> SECTOR_SHIFT;
@@ -241,6 +245,16 @@ static bool bvec_split_segs(const struct request_queue *q,
  * responsible for ensuring that @bs is only destroyed after processing of the
  * split bio has finished.
  */
+=======
+	unsigned mask = queue_logical_block_size(q) - 1;
+
+	/* aligned to logical block size */
+	sectors &= ~(mask >> 9);
+
+	return sectors;
+}
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct bio *blk_bio_segment_split(struct request_queue *q,
 					 struct bio *bio,
 					 struct bio_set *bs,
@@ -248,9 +262,40 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
 {
 	struct bio_vec bv, bvprv, *bvprvp = NULL;
 	struct bvec_iter iter;
+<<<<<<< HEAD
 	unsigned nsegs = 0, sectors = 0;
 	const unsigned max_sectors = get_max_io_size(q, bio);
 	const unsigned max_segs = queue_max_segments(q);
+=======
+	unsigned seg_size = 0, nsegs = 0, sectors = 0;
+	unsigned front_seg_size = bio->bi_seg_front_size;
+	bool do_split = true;
+	struct bio *new = NULL;
+	const unsigned max_sectors = get_max_io_size(q, bio);
+	unsigned bvecs = 0;
+
+	bio_for_each_segment(bv, bio, iter) {
+		/*
+		 * With arbitrary bio size, the incoming bio may be very
+		 * big. We have to split the bio into small bios so that
+		 * each holds at most BIO_MAX_PAGES bvecs because
+		 * bio_clone() can fail to allocate big bvecs.
+		 *
+		 * It should have been better to apply the limit per
+		 * request queue in which bio_clone() is involved,
+		 * instead of globally. The biggest blocker is the
+		 * bio_clone() in bio bounce.
+		 *
+		 * If bio is splitted by this reason, we should have
+		 * allowed to continue bios merging, but don't do
+		 * that now for making the change simple.
+		 *
+		 * TODO: deal with bio bounce's bio_clone() gracefully
+		 * and convert the global limit into per-queue limit.
+		 */
+		if (bvecs++ >= BIO_MAX_PAGES)
+			goto split;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	bio_for_each_bvec(bv, bio, iter) {
 		/*
@@ -260,10 +305,39 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
 		if (bvprvp && bvec_gap_to_prev(q, bvprvp, bv.bv_offset))
 			goto split;
 
+<<<<<<< HEAD
 		if (nsegs < max_segs &&
 		    sectors + (bv.bv_len >> 9) <= max_sectors &&
 		    bv.bv_offset + bv.bv_len <= PAGE_SIZE) {
 			nsegs++;
+=======
+		if (sectors + (bv.bv_len >> 9) > max_sectors) {
+			/*
+			 * Consider this a new segment if we're splitting in
+			 * the middle of this vector.
+			 */
+			if (nsegs < queue_max_segments(q) &&
+			    sectors < max_sectors) {
+				nsegs++;
+				sectors = max_sectors;
+			}
+			if (sectors)
+				goto split;
+			/* Make this single bvec as the 1st segment */
+		}
+
+		if (bvprvp && blk_queue_cluster(q)) {
+			if (seg_size + bv.bv_len > queue_max_segment_size(q))
+				goto new_segment;
+			if (!BIOVEC_PHYS_MERGEABLE(bvprvp, &bv))
+				goto new_segment;
+			if (!BIOVEC_SEG_BOUNDARY(q, bvprvp, &bv))
+				goto new_segment;
+
+			seg_size += bv.bv_len;
+			bvprv = bv;
+			bvprvp = &bvprv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			sectors += bv.bv_len >> 9;
 		} else if (bvec_split_segs(q, &bv, &nsegs, &sectors, max_segs,
 					 max_sectors)) {

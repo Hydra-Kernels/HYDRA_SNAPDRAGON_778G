@@ -15,7 +15,10 @@ config ASYMMETRIC_PUBLIC_KEY_SUBTYPE
 	select MPILIB
 	select CRYPTO_HASH_INFO
 	select CRYPTO_AKCIPHER
+<<<<<<< HEAD
 	select CRYPTO_HASH
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	help
 	  This option provides support for asymmetric public key type handling.
 	  If signature generation and/or verification are to be used,

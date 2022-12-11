@@ -352,8 +352,13 @@ static int mei_nfc_if_version(struct mei_cl *cl,
 		return -ENOMEM;
 
 	ret = 0;
+<<<<<<< HEAD
 	bytes_recv = __mei_cl_recv(cl, (u8 *)reply, if_version_length, 0, 0);
 	if (bytes_recv < 0 || (size_t)bytes_recv < if_version_length) {
+=======
+	bytes_recv = __mei_cl_recv(cl, (u8 *)reply, if_version_length);
+	if (bytes_recv < if_version_length) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		dev_err(bus->dev, "Could not read IF version\n");
 		ret = -EIO;
 		goto err;

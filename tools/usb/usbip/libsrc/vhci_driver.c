@@ -55,8 +55,13 @@ static int parse_status(const char *value)
 		struct usbip_imported_device *idev;
 		char hub[3];
 
+<<<<<<< HEAD
 		ret = sscanf(c, "%2s  %d %d %d %x %u %31s\n",
 				hub, &port, &status, &speed,
+=======
+		ret = sscanf(c, "%d %d %d %x %u %31s\n",
+				&port, &status, &speed,
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				&devid, &sockfd, lbusid);
 
 		if (ret < 5) {
@@ -64,9 +69,16 @@ static int parse_status(const char *value)
 			BUG();
 		}
 
+<<<<<<< HEAD
 		dbg("hub %s port %d status %d speed %d devid %x",
 				hub, port, status, speed, devid);
 		dbg("sockfd %u lbusid %s", sockfd, lbusid);
+=======
+		dbg("port %d status %d speed %d devid %x",
+				port, status, speed, devid);
+		dbg("sockfd %u lbusid %s", sockfd, lbusid);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		/* if a device is connected, look at it */
 		idev = &vhci_driver->idev[port];

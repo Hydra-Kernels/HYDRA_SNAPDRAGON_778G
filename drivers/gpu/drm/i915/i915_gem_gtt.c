@@ -2789,12 +2789,17 @@ void i915_ggtt_driver_release(struct drm_i915_private *i915)
 
 	fini_aliasing_ppgtt(&i915->ggtt);
 
+<<<<<<< HEAD
 	ggtt_cleanup_hw(&i915->ggtt);
 
 	pvec = &i915->mm.wc_stash.pvec;
 	if (pvec->nr) {
 		set_pages_array_wb(pvec->pages, pvec->nr);
 		__pagevec_release(pvec);
+=======
+		ppgtt->base.cleanup(&ppgtt->base);
+		kfree(ppgtt);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	i915_gem_cleanup_stolen(i915);

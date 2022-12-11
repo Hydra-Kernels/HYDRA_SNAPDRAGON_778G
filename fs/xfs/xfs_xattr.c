@@ -185,6 +185,7 @@ xfs_xattr_put_listent(
 		}
 #endif
 
+<<<<<<< HEAD
 		/*
 		 * Only show root namespace entries if we are actually allowed to
 		 * see them.
@@ -200,6 +201,13 @@ xfs_xattr_put_listent(
 	} else {
 		prefix = XATTR_USER_PREFIX;
 		prefix_len = XATTR_USER_PREFIX_LEN;
+=======
+	arraytop = context->count + prefix_len + namelen + 1;
+	if (arraytop > context->firstu) {
+		context->count = -1;	/* insufficient space */
+		context->seen_enough = 1;
+		return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	__xfs_xattr_put_listent(context, prefix, prefix_len, name,
@@ -230,6 +238,14 @@ xfs_vn_listxattr(
 	context.firstu = context.bufsize;
 	context.put_listent = xfs_xattr_put_listent;
 
+<<<<<<< HEAD
+=======
+	if (size)
+		context.put_listent = xfs_xattr_put_listent;
+	else
+		context.put_listent = xfs_xattr_put_listent_sizes;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	error = xfs_attr_list_int(&context);
 	if (error)
 		return error;

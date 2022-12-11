@@ -101,7 +101,10 @@ void dev_pm_clear_wake_irq(struct device *dev)
 		free_irq(wirq->irq, wirq);
 		wirq->status &= ~WAKE_IRQ_DEDICATED_MASK;
 	}
+<<<<<<< HEAD
 	kfree(wirq->name);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	kfree(wirq);
 }
 EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);

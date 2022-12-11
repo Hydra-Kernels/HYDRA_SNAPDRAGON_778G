@@ -209,6 +209,27 @@ int rdma_addr_size(const struct sockaddr *addr)
 EXPORT_SYMBOL(rdma_addr_size);
 
 int rdma_addr_size_in6(struct sockaddr_in6 *addr)
+<<<<<<< HEAD
+=======
+{
+	int ret = rdma_addr_size((struct sockaddr *) addr);
+
+	return ret <= sizeof(*addr) ? ret : 0;
+}
+EXPORT_SYMBOL(rdma_addr_size_in6);
+
+int rdma_addr_size_kss(struct __kernel_sockaddr_storage *addr)
+{
+	int ret = rdma_addr_size((struct sockaddr *) addr);
+
+	return ret <= sizeof(*addr) ? ret : 0;
+}
+EXPORT_SYMBOL(rdma_addr_size_kss);
+
+static struct rdma_addr_client self;
+
+void rdma_addr_register_client(struct rdma_addr_client *client)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	int ret = rdma_addr_size((struct sockaddr *) addr);
 
@@ -429,9 +450,15 @@ static int addr6_resolve(struct sockaddr *src_sock,
 	fl6.saddr = src_in->sin6_addr;
 	fl6.flowi6_oif = addr->bound_dev_if;
 
+<<<<<<< HEAD
 	dst = ipv6_stub->ipv6_dst_lookup_flow(addr->net, NULL, &fl6, NULL);
 	if (IS_ERR(dst))
 		return PTR_ERR(dst);
+=======
+	ret = ipv6_stub->ipv6_dst_lookup(addr->net, NULL, &dst, &fl6);
+	if (ret < 0)
+		goto put;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	if (ipv6_addr_any(&src_in->sin6_addr))
 		src_in->sin6_addr = fl6.saddr;

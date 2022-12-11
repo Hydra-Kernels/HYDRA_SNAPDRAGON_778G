@@ -1106,6 +1106,17 @@ static int pci_pm_thaw_noirq(struct device *dev)
 	if (pci_has_legacy_pm_support(pci_dev))
 		return pci_legacy_resume_early(dev);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * pci_restore_state() requires the device to be in D0 (because of MSI
+	 * restoration among other things), so force it into D0 in case the
+	 * driver's "freeze" callbacks put it into a low-power state directly.
+	 */
+	pci_set_power_state(pci_dev, PCI_D0);
+	pci_restore_state(pci_dev);
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (drv && drv->pm && drv->pm->thaw_noirq)
 		error = drv->pm->thaw_noirq(dev);
 
@@ -1304,6 +1315,12 @@ static int pci_pm_runtime_suspend(struct device *dev)
 		pci_save_state(pci_dev);
 		return 0;
 	}
+<<<<<<< HEAD
+=======
+
+	if (!pm || !pm->runtime_suspend)
+		return -ENOSYS;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	pci_dev->state_saved = false;
 	if (pm && pm->runtime_suspend) {
@@ -1372,6 +1389,12 @@ static int pci_pm_runtime_resume(struct device *dev)
 	if (!pci_dev->driver)
 		return 0;
 
+<<<<<<< HEAD
+=======
+	if (!pm || !pm->runtime_resume)
+		return -ENOSYS;
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
 	pci_enable_wake(pci_dev, PCI_D0, false);
 	pci_fixup_device(pci_fixup_resume, pci_dev);

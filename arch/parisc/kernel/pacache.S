@@ -24,7 +24,10 @@
 #include <asm/pgtable.h>
 #include <asm/cache.h>
 #include <asm/ldcw.h>
+<<<<<<< HEAD
 #include <asm/alternative.h>
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #include <linux/linkage.h>
 #include <linux/init.h>
 
@@ -306,7 +309,46 @@ fdsync:
 89:	ALTERNATIVE(88b, 89b, ALT_COND_NO_DCACHE, INSN_NOP)
 	bv		%r0(%r2)
 	nop
+<<<<<<< HEAD
 ENDPROC_CFI(flush_data_cache_local)
+=======
+	.exit
+
+	.procend
+ENDPROC(flush_data_cache_local)
+
+	.align	16
+
+/* Macros to serialize TLB purge operations on SMP.  */
+
+	.macro	tlb_lock	la,flags,tmp
+#ifdef CONFIG_SMP
+#if __PA_LDCW_ALIGNMENT > 4
+	load32		pa_tlb_lock + __PA_LDCW_ALIGNMENT-1, \la
+	depi		0,31,__PA_LDCW_ALIGN_ORDER, \la
+#else
+	load32		pa_tlb_lock, \la
+#endif
+	rsm		PSW_SM_I,\flags
+1:	LDCW		0(\la),\tmp
+	cmpib,<>,n	0,\tmp,3f
+2:	ldw		0(\la),\tmp
+	cmpb,<>		%r0,\tmp,1b
+	nop
+	b,n		2b
+3:
+#endif
+	.endm
+
+	.macro	tlb_unlock	la,flags,tmp
+#ifdef CONFIG_SMP
+	ldi		1,\tmp
+	sync
+	stw		\tmp,0(\la)
+	mtsm		\flags
+#endif
+	.endm
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /* Clear page using kernel mapping.  */
 
@@ -565,10 +607,17 @@ ENTRY_CFI(copy_user_page_asm)
 	pdtlb,l		%r0(%r28)
 	pdtlb,l		%r0(%r29)
 #else
+<<<<<<< HEAD
 0:	pdtlb		%r0(%r28)
 1:	pdtlb		%r0(%r29)
 	ALTERNATIVE(0b, 0b+4, ALT_COND_NO_SMP, INSN_PxTLB)
 	ALTERNATIVE(1b, 1b+4, ALT_COND_NO_SMP, INSN_PxTLB)
+=======
+	tlb_lock	%r20,%r21,%r22
+	pdtlb		%r0(%r28)
+	pdtlb		%r0(%r29)
+	tlb_unlock	%r20,%r21,%r22
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #ifdef CONFIG_64BIT
@@ -705,8 +754,14 @@ ENTRY_CFI(clear_user_page_asm)
 #ifdef CONFIG_PA20
 	pdtlb,l		%r0(%r28)
 #else
+<<<<<<< HEAD
 0:	pdtlb		%r0(%r28)
 	ALTERNATIVE(0b, 0b+4, ALT_COND_NO_SMP, INSN_PxTLB)
+=======
+	tlb_lock	%r20,%r21,%r22
+	pdtlb		%r0(%r28)
+	tlb_unlock	%r20,%r21,%r22
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 #ifdef CONFIG_64BIT
@@ -781,8 +836,14 @@ ENTRY_CFI(flush_dcache_page_asm)
 #ifdef CONFIG_PA20
 	pdtlb,l		%r0(%r28)
 #else
+<<<<<<< HEAD
 0:	pdtlb		%r0(%r28)
 	ALTERNATIVE(0b, 0b+4, ALT_COND_NO_SMP, INSN_PxTLB)
+=======
+	tlb_lock	%r20,%r21,%r22
+	pdtlb		%r0(%r28)
+	tlb_unlock	%r20,%r21,%r22
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 88:	ldil		L%dcache_stride, %r1
@@ -811,7 +872,11 @@ ENTRY_CFI(flush_dcache_page_asm)
 	fdc,m		r31(%r28)
 	fdc,m		r31(%r28)
 	fdc,m		r31(%r28)
+<<<<<<< HEAD
 	cmpb,COND(>>)	%r25, %r28, 1b /* predict taken */
+=======
+	cmpb,COND(<<)	%r28, %r25,1b
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	fdc,m		r31(%r28)
 
 89:	ALTERNATIVE(88b, 89b, ALT_COND_NO_DCACHE, INSN_NOP)
@@ -835,13 +900,25 @@ ENTRY_CFI(purge_dcache_page_asm)
 	depwi		0, 31,PAGE_SHIFT, %r28	/* Clear any offset bits */
 #endif
 
-	/* Purge any old translation */
+	/* Purge any old translation.  Note that the FIC instruction
+	 * may use either the instruction or data TLB.  Given that we
+	 * have a flat address space, it's not clear which TLB will be
+	 * used.  So, we purge both entries.  */
 
 #ifdef CONFIG_PA20
 	pdtlb,l		%r0(%r28)
+<<<<<<< HEAD
 #else
 0:	pdtlb		%r0(%r28)
 	ALTERNATIVE(0b, 0b+4, ALT_COND_NO_SMP, INSN_PxTLB)
+=======
+	pitlb,l         %r0(%sr4,%r28)
+#else
+	tlb_lock        %r20,%r21,%r22
+	pdtlb		%r0(%r28)
+	pitlb           %r0(%sr4,%r28)
+	tlb_unlock      %r20,%r21,%r22
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 88:	ldil		L%dcache_stride, %r1

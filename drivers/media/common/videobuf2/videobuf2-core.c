@@ -942,11 +942,19 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
 	dprintk(4, "done processing on buffer %d, state: %d\n",
 			vb->index, state);
 
+<<<<<<< HEAD:drivers/media/common/videobuf2/videobuf2-core.c
 	if (state != VB2_BUF_STATE_QUEUED) {
 		/* sync buffers */
 		for (plane = 0; plane < vb->num_planes; ++plane)
 			call_void_memop(vb, finish, vb->planes[plane].mem_priv);
 		vb->synced = 0;
+=======
+	if (state != VB2_BUF_STATE_QUEUED &&
+	    state != VB2_BUF_STATE_REQUEUEING) {
+		/* sync buffers */
+		for (plane = 0; plane < vb->num_planes; ++plane)
+			call_void_memop(vb, finish, vb->planes[plane].mem_priv);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:drivers/media/v4l2-core/videobuf2-core.c
 	}
 
 	spin_lock_irqsave(&q->done_lock, flags);

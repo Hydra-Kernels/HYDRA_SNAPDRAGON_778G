@@ -238,6 +238,10 @@ static void sctp_v6_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 	struct in6_addr *final_p, final;
 	enum sctp_scope scope;
 	__u8 matchlen = 0;
+<<<<<<< HEAD
+=======
+	sctp_scope_t scope;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memset(&_fl, 0, sizeof(_fl));
 	fl6->daddr = daddr->v6.sin6_addr;
@@ -334,7 +338,11 @@ static void sctp_v6_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 		fl6->saddr = laddr->a.v6.sin6_addr;
 		fl6->fl6_sport = laddr->a.v6.sin6_port;
 		final_p = fl6_update_dst(fl6, rcu_dereference(np->opt), &final);
+<<<<<<< HEAD
 		bdst = ip6_dst_lookup_flow(sock_net(sk), sk, fl6, final_p);
+=======
+		bdst = ip6_dst_lookup_flow(sk, fl6, final_p);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (IS_ERR(bdst))
 			continue;
@@ -344,8 +352,11 @@ static void sctp_v6_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 			if (!IS_ERR_OR_NULL(dst))
 				dst_release(dst);
 			dst = bdst;
+<<<<<<< HEAD
 			t->dst = dst;
 			memcpy(fl, &_fl, sizeof(_fl));
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			break;
 		}
 
@@ -359,8 +370,11 @@ static void sctp_v6_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 			dst_release(dst);
 		dst = bdst;
 		matchlen = bmatchlen;
+<<<<<<< HEAD
 		t->dst = dst;
 		memcpy(fl, &_fl, sizeof(_fl));
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 	rcu_read_unlock();
 
@@ -861,10 +875,19 @@ static void sctp_inet6_skb_msgname(struct sk_buff *skb, char *msgname,
 		addr->v6.sin6_flowinfo = 0;
 		addr->v6.sin6_port = sh->source;
 		addr->v6.sin6_addr = ipv6_hdr(skb)->saddr;
+<<<<<<< HEAD
 		if (ipv6_addr_type(&addr->v6.sin6_addr) & IPV6_ADDR_LINKLOCAL)
 			addr->v6.sin6_scope_id = sctp_v6_skb_iif(skb);
 		else
 			addr->v6.sin6_scope_id = 0;
+=======
+		if (ipv6_addr_type(&addr->v6.sin6_addr) & IPV6_ADDR_LINKLOCAL) {
+			struct sctp_ulpevent *ev = sctp_skb2event(skb);
+			addr->v6.sin6_scope_id = ev->iif;
+		} else {
+			addr->v6.sin6_scope_id = 0;
+		}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	*addr_len = sctp_v6_addr_to_user(sctp_sk(skb->sk), addr);

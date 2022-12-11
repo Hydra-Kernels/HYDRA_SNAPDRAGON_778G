@@ -155,6 +155,11 @@ void bcmgenet_phy_power_set(struct net_device *dev, bool enable)
 	} else {
 		mdelay(1);
 	}
+<<<<<<< HEAD
+=======
+	bcmgenet_ext_writel(priv, reg, EXT_GPHY_CTRL);
+	udelay(60);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static void bcmgenet_moca_phy_setup(struct bcmgenet_priv *priv)

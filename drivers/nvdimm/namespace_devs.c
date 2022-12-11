@@ -104,7 +104,11 @@ static int is_uuid_busy(struct device *dev, void *data)
 
 static int is_namespace_uuid_busy(struct device *dev, void *data)
 {
+<<<<<<< HEAD
 	if (is_nd_region(dev))
+=======
+	if (is_nd_pmem(dev) || is_nd_blk(dev))
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return device_for_each_child(dev, data, is_uuid_busy);
 	return 0;
 }
@@ -1907,11 +1911,18 @@ static struct device *create_namespace_pmem(struct nd_region *nd_region,
 		struct nd_namespace_index *nsindex,
 		struct nd_namespace_label *nd_label)
 {
+<<<<<<< HEAD
 	u64 cookie = nd_region_interleave_set_cookie(nd_region, nsindex);
 	u64 altcookie = nd_region_interleave_set_altcookie(nd_region);
 	struct nd_label_ent *label_ent;
 	struct nd_namespace_pmem *nspm;
 	struct nd_mapping *nd_mapping;
+=======
+	u64 altcookie = nd_region_interleave_set_altcookie(nd_region);
+	u64 cookie = nd_region_interleave_set_cookie(nd_region);
+	struct nd_namespace_label *nd_label;
+	u8 select_id[NSLABEL_UUID_LEN];
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	resource_size_t size = 0;
 	struct resource *res;
 	struct device *dev;
@@ -1920,7 +1931,11 @@ static struct device *create_namespace_pmem(struct nd_region *nd_region,
 
 	if (cookie == 0) {
 		dev_dbg(&nd_region->dev, "invalid interleave-set-cookie\n");
+<<<<<<< HEAD
 		return ERR_PTR(-ENXIO);
+=======
+		return -ENXIO;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (__le64_to_cpu(nd_label->isetcookie) != cookie) {
@@ -1929,6 +1944,7 @@ static struct device *create_namespace_pmem(struct nd_region *nd_region,
 		if (__le64_to_cpu(nd_label->isetcookie) != altcookie)
 			return ERR_PTR(-EAGAIN);
 
+<<<<<<< HEAD
 		dev_dbg(&nd_region->dev, "valid altcookie in label: %pUb\n",
 				nd_label->uuid);
 	}
@@ -1965,6 +1981,45 @@ static struct device *create_namespace_pmem(struct nd_region *nd_region,
 				nvdimm_name(nvdimm), nd_label->uuid);
 		rc = -EINVAL;
 		goto err;
+=======
+		if (isetcookie != cookie) {
+			dev_dbg(&nd_region->dev, "invalid cookie in label: %pUb\n",
+					nd_label->uuid);
+			if (isetcookie != altcookie)
+				continue;
+
+			dev_dbg(&nd_region->dev, "valid altcookie in label: %pUb\n",
+					nd_label->uuid);
+		}
+
+		for (i = 0; nd_region->ndr_mappings; i++) {
+			if (has_uuid_at_pos(nd_region, nd_label->uuid, cookie, i))
+				continue;
+			if (has_uuid_at_pos(nd_region, nd_label->uuid, altcookie, i))
+				continue;
+			break;
+		}
+
+		if (i < nd_region->ndr_mappings) {
+			/*
+			 * Give up if we don't find an instance of a
+			 * uuid at each position (from 0 to
+			 * nd_region->ndr_mappings - 1), or if we find a
+			 * dimm with two instances of the same uuid.
+			 */
+			rc = -EINVAL;
+			goto err;
+		} else if (pmem_id) {
+			/*
+			 * If there is more than one valid uuid set, we
+			 * need userspace to clean this up.
+			 */
+			rc = -EBUSY;
+			goto err;
+		}
+		memcpy(select_id, nd_label->uuid, NSLABEL_UUID_LEN);
+		pmem_id = select_id;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	/*

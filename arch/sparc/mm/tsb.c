@@ -123,11 +123,16 @@ void flush_tsb_user(struct tlb_batch *tb)
 
 	spin_lock_irqsave(&mm->context.lock, flags);
 
+<<<<<<< HEAD
 	if (tb->hugepage_shift < REAL_HPAGE_SHIFT) {
+=======
+	if (!tb->huge) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		base = (unsigned long) mm->context.tsb_block[MM_TSB_BASE].tsb;
 		nentries = mm->context.tsb_block[MM_TSB_BASE].tsb_nentries;
 		if (tlb_type == cheetah_plus || tlb_type == hypervisor)
 			base = __pa(base);
+<<<<<<< HEAD
 		if (tb->hugepage_shift == PAGE_SHIFT)
 			__flush_tsb_one(tb, PAGE_SHIFT, base, nentries);
 #if defined(CONFIG_HUGETLB_PAGE)
@@ -138,6 +143,12 @@ void flush_tsb_user(struct tlb_batch *tb)
 	}
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
 	else if (mm->context.tsb_block[MM_TSB_HUGE].tsb) {
+=======
+		__flush_tsb_one(tb, PAGE_SHIFT, base, nentries);
+	}
+#if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
+	if (tb->huge && mm->context.tsb_block[MM_TSB_HUGE].tsb) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		base = (unsigned long) mm->context.tsb_block[MM_TSB_HUGE].tsb;
 		nentries = mm->context.tsb_block[MM_TSB_HUGE].tsb_nentries;
 		if (tlb_type == cheetah_plus || tlb_type == hypervisor)
@@ -149,18 +160,27 @@ void flush_tsb_user(struct tlb_batch *tb)
 	spin_unlock_irqrestore(&mm->context.lock, flags);
 }
 
+<<<<<<< HEAD
 void flush_tsb_user_page(struct mm_struct *mm, unsigned long vaddr,
 			 unsigned int hugepage_shift)
+=======
+void flush_tsb_user_page(struct mm_struct *mm, unsigned long vaddr, bool huge)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	unsigned long nentries, base, flags;
 
 	spin_lock_irqsave(&mm->context.lock, flags);
 
+<<<<<<< HEAD
 	if (hugepage_shift < REAL_HPAGE_SHIFT) {
+=======
+	if (!huge) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		base = (unsigned long) mm->context.tsb_block[MM_TSB_BASE].tsb;
 		nentries = mm->context.tsb_block[MM_TSB_BASE].tsb_nentries;
 		if (tlb_type == cheetah_plus || tlb_type == hypervisor)
 			base = __pa(base);
+<<<<<<< HEAD
 		if (hugepage_shift == PAGE_SHIFT)
 			__flush_tsb_one_entry(base, vaddr, PAGE_SHIFT,
 					      nentries);
@@ -172,6 +192,12 @@ void flush_tsb_user_page(struct mm_struct *mm, unsigned long vaddr,
 	}
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
 	else if (mm->context.tsb_block[MM_TSB_HUGE].tsb) {
+=======
+		__flush_tsb_one_entry(base, vaddr, PAGE_SHIFT, nentries);
+	}
+#if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
+	if (huge && mm->context.tsb_block[MM_TSB_HUGE].tsb) {
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		base = (unsigned long) mm->context.tsb_block[MM_TSB_HUGE].tsb;
 		nentries = mm->context.tsb_block[MM_TSB_HUGE].tsb_nentries;
 		if (tlb_type == cheetah_plus || tlb_type == hypervisor)
@@ -537,8 +563,12 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 {
 	unsigned long mm_rss = get_mm_rss(mm);
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
+<<<<<<< HEAD
 	unsigned long saved_hugetlb_pte_count;
 	unsigned long saved_thp_pte_count;
+=======
+	unsigned long total_huge_pte_count;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 	unsigned int i;
 
@@ -554,12 +584,19 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 	 * will re-increment the counters as the parent PTEs are
 	 * copied into the child address space.
 	 */
+<<<<<<< HEAD
 	saved_hugetlb_pte_count = mm->context.hugetlb_pte_count;
 	saved_thp_pte_count = mm->context.thp_pte_count;
 	mm->context.hugetlb_pte_count = 0;
 	mm->context.thp_pte_count = 0;
 
 	mm_rss -= saved_thp_pte_count * (HPAGE_SIZE / PAGE_SIZE);
+=======
+	total_huge_pte_count = mm->context.hugetlb_pte_count +
+			 mm->context.thp_pte_count;
+	mm->context.hugetlb_pte_count = 0;
+	mm->context.thp_pte_count = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 	/* copy_mm() copies over the parent's mm_struct before calling
@@ -575,10 +612,15 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 	tsb_grow(mm, MM_TSB_BASE, mm_rss);
 
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
+<<<<<<< HEAD
 	if (unlikely(saved_hugetlb_pte_count + saved_thp_pte_count))
 		tsb_grow(mm, MM_TSB_HUGE,
 			 (saved_hugetlb_pte_count + saved_thp_pte_count) *
 			 REAL_HPAGE_PER_HPAGE);
+=======
+	if (unlikely(total_huge_pte_count))
+		tsb_grow(mm, MM_TSB_HUGE, total_huge_pte_count);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #endif
 
 	if (unlikely(!mm->context.tsb_block[MM_TSB_BASE].tsb))

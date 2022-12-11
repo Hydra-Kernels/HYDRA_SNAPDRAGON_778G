@@ -241,7 +241,16 @@ xfs_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 		return error;
 
 	if (type == ACL_TYPE_ACCESS) {
+<<<<<<< HEAD
 		error = posix_acl_update_mode(inode, &mode, &acl);
+=======
+		umode_t mode;
+
+		error = posix_acl_update_mode(inode, &mode, &acl);
+		if (error)
+			return error;
+		error = xfs_set_mode(inode, mode);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		if (error)
 			return error;
 		set_mode = true;

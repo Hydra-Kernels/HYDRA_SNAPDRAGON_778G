@@ -496,8 +496,11 @@ modify_user_hw_breakpoint_check(struct perf_event *bp, struct perf_event_attr *a
  */
 int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
 {
+<<<<<<< HEAD
 	int err;
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	/*
 	 * modify_user_hw_breakpoint can be invoked with IRQs disabled and hence it
 	 * will not be possible to raise IPIs that invoke __perf_event_disable.
@@ -509,12 +512,31 @@ int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *att
 	else
 		perf_event_disable(bp);
 
+<<<<<<< HEAD
 	err = modify_user_hw_breakpoint_check(bp, attr, false);
 
 	if (!bp->attr.disabled)
 		perf_event_enable(bp);
 
 	return err;
+=======
+	bp->attr.bp_addr = attr->bp_addr;
+	bp->attr.bp_type = attr->bp_type;
+	bp->attr.bp_len = attr->bp_len;
+	bp->attr.disabled = 1;
+
+	if (!attr->disabled) {
+		int err = validate_hw_breakpoint(bp);
+
+		if (err)
+			return err;
+
+		perf_event_enable(bp);
+		bp->attr.disabled = 0;
+	}
+
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
 

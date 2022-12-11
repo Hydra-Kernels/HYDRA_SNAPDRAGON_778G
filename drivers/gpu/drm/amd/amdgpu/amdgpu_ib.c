@@ -331,7 +331,10 @@ int amdgpu_ib_ring_tests(struct amdgpu_device *adev)
 {
 	unsigned i;
 	int r, ret = 0;
+<<<<<<< HEAD
 	long tmo_gfx, tmo_mm;
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	tmo_mm = tmo_gfx = AMDGPU_IB_TEST_TIMEOUT;
 	if (amdgpu_sriov_vf(adev)) {
@@ -382,6 +385,7 @@ int amdgpu_ib_ring_tests(struct amdgpu_device *adev)
 			continue;
 		}
 
+<<<<<<< HEAD
 		ring->sched.ready = false;
 		DRM_DEV_ERROR(adev->dev, "IB test failed on %s (%d).\n",
 			  ring->name, r);
@@ -393,6 +397,13 @@ int amdgpu_ib_ring_tests(struct amdgpu_device *adev)
 
 		} else {
 			ret = r;
+=======
+			} else {
+				/* still not good, but we can live with it */
+				DRM_ERROR("amdgpu: failed testing IB on ring %d (%d).\n", i, r);
+				ret = r;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 	}
 	return ret;

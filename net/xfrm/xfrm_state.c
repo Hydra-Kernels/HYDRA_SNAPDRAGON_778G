@@ -2362,6 +2362,14 @@ int xfrm_user_policy(struct sock *sk, int optname, u8 __user *optval, int optlen
 	struct xfrm_mgr *km;
 	struct xfrm_policy *pol = NULL;
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_COMPAT
+	if (is_compat_task())
+		return -EOPNOTSUPP;
+#endif
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (!optval && !optlen) {
 		xfrm_sk_policy_insert(sk, XFRM_POLICY_IN, NULL);
 		xfrm_sk_policy_insert(sk, XFRM_POLICY_OUT, NULL);

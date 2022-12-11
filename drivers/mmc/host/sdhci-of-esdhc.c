@@ -614,6 +614,7 @@ static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
 	if (esdhc->vendor_ver < VENDOR_V_23)
 		pre_div = 2;
 
+<<<<<<< HEAD
 	if (host->mmc->card && mmc_card_sd(host->mmc->card) &&
 		esdhc->clk_fixup && host->mmc->ios.timing == MMC_TIMING_LEGACY)
 		fixup = esdhc->clk_fixup->sd_dflt_max_clk;
@@ -622,6 +623,29 @@ static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
 
 	if (fixup && clock > fixup)
 		clock = fixup;
+=======
+	/*
+	 * Limit SD clock to 167MHz for ls1046a according to its datasheet
+	 */
+	if (clock > 167000000 &&
+	    of_find_compatible_node(NULL, NULL, "fsl,ls1046a-esdhc"))
+		clock = 167000000;
+
+	/*
+	 * Limit SD clock to 125MHz for ls1012a according to its datasheet
+	 */
+	if (clock > 125000000 &&
+	    of_find_compatible_node(NULL, NULL, "fsl,ls1012a-esdhc"))
+		clock = 125000000;
+
+	/* Workaround to reduce the clock frequency for p1010 esdhc */
+	if (of_find_compatible_node(NULL, NULL, "fsl,p1010-esdhc")) {
+		if (clock > 20000000)
+			clock -= 5000000;
+		if (clock > 40000000)
+			clock -= 5000000;
+	}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	temp = sdhci_readl(host, ESDHC_SYSTEM_CONTROL);
 	temp &= ~(ESDHC_CLOCK_SDCLKEN | ESDHC_CLOCK_IPGEN | ESDHC_CLOCK_HCKEN |
@@ -1323,6 +1347,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
 	sdhci_get_of_property(pdev);
 
 	pltfm_host = sdhci_priv(host);
+<<<<<<< HEAD
 	esdhc = sdhci_pltfm_priv(pltfm_host);
 	if (soc_device_match(soc_tuning_erratum_type1))
 		esdhc->quirk_tuning_erratum_type1 = true;
@@ -1334,17 +1359,23 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
 	else
 		esdhc->quirk_tuning_erratum_type2 = false;
 
+=======
+	esdhc = pltfm_host->priv;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (esdhc->vendor_ver == VENDOR_V_22)
 		host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
 
 	if (esdhc->vendor_ver > VENDOR_V_22)
 		host->quirks &= ~SDHCI_QUIRK_NO_BUSY_IRQ;
 
+<<<<<<< HEAD
 	if (of_find_compatible_node(NULL, NULL, "fsl,p2020-esdhc")) {
 		host->quirks |= SDHCI_QUIRK_RESET_AFTER_REQUEST;
 		host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
 	}
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
 	    of_device_is_compatible(np, "fsl,p5020-esdhc") ||
 	    of_device_is_compatible(np, "fsl,p4080-esdhc") ||

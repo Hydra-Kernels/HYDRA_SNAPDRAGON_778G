@@ -260,6 +260,10 @@ int dccp_disconnect(struct sock *sk, int flags)
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct inet_sock *inet = inet_sk(sk);
 	struct dccp_sock *dp = dccp_sk(sk);
+<<<<<<< HEAD
+=======
+	int err = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	const int old_state = sk->sk_state;
 
 	if (old_state != DCCP_CLOSED)

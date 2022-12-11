@@ -23,4 +23,6 @@
 
 #define AT_VECTOR_SIZE_ARCH 2 /* entries in ARCH_DLINFO */
 
+#define AT_VECTOR_SIZE_ARCH 1 /* entries in ARCH_DLINFO */
+
 #endif

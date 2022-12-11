@@ -135,7 +135,11 @@ static int rds_add_bound(struct rds_sock *rs, const struct in6_addr *addr,
 				 rs, addr, (int)ntohs(*port));
 			break;
 		} else {
+<<<<<<< HEAD
 			rs->rs_bound_addr = in6addr_any;
+=======
+			rs->rs_bound_addr = 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			rds_sock_put(rs);
 			ret = -ENOMEM;
 			break;

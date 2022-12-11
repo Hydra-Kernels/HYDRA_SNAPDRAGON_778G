@@ -4,7 +4,11 @@
  *
  * Implementation of FSF commands.
  *
+<<<<<<< HEAD
  * Copyright IBM Corp. 2002, 2018
+=======
+ * Copyright IBM Corp. 2002, 2015
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
  */
 
 #define KMSG_COMPONENT "zfcp"
@@ -1670,7 +1674,11 @@ int zfcp_fsf_open_wka_port(struct zfcp_fc_wka_port *wka_port)
 out:
 	spin_unlock_irq(&qdio->req_q_lock);
 	if (!retval)
+<<<<<<< HEAD
 		zfcp_dbf_rec_run_wka("fsowp_1", wka_port, req_id);
+=======
+		zfcp_dbf_rec_run_wka("fsowp_1", wka_port, req->req_id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return retval;
 }
 
@@ -1729,7 +1737,11 @@ int zfcp_fsf_close_wka_port(struct zfcp_fc_wka_port *wka_port)
 out:
 	spin_unlock_irq(&qdio->req_q_lock);
 	if (!retval)
+<<<<<<< HEAD
 		zfcp_dbf_rec_run_wka("fscwp_1", wka_port, req_id);
+=======
+		zfcp_dbf_rec_run_wka("fscwp_1", wka_port, req->req_id);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	return retval;
 }
 

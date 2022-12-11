@@ -287,7 +287,11 @@ static int tracepoint_add_func(struct tracepoint *tp,
 			lockdep_is_held(&tracepoints_mutex));
 	old = func_add(&tp_funcs, func, prio);
 	if (IS_ERR(old)) {
+<<<<<<< HEAD
 		WARN_ON_ONCE(warn && PTR_ERR(old) != -ENOMEM);
+=======
+		WARN_ON_ONCE(PTR_ERR(old) != -ENOMEM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return PTR_ERR(old);
 	}
 
@@ -318,7 +322,12 @@ static int tracepoint_remove_func(struct tracepoint *tp,
 	tp_funcs = rcu_dereference_protected(tp->funcs,
 			lockdep_is_held(&tracepoints_mutex));
 	old = func_remove(&tp_funcs, func);
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(IS_ERR(old)))
+=======
+	if (IS_ERR(old)) {
+		WARN_ON_ONCE(PTR_ERR(old) != -ENOMEM);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return PTR_ERR(old);
 
 	if (tp_funcs == old)

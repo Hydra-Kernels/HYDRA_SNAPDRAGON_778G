@@ -172,9 +172,51 @@ int amdgpu_bo_list_get(struct amdgpu_fpriv *fpriv, int id,
 	rcu_read_lock();
 	*result = idr_find(&fpriv->bo_list_handles, id);
 
+<<<<<<< HEAD
 	if (*result && kref_get_unless_zero(&(*result)->refcount)) {
 		rcu_read_unlock();
 		return 0;
+=======
+	bool has_userptr = false;
+	unsigned i;
+
+	array = drm_malloc_ab(num_entries, sizeof(struct amdgpu_bo_list_entry));
+	if (!array)
+		return -ENOMEM;
+	memset(array, 0, num_entries * sizeof(struct amdgpu_bo_list_entry));
+
+	for (i = 0; i < num_entries; ++i) {
+		struct amdgpu_bo_list_entry *entry = &array[i];
+		struct drm_gem_object *gobj;
+
+		gobj = drm_gem_object_lookup(adev->ddev, filp, info[i].bo_handle);
+		if (!gobj)
+			goto error_free;
+
+		entry->robj = amdgpu_bo_ref(gem_to_amdgpu_bo(gobj));
+		drm_gem_object_unreference_unlocked(gobj);
+		entry->priority = info[i].bo_priority;
+		entry->prefered_domains = entry->robj->initial_domain;
+		entry->allowed_domains = entry->prefered_domains;
+		if (entry->allowed_domains == AMDGPU_GEM_DOMAIN_VRAM)
+			entry->allowed_domains |= AMDGPU_GEM_DOMAIN_GTT;
+		if (amdgpu_ttm_tt_has_userptr(entry->robj->tbo.ttm)) {
+			has_userptr = true;
+			entry->prefered_domains = AMDGPU_GEM_DOMAIN_GTT;
+			entry->allowed_domains = AMDGPU_GEM_DOMAIN_GTT;
+		}
+		entry->tv.bo = &entry->robj->tbo;
+		entry->tv.shared = !entry->robj->prime_shared_count;
+
+		if (entry->prefered_domains == AMDGPU_GEM_DOMAIN_GDS)
+			gds_obj = entry->robj;
+		if (entry->prefered_domains == AMDGPU_GEM_DOMAIN_GWS)
+			gws_obj = entry->robj;
+		if (entry->prefered_domains == AMDGPU_GEM_DOMAIN_OA)
+			oa_obj = entry->robj;
+
+		trace_amdgpu_bo_list_set(list, entry->robj);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	rcu_read_unlock();

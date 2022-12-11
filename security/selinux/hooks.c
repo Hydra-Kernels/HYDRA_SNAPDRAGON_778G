@@ -396,6 +396,7 @@ static void superblock_free_security(struct super_block *sb)
 	kfree(sbsec);
 }
 
+<<<<<<< HEAD
 struct selinux_mnt_opts {
 	const char *fscontext, *context, *rootcontext, *defcontext;
 };
@@ -409,6 +410,9 @@ static void selinux_free_mnt_opts(void *mnt_opts)
 	kfree(opts->defcontext);
 	kfree(opts);
 }
+=======
+static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dentry);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 static inline int inode_doinit(struct inode *inode)
 {
@@ -2050,8 +2054,12 @@ static inline u32 open_file_to_av(struct file *file)
 	u32 av = file_to_av(file);
 	struct inode *inode = file_inode(file);
 
+<<<<<<< HEAD
 	if (selinux_policycap_openperm() &&
 	    inode->i_sb->s_magic != SOCKFS_MAGIC)
+=======
+	if (selinux_policycap_openperm && inode->i_sb->s_magic != SOCKFS_MAGIC)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		av |= FILE__OPEN;
 
 	return av;
@@ -3121,7 +3129,11 @@ static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
 			ATTR_ATIME_SET | ATTR_MTIME_SET | ATTR_TIMES_SET))
 		return dentry_has_perm(cred, dentry, FILE__SETATTR);
 
+<<<<<<< HEAD
 	if (selinux_policycap_openperm() &&
+=======
+	if (selinux_policycap_openperm &&
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	    inode->i_sb->s_magic != SOCKFS_MAGIC &&
 	    (ia_valid & ATTR_SIZE) &&
 	    !(ia_valid & ATTR_FILE))
@@ -4506,6 +4518,8 @@ static int sock_has_perm(struct sock *sk, u32 perms)
 	struct common_audit_data ad;
 	struct lsm_network_audit net = {0,};
 
+	if (!sksec)
+		return -EFAULT;
 	if (sksec->sid == SECINITSID_KERNEL)
 		return 0;
 
@@ -4611,6 +4625,7 @@ static int selinux_socket_bind(struct socket *sock, struct sockaddr *address, in
 		unsigned short snum;
 		u32 sid, node_perm;
 
+<<<<<<< HEAD
 		/*
 		 * sctp_bindx(3) calls via selinux_sctp_bind_connect()
 		 * that validates multiple binding addresses. Because of this
@@ -4625,6 +4640,13 @@ static int selinux_socket_bind(struct socket *sock, struct sockaddr *address, in
 		case AF_INET:
 			if (addrlen < sizeof(struct sockaddr_in))
 				return -EINVAL;
+=======
+		if (family == PF_INET) {
+			if (addrlen < sizeof(struct sockaddr_in)) {
+				err = -EINVAL;
+				goto out;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			addr4 = (struct sockaddr_in *)address;
 			if (family_sa == AF_UNSPEC) {
 				/* see __inet_bind(), we only want to allow
@@ -4636,10 +4658,18 @@ static int selinux_socket_bind(struct socket *sock, struct sockaddr *address, in
 			}
 			snum = ntohs(addr4->sin_port);
 			addrp = (char *)&addr4->sin_addr.s_addr;
+<<<<<<< HEAD
 			break;
 		case AF_INET6:
 			if (addrlen < SIN6_LEN_RFC2133)
 				return -EINVAL;
+=======
+		} else {
+			if (addrlen < SIN6_LEN_RFC2133) {
+				err = -EINVAL;
+				goto out;
+			}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 			addr6 = (struct sockaddr_in6 *)address;
 			snum = ntohs(addr6->sin6_port);
 			addrp = (char *)&addr6->sin6_addr.s6_addr;

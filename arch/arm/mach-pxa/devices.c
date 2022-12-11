@@ -1080,6 +1080,14 @@ void __init pxa2xx_set_spi_info(unsigned id, struct pxa2xx_spi_controller *info)
 	platform_device_add(pd);
 }
 
+<<<<<<< HEAD
+=======
+static struct mmp_dma_platdata pxa_dma_pdata = {
+	.dma_channels	= 0,
+	.nb_requestors	= 0,
+};
+
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 static struct resource pxa_dma_resource[] = {
 	[0] = {
 		.start	= 0x40000000,
@@ -1106,7 +1114,15 @@ static struct platform_device pxa2xx_pxa_dma = {
 	.resource	= pxa_dma_resource,
 };
 
+<<<<<<< HEAD
 void __init pxa2xx_set_dmac_info(struct mmp_dma_platdata *dma_pdata)
 {
 	pxa_register_device(&pxa2xx_pxa_dma, dma_pdata);
+=======
+void __init pxa2xx_set_dmac_info(int nb_channels, int nb_requestors)
+{
+	pxa_dma_pdata.dma_channels = nb_channels;
+	pxa_dma_pdata.nb_requestors = nb_requestors;
+	pxa_register_device(&pxa2xx_pxa_dma, &pxa_dma_pdata);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }

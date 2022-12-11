@@ -4,8 +4,11 @@
 
 #include <linux/export.h>
 
+<<<<<<< HEAD:lib/ashrdi3.c
 #include <linux/libgcc.h>
 
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc:arch/mips/lib/ashrdi3.c
 long long notrace __ashrdi3(long long u, word_type b)
 {
 	DWunion uu, w;

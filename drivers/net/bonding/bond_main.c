@@ -209,7 +209,10 @@ static void bond_get_stats(struct net_device *bond_dev,
 static void bond_slave_arr_handler(struct work_struct *work);
 static bool bond_time_in_interval(struct bonding *bond, unsigned long last_act,
 				  int mod);
+<<<<<<< HEAD
 static void bond_netdev_notify_work(struct work_struct *work);
+=======
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 /*---------------------------- General routines -----------------------------*/
 
@@ -1319,9 +1322,15 @@ static int bond_kobj_init(struct slave *slave)
 	err = kobject_init_and_add(&slave->kobj, &slave_ktype,
 				   &(slave->dev->dev.kobj), "bonding_slave");
 	if (err)
+<<<<<<< HEAD
 		kobject_put(&slave->kobj);
 
 	return err;
+=======
+		return err;
+	rtmsg_ifinfo(RTM_NEWLINK, slave_dev, IFF_SLAVE, GFP_KERNEL);
+	return 0;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 }
 
 static struct slave *bond_alloc_slave(struct bonding *bond,
@@ -1418,9 +1427,14 @@ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev,
 
 	/* already in-use? */
 	if (netdev_is_rx_handler_busy(slave_dev)) {
+<<<<<<< HEAD
 		NL_SET_ERR_MSG(extack, "Device is in use and cannot be enslaved");
 		slave_err(bond_dev, slave_dev,
 			  "Error: Device is in use and cannot be enslaved\n");
+=======
+		netdev_err(bond_dev,
+			   "Error: Device is in use and cannot be enslaved\n");
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		return -EBUSY;
 	}
 
@@ -2697,13 +2711,21 @@ static void bond_loadbalance_arp_mon(struct bonding *bond)
 	bond_for_each_slave_rcu(bond, slave, iter) {
 		unsigned long trans_start = dev_trans_start(slave->dev);
 
+<<<<<<< HEAD
 		bond_propose_link_state(slave, BOND_LINK_NOCHANGE);
+=======
+		slave->new_link = BOND_LINK_NOCHANGE;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 		if (slave->link != BOND_LINK_UP) {
 			if (bond_time_in_interval(bond, trans_start, 1) &&
 			    bond_time_in_interval(bond, slave->last_rx, 1)) {
 
+<<<<<<< HEAD
 				bond_propose_link_state(slave, BOND_LINK_UP);
+=======
+				slave->new_link = BOND_LINK_UP;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				slave_state_changed = 1;
 
 				/* primary_slave has no meaning in round-robin
@@ -2728,7 +2750,11 @@ static void bond_loadbalance_arp_mon(struct bonding *bond)
 			if (!bond_time_in_interval(bond, trans_start, 2) ||
 			    !bond_time_in_interval(bond, slave->last_rx, 2)) {
 
+<<<<<<< HEAD
 				bond_propose_link_state(slave, BOND_LINK_DOWN);
+=======
+				slave->new_link = BOND_LINK_DOWN;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 				slave_state_changed = 1;
 
 				if (slave->link_failure_count < UINT_MAX)
@@ -2759,8 +2785,13 @@ static void bond_loadbalance_arp_mon(struct bonding *bond)
 			goto re_arm;
 
 		bond_for_each_slave(bond, slave, iter) {
+<<<<<<< HEAD
 			if (slave->link_new_state != BOND_LINK_NOCHANGE)
 				slave->link = slave->link_new_state;
+=======
+			if (slave->new_link != BOND_LINK_NOCHANGE)
+				slave->link = slave->new_link;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 		}
 
 		if (slave_state_changed) {
@@ -3477,6 +3508,7 @@ static void bond_fold_stats(struct rtnl_link_stats64 *_res,
 	}
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_LOCKDEP
 static int bond_get_lowest_level_rcu(struct net_device *dev)
 {
@@ -3520,6 +3552,10 @@ static int bond_get_lowest_level_rcu(struct net_device *dev)
 
 static void bond_get_stats(struct net_device *bond_dev,
 			   struct rtnl_link_stats64 *stats)
+=======
+static struct rtnl_link_stats64 *bond_get_stats(struct net_device *bond_dev,
+						struct rtnl_link_stats64 *stats)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 {
 	struct bonding *bond = netdev_priv(bond_dev);
 	struct rtnl_link_stats64 temp;
@@ -3527,6 +3563,7 @@ static void bond_get_stats(struct net_device *bond_dev,
 	struct slave *slave;
 	int nest_level = 0;
 
+<<<<<<< HEAD
 
 	rcu_read_lock();
 #ifdef CONFIG_LOCKDEP
@@ -3536,6 +3573,12 @@ static void bond_get_stats(struct net_device *bond_dev,
 	spin_lock_nested(&bond->stats_lock, nest_level);
 	memcpy(stats, &bond->bond_stats, sizeof(*stats));
 
+=======
+	spin_lock(&bond->stats_lock);
+	memcpy(stats, &bond->bond_stats, sizeof(*stats));
+
+	rcu_read_lock();
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	bond_for_each_slave_rcu(bond, slave, iter) {
 		const struct rtnl_link_stats64 *new =
 			dev_get_stats(slave->dev, &temp);
@@ -3545,6 +3588,13 @@ static void bond_get_stats(struct net_device *bond_dev,
 		/* save off the slave stats for the next run */
 		memcpy(&slave->slave_stats, new, sizeof(*new));
 	}
+<<<<<<< HEAD
+=======
+	rcu_read_unlock();
+
+	memcpy(&bond->bond_stats, stats, sizeof(*stats));
+	spin_unlock(&bond->stats_lock);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 	memcpy(&bond->bond_stats, stats, sizeof(*stats));
 	spin_unlock(&bond->stats_lock);
@@ -4390,6 +4440,7 @@ void bond_setup(struct net_device *bond_dev)
 	struct bonding *bond = netdev_priv(bond_dev);
 
 	spin_lock_init(&bond->mode_lock);
+	spin_lock_init(&bond->stats_lock);
 	bond->params = bonding_defaults;
 
 	/* Initialize pointers */

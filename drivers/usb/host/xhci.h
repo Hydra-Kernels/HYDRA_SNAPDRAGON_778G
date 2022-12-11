@@ -312,10 +312,14 @@ struct xhci_op_regs {
 #define XDEV_RXDETECT	(0x5 << 5)
 #define XDEV_INACTIVE	(0x6 << 5)
 #define XDEV_POLLING	(0x7 << 5)
+<<<<<<< HEAD
 #define XDEV_RECOVERY	(0x8 << 5)
 #define XDEV_HOT_RESET	(0x9 << 5)
 #define XDEV_COMP_MODE	(0xa << 5)
 #define XDEV_TEST_MODE	(0xb << 5)
+=======
+#define XDEV_COMP_MODE  (0xa << 5)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 #define XDEV_RESUME	(0xf << 5)
 
 /* true: port has power (see HCC_PPC) */
@@ -1716,6 +1720,7 @@ struct xhci_port_cap {
 	u8			min_rev;
 };
 
+<<<<<<< HEAD
 struct xhci_port {
 	__le32 __iomem		*addr;
 	int			hw_portnum;
@@ -1723,6 +1728,15 @@ struct xhci_port {
 	struct xhci_hub		*rhub;
 	struct xhci_port_cap	*port_cap;
 };
+=======
+static inline unsigned int hcd_index(struct usb_hcd *hcd)
+{
+	if (hcd->speed >= HCD_USB3)
+		return 0;
+	else
+		return 1;
+}
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 struct xhci_hub {
 	struct xhci_port	**ports;
@@ -1837,12 +1851,23 @@ struct xhci_hcd {
 #define XHCI_STATE_DYING	(1 << 0)
 #define XHCI_STATE_HALTED	(1 << 1)
 #define XHCI_STATE_REMOVING	(1 << 2)
+<<<<<<< HEAD
 	unsigned long long	quirks;
 #define	XHCI_LINK_TRB_QUIRK	BIT_ULL(0)
 #define XHCI_RESET_EP_QUIRK	BIT_ULL(1)
 #define XHCI_NEC_HOST		BIT_ULL(2)
 #define XHCI_AMD_PLL_FIX	BIT_ULL(3)
 #define XHCI_SPURIOUS_SUCCESS	BIT_ULL(4)
+=======
+	/* Statistics */
+	int			error_bitmask;
+	unsigned int		quirks;
+#define	XHCI_LINK_TRB_QUIRK	(1 << 0)
+#define XHCI_RESET_EP_QUIRK	(1 << 1)
+#define XHCI_NEC_HOST		(1 << 2)
+#define XHCI_AMD_PLL_FIX	(1 << 3)
+#define XHCI_SPURIOUS_SUCCESS	(1 << 4)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 /*
  * Certain Intel host controllers have a limit to the number of endpoint
  * contexts they can handle.  Ideally, they would signal that they can't handle
@@ -1867,6 +1892,7 @@ struct xhci_hcd {
 #define XHCI_SLOW_SUSPEND	BIT_ULL(17)
 #define XHCI_SPURIOUS_WAKEUP	BIT_ULL(18)
 /* For controllers with a broken beyond repair streams implementation */
+<<<<<<< HEAD
 #define XHCI_BROKEN_STREAMS	BIT_ULL(19)
 #define XHCI_PME_STUCK_QUIRK	BIT_ULL(20)
 #define XHCI_MTK_HOST		BIT_ULL(21)
@@ -1889,6 +1915,11 @@ struct xhci_hcd {
 #define XHCI_DISABLE_SPARSE	BIT_ULL(38)
 #define XHCI_NO_SOFT_RETRY	BIT_ULL(40)
 
+=======
+#define XHCI_BROKEN_STREAMS	(1 << 19)
+#define XHCI_PME_STUCK_QUIRK	(1 << 20)
+#define XHCI_MISSING_CAS	(1 << 24)
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	unsigned int		num_active_eps;
 	unsigned int		limit_active_eps;
 	struct xhci_port	*hw_ports;
@@ -2137,10 +2168,19 @@ void xhci_find_new_dequeue_state(struct xhci_hcd *xhci,
 void xhci_queue_new_dequeue_state(struct xhci_hcd *xhci,
 		unsigned int slot_id, unsigned int ep_index,
 		struct xhci_dequeue_state *deq_state);
+<<<<<<< HEAD
 void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci, unsigned int slot_id,
 			       unsigned int ep_index, unsigned int stream_id,
 			       struct xhci_td *td);
 void xhci_stop_endpoint_command_watchdog(struct timer_list *t);
+=======
+void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
+		unsigned int ep_index, struct xhci_td *td);
+void xhci_queue_config_ep_quirk(struct xhci_hcd *xhci,
+		unsigned int slot_id, unsigned int ep_index,
+		struct xhci_dequeue_state *deq_state);
+void xhci_stop_endpoint_command_watchdog(unsigned long arg);
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 void xhci_handle_command_timeout(struct work_struct *work);
 
 void xhci_ring_ep_doorbell(struct xhci_hcd *xhci, unsigned int slot_id,

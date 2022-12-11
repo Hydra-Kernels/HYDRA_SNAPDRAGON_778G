@@ -45,7 +45,11 @@ static void tm_to_opal(struct rtc_time *tm, u32 *y_m_d, u64 *h_m_s_ms)
 
 static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
 {
+<<<<<<< HEAD
 	s64 rc = OPAL_BUSY;
+=======
+	long rc = OPAL_BUSY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int retries = 10;
 	u32 y_m_d;
 	u64 h_m_s_ms;
@@ -57,6 +61,7 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
 		if (rc == OPAL_BUSY_EVENT) {
 			msleep(OPAL_BUSY_DELAY_MS);
 			opal_poll_events(NULL);
+<<<<<<< HEAD
 		} else if (rc == OPAL_BUSY) {
 			msleep(OPAL_BUSY_DELAY_MS);
 		} else if (rc == OPAL_HARDWARE || rc == OPAL_INTERNAL_ERROR) {
@@ -65,6 +70,13 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
 				rc = OPAL_BUSY; /* go around again */
 			}
 		}
+=======
+		else if (retries-- && (rc == OPAL_HARDWARE
+				       || rc == OPAL_INTERNAL_ERROR))
+			msleep(10);
+		else if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	if (rc != OPAL_SUCCESS)
@@ -79,7 +91,11 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
 
 static int opal_set_rtc_time(struct device *dev, struct rtc_time *tm)
 {
+<<<<<<< HEAD
 	s64 rc = OPAL_BUSY;
+=======
+	long rc = OPAL_BUSY;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	int retries = 10;
 	u32 y_m_d = 0;
 	u64 h_m_s_ms = 0;
@@ -91,6 +107,7 @@ static int opal_set_rtc_time(struct device *dev, struct rtc_time *tm)
 		if (rc == OPAL_BUSY_EVENT) {
 			msleep(OPAL_BUSY_DELAY_MS);
 			opal_poll_events(NULL);
+<<<<<<< HEAD
 		} else if (rc == OPAL_BUSY) {
 			msleep(OPAL_BUSY_DELAY_MS);
 		} else if (rc == OPAL_HARDWARE || rc == OPAL_INTERNAL_ERROR) {
@@ -99,6 +116,13 @@ static int opal_set_rtc_time(struct device *dev, struct rtc_time *tm)
 				rc = OPAL_BUSY; /* go around again */
 			}
 		}
+=======
+		else if (retries-- && (rc == OPAL_HARDWARE
+				       || rc == OPAL_INTERNAL_ERROR))
+			msleep(10);
+		else if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
+			break;
+>>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 	}
 
 	return rc == OPAL_SUCCESS ? 0 : -EIO;
