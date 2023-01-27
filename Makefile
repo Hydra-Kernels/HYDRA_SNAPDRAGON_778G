@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 5
 PATCHLEVEL = 4
-<<<<<<< HEAD
-SUBLEVEL = 147
-=======
 SUBLEVEL = 148
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 EXTRAVERSION =
 NAME = Kleptomaniac Octopus
 
@@ -102,15 +99,15 @@ ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
   quiet=silent_
   tools_silent=s
 endif
-<<<<<<< HEAD
-=======
+
+
 else					# make-3.8x
 ifneq ($(filter s% -s%,$(MAKEFLAGS)),)
   quiet=silent_
   tools_silent=-s
 endif
 endif
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 
 export quiet Q KBUILD_VERBOSE
 
@@ -139,8 +136,7 @@ ifeq ("$(origin O)", "command line")
   KBUILD_OUTPUT := $(O)
 endif
 
-<<<<<<< HEAD
-=======
+
 # That's our default target when none is given on the command line
 PHONY := _all
 _all:
@@ -152,7 +148,7 @@ ifneq ($(words $(subst :, ,$(CURDIR))), 1)
   $(error main directory cannot contain spaces nor colons)
 endif
 
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 ifneq ($(KBUILD_OUTPUT),)
 # Make's built-in functions such as $(abspath ...), $(realpath ...) cannot
 # expand a shell special character '~'. We use a somewhat tedious way here.
@@ -497,12 +493,12 @@ AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-<<<<<<< HEAD
+
 LDFLAGS_vmlinux =
-=======
+
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
@@ -521,7 +517,7 @@ LINUXINCLUDE    := \
 		-I$(objtree)/include \
 		$(USERINCLUDE)
 
-<<<<<<< HEAD
+
 KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
 KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
@@ -531,7 +527,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
-=======
+
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
@@ -544,7 +540,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__ $(call cc-option,-fno-PIE)
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
 KBUILD_LDFLAGS_MODULE :=
@@ -632,13 +628,12 @@ KBUILD_AFLAGS	+= $(CLANG_FLAGS)
 export CLANG_FLAGS
 endif
 
-<<<<<<< HEAD
-# The expansion should be delayed until arch/$(SRCARCH)/Makefile is included.
+
 # Some architectures define CROSS_COMPILE in arch/$(SRCARCH)/Makefile.
 # CC_VERSION_TEXT is referenced from Kconfig (so it needs export),
 # and from include/config/auto.conf.cmd to detect the compiler upgrade.
 CC_VERSION_TEXT = $(shell $(CC) --version 2>/dev/null | head -n 1)
-=======
+
 ifeq ($(KBUILD_EXTMOD),)
         ifneq ($(filter config %config,$(MAKECMDGOALS)),)
                 config-targets := 1
@@ -653,7 +648,7 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
 	        mixed-targets := 1
         endif
 endif
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 
 ifdef config-build
 # ===========================================================================
@@ -806,7 +801,7 @@ endif # may-sync-config
 endif # need-config
 
 KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
-<<<<<<< HEAD
+
 KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
@@ -818,7 +813,7 @@ else ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3
 KBUILD_CFLAGS += -O3
 else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS += -Os
-=======
+
 KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -834,7 +829,7 @@ KBUILD_CFLAGS	+= -O2
 else
 KBUILD_CFLAGS   += -O2
 endif
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
@@ -884,17 +879,16 @@ KBUILD_CFLAGS += $(call cc-disable-warning, undefined-optimized)
 KBUILD_CFLAGS += -fno-builtin
 else
 
-<<<<<<< HEAD
+
 # Warn about unmarked fall-throughs in switch statement.
 # Disabled for clang while comment to attribute conversion happens and
 # https://github.com/ClangBuiltLinux/linux/issues/636 is discussed.
 KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough,)
-=======
 # These warnings generated too much noise in a regular build.
 # Use make W=1 to enable them (see scripts/Makefile.build)
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
 endif
 
 # These warnings generated too much noise in a regular build.
@@ -1099,15 +1093,15 @@ KBUILD_CFLAGS   += $(call cc-option,-Werror=date-time)
 # enforce correct pointer usage
 KBUILD_CFLAGS   += $(call cc-option,-Werror=incompatible-pointer-types)
 
-<<<<<<< HEAD
+
 # Require designated initializers for all marked structures
 KBUILD_CFLAGS   += $(call cc-option,-Werror=designated-init)
 
 # change __FILE__ to the relative path from the srctree
 KBUILD_CFLAGS	+= $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 
-=======
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+
 include scripts/Makefile.kasan
 include scripts/Makefile.extrawarn
 include scripts/Makefile.ubsan
@@ -1704,11 +1698,11 @@ help:
 	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
-<<<<<<< HEAD
+
 	@echo  '  dir/file.ll     - Build the LLVM assembly file'
 	@echo  '                    (requires compiler support for LLVM assembly generation)'
-=======
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
+
+
 	@echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
 	@echo  '                    (requires a recent binutils and recent build (System.map))'
 	@echo  '  dir/file.ko     - Build module including final link'
@@ -2046,13 +2040,13 @@ endif
 
 tools/: FORCE
 	$(Q)mkdir -p $(objtree)/tools
-<<<<<<< HEAD
+
 	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/
 
 tools/%: FORCE
 	$(Q)mkdir -p $(objtree)/tools
 	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/ $*
-=======
+
 	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(shell cd $(objtree) && /bin/pwd) subdir=tools -C $(src)/tools/
 
 tools/%: FORCE
@@ -2109,7 +2103,6 @@ Documentation/: headers_install
 	$(Q)$(MAKE) KBUILD_MODULES=$(if $(CONFIG_MODULES),1)   \
 	$(build)=$(build-dir) $(@:.ko=.o)
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
->>>>>>> 32d56b82a4422584f661108f5643a509da0184fc
 
 # FIXME Should go into a make.lib or something
 # ===========================================================================
